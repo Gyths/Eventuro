@@ -1,19 +1,20 @@
-import { useState } from 'react'
-import CrearTicketTajeta from './components/CrearTicketTajeta'
-
+import { useState } from "react";
+import CrearTicketTajeta from "./components/CrearTicketTajeta";
+import UbicacionEvento from "./components/UbicacionEvento";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useState(0);
 
   return (
     <>
-      <h1 className='bg-red-500'>Hola</h1>
-      <div className='w-full flex items-start justify-center p-2'>
-          <CrearTicketTajeta/>
-        </div>
-
+      <div className="w-full flex items-center justify-center p-2">
+        <UbicacionEvento />
+      </div>
+      <div className="w-full flex items-start justify-center p-2">
+        <CrearTicketTajeta />
+      </div>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
