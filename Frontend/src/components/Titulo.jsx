@@ -1,4 +1,3 @@
-// PageTitle.jsx
 import React from "react";
 
 export default function Titulo({ children, className = "", ...props }) {
