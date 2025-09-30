@@ -1,4 +1,7 @@
 import { upsertUserWithGoogle } from '../repositories/user.repo.js';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { findByEmail } from '../repositories/user.repo.js';
 
 function splitName(profile) {
   const g = profile.name?.givenName ?? '';
@@ -25,3 +28,20 @@ export async function handleGoogleProfile(profile) {
   };
 }
 
+export async function loginWithCredentials(email, password) {
+  const user = await findByEmail(email);
+  if (!user) throw new Error("Usuario no encontrado");
+
+  if (!user.password) {
+    throw new Error("Este usuario no tiene login por contraseña (probablemente es OAuth)");
+  }
+
+  const isMatch = await bcrypt.compare(password, user.password.hashedPassword);
+  if (!isMatch) throw new Error("Credenciales inválidas");
+
+  return jwt.sign(
+    { id: user.id, email: user.email },
+    process.env.JWT_SECRET,
+    { expiresIn: "1h" }
+  );
+}
