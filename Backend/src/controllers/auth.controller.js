@@ -1,4 +1,4 @@
-import { loginWithCredentials }  from '../services/auth.js';
+import { loginWithCredentials,generateToken }  from '../services/auth.js';
 import bcrypt from 'bcrypt'; // borrar
 
 export function home(req, res) {
@@ -26,16 +26,16 @@ export const login = async (req, res) => {
     }
 };
 
-export const googleLogin = async (req, res) => {
+export const googleCallback = (req, res) => {
   try {
-    const { id_token } = req.body;
-    const token = await oginWithGoogle(id_token);
-    res.json({ token });
+    const token = generateToken(req.user);
+    console.log("Token generado:", token);
+    res.json({ token, user: req.user });
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(400).json({ error: 'Error en login con Google' });
   }
 };
-
+/*
 export async function tempRegister(req, res) {
   try {
     console.log("Body recibido:", req.body);
@@ -70,3 +70,4 @@ export async function tempRegister(req, res) {
     res.status(500).json({ error: "Error al registrar usuario temporal" });
   }
 }
+  */
