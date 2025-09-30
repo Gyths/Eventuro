@@ -13,3 +13,74 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+// ====================== Enums ======================
+enum GENDER {
+  M   // male
+  F   // female
+  O   // other
+}
+
+enum STATUS_USER {
+  A   // active
+  S   // suspended
+  D   // deleted
+}
+
+enum ID_TYPE {
+  RUC
+  DNI
+}
+
+// ====================== Models ======================
+
+// Usuario general
+model User {
+  userId     BigInt       @id @default(autoincrement()) @db.BigInt
+  name       String
+  lastName   String
+  phone      String?
+  email      String       @unique
+  birthdate  DateTime?
+  gender     GENDER?
+  status     STATUS_USER  @default(A)
+
+  // Relaciones
+  password   PasswordUser?
+  oauths     OAuthUser[]
+  organizer  Organizer?
+
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+}
+
+// Usuario con login por contraseña (1:1 con User)
+model PasswordUser {
+  userId         BigInt   @id @db.BigInt
+  hashedPassword String
+
+  user           User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+}
+
+// Usuario con login externo OAuth (Google, etc.)
+model OAuthUser {
+  id             Int      @id @default(autoincrement())
+  userId         BigInt   @db.BigInt
+  provider       String
+  providerUserId String
+
+  user           User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@unique([provider, providerUserId])
+  @@index([userId])
+}
+
+// Organizador (1:1 con User)
+model Organizer {
+  organizerId BigInt   @id @default(autoincrement()) @db.BigInt
+  userId      BigInt   @unique @db.BigInt
+  companyName String
+  idType      ID_TYPE
+  idNumber    String   @unique
+
+  user        User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+}
