@@ -6,6 +6,7 @@ import Titulo from "./Titulo";
 export default function CrearTicketTajeta() {
   const [currency, setCurrency] = useState("PEN");
   const [items, setItems] = useState([{ name: "", price: "", amount: "" }]);
+  const [finVenta, setfinVenta] = useState("termino");
   const [perPerson, setPerPerson] = useState("10");
   const [date, setDate] = useState("");
   const [toggle, setToggle] = useState(false);
@@ -36,7 +37,7 @@ export default function CrearTicketTajeta() {
           </select>
 
           {/* CTA Add Line button */}
-          <BotonCTA onClick={handleAddLine}>+ Crear Entrada</BotonCTA>
+          <BotonCTA onClick={handleAddLine} variant="primary">+ Crear Entrada</BotonCTA>
         </div>
 
         {/* White dynamic card */}
@@ -47,13 +48,15 @@ export default function CrearTicketTajeta() {
           {/* Date input */}
             <div className="flex flex-col gap-1 flex-1 min-w-[150px]">
               <span className="font-semibold">Hasta qué momento desea vender las entradas:</span>
-              <input
-                type="text"
-                placeholder="YYYY-MM-DD"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="border rounded px-3 py-2 w-full"
-              />
+              <select
+                value={finVenta}
+                onChange={(e) => setfinVenta(e.target.value)}
+                className="border rounded px-4 py-2 w-full"
+              >
+                <option value="termino">Hasta que termine el evento</option>
+                <option value="2 dias antes">2 dias antes del evento</option>
+                <option value="inicio">Hasta el inicio del evento</option>
+              </select>
             </div>
 
             {/* How many per person */}
@@ -75,7 +78,7 @@ export default function CrearTicketTajeta() {
 
         <div className="mt-4">
           {/* CTA Edit Options button */}
-          <BotonCTA onClick={() => setToggle(!toggle)}>
+          <BotonCTA onClick={() => setToggle(!toggle)} variant="secondary">
             Venta Escalonada
           </BotonCTA>
 

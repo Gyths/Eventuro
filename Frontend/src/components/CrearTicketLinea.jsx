@@ -14,6 +14,13 @@ function LineaDinamica({ items, setItems }) {
 
   return (
     <div className="bg-white rounded-xl shadow-md p-4 w-full">
+      {/* Subtitulos */}
+      <div className="flex flex-col md:flex-row gap-2 md:items-center mb-2 font-semibold text-gray-700">
+        <span className="flex-1">Tipo de la entrada*</span>
+        <span className="flex-1">Cantidad disponible*</span>
+        <span className="flex-1">Precio*</span>
+      </div>
+
       <div className="space-y-3">
         {items.map((item, index) => (
           <div
