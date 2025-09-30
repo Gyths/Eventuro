@@ -58,7 +58,7 @@ function LineaDinamica({ items, setItems }) {
               />
             </div>
 
-            {/* Delete button */}
+            {/* Boton eliminar */}
             <div className="w-full md:w-auto flex justify-end mt-2 md:mt-0">
               <BotonEliminar onClick={() => handleDelete(index)} />
             </div>

@@ -8,7 +8,6 @@ export default function CrearTicketTajeta() {
   const [items, setItems] = useState([{ name: "", price: "", amount: "" }]);
   const [finVenta, setfinVenta] = useState("termino");
   const [perPerson, setPerPerson] = useState("10");
-  const [date, setDate] = useState("");
   const [toggle, setToggle] = useState(false);
   const [howMany, setHowMany] = useState("");
   const [timePeriod, setTimePeriod] = useState("Daily");
@@ -22,10 +21,9 @@ export default function CrearTicketTajeta() {
         style={{ backgroundColor: "#F8F8F8" }}>
        <div>
           <Titulo>Crear Entradas</Titulo>
-          {/* Rest of your page */}
         </div>
 
-        {/* Selector + Add button row */}
+        {/* Selector moneda */}
         <div className="flex justify-between items-center gap-4">
           <select
             value={currency}
@@ -36,16 +34,16 @@ export default function CrearTicketTajeta() {
             <option value="USD">Dolares Americanos</option>
           </select>
 
-          {/* CTA Add Line button */}
           <BotonCTA onClick={handleAddLine} variant="primary">+ Crear Entrada</BotonCTA>
         </div>
 
-        {/* White dynamic card */}
+        {/* Linea de tipos de entrada */}
         <LineaDinamica items={items} setItems={setItems} />
 
-        {/* Inputs row: Date + How many per person side by side */}
+        {/* Opciones de venta*/}
         <div className="flex flex-col md:flex-row items-start md:items-end gap-4 mt-1">
-          {/* Date input */}
+           
+           {/* Hasta cuando se vende*/}
             <div className="flex flex-col gap-1 flex-1 min-w-[150px]">
               <span className="font-semibold">Hasta qué momento desea vender las entradas:</span>
               <select
@@ -59,7 +57,7 @@ export default function CrearTicketTajeta() {
               </select>
             </div>
 
-            {/* How many per person */}
+            {/* Maximo por usuario */}
             <div className="flex flex-col gap-1 flex-1 min-w-[120px]">
               <span className="font-semibold">Entradas máximas por usuario:</span>
               <select
@@ -77,12 +75,11 @@ export default function CrearTicketTajeta() {
         </div>
 
         <div className="mt-4">
-          {/* CTA Edit Options button */}
           <BotonCTA onClick={() => setToggle(!toggle)} variant="secondary">
             Venta Escalonada
           </BotonCTA>
 
-          {/* Spacing between button and inputs */}
+          {/* Opciones de venta escalonada, no se muestran sin el toggle */}
           {toggle && (
             <div className="flex flex-col md:flex-row items-start md:items-center gap-4 mt-3">
               <div className="flex items-center gap-4 flex-wrap">
