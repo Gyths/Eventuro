@@ -17,12 +17,12 @@ export default function RootLayout() {
           isLoggedIn={isAuthenticated}
           onLogin={() => navigate("/login")}
           onRegister={() => navigate("/registro")}
-          onProfile={() => navigate("/app")}
-          onMyTickets={() => navigate("/app")}
-          onClaims={() => navigate("/app")}
+          onProfile={() => navigate("/")}
+          onMyTickets={() => navigate("/")}
+          onClaims={() => navigate("/")}
           onLogout={() => {
             logout();
-            navigate("/");
+            navigate("/", { replace: true });
           }}
         />
       )}

@@ -18,9 +18,9 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import Home from "./pages/Home.jsx";
+import { Navigate } from "react-router-dom";
 
-
- {/* esto es para probar el card de eventos xd */}
 
 
 function App() {
@@ -29,22 +29,19 @@ function App() {
   return (
     <>
 
-      <Routes>
-        <Route element={<RootLayout />}>
-          {/* público */}
-          <Route index element={<HomePublic />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/registro" element={<Register />} />
+    <Routes>
+      <Route element={<RootLayout />}>
 
-          {/* privado */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/app" element={<HomePrivate />} />
-          </Route>
+        <Route index element={<Home />} />
 
-          {/* 404 */}
-          <Route path="*" element={<NotFound />} />
-        </Route>
-      </Routes>
+        <Route path="login" element={<Login />} />
+        <Route path="registro" element={<Register />} />
+
+
+        <Route path="app/*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
+    </Routes>
 
 
     </>
