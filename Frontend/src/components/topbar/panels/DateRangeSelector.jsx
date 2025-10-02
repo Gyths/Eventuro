@@ -1,8 +1,8 @@
 import { useState } from "react";
 
 export default function DateRangeSelector({ from, to, onChange }) {
-  const [localFrom, setLocalFrom] = useState(from ?? "");
-  const [localTo, setLocalTo] = useState(to ?? "");
+  const [localFrom, setLocalFrom] = useState(from ?? null);
+  const [localTo, setLocalTo] = useState(to ?? null);
 
   function quick(days) {
     const now = new Date();

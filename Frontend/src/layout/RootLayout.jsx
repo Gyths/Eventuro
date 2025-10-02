@@ -34,7 +34,8 @@ export default function RootLayout() {
             navigate("/", { replace: true });
           }}
           //recibe cambios desde TopBar
-          onFiltersChange={setFilters}
+           filters={filters}              // pasa el estado actual
+           onFiltersChange={setFilters}   // pasa el setter
         />
       )}
 

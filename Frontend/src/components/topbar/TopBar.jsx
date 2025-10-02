@@ -19,6 +19,7 @@ import { useLocation } from "react-router-dom";
 export default function TopBar({
   isLoggedIn = false,
   onSearch,
+  filters,
   onFiltersChange,
   onLogin,
   onRegister,
@@ -30,16 +31,16 @@ export default function TopBar({
   const { pathname } = useLocation();
   const isCreateEvent = pathname.startsWith("/create_event");
   const [query, setQuery] = useState("");
-  const [filters, setFilters] = useState({
+  /*const [filters, setFilters] = useState({ //evitaamos duplicar estaado
     category: null,
     dateFrom: null,
     dateTo: null,
     location: "",
-  });
+  });*/
 
   function updateFilters(patch) {
     const next = { ...filters, ...patch };
-    setFilters(next);
+    /*setFilters(next);*/ //evitamos setear doblemente
     onFiltersChange?.(next);
   }
 
