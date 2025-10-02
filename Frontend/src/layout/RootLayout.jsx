@@ -16,7 +16,7 @@ export default function RootLayout() {
     category: null,
     dateFrom: null,
     dateTo: null,
-    location: null,
+    location: "",
   });
 
   return (

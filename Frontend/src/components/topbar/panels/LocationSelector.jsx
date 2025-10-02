@@ -31,7 +31,7 @@ export default function LocationSelector({ value = "", onChange }) {
       </div>
       <div className="pt-1 text-right">
         <button // se agregó boton limpiar
-          onClick={() => onChange?.(null)}
+          onClick={() => onChange?.("")}
           className="text-xs text-gray-500 underline underline-offset-2"
         >
           Limpiar
