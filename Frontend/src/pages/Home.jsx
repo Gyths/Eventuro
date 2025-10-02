@@ -1,21 +1,45 @@
 // src/pages/Home.jsx
-import { useAuth } from "../services/auth/AuthContext.jsx";
+import BannerCarousel from "../components/BannerCarousel.jsx";
+import EventCard from "../components/EventCard.jsx";
+
+const imagesDemo = [
+  "/banners/banner1.jpg",
+  "/banners/banner2.jpg",
+  "/banners/banner3.jpg",
+];
+
+const eventosDemo = [
+  { id: 1, titulo: "Concierto de Rock", fecha: "2025-10-10", lugar: "Lima", imagen: "/img/evento1.jpg" },
+  { id: 2, titulo: "Feria Gastronómica", fecha: "2025-11-05", lugar: "Cusco", imagen: "/img/evento2.jpg" },
+  { id: 3, titulo: "Startup Summit",  fecha: "2025-11-20", lugar: "Arequipa", imagen: "/img/evento3.jpg" },
+  { id: 4, titulo: "Expo Arte",        fecha: "2025-12-02", lugar: "Trujillo", imagen: "/img/evento4.jpg" },
+  { id: 5, titulo: "Maratón 10K",      fecha: "2025-12-15", lugar: "Lima", imagen: "/img/evento5.jpg" },
+];
 
 export default function Home() {
-  const { user, isAuthenticated } = useAuth();
-
   return (
-    <section className="mx-auto max-w-6xl px-4 py-10">
-      <h1 className="text-2xl font-semibold">
-        {isAuthenticated ? `Hola, ${user?.email} 👋` : "Bienvenido 👋"}
-        {console.log(user)}
-        {console.log(isAuthenticated)}
-      </h1>
-      <p className="mt-2 text-gray-600">
-        Aquí podrías mostrar recomendaciones, mis tickets u otro contenido
-        público.
-      </p>
-      {/* secciones y grids compartidos */}
+    <section className="mx-auto max-w-6xl px-4 py-8">
+      {/* Grid maestro: 4 columnas grandes, con gap consistente */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+
+        {/* Banner ocupa las 4 columnas en pantallas grandes */}
+        <div className="lg:col-span-4">
+          <BannerCarousel
+            images={imagesDemo}
+            interval={5000}
+            showArrows={false}                 // ← sin flechas
+            heightClass="h-48 md:h-64 lg:h-72" // alto más contenido
+            className="rounded-2xl shadow-lg"
+          />
+        </div>
+
+        {/* Cards: 4 por fila en lg, 3 en md, 2 en sm */}
+        {eventosDemo.map((e) => (
+          <div key={e.id} className="col-span-1">
+            <EventCard evento={e} />
+          </div>
+        ))}
+      </div>
     </section>
   );
 }
