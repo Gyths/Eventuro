@@ -10,7 +10,7 @@ const imagesDemo = [
 ];
 
 const eventosDemo = [
-  { id: 1, titulo: "Concierto de Rock", fecha: "2025-10-10", lugar: "Lima", category: "Música", imagen: "/img/evento1.jpg" },
+  { id: 1, titulo: "Concierto de Rock", fecha: "2025-10-10", lugar: "Lima", category: "Música", imagen: "/img/evento1.jpg" }, // se agregó categorias
   { id: 2, titulo: "Feria Gastronómica", fecha: "2025-11-05", lugar: "Cusco", category: "Comida", imagen: "/img/evento2.jpg" },
   { id: 3, titulo: "Startup Summit", fecha: "2025-11-20", lugar: "Arequipa", category: "Seminarios", imagen: "/img/evento3.jpg" },
   { id: 4, titulo: "Expo Arte",        fecha: "2025-12-02", lugar: "Trujillo", category: "Seminarios", imagen: "/img/evento4.jpg" },
@@ -18,12 +18,12 @@ const eventosDemo = [
 ];
 
 export default function Home() {
-  const { filters } = useOutletContext(); // 👈 recibimos los filtros
+  const { filters } = useOutletContext(); //recibimos los filtros
 
   const filteredEvents = eventosDemo.filter((e) => {
     let ok = true;
 
-    if (filters.category) ok = ok && e.category === filters.category;
+    if (filters.category) ok = ok && e.category === filters.category; //validacion de filtros
     if (filters.location) ok = ok && e.lugar.toLowerCase().includes(filters.location.toLowerCase());
     if (filters.dateFrom) ok = ok && new Date(e.fecha) >= new Date(filters.dateFrom);
     if (filters.dateTo) ok = ok && new Date(e.fecha) <= new Date(filters.dateTo);

@@ -11,7 +11,7 @@ export default function RootLayout() {
 
   const hideTop = pathname === "/login" || pathname === "/registro";
 
-  // 👇 estado global para filtros
+  //estado global para filtros
   const [filters, setFilters] = useState({
     category: null,
     dateFrom: null,
@@ -33,13 +33,13 @@ export default function RootLayout() {
             logout();
             navigate("/", { replace: true });
           }}
-          // 👇 recibe cambios desde TopBar
+          //recibe cambios desde TopBar
           onFiltersChange={setFilters}
         />
       )}
 
       <main className={hideTop ? "" : "pt-[72px]"}>
-        {/* Pasamos filters al Outlet */}
+        {/* carga de filtros */}
         <Outlet context={{ filters }} />
       </main>
     </>
