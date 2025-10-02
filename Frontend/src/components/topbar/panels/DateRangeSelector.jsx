@@ -62,6 +62,15 @@ export default function DateRangeSelector({ from, to, onChange }) {
           Aceptar
         </button>
       </div>
+      <div className="pt-1 text-right">
+        <button
+          onClick={() => onChange?.({ from: "", to: "" })}
+          className="text-xs text-gray-500 underline underline-offset-2"
+        >
+          Limpiar
+        </button>
+      </div>
     </div>
+    
   );
 }
