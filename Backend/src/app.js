@@ -1,8 +1,13 @@
 import express from 'express';
+import multer from "multer";
+import cors from 'cors';
+
 import { sessionMiddleware } from './config/session.js';
 import { passport } from './services/passport.js';
+
 import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
+
 import eventCategory from './routes/eventCategory.routes.js';
 import event from './routes/event.routes.js';
 import venue from './routes/venue.routes.js'
@@ -11,6 +16,15 @@ import eventSalesPhase from './routes/eventSalesPhase.routes.js'
 const app = express();
 const route = '/eventuro/api';
 app.use(express.json());
+
+const upload = multer();
+app.use(upload.none());
+
+app.use(cors({
+    origin: "http://localhost:5173", 
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true, // Permite el intercambio de cookies de sesión
+}));
 
 app.use(sessionMiddleware());
 app.use(passport.initialize());

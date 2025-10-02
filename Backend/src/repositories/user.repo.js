@@ -24,3 +24,26 @@ export async function findUserByIdString(idStr) {
     select: { userId: true, name: true, lastName: true, email: true, status: true },
   });
 }
+
+export async function findByEmail(email) {
+  return prisma.user.findUnique({
+    where: { email },
+    select: {
+      userId: true,
+      name: true,
+      lastName: true,
+      phone: true,
+      email: true,
+      birthdate: true,
+      gender: true,
+      status: true,
+      createdAt: true,
+      updatedAt: true,
+      password: {
+        select: {
+          hashedPassword: true,
+        },
+      },
+    },
+  });
+}
