@@ -1,4 +1,4 @@
-// RootLayout.jsx
+// src/layout/RootLayout.jsx
 import { Outlet, useNavigate, useLocation } from "react-router-dom"; 
 import { useState } from "react";
 import TopBar from "../components/topbar/TopBar";
@@ -38,6 +38,7 @@ export default function RootLayout() {
         />
       )}
 
+       {/* Si ocultas la TopBar, no pongas padding superior */}
       <main className={hideTop ? "" : "pt-[72px]"}>
         {/* carga de filtros */}
         <Outlet context={{ filters }} />
