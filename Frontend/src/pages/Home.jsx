@@ -1,3 +1,4 @@
+// src/pages/Home.jsx
 // Home.jsx
 import { useOutletContext } from "react-router-dom";
 import BannerCarousel from "../components/BannerCarousel.jsx";
@@ -33,17 +34,21 @@ export default function Home() {
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-8">
+      {/* Grid maestro: 4 columnas grandes, con gap consistente */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        
+         {/* Banner ocupa las 4 columnas en pantallas grandes */}
         <div className="lg:col-span-4">
           <BannerCarousel
             images={imagesDemo}
             interval={5000}
-            showArrows={false}
-            heightClass="h-48 md:h-64 lg:h-72"
+            showArrows={false}  // ← sin flechas
+            heightClass="h-48 md:h-64 lg:h-72" // alto más contenido
             className="rounded-2xl shadow-lg"
           />
         </div>
 
+        {/* Cards: 4 por fila en lg, 3 en md, 2 en sm */}
         {filteredEvents.length > 0 ? (
           filteredEvents.map((e) => (
             <div key={e.id} className="col-span-1">
