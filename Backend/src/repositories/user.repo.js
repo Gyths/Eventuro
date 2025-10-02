@@ -30,6 +30,15 @@ export async function findByEmail(email) {
     where: { email },
     select: {
       userId: true,
+      name: true,
+      lastName: true,
+      phone: true,
+      email: true,
+      birthdate: true,
+      gender: true,
+      status: true,
+      createdAt: true,
+      updatedAt: true,
       password: {
         select: {
           hashedPassword: true,

@@ -37,16 +37,17 @@ export async function loginWithCredentials(email, password) {
   }
 
   const isMatch = await bcrypt.compare(password, user.password.hashedPassword);
-  if (!isMatch) throw new Error("Credenciales inválidas");
+  console.log("Contra:", password)
+  if (!isMatch) throw new Error("Credenciales inválidas :)");
 
   const token = generateToken(user);
 
-  return token;
+  return {token, user};
 }
 
 export function generateToken(user) {
   const token = jwt.sign(
-    { id: user.userId, email: user.email },
+    { id: user.userId.toString(), email: user.email },
     process.env.JWT_SECRET,
     { expiresIn: '1h' }
   );

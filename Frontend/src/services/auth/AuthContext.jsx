@@ -5,33 +5,43 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
 
   // hidratar desde localStorage
   useEffect(() => {
-    const raw = localStorage.getItem("auth:user");
-    if (raw) setUser(JSON.parse(raw));
+    const rawUser = localStorage.getItem("auth:user");
+    const rawToken = localStorage.getItem("auth:token");
+    if (rawUser && rawToken) {
+      setUser(JSON.parse(rawUser));
+      setToken(rawToken);
+    }
   }, []);
 
-  function login({ email }) {
-    const u = { email };
-    setUser(u);
-    localStorage.setItem("auth:user", JSON.stringify(u));
+  function login({ token, user }) {
+    setUser(user);
+    setToken(token);
+    localStorage.setItem("auth:user", JSON.stringify(user));
+    localStorage.setItem("auth:token", token);
   }
 
-  function register({ email }) {
-    // aquí normalmente llamarías a tu API
-    const u = { email };
-    setUser(u);
-    localStorage.setItem("auth:user", JSON.stringify(u));
+  function register({ token, user }) {
+    setUser(user);
+    setToken(token);
+    localStorage.setItem("auth:user", JSON.stringify(user));
+    localStorage.setItem("auth:token", token);
   }
 
   function logout() {
     setUser(null);
+    setToken(null);
     localStorage.removeItem("auth:user");
+    localStorage.removeItem("auth:token");
   }
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, register, logout }}>
+    <AuthContext.Provider
+      value={{ user, token, isAuthenticated: !!user, login, register, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );
