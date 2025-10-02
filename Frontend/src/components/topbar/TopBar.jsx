@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import FilterPill from "./FilterPill";
+import Linker from "./Linker";
 import CategorySelector from "./panels/CategorySelector";
 import DateRangeSelector from "./panels/DateRangeSelector";
 import LocationSelector from "./panels/LocationSelector";
 import logo from "../../assets/logoB.svg";
 import { UserIcon } from "@heroicons/react/24/outline";
+import { useLocation } from "react-router-dom";
 
 /**
  * Props:
@@ -12,6 +14,8 @@ import { UserIcon } from "@heroicons/react/24/outline";
  * - onSearch(query), onFiltersChange({category, dateFrom, dateTo, location})
  * - onLogin(), onRegister(), onProfile(), onMyTickets(), onClaims(), onLogout()
  */
+
+
 export default function TopBar({
   isLoggedIn = false,
   onSearch,
@@ -23,6 +27,8 @@ export default function TopBar({
   onClaims,
   onLogout,
 }) {
+  const { pathname } = useLocation();
+  const isCreateEvent = pathname.startsWith("/create_event");
   const [query, setQuery] = useState("");
   const [filters, setFilters] = useState({
     category: null,
@@ -45,71 +51,106 @@ export default function TopBar({
           "linear-gradient(90deg, #2A0243 0%, #6408A2 60%, #2A0243 100%)",
       }}
     >
-     <div className="flex w-full items-center justify-between px-6 py-3">
+    <div className="flex w-full items-center justify-between px-6 py-3">
   
         {/* Left: Logo */}
         <div className="flex items-center gap-2">
             <img src={logo} alt="Eventuro" className="h-8 w-auto" />
         </div>
-
         {/* Center: Search + Filters */}
-        <div className="flex flex-1 items-center gap-4 px-6">
-            {/* Search */}
-            <div className="flex-1">
-            <input
-                type="text"
-                value={query}
-                onChange={(e) => {
-                setQuery(e.target.value);
-                onSearch?.(e.target.value);
-                }}
-                placeholder="Search..."
-                className="w-full rounded-full border border-white/20 bg-white/95 px-4 py-2 text-sm outline-none placeholder:text-gray-500 focus:ring-2 focus:ring-violet-400"
-            />
-            </div>
+        {!isCreateEvent ? (
+          <div className="flex flex-1 items-center gap-4 px-6">
+              {/* Search */}
+              <div className="flex-1">
+              <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => {
+                  setQuery(e.target.value);
+                  onSearch?.(e.target.value);
+                  }}
+                  placeholder="Search..."
+                  className="w-full rounded-full border border-white/20 bg-white/95 px-4 py-2 text-sm outline-none placeholder:text-gray-500 focus:ring-2 focus:ring-violet-400"
+              />
+              </div>
 
-            {/* Filters */}
-            <div className="hidden items-center gap-2 md:flex">
-            <FilterPill label="Categoria" icon="category">
-                <CategorySelector
-                value={filters.category}
-                onChange={(category) => updateFilters({ category })}
-                />
-            </FilterPill>
-            <FilterPill label="Fecha" icon="date">
-                <DateRangeSelector
-                from={filters.dateFrom}
-                to={filters.dateTo}
-                onChange={({ from, to }) =>
-                    updateFilters({ dateFrom: from, dateTo: to })
-                }
-                />
-            </FilterPill>
-            <FilterPill label="Ubicación" icon="location">
-                <LocationSelector
-                value={filters.location}
-                onChange={(location) => updateFilters({ location })}
-                />
-            </FilterPill>
-            </div>
-        </div>
+              {/* Filters */}
+              <div className="hidden items-center gap-2 md:flex">
+              <FilterPill label="Categoria" icon="category">
+                  <CategorySelector
+                  value={filters.category}
+                  onChange={(category) => updateFilters({ category })}
+                  />
+              </FilterPill>
+              <FilterPill label="Fecha" icon="date">
+                  <DateRangeSelector
+                  from={filters.dateFrom}
+                  to={filters.dateTo}
+                  onChange={({ from, to }) =>
+                      updateFilters({ dateFrom: from, dateTo: to })
+                  }
+                  />
+              </FilterPill>
+              <FilterPill label="Ubicación" icon="location">
+                  <LocationSelector
+                  value={filters.location}
+                  onChange={(location) => updateFilters({ location })}
+                  />
+              </FilterPill>
+              </div>
+          </div>
+        ): (
+          <div className="flex flex-1 items-center gap-4 px-6">
+              {/* Search */}
+              <div className="flex-1">
+              <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => {
+                  setQuery(e.target.value);
+                  onSearch?.(e.target.value);
+                  }}
+                  placeholder="Search..."
+                  className="w-full rounded-full border border-white/20 bg-white/95 px-4 py-2 text-sm outline-none placeholder:text-gray-500 focus:ring-2 focus:ring-violet-400"
+              />
+              </div>
+
+              {/* Filters */}
+              <div className="hidden items-center gap-2 md:flex">
+                <Linker label="Reportes" icon="chart-bar" to="/reports" activeMatch="/reports" />
+                <Linker label="Mis Eventos" icon="calendar-days" to="/my-events" activeMatch="/my-events" />
+                <Linker label="Crear Evento" icon="plus-circle" to="/create_event" activeMatch="/create_event" />
+              </div>
+          </div>
+        )}
+        
+        
 
         {/* Right: User */}
-        <div>
-            {isLoggedIn ? (
+        {isCreateEvent ? (
+          <div>
             <UserMenu
-                onProfile={onProfile}
-                onMyTickets={onMyTickets}
-                onClaims={onClaims}
-                onLogout={onLogout}
+              onProfile={onProfile}
+              onMyTickets={onMyTickets}
+              onClaims={onClaims}
+              onLogout={onLogout}
             />
-            ) : (
-            <AuthButtons onLogin={onLogin} onRegister={onRegister} />
-            )}
-        </div>
-
-        </div>
-
+          </div>
+        ):(
+          <div>
+              {isLoggedIn ? (
+              <UserMenu
+                  onProfile={onProfile}
+                  onMyTickets={onMyTickets}
+                  onClaims={onClaims}
+                  onLogout={onLogout}
+              />
+              ) : (
+              <AuthButtons onLogin={onLogin} onRegister={onRegister} />
+              )}
+          </div>
+        )}
+      </div>
     </header>
   );
 }
