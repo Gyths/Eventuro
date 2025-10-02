@@ -1,5 +1,5 @@
 // src/pages/Home.jsx
-// Home.jsx
+
 import { useOutletContext } from "react-router-dom";
 import BannerCarousel from "../components/BannerCarousel.jsx";
 import EventCard from "../components/EventCard.jsx";
