@@ -1,5 +1,6 @@
-// src/pages/CreateEvent.jsx
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import {
   PlusIcon,
 } from "@heroicons/react/24/outline";
@@ -12,8 +13,10 @@ import TextArea from "../components/create/TextArea";
 import ImageDropzone from "../components/create/ImageDropzone";
 import Restrictions from "../components/create/Restrictions";
 import DateCard from "../components/create/DateCard";
+import BotonCTA from "../components/BotonCTA";
 
 export default function CreateEvent() {
+  const navigate = useNavigate();
   // ----- STATE -----
   const [form, setForm] = useState({
     name: "",
@@ -179,12 +182,7 @@ export default function CreateEvent() {
 
         {/* CTA inferior */}
         <div className="mt-8 flex justify-center">
-          <button
-            type="button"
-            className="inline-flex items-center rounded-full bg-teal-500 px-8 py-2.5 text-white shadow hover:bg-teal-400 active:bg-teal-600"
-          >
-            Siguiente
-          </button>
+          <BotonCTA variant="pink" onClick={()=>navigate("/CrearEventoPaso2")}>Siguiente</BotonCTA>
         </div>
       </div>
     </section>
