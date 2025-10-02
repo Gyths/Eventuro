@@ -3,8 +3,14 @@ import { sessionMiddleware } from './config/session.js';
 import { passport } from './services/passport.js';
 import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
+import eventCategory from './routes/eventCategory.routes.js';
+import event from './routes/event.routes.js';
+import venue from './routes/venue.routes.js'
+import eventSalesPhase from './routes/eventSalesPhase.routes.js'
 
 const app = express();
+const route = '/eventuro/api';
+app.use(express.json());
 
 app.use(sessionMiddleware());
 app.use(passport.initialize());
@@ -13,5 +19,11 @@ app.use(passport.session());
 // Montar rutas
 app.use(authRoutes);
 app.use(userRoutes);
+app.use(route+'/event-category', eventCategory);
+app.use(route+'/event', event);
+app.use(route+'/venue', venue);
+app.use(route+'/event-sales-phase', eventSalesPhase);
+
+//app.listen(4000, () => console.log('Servidor corriendo en http://localhost:4000'));
 
 export default app;
