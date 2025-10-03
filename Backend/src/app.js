@@ -34,7 +34,7 @@ app.use(passport.session());
 
 // Montar rutas
 
-app.use(route+'/defaultUser', defaultUserRoutes);
+app.use(route+'/defaultUser', defaultUserRoutes); // usuario no-google o manual
 
 app.use(authRoutes);
 app.use(userRoutes);
