@@ -50,8 +50,29 @@ enum ZONE_KIND {
 }
 
 enum CURRENCY {
-  S
+  PEN
   USD
+}
+
+enum ORDER_STATUS {
+  CREATED
+  PENDING_PAYMENT
+  PAID
+  CANCELLED
+  EXPIRED
+}
+
+enum SEAT_STATUS {
+  AVAILABLE
+  HELD
+  SOLD
+}
+
+enum TICKET_STATUS {
+  PAID
+  CANCELLED
+  USED
+  EXPIRED
 }
 
 // ====================== Models ======================
@@ -71,6 +92,7 @@ model User {
   password  PasswordUser?
   oauths    OAuthUser[]
   organizer Organizer?
+  Ticket    Ticket[]      @relation("TicketOwner")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -203,6 +225,9 @@ model EventDate {
   //relaciones
   event     Event           @relation(fields: [eventId], references: [eventId], onDelete: Cascade)
   zoneDates EventDateZone[]
+  OrderItem OrderItem[]
+  Ticket    Ticket[]
+  Hold      Hold[]
 
   @@index([eventId, startAt])
 }
@@ -222,9 +247,14 @@ model EventDateZone {
   eventDate   EventDate                 @relation(fields: [eventDateId], references: [eventDateId], onDelete: Cascade)
   seatMap     SeatMap?                  @relation(fields: [seatMapId], references: [seatMapId], onDelete: SetNull)
   allocations EventDateZoneAllocation[]
+  OrderItem   OrderItem[]
+  Ticket      Ticket[]
+  Hold        Hold[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([eventDateId, name])
 }
 
 model SeatMap {
@@ -241,16 +271,22 @@ model SeatMap {
 }
 
 model Seat {
-  seatId    BigInt @id @default(autoincrement()) @db.BigInt
-  seatMapId BigInt @db.BigInt
+  seatId    BigInt      @id @default(autoincrement()) @db.BigInt
+  seatMapId BigInt      @db.BigInt
   rowNumber Int
   colNumber Int
+  status    SEAT_STATUS @default(AVAILABLE)
+  holdUntil DateTime?
 
   //relaciones
-  seatMap SeatMap @relation(fields: [seatMapId], references: [seatMapId], onDelete: Cascade)
+  seatMap   SeatMap     @relation(fields: [seatMapId], references: [seatMapId], onDelete: Cascade)
+  OrderItem OrderItem[]
+  Ticket    Ticket[]
+  Hold      Hold[]
 
   @@unique([seatMapId, rowNumber, colNumber])
   @@index([seatMapId])
+  @@index([status])
 }
 
 model EventDateZoneAllocation {
@@ -262,7 +298,9 @@ model EventDateZoneAllocation {
   remainingQuantity         Int?
 
   //relaciones
-  zone EventDateZone @relation(fields: [eventDateZoneId], references: [eventDateZoneId], onDelete: Cascade)
+  zone      EventDateZone @relation(fields: [eventDateZoneId], references: [eventDateZoneId], onDelete: Cascade)
+  OrderItem OrderItem[]
+  Ticket    Ticket[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -286,4 +324,91 @@ model EventSalesPhase {
   updatedAt DateTime @updatedAt
 
   @@index([eventId, startAt])
+}
+
+model Order {
+  orderId     BigInt       @id @default(autoincrement()) @db.BigInt
+  buyerUserId BigInt       @db.BigInt
+  status      ORDER_STATUS @default(CREATED)
+  currency    CURRENCY
+  totalAmount Decimal      @db.Decimal(10, 2)
+
+  //Relaciones
+  items OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([buyerUserId])
+  @@index([status, createdAt])
+}
+
+model OrderItem {
+  orderItemId               BigInt   @id @default(autoincrement()) @db.BigInt
+  orderId                   BigInt   @db.BigInt
+  eventId                   BigInt   @db.BigInt
+  eventDateId               BigInt   @db.BigInt
+  eventDateZoneId           BigInt   @db.BigInt
+  eventDateZoneAllocationId BigInt?  @db.BigInt
+  quantity                  Int?
+  seatId                    BigInt?  @db.BigInt
+  unitPrice                 Decimal  @db.Decimal(10, 2)
+  discountAmount            Decimal? @db.Decimal(10, 2)
+  finalPrice                Decimal  @db.Decimal(10, 2)
+
+  //Relaciones
+  order      Order                    @relation(fields: [orderId], references: [orderId], onDelete: Cascade)
+  eventDate  EventDate                @relation(fields: [eventDateId], references: [eventDateId], onDelete: Restrict)
+  zone       EventDateZone            @relation(fields: [eventDateZoneId], references: [eventDateZoneId], onDelete: Restrict)
+  seat       Seat?                    @relation(fields: [seatId], references: [seatId], onDelete: Restrict)
+  allocation EventDateZoneAllocation? @relation(fields: [eventDateZoneAllocationId], references: [eventDateZoneAllocationId], onDelete: SetNull)
+  Ticket     Ticket[]
+
+  @@unique([seatId])
+  @@index([orderId])
+  @@index([eventDateId, eventDateZoneId])
+}
+
+model Ticket {
+  ticketId                  BigInt        @id @default(autoincrement()) @db.BigInt
+  ownerUserId               BigInt?       @db.BigInt
+  orderItemId               BigInt        @db.BigInt
+  eventId                   BigInt        @db.BigInt
+  eventDateId               BigInt        @db.BigInt
+  eventDateZoneId           BigInt        @db.BigInt
+  eventDateZoneAllocationId BigInt?       @db.BigInt
+  seatId                    BigInt?       @db.BigInt
+  pricePaid                 Decimal       @db.Decimal(10, 2)
+  currency                  CURRENCY      @default(PEN)
+  issuedAt                  DateTime      @default(now())
+  status                    TICKET_STATUS @default(PAID)
+
+  item       OrderItem                @relation(fields: [orderItemId], references: [orderItemId], onDelete: Restrict)
+  eventDate  EventDate                @relation(fields: [eventDateId], references: [eventDateId], onDelete: Restrict)
+  zone       EventDateZone            @relation(fields: [eventDateZoneId], references: [eventDateZoneId], onDelete: Restrict)
+  seat       Seat?                    @relation(fields: [seatId], references: [seatId], onDelete: Restrict)
+  allocation EventDateZoneAllocation? @relation(fields: [eventDateZoneAllocationId], references: [eventDateZoneAllocationId], onDelete: SetNull)
+  owner      User?                    @relation("TicketOwner", fields: [ownerUserId], references: [userId], onDelete: SetNull)
+
+  @@unique([eventDateId, seatId])
+  @@index([eventDateId, eventDateZoneId])
+}
+
+model Hold {
+  holdId          BigInt   @id @default(autoincrement()) @db.BigInt
+  eventDateId     BigInt   @db.BigInt
+  eventDateZoneId BigInt   @db.BigInt
+  seatId          BigInt?  @db.BigInt
+  quantity        Int?
+  buyerUserId     BigInt?  @db.BigInt
+  expiresAt       DateTime
+  createdAt       DateTime @default(now())
+
+  eventDate EventDate     @relation(fields: [eventDateId], references: [eventDateId], onDelete: Cascade)
+  zone      EventDateZone @relation(fields: [eventDateZoneId], references: [eventDateZoneId], onDelete: Cascade)
+  seat      Seat?         @relation(fields: [seatId], references: [seatId], onDelete: Restrict)
+
+  @@unique([seatId])
+  @@index([eventDateId, eventDateZoneId])
+  @@index([expiresAt])
 }

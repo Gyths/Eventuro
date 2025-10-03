@@ -234,7 +234,9 @@ exports.Prisma.SeatScalarFieldEnum = {
   seatId: 'seatId',
   seatMapId: 'seatMapId',
   rowNumber: 'rowNumber',
-  colNumber: 'colNumber'
+  colNumber: 'colNumber',
+  status: 'status',
+  holdUntil: 'holdUntil'
 };
 
 exports.Prisma.EventDateZoneAllocationScalarFieldEnum = {
@@ -258,6 +260,56 @@ exports.Prisma.EventSalesPhaseScalarFieldEnum = {
   active: 'active',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.OrderScalarFieldEnum = {
+  orderId: 'orderId',
+  buyerUserId: 'buyerUserId',
+  status: 'status',
+  currency: 'currency',
+  totalAmount: 'totalAmount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.OrderItemScalarFieldEnum = {
+  orderItemId: 'orderItemId',
+  orderId: 'orderId',
+  eventId: 'eventId',
+  eventDateId: 'eventDateId',
+  eventDateZoneId: 'eventDateZoneId',
+  eventDateZoneAllocationId: 'eventDateZoneAllocationId',
+  quantity: 'quantity',
+  seatId: 'seatId',
+  unitPrice: 'unitPrice',
+  discountAmount: 'discountAmount',
+  finalPrice: 'finalPrice'
+};
+
+exports.Prisma.TicketScalarFieldEnum = {
+  ticketId: 'ticketId',
+  ownerUserId: 'ownerUserId',
+  orderItemId: 'orderItemId',
+  eventId: 'eventId',
+  eventDateId: 'eventDateId',
+  eventDateZoneId: 'eventDateZoneId',
+  eventDateZoneAllocationId: 'eventDateZoneAllocationId',
+  seatId: 'seatId',
+  pricePaid: 'pricePaid',
+  currency: 'currency',
+  issuedAt: 'issuedAt',
+  status: 'status'
+};
+
+exports.Prisma.HoldScalarFieldEnum = {
+  holdId: 'holdId',
+  eventDateId: 'eventDateId',
+  eventDateZoneId: 'eventDateZoneId',
+  seatId: 'seatId',
+  quantity: 'quantity',
+  buyerUserId: 'buyerUserId',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -309,8 +361,29 @@ exports.ZONE_KIND = exports.$Enums.ZONE_KIND = {
 };
 
 exports.CURRENCY = exports.$Enums.CURRENCY = {
-  S: 'S',
+  PEN: 'PEN',
   USD: 'USD'
+};
+
+exports.SEAT_STATUS = exports.$Enums.SEAT_STATUS = {
+  AVAILABLE: 'AVAILABLE',
+  HELD: 'HELD',
+  SOLD: 'SOLD'
+};
+
+exports.ORDER_STATUS = exports.$Enums.ORDER_STATUS = {
+  CREATED: 'CREATED',
+  PENDING_PAYMENT: 'PENDING_PAYMENT',
+  PAID: 'PAID',
+  CANCELLED: 'CANCELLED',
+  EXPIRED: 'EXPIRED'
+};
+
+exports.TICKET_STATUS = exports.$Enums.TICKET_STATUS = {
+  PAID: 'PAID',
+  CANCELLED: 'CANCELLED',
+  USED: 'USED',
+  EXPIRED: 'EXPIRED'
 };
 
 exports.Prisma.ModelName = {
@@ -328,7 +401,11 @@ exports.Prisma.ModelName = {
   SeatMap: 'SeatMap',
   Seat: 'Seat',
   EventDateZoneAllocation: 'EventDateZoneAllocation',
-  EventSalesPhase: 'EventSalesPhase'
+  EventSalesPhase: 'EventSalesPhase',
+  Order: 'Order',
+  OrderItem: 'OrderItem',
+  Ticket: 'Ticket',
+  Hold: 'Hold'
 };
 
 /**

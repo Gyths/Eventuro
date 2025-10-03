@@ -88,6 +88,26 @@ export type EventDateZoneAllocation = $Result.DefaultSelection<Prisma.$EventDate
  * 
  */
 export type EventSalesPhase = $Result.DefaultSelection<Prisma.$EventSalesPhasePayload>
+/**
+ * Model Order
+ * 
+ */
+export type Order = $Result.DefaultSelection<Prisma.$OrderPayload>
+/**
+ * Model OrderItem
+ * 
+ */
+export type OrderItem = $Result.DefaultSelection<Prisma.$OrderItemPayload>
+/**
+ * Model Ticket
+ * 
+ */
+export type Ticket = $Result.DefaultSelection<Prisma.$TicketPayload>
+/**
+ * Model Hold
+ * 
+ */
+export type Hold = $Result.DefaultSelection<Prisma.$HoldPayload>
 
 /**
  * Enums
@@ -146,11 +166,41 @@ export type ZONE_KIND = (typeof ZONE_KIND)[keyof typeof ZONE_KIND]
 
 
 export const CURRENCY: {
-  S: 'S',
+  PEN: 'PEN',
   USD: 'USD'
 };
 
 export type CURRENCY = (typeof CURRENCY)[keyof typeof CURRENCY]
+
+
+export const ORDER_STATUS: {
+  CREATED: 'CREATED',
+  PENDING_PAYMENT: 'PENDING_PAYMENT',
+  PAID: 'PAID',
+  CANCELLED: 'CANCELLED',
+  EXPIRED: 'EXPIRED'
+};
+
+export type ORDER_STATUS = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS]
+
+
+export const SEAT_STATUS: {
+  AVAILABLE: 'AVAILABLE',
+  HELD: 'HELD',
+  SOLD: 'SOLD'
+};
+
+export type SEAT_STATUS = (typeof SEAT_STATUS)[keyof typeof SEAT_STATUS]
+
+
+export const TICKET_STATUS: {
+  PAID: 'PAID',
+  CANCELLED: 'CANCELLED',
+  USED: 'USED',
+  EXPIRED: 'EXPIRED'
+};
+
+export type TICKET_STATUS = (typeof TICKET_STATUS)[keyof typeof TICKET_STATUS]
 
 }
 
@@ -181,6 +231,18 @@ export const ZONE_KIND: typeof $Enums.ZONE_KIND
 export type CURRENCY = $Enums.CURRENCY
 
 export const CURRENCY: typeof $Enums.CURRENCY
+
+export type ORDER_STATUS = $Enums.ORDER_STATUS
+
+export const ORDER_STATUS: typeof $Enums.ORDER_STATUS
+
+export type SEAT_STATUS = $Enums.SEAT_STATUS
+
+export const SEAT_STATUS: typeof $Enums.SEAT_STATUS
+
+export type TICKET_STATUS = $Enums.TICKET_STATUS
+
+export const TICKET_STATUS: typeof $Enums.TICKET_STATUS
 
 /**
  * ##  Prisma Client ʲˢ
@@ -449,6 +511,46 @@ export class PrismaClient<
     * ```
     */
   get eventSalesPhase(): Prisma.EventSalesPhaseDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.order`: Exposes CRUD operations for the **Order** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Orders
+    * const orders = await prisma.order.findMany()
+    * ```
+    */
+  get order(): Prisma.OrderDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.orderItem`: Exposes CRUD operations for the **OrderItem** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more OrderItems
+    * const orderItems = await prisma.orderItem.findMany()
+    * ```
+    */
+  get orderItem(): Prisma.OrderItemDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.ticket`: Exposes CRUD operations for the **Ticket** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Tickets
+    * const tickets = await prisma.ticket.findMany()
+    * ```
+    */
+  get ticket(): Prisma.TicketDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.hold`: Exposes CRUD operations for the **Hold** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Holds
+    * const holds = await prisma.hold.findMany()
+    * ```
+    */
+  get hold(): Prisma.HoldDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -903,7 +1005,11 @@ export namespace Prisma {
     SeatMap: 'SeatMap',
     Seat: 'Seat',
     EventDateZoneAllocation: 'EventDateZoneAllocation',
-    EventSalesPhase: 'EventSalesPhase'
+    EventSalesPhase: 'EventSalesPhase',
+    Order: 'Order',
+    OrderItem: 'OrderItem',
+    Ticket: 'Ticket',
+    Hold: 'Hold'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -922,7 +1028,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "passwordUser" | "oAuthUser" | "organizer" | "eventCategory" | "eventToCategory" | "venue" | "fee" | "event" | "eventDate" | "eventDateZone" | "seatMap" | "seat" | "eventDateZoneAllocation" | "eventSalesPhase"
+      modelProps: "user" | "passwordUser" | "oAuthUser" | "organizer" | "eventCategory" | "eventToCategory" | "venue" | "fee" | "event" | "eventDate" | "eventDateZone" | "seatMap" | "seat" | "eventDateZoneAllocation" | "eventSalesPhase" | "order" | "orderItem" | "ticket" | "hold"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2036,6 +2142,302 @@ export namespace Prisma {
           }
         }
       }
+      Order: {
+        payload: Prisma.$OrderPayload<ExtArgs>
+        fields: Prisma.OrderFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.OrderFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OrderPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.OrderFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OrderPayload>
+          }
+          findFirst: {
+            args: Prisma.OrderFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OrderPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.OrderFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OrderPayload>
+          }
+          findMany: {
+            args: Prisma.OrderFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OrderPayload>[]
+          }
+          create: {
+            args: Prisma.OrderCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OrderPayload>
+          }
+          createMany: {
+            args: Prisma.OrderCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.OrderCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OrderPayload>[]
+          }
+          delete: {
+            args: Prisma.OrderDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OrderPayload>
+          }
+          update: {
+            args: Prisma.OrderUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OrderPayload>
+          }
+          deleteMany: {
+            args: Prisma.OrderDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.OrderUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.OrderUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OrderPayload>[]
+          }
+          upsert: {
+            args: Prisma.OrderUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OrderPayload>
+          }
+          aggregate: {
+            args: Prisma.OrderAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateOrder>
+          }
+          groupBy: {
+            args: Prisma.OrderGroupByArgs<ExtArgs>
+            result: $Utils.Optional<OrderGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.OrderCountArgs<ExtArgs>
+            result: $Utils.Optional<OrderCountAggregateOutputType> | number
+          }
+        }
+      }
+      OrderItem: {
+        payload: Prisma.$OrderItemPayload<ExtArgs>
+        fields: Prisma.OrderItemFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.OrderItemFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OrderItemPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.OrderItemFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OrderItemPayload>
+          }
+          findFirst: {
+            args: Prisma.OrderItemFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OrderItemPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.OrderItemFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OrderItemPayload>
+          }
+          findMany: {
+            args: Prisma.OrderItemFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OrderItemPayload>[]
+          }
+          create: {
+            args: Prisma.OrderItemCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OrderItemPayload>
+          }
+          createMany: {
+            args: Prisma.OrderItemCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.OrderItemCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OrderItemPayload>[]
+          }
+          delete: {
+            args: Prisma.OrderItemDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OrderItemPayload>
+          }
+          update: {
+            args: Prisma.OrderItemUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OrderItemPayload>
+          }
+          deleteMany: {
+            args: Prisma.OrderItemDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.OrderItemUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.OrderItemUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OrderItemPayload>[]
+          }
+          upsert: {
+            args: Prisma.OrderItemUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OrderItemPayload>
+          }
+          aggregate: {
+            args: Prisma.OrderItemAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateOrderItem>
+          }
+          groupBy: {
+            args: Prisma.OrderItemGroupByArgs<ExtArgs>
+            result: $Utils.Optional<OrderItemGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.OrderItemCountArgs<ExtArgs>
+            result: $Utils.Optional<OrderItemCountAggregateOutputType> | number
+          }
+        }
+      }
+      Ticket: {
+        payload: Prisma.$TicketPayload<ExtArgs>
+        fields: Prisma.TicketFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.TicketFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TicketPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.TicketFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TicketPayload>
+          }
+          findFirst: {
+            args: Prisma.TicketFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TicketPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.TicketFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TicketPayload>
+          }
+          findMany: {
+            args: Prisma.TicketFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TicketPayload>[]
+          }
+          create: {
+            args: Prisma.TicketCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TicketPayload>
+          }
+          createMany: {
+            args: Prisma.TicketCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.TicketCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TicketPayload>[]
+          }
+          delete: {
+            args: Prisma.TicketDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TicketPayload>
+          }
+          update: {
+            args: Prisma.TicketUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TicketPayload>
+          }
+          deleteMany: {
+            args: Prisma.TicketDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.TicketUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.TicketUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TicketPayload>[]
+          }
+          upsert: {
+            args: Prisma.TicketUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TicketPayload>
+          }
+          aggregate: {
+            args: Prisma.TicketAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateTicket>
+          }
+          groupBy: {
+            args: Prisma.TicketGroupByArgs<ExtArgs>
+            result: $Utils.Optional<TicketGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.TicketCountArgs<ExtArgs>
+            result: $Utils.Optional<TicketCountAggregateOutputType> | number
+          }
+        }
+      }
+      Hold: {
+        payload: Prisma.$HoldPayload<ExtArgs>
+        fields: Prisma.HoldFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.HoldFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HoldPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.HoldFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HoldPayload>
+          }
+          findFirst: {
+            args: Prisma.HoldFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HoldPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.HoldFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HoldPayload>
+          }
+          findMany: {
+            args: Prisma.HoldFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HoldPayload>[]
+          }
+          create: {
+            args: Prisma.HoldCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HoldPayload>
+          }
+          createMany: {
+            args: Prisma.HoldCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.HoldCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HoldPayload>[]
+          }
+          delete: {
+            args: Prisma.HoldDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HoldPayload>
+          }
+          update: {
+            args: Prisma.HoldUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HoldPayload>
+          }
+          deleteMany: {
+            args: Prisma.HoldDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.HoldUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.HoldUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HoldPayload>[]
+          }
+          upsert: {
+            args: Prisma.HoldUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$HoldPayload>
+          }
+          aggregate: {
+            args: Prisma.HoldAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateHold>
+          }
+          groupBy: {
+            args: Prisma.HoldGroupByArgs<ExtArgs>
+            result: $Utils.Optional<HoldGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.HoldCountArgs<ExtArgs>
+            result: $Utils.Optional<HoldCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2147,6 +2549,10 @@ export namespace Prisma {
     seat?: SeatOmit
     eventDateZoneAllocation?: EventDateZoneAllocationOmit
     eventSalesPhase?: EventSalesPhaseOmit
+    order?: OrderOmit
+    orderItem?: OrderItemOmit
+    ticket?: TicketOmit
+    hold?: HoldOmit
   }
 
   /* Types for Logging */
@@ -2228,10 +2634,12 @@ export namespace Prisma {
 
   export type UserCountOutputType = {
     oauths: number
+    Ticket: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     oauths?: boolean | UserCountOutputTypeCountOauthsArgs
+    Ticket?: boolean | UserCountOutputTypeCountTicketArgs
   }
 
   // Custom InputTypes
@@ -2250,6 +2658,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountOauthsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: OAuthUserWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountTicketArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TicketWhereInput
   }
 
 
@@ -2401,10 +2816,16 @@ export namespace Prisma {
 
   export type EventDateCountOutputType = {
     zoneDates: number
+    OrderItem: number
+    Ticket: number
+    Hold: number
   }
 
   export type EventDateCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     zoneDates?: boolean | EventDateCountOutputTypeCountZoneDatesArgs
+    OrderItem?: boolean | EventDateCountOutputTypeCountOrderItemArgs
+    Ticket?: boolean | EventDateCountOutputTypeCountTicketArgs
+    Hold?: boolean | EventDateCountOutputTypeCountHoldArgs
   }
 
   // Custom InputTypes
@@ -2425,6 +2846,27 @@ export namespace Prisma {
     where?: EventDateZoneWhereInput
   }
 
+  /**
+   * EventDateCountOutputType without action
+   */
+  export type EventDateCountOutputTypeCountOrderItemArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: OrderItemWhereInput
+  }
+
+  /**
+   * EventDateCountOutputType without action
+   */
+  export type EventDateCountOutputTypeCountTicketArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TicketWhereInput
+  }
+
+  /**
+   * EventDateCountOutputType without action
+   */
+  export type EventDateCountOutputTypeCountHoldArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: HoldWhereInput
+  }
+
 
   /**
    * Count Type EventDateZoneCountOutputType
@@ -2432,10 +2874,16 @@ export namespace Prisma {
 
   export type EventDateZoneCountOutputType = {
     allocations: number
+    OrderItem: number
+    Ticket: number
+    Hold: number
   }
 
   export type EventDateZoneCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     allocations?: boolean | EventDateZoneCountOutputTypeCountAllocationsArgs
+    OrderItem?: boolean | EventDateZoneCountOutputTypeCountOrderItemArgs
+    Ticket?: boolean | EventDateZoneCountOutputTypeCountTicketArgs
+    Hold?: boolean | EventDateZoneCountOutputTypeCountHoldArgs
   }
 
   // Custom InputTypes
@@ -2454,6 +2902,27 @@ export namespace Prisma {
    */
   export type EventDateZoneCountOutputTypeCountAllocationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: EventDateZoneAllocationWhereInput
+  }
+
+  /**
+   * EventDateZoneCountOutputType without action
+   */
+  export type EventDateZoneCountOutputTypeCountOrderItemArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: OrderItemWhereInput
+  }
+
+  /**
+   * EventDateZoneCountOutputType without action
+   */
+  export type EventDateZoneCountOutputTypeCountTicketArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TicketWhereInput
+  }
+
+  /**
+   * EventDateZoneCountOutputType without action
+   */
+  export type EventDateZoneCountOutputTypeCountHoldArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: HoldWhereInput
   }
 
 
@@ -2485,6 +2954,157 @@ export namespace Prisma {
    */
   export type SeatMapCountOutputTypeCountOccupiedSeatsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: SeatWhereInput
+  }
+
+
+  /**
+   * Count Type SeatCountOutputType
+   */
+
+  export type SeatCountOutputType = {
+    OrderItem: number
+    Ticket: number
+    Hold: number
+  }
+
+  export type SeatCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    OrderItem?: boolean | SeatCountOutputTypeCountOrderItemArgs
+    Ticket?: boolean | SeatCountOutputTypeCountTicketArgs
+    Hold?: boolean | SeatCountOutputTypeCountHoldArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * SeatCountOutputType without action
+   */
+  export type SeatCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SeatCountOutputType
+     */
+    select?: SeatCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * SeatCountOutputType without action
+   */
+  export type SeatCountOutputTypeCountOrderItemArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: OrderItemWhereInput
+  }
+
+  /**
+   * SeatCountOutputType without action
+   */
+  export type SeatCountOutputTypeCountTicketArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TicketWhereInput
+  }
+
+  /**
+   * SeatCountOutputType without action
+   */
+  export type SeatCountOutputTypeCountHoldArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: HoldWhereInput
+  }
+
+
+  /**
+   * Count Type EventDateZoneAllocationCountOutputType
+   */
+
+  export type EventDateZoneAllocationCountOutputType = {
+    OrderItem: number
+    Ticket: number
+  }
+
+  export type EventDateZoneAllocationCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    OrderItem?: boolean | EventDateZoneAllocationCountOutputTypeCountOrderItemArgs
+    Ticket?: boolean | EventDateZoneAllocationCountOutputTypeCountTicketArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * EventDateZoneAllocationCountOutputType without action
+   */
+  export type EventDateZoneAllocationCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventDateZoneAllocationCountOutputType
+     */
+    select?: EventDateZoneAllocationCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * EventDateZoneAllocationCountOutputType without action
+   */
+  export type EventDateZoneAllocationCountOutputTypeCountOrderItemArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: OrderItemWhereInput
+  }
+
+  /**
+   * EventDateZoneAllocationCountOutputType without action
+   */
+  export type EventDateZoneAllocationCountOutputTypeCountTicketArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TicketWhereInput
+  }
+
+
+  /**
+   * Count Type OrderCountOutputType
+   */
+
+  export type OrderCountOutputType = {
+    items: number
+  }
+
+  export type OrderCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    items?: boolean | OrderCountOutputTypeCountItemsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * OrderCountOutputType without action
+   */
+  export type OrderCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OrderCountOutputType
+     */
+    select?: OrderCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * OrderCountOutputType without action
+   */
+  export type OrderCountOutputTypeCountItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: OrderItemWhereInput
+  }
+
+
+  /**
+   * Count Type OrderItemCountOutputType
+   */
+
+  export type OrderItemCountOutputType = {
+    Ticket: number
+  }
+
+  export type OrderItemCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    Ticket?: boolean | OrderItemCountOutputTypeCountTicketArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * OrderItemCountOutputType without action
+   */
+  export type OrderItemCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OrderItemCountOutputType
+     */
+    select?: OrderItemCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * OrderItemCountOutputType without action
+   */
+  export type OrderItemCountOutputTypeCountTicketArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TicketWhereInput
   }
 
 
@@ -2733,6 +3353,7 @@ export namespace Prisma {
     password?: boolean | User$passwordArgs<ExtArgs>
     oauths?: boolean | User$oauthsArgs<ExtArgs>
     organizer?: boolean | User$organizerArgs<ExtArgs>
+    Ticket?: boolean | User$TicketArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -2780,6 +3401,7 @@ export namespace Prisma {
     password?: boolean | User$passwordArgs<ExtArgs>
     oauths?: boolean | User$oauthsArgs<ExtArgs>
     organizer?: boolean | User$organizerArgs<ExtArgs>
+    Ticket?: boolean | User$TicketArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -2791,6 +3413,7 @@ export namespace Prisma {
       password: Prisma.$PasswordUserPayload<ExtArgs> | null
       oauths: Prisma.$OAuthUserPayload<ExtArgs>[]
       organizer: Prisma.$OrganizerPayload<ExtArgs> | null
+      Ticket: Prisma.$TicketPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       userId: bigint
@@ -3200,6 +3823,7 @@ export namespace Prisma {
     password<T extends User$passwordArgs<ExtArgs> = {}>(args?: Subset<T, User$passwordArgs<ExtArgs>>): Prisma__PasswordUserClient<$Result.GetResult<Prisma.$PasswordUserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     oauths<T extends User$oauthsArgs<ExtArgs> = {}>(args?: Subset<T, User$oauthsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OAuthUserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     organizer<T extends User$organizerArgs<ExtArgs> = {}>(args?: Subset<T, User$organizerArgs<ExtArgs>>): Prisma__OrganizerClient<$Result.GetResult<Prisma.$OrganizerPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    Ticket<T extends User$TicketArgs<ExtArgs> = {}>(args?: Subset<T, User$TicketArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3686,6 +4310,30 @@ export namespace Prisma {
      */
     include?: OrganizerInclude<ExtArgs> | null
     where?: OrganizerWhereInput
+  }
+
+  /**
+   * User.Ticket
+   */
+  export type User$TicketArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ticket
+     */
+    select?: TicketSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ticket
+     */
+    omit?: TicketOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TicketInclude<ExtArgs> | null
+    where?: TicketWhereInput
+    orderBy?: TicketOrderByWithRelationInput | TicketOrderByWithRelationInput[]
+    cursor?: TicketWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TicketScalarFieldEnum | TicketScalarFieldEnum[]
   }
 
   /**
@@ -12921,6 +13569,9 @@ export namespace Prisma {
     endAt?: boolean
     event?: boolean | EventDefaultArgs<ExtArgs>
     zoneDates?: boolean | EventDate$zoneDatesArgs<ExtArgs>
+    OrderItem?: boolean | EventDate$OrderItemArgs<ExtArgs>
+    Ticket?: boolean | EventDate$TicketArgs<ExtArgs>
+    Hold?: boolean | EventDate$HoldArgs<ExtArgs>
     _count?: boolean | EventDateCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["eventDate"]>
 
@@ -12951,6 +13602,9 @@ export namespace Prisma {
   export type EventDateInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     event?: boolean | EventDefaultArgs<ExtArgs>
     zoneDates?: boolean | EventDate$zoneDatesArgs<ExtArgs>
+    OrderItem?: boolean | EventDate$OrderItemArgs<ExtArgs>
+    Ticket?: boolean | EventDate$TicketArgs<ExtArgs>
+    Hold?: boolean | EventDate$HoldArgs<ExtArgs>
     _count?: boolean | EventDateCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type EventDateIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -12965,6 +13619,9 @@ export namespace Prisma {
     objects: {
       event: Prisma.$EventPayload<ExtArgs>
       zoneDates: Prisma.$EventDateZonePayload<ExtArgs>[]
+      OrderItem: Prisma.$OrderItemPayload<ExtArgs>[]
+      Ticket: Prisma.$TicketPayload<ExtArgs>[]
+      Hold: Prisma.$HoldPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       eventDateId: bigint
@@ -13367,6 +14024,9 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     event<T extends EventDefaultArgs<ExtArgs> = {}>(args?: Subset<T, EventDefaultArgs<ExtArgs>>): Prisma__EventClient<$Result.GetResult<Prisma.$EventPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     zoneDates<T extends EventDate$zoneDatesArgs<ExtArgs> = {}>(args?: Subset<T, EventDate$zoneDatesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventDateZonePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    OrderItem<T extends EventDate$OrderItemArgs<ExtArgs> = {}>(args?: Subset<T, EventDate$OrderItemArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrderItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    Ticket<T extends EventDate$TicketArgs<ExtArgs> = {}>(args?: Subset<T, EventDate$TicketArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    Hold<T extends EventDate$HoldArgs<ExtArgs> = {}>(args?: Subset<T, EventDate$HoldArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HoldPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -13820,6 +14480,78 @@ export namespace Prisma {
   }
 
   /**
+   * EventDate.OrderItem
+   */
+  export type EventDate$OrderItemArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OrderItem
+     */
+    select?: OrderItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OrderItem
+     */
+    omit?: OrderItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderItemInclude<ExtArgs> | null
+    where?: OrderItemWhereInput
+    orderBy?: OrderItemOrderByWithRelationInput | OrderItemOrderByWithRelationInput[]
+    cursor?: OrderItemWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: OrderItemScalarFieldEnum | OrderItemScalarFieldEnum[]
+  }
+
+  /**
+   * EventDate.Ticket
+   */
+  export type EventDate$TicketArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ticket
+     */
+    select?: TicketSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ticket
+     */
+    omit?: TicketOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TicketInclude<ExtArgs> | null
+    where?: TicketWhereInput
+    orderBy?: TicketOrderByWithRelationInput | TicketOrderByWithRelationInput[]
+    cursor?: TicketWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TicketScalarFieldEnum | TicketScalarFieldEnum[]
+  }
+
+  /**
+   * EventDate.Hold
+   */
+  export type EventDate$HoldArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Hold
+     */
+    select?: HoldSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Hold
+     */
+    omit?: HoldOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HoldInclude<ExtArgs> | null
+    where?: HoldWhereInput
+    orderBy?: HoldOrderByWithRelationInput | HoldOrderByWithRelationInput[]
+    cursor?: HoldWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: HoldScalarFieldEnum | HoldScalarFieldEnum[]
+  }
+
+  /**
    * EventDate without action
    */
   export type EventDateDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -14107,6 +14839,9 @@ export namespace Prisma {
     eventDate?: boolean | EventDateDefaultArgs<ExtArgs>
     seatMap?: boolean | EventDateZone$seatMapArgs<ExtArgs>
     allocations?: boolean | EventDateZone$allocationsArgs<ExtArgs>
+    OrderItem?: boolean | EventDateZone$OrderItemArgs<ExtArgs>
+    Ticket?: boolean | EventDateZone$TicketArgs<ExtArgs>
+    Hold?: boolean | EventDateZone$HoldArgs<ExtArgs>
     _count?: boolean | EventDateZoneCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["eventDateZone"]>
 
@@ -14161,6 +14896,9 @@ export namespace Prisma {
     eventDate?: boolean | EventDateDefaultArgs<ExtArgs>
     seatMap?: boolean | EventDateZone$seatMapArgs<ExtArgs>
     allocations?: boolean | EventDateZone$allocationsArgs<ExtArgs>
+    OrderItem?: boolean | EventDateZone$OrderItemArgs<ExtArgs>
+    Ticket?: boolean | EventDateZone$TicketArgs<ExtArgs>
+    Hold?: boolean | EventDateZone$HoldArgs<ExtArgs>
     _count?: boolean | EventDateZoneCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type EventDateZoneIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -14178,6 +14916,9 @@ export namespace Prisma {
       eventDate: Prisma.$EventDatePayload<ExtArgs>
       seatMap: Prisma.$SeatMapPayload<ExtArgs> | null
       allocations: Prisma.$EventDateZoneAllocationPayload<ExtArgs>[]
+      OrderItem: Prisma.$OrderItemPayload<ExtArgs>[]
+      Ticket: Prisma.$TicketPayload<ExtArgs>[]
+      Hold: Prisma.$HoldPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       eventDateZoneId: bigint
@@ -14588,6 +15329,9 @@ export namespace Prisma {
     eventDate<T extends EventDateDefaultArgs<ExtArgs> = {}>(args?: Subset<T, EventDateDefaultArgs<ExtArgs>>): Prisma__EventDateClient<$Result.GetResult<Prisma.$EventDatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     seatMap<T extends EventDateZone$seatMapArgs<ExtArgs> = {}>(args?: Subset<T, EventDateZone$seatMapArgs<ExtArgs>>): Prisma__SeatMapClient<$Result.GetResult<Prisma.$SeatMapPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     allocations<T extends EventDateZone$allocationsArgs<ExtArgs> = {}>(args?: Subset<T, EventDateZone$allocationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventDateZoneAllocationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    OrderItem<T extends EventDateZone$OrderItemArgs<ExtArgs> = {}>(args?: Subset<T, EventDateZone$OrderItemArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrderItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    Ticket<T extends EventDateZone$TicketArgs<ExtArgs> = {}>(args?: Subset<T, EventDateZone$TicketArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    Hold<T extends EventDateZone$HoldArgs<ExtArgs> = {}>(args?: Subset<T, EventDateZone$HoldArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HoldPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -15064,6 +15808,78 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: EventDateZoneAllocationScalarFieldEnum | EventDateZoneAllocationScalarFieldEnum[]
+  }
+
+  /**
+   * EventDateZone.OrderItem
+   */
+  export type EventDateZone$OrderItemArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OrderItem
+     */
+    select?: OrderItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OrderItem
+     */
+    omit?: OrderItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderItemInclude<ExtArgs> | null
+    where?: OrderItemWhereInput
+    orderBy?: OrderItemOrderByWithRelationInput | OrderItemOrderByWithRelationInput[]
+    cursor?: OrderItemWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: OrderItemScalarFieldEnum | OrderItemScalarFieldEnum[]
+  }
+
+  /**
+   * EventDateZone.Ticket
+   */
+  export type EventDateZone$TicketArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ticket
+     */
+    select?: TicketSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ticket
+     */
+    omit?: TicketOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TicketInclude<ExtArgs> | null
+    where?: TicketWhereInput
+    orderBy?: TicketOrderByWithRelationInput | TicketOrderByWithRelationInput[]
+    cursor?: TicketWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TicketScalarFieldEnum | TicketScalarFieldEnum[]
+  }
+
+  /**
+   * EventDateZone.Hold
+   */
+  export type EventDateZone$HoldArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Hold
+     */
+    select?: HoldSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Hold
+     */
+    omit?: HoldOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HoldInclude<ExtArgs> | null
+    where?: HoldWhereInput
+    orderBy?: HoldOrderByWithRelationInput | HoldOrderByWithRelationInput[]
+    cursor?: HoldWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: HoldScalarFieldEnum | HoldScalarFieldEnum[]
   }
 
   /**
@@ -16251,6 +17067,8 @@ export namespace Prisma {
     seatMapId: bigint | null
     rowNumber: number | null
     colNumber: number | null
+    status: $Enums.SEAT_STATUS | null
+    holdUntil: Date | null
   }
 
   export type SeatMaxAggregateOutputType = {
@@ -16258,6 +17076,8 @@ export namespace Prisma {
     seatMapId: bigint | null
     rowNumber: number | null
     colNumber: number | null
+    status: $Enums.SEAT_STATUS | null
+    holdUntil: Date | null
   }
 
   export type SeatCountAggregateOutputType = {
@@ -16265,6 +17085,8 @@ export namespace Prisma {
     seatMapId: number
     rowNumber: number
     colNumber: number
+    status: number
+    holdUntil: number
     _all: number
   }
 
@@ -16288,6 +17110,8 @@ export namespace Prisma {
     seatMapId?: true
     rowNumber?: true
     colNumber?: true
+    status?: true
+    holdUntil?: true
   }
 
   export type SeatMaxAggregateInputType = {
@@ -16295,6 +17119,8 @@ export namespace Prisma {
     seatMapId?: true
     rowNumber?: true
     colNumber?: true
+    status?: true
+    holdUntil?: true
   }
 
   export type SeatCountAggregateInputType = {
@@ -16302,6 +17128,8 @@ export namespace Prisma {
     seatMapId?: true
     rowNumber?: true
     colNumber?: true
+    status?: true
+    holdUntil?: true
     _all?: true
   }
 
@@ -16396,6 +17224,8 @@ export namespace Prisma {
     seatMapId: bigint
     rowNumber: number
     colNumber: number
+    status: $Enums.SEAT_STATUS
+    holdUntil: Date | null
     _count: SeatCountAggregateOutputType | null
     _avg: SeatAvgAggregateOutputType | null
     _sum: SeatSumAggregateOutputType | null
@@ -16422,7 +17252,13 @@ export namespace Prisma {
     seatMapId?: boolean
     rowNumber?: boolean
     colNumber?: boolean
+    status?: boolean
+    holdUntil?: boolean
     seatMap?: boolean | SeatMapDefaultArgs<ExtArgs>
+    OrderItem?: boolean | Seat$OrderItemArgs<ExtArgs>
+    Ticket?: boolean | Seat$TicketArgs<ExtArgs>
+    Hold?: boolean | Seat$HoldArgs<ExtArgs>
+    _count?: boolean | SeatCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["seat"]>
 
   export type SeatSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -16430,6 +17266,8 @@ export namespace Prisma {
     seatMapId?: boolean
     rowNumber?: boolean
     colNumber?: boolean
+    status?: boolean
+    holdUntil?: boolean
     seatMap?: boolean | SeatMapDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["seat"]>
 
@@ -16438,6 +17276,8 @@ export namespace Prisma {
     seatMapId?: boolean
     rowNumber?: boolean
     colNumber?: boolean
+    status?: boolean
+    holdUntil?: boolean
     seatMap?: boolean | SeatMapDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["seat"]>
 
@@ -16446,11 +17286,17 @@ export namespace Prisma {
     seatMapId?: boolean
     rowNumber?: boolean
     colNumber?: boolean
+    status?: boolean
+    holdUntil?: boolean
   }
 
-  export type SeatOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"seatId" | "seatMapId" | "rowNumber" | "colNumber", ExtArgs["result"]["seat"]>
+  export type SeatOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"seatId" | "seatMapId" | "rowNumber" | "colNumber" | "status" | "holdUntil", ExtArgs["result"]["seat"]>
   export type SeatInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     seatMap?: boolean | SeatMapDefaultArgs<ExtArgs>
+    OrderItem?: boolean | Seat$OrderItemArgs<ExtArgs>
+    Ticket?: boolean | Seat$TicketArgs<ExtArgs>
+    Hold?: boolean | Seat$HoldArgs<ExtArgs>
+    _count?: boolean | SeatCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type SeatIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     seatMap?: boolean | SeatMapDefaultArgs<ExtArgs>
@@ -16463,12 +17309,17 @@ export namespace Prisma {
     name: "Seat"
     objects: {
       seatMap: Prisma.$SeatMapPayload<ExtArgs>
+      OrderItem: Prisma.$OrderItemPayload<ExtArgs>[]
+      Ticket: Prisma.$TicketPayload<ExtArgs>[]
+      Hold: Prisma.$HoldPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       seatId: bigint
       seatMapId: bigint
       rowNumber: number
       colNumber: number
+      status: $Enums.SEAT_STATUS
+      holdUntil: Date | null
     }, ExtArgs["result"]["seat"]>
     composites: {}
   }
@@ -16864,6 +17715,9 @@ export namespace Prisma {
   export interface Prisma__SeatClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     seatMap<T extends SeatMapDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SeatMapDefaultArgs<ExtArgs>>): Prisma__SeatMapClient<$Result.GetResult<Prisma.$SeatMapPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    OrderItem<T extends Seat$OrderItemArgs<ExtArgs> = {}>(args?: Subset<T, Seat$OrderItemArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrderItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    Ticket<T extends Seat$TicketArgs<ExtArgs> = {}>(args?: Subset<T, Seat$TicketArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    Hold<T extends Seat$HoldArgs<ExtArgs> = {}>(args?: Subset<T, Seat$HoldArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HoldPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -16897,6 +17751,8 @@ export namespace Prisma {
     readonly seatMapId: FieldRef<"Seat", 'BigInt'>
     readonly rowNumber: FieldRef<"Seat", 'Int'>
     readonly colNumber: FieldRef<"Seat", 'Int'>
+    readonly status: FieldRef<"Seat", 'SEAT_STATUS'>
+    readonly holdUntil: FieldRef<"Seat", 'DateTime'>
   }
     
 
@@ -17293,6 +18149,78 @@ export namespace Prisma {
   }
 
   /**
+   * Seat.OrderItem
+   */
+  export type Seat$OrderItemArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OrderItem
+     */
+    select?: OrderItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OrderItem
+     */
+    omit?: OrderItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderItemInclude<ExtArgs> | null
+    where?: OrderItemWhereInput
+    orderBy?: OrderItemOrderByWithRelationInput | OrderItemOrderByWithRelationInput[]
+    cursor?: OrderItemWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: OrderItemScalarFieldEnum | OrderItemScalarFieldEnum[]
+  }
+
+  /**
+   * Seat.Ticket
+   */
+  export type Seat$TicketArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ticket
+     */
+    select?: TicketSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ticket
+     */
+    omit?: TicketOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TicketInclude<ExtArgs> | null
+    where?: TicketWhereInput
+    orderBy?: TicketOrderByWithRelationInput | TicketOrderByWithRelationInput[]
+    cursor?: TicketWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TicketScalarFieldEnum | TicketScalarFieldEnum[]
+  }
+
+  /**
+   * Seat.Hold
+   */
+  export type Seat$HoldArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Hold
+     */
+    select?: HoldSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Hold
+     */
+    omit?: HoldOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HoldInclude<ExtArgs> | null
+    where?: HoldWhereInput
+    orderBy?: HoldOrderByWithRelationInput | HoldOrderByWithRelationInput[]
+    cursor?: HoldWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: HoldScalarFieldEnum | HoldScalarFieldEnum[]
+  }
+
+  /**
    * Seat without action
    */
   export type SeatDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -17550,6 +18478,9 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     zone?: boolean | EventDateZoneDefaultArgs<ExtArgs>
+    OrderItem?: boolean | EventDateZoneAllocation$OrderItemArgs<ExtArgs>
+    Ticket?: boolean | EventDateZoneAllocation$TicketArgs<ExtArgs>
+    _count?: boolean | EventDateZoneAllocationCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["eventDateZoneAllocation"]>
 
   export type EventDateZoneAllocationSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -17590,6 +18521,9 @@ export namespace Prisma {
   export type EventDateZoneAllocationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"eventDateZoneAllocationId" | "eventDateZoneId" | "audienceName" | "discountPercent" | "allocatedQuantity" | "remainingQuantity" | "createdAt" | "updatedAt", ExtArgs["result"]["eventDateZoneAllocation"]>
   export type EventDateZoneAllocationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     zone?: boolean | EventDateZoneDefaultArgs<ExtArgs>
+    OrderItem?: boolean | EventDateZoneAllocation$OrderItemArgs<ExtArgs>
+    Ticket?: boolean | EventDateZoneAllocation$TicketArgs<ExtArgs>
+    _count?: boolean | EventDateZoneAllocationCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type EventDateZoneAllocationIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     zone?: boolean | EventDateZoneDefaultArgs<ExtArgs>
@@ -17602,6 +18536,8 @@ export namespace Prisma {
     name: "EventDateZoneAllocation"
     objects: {
       zone: Prisma.$EventDateZonePayload<ExtArgs>
+      OrderItem: Prisma.$OrderItemPayload<ExtArgs>[]
+      Ticket: Prisma.$TicketPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       eventDateZoneAllocationId: bigint
@@ -18007,6 +18943,8 @@ export namespace Prisma {
   export interface Prisma__EventDateZoneAllocationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     zone<T extends EventDateZoneDefaultArgs<ExtArgs> = {}>(args?: Subset<T, EventDateZoneDefaultArgs<ExtArgs>>): Prisma__EventDateZoneClient<$Result.GetResult<Prisma.$EventDateZonePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    OrderItem<T extends EventDateZoneAllocation$OrderItemArgs<ExtArgs> = {}>(args?: Subset<T, EventDateZoneAllocation$OrderItemArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrderItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    Ticket<T extends EventDateZoneAllocation$TicketArgs<ExtArgs> = {}>(args?: Subset<T, EventDateZoneAllocation$TicketArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -18437,6 +19375,54 @@ export namespace Prisma {
      * Limit how many EventDateZoneAllocations to delete.
      */
     limit?: number
+  }
+
+  /**
+   * EventDateZoneAllocation.OrderItem
+   */
+  export type EventDateZoneAllocation$OrderItemArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OrderItem
+     */
+    select?: OrderItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OrderItem
+     */
+    omit?: OrderItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderItemInclude<ExtArgs> | null
+    where?: OrderItemWhereInput
+    orderBy?: OrderItemOrderByWithRelationInput | OrderItemOrderByWithRelationInput[]
+    cursor?: OrderItemWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: OrderItemScalarFieldEnum | OrderItemScalarFieldEnum[]
+  }
+
+  /**
+   * EventDateZoneAllocation.Ticket
+   */
+  export type EventDateZoneAllocation$TicketArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ticket
+     */
+    select?: TicketSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ticket
+     */
+    omit?: TicketOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TicketInclude<ExtArgs> | null
+    where?: TicketWhereInput
+    orderBy?: TicketOrderByWithRelationInput | TicketOrderByWithRelationInput[]
+    cursor?: TicketWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TicketScalarFieldEnum | TicketScalarFieldEnum[]
   }
 
   /**
@@ -19611,6 +20597,4952 @@ export namespace Prisma {
 
 
   /**
+   * Model Order
+   */
+
+  export type AggregateOrder = {
+    _count: OrderCountAggregateOutputType | null
+    _avg: OrderAvgAggregateOutputType | null
+    _sum: OrderSumAggregateOutputType | null
+    _min: OrderMinAggregateOutputType | null
+    _max: OrderMaxAggregateOutputType | null
+  }
+
+  export type OrderAvgAggregateOutputType = {
+    orderId: number | null
+    buyerUserId: number | null
+    totalAmount: Decimal | null
+  }
+
+  export type OrderSumAggregateOutputType = {
+    orderId: bigint | null
+    buyerUserId: bigint | null
+    totalAmount: Decimal | null
+  }
+
+  export type OrderMinAggregateOutputType = {
+    orderId: bigint | null
+    buyerUserId: bigint | null
+    status: $Enums.ORDER_STATUS | null
+    currency: $Enums.CURRENCY | null
+    totalAmount: Decimal | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type OrderMaxAggregateOutputType = {
+    orderId: bigint | null
+    buyerUserId: bigint | null
+    status: $Enums.ORDER_STATUS | null
+    currency: $Enums.CURRENCY | null
+    totalAmount: Decimal | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type OrderCountAggregateOutputType = {
+    orderId: number
+    buyerUserId: number
+    status: number
+    currency: number
+    totalAmount: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type OrderAvgAggregateInputType = {
+    orderId?: true
+    buyerUserId?: true
+    totalAmount?: true
+  }
+
+  export type OrderSumAggregateInputType = {
+    orderId?: true
+    buyerUserId?: true
+    totalAmount?: true
+  }
+
+  export type OrderMinAggregateInputType = {
+    orderId?: true
+    buyerUserId?: true
+    status?: true
+    currency?: true
+    totalAmount?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type OrderMaxAggregateInputType = {
+    orderId?: true
+    buyerUserId?: true
+    status?: true
+    currency?: true
+    totalAmount?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type OrderCountAggregateInputType = {
+    orderId?: true
+    buyerUserId?: true
+    status?: true
+    currency?: true
+    totalAmount?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type OrderAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Order to aggregate.
+     */
+    where?: OrderWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Orders to fetch.
+     */
+    orderBy?: OrderOrderByWithRelationInput | OrderOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: OrderWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Orders from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Orders.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Orders
+    **/
+    _count?: true | OrderCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: OrderAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: OrderSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: OrderMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: OrderMaxAggregateInputType
+  }
+
+  export type GetOrderAggregateType<T extends OrderAggregateArgs> = {
+        [P in keyof T & keyof AggregateOrder]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateOrder[P]>
+      : GetScalarType<T[P], AggregateOrder[P]>
+  }
+
+
+
+
+  export type OrderGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: OrderWhereInput
+    orderBy?: OrderOrderByWithAggregationInput | OrderOrderByWithAggregationInput[]
+    by: OrderScalarFieldEnum[] | OrderScalarFieldEnum
+    having?: OrderScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: OrderCountAggregateInputType | true
+    _avg?: OrderAvgAggregateInputType
+    _sum?: OrderSumAggregateInputType
+    _min?: OrderMinAggregateInputType
+    _max?: OrderMaxAggregateInputType
+  }
+
+  export type OrderGroupByOutputType = {
+    orderId: bigint
+    buyerUserId: bigint
+    status: $Enums.ORDER_STATUS
+    currency: $Enums.CURRENCY
+    totalAmount: Decimal
+    createdAt: Date
+    updatedAt: Date
+    _count: OrderCountAggregateOutputType | null
+    _avg: OrderAvgAggregateOutputType | null
+    _sum: OrderSumAggregateOutputType | null
+    _min: OrderMinAggregateOutputType | null
+    _max: OrderMaxAggregateOutputType | null
+  }
+
+  type GetOrderGroupByPayload<T extends OrderGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<OrderGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof OrderGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], OrderGroupByOutputType[P]>
+            : GetScalarType<T[P], OrderGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type OrderSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    orderId?: boolean
+    buyerUserId?: boolean
+    status?: boolean
+    currency?: boolean
+    totalAmount?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    items?: boolean | Order$itemsArgs<ExtArgs>
+    _count?: boolean | OrderCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["order"]>
+
+  export type OrderSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    orderId?: boolean
+    buyerUserId?: boolean
+    status?: boolean
+    currency?: boolean
+    totalAmount?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["order"]>
+
+  export type OrderSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    orderId?: boolean
+    buyerUserId?: boolean
+    status?: boolean
+    currency?: boolean
+    totalAmount?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["order"]>
+
+  export type OrderSelectScalar = {
+    orderId?: boolean
+    buyerUserId?: boolean
+    status?: boolean
+    currency?: boolean
+    totalAmount?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type OrderOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"orderId" | "buyerUserId" | "status" | "currency" | "totalAmount" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
+  export type OrderInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    items?: boolean | Order$itemsArgs<ExtArgs>
+    _count?: boolean | OrderCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type OrderIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type OrderIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+
+  export type $OrderPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Order"
+    objects: {
+      items: Prisma.$OrderItemPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      orderId: bigint
+      buyerUserId: bigint
+      status: $Enums.ORDER_STATUS
+      currency: $Enums.CURRENCY
+      totalAmount: Prisma.Decimal
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["order"]>
+    composites: {}
+  }
+
+  type OrderGetPayload<S extends boolean | null | undefined | OrderDefaultArgs> = $Result.GetResult<Prisma.$OrderPayload, S>
+
+  type OrderCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<OrderFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: OrderCountAggregateInputType | true
+    }
+
+  export interface OrderDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Order'], meta: { name: 'Order' } }
+    /**
+     * Find zero or one Order that matches the filter.
+     * @param {OrderFindUniqueArgs} args - Arguments to find a Order
+     * @example
+     * // Get one Order
+     * const order = await prisma.order.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends OrderFindUniqueArgs>(args: SelectSubset<T, OrderFindUniqueArgs<ExtArgs>>): Prisma__OrderClient<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Order that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {OrderFindUniqueOrThrowArgs} args - Arguments to find a Order
+     * @example
+     * // Get one Order
+     * const order = await prisma.order.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends OrderFindUniqueOrThrowArgs>(args: SelectSubset<T, OrderFindUniqueOrThrowArgs<ExtArgs>>): Prisma__OrderClient<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Order that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OrderFindFirstArgs} args - Arguments to find a Order
+     * @example
+     * // Get one Order
+     * const order = await prisma.order.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends OrderFindFirstArgs>(args?: SelectSubset<T, OrderFindFirstArgs<ExtArgs>>): Prisma__OrderClient<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Order that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OrderFindFirstOrThrowArgs} args - Arguments to find a Order
+     * @example
+     * // Get one Order
+     * const order = await prisma.order.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends OrderFindFirstOrThrowArgs>(args?: SelectSubset<T, OrderFindFirstOrThrowArgs<ExtArgs>>): Prisma__OrderClient<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Orders that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OrderFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Orders
+     * const orders = await prisma.order.findMany()
+     * 
+     * // Get first 10 Orders
+     * const orders = await prisma.order.findMany({ take: 10 })
+     * 
+     * // Only select the `orderId`
+     * const orderWithOrderIdOnly = await prisma.order.findMany({ select: { orderId: true } })
+     * 
+     */
+    findMany<T extends OrderFindManyArgs>(args?: SelectSubset<T, OrderFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Order.
+     * @param {OrderCreateArgs} args - Arguments to create a Order.
+     * @example
+     * // Create one Order
+     * const Order = await prisma.order.create({
+     *   data: {
+     *     // ... data to create a Order
+     *   }
+     * })
+     * 
+     */
+    create<T extends OrderCreateArgs>(args: SelectSubset<T, OrderCreateArgs<ExtArgs>>): Prisma__OrderClient<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Orders.
+     * @param {OrderCreateManyArgs} args - Arguments to create many Orders.
+     * @example
+     * // Create many Orders
+     * const order = await prisma.order.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends OrderCreateManyArgs>(args?: SelectSubset<T, OrderCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Orders and returns the data saved in the database.
+     * @param {OrderCreateManyAndReturnArgs} args - Arguments to create many Orders.
+     * @example
+     * // Create many Orders
+     * const order = await prisma.order.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Orders and only return the `orderId`
+     * const orderWithOrderIdOnly = await prisma.order.createManyAndReturn({
+     *   select: { orderId: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends OrderCreateManyAndReturnArgs>(args?: SelectSubset<T, OrderCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Order.
+     * @param {OrderDeleteArgs} args - Arguments to delete one Order.
+     * @example
+     * // Delete one Order
+     * const Order = await prisma.order.delete({
+     *   where: {
+     *     // ... filter to delete one Order
+     *   }
+     * })
+     * 
+     */
+    delete<T extends OrderDeleteArgs>(args: SelectSubset<T, OrderDeleteArgs<ExtArgs>>): Prisma__OrderClient<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Order.
+     * @param {OrderUpdateArgs} args - Arguments to update one Order.
+     * @example
+     * // Update one Order
+     * const order = await prisma.order.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends OrderUpdateArgs>(args: SelectSubset<T, OrderUpdateArgs<ExtArgs>>): Prisma__OrderClient<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Orders.
+     * @param {OrderDeleteManyArgs} args - Arguments to filter Orders to delete.
+     * @example
+     * // Delete a few Orders
+     * const { count } = await prisma.order.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends OrderDeleteManyArgs>(args?: SelectSubset<T, OrderDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Orders.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OrderUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Orders
+     * const order = await prisma.order.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends OrderUpdateManyArgs>(args: SelectSubset<T, OrderUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Orders and returns the data updated in the database.
+     * @param {OrderUpdateManyAndReturnArgs} args - Arguments to update many Orders.
+     * @example
+     * // Update many Orders
+     * const order = await prisma.order.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Orders and only return the `orderId`
+     * const orderWithOrderIdOnly = await prisma.order.updateManyAndReturn({
+     *   select: { orderId: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends OrderUpdateManyAndReturnArgs>(args: SelectSubset<T, OrderUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Order.
+     * @param {OrderUpsertArgs} args - Arguments to update or create a Order.
+     * @example
+     * // Update or create a Order
+     * const order = await prisma.order.upsert({
+     *   create: {
+     *     // ... data to create a Order
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Order we want to update
+     *   }
+     * })
+     */
+    upsert<T extends OrderUpsertArgs>(args: SelectSubset<T, OrderUpsertArgs<ExtArgs>>): Prisma__OrderClient<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Orders.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OrderCountArgs} args - Arguments to filter Orders to count.
+     * @example
+     * // Count the number of Orders
+     * const count = await prisma.order.count({
+     *   where: {
+     *     // ... the filter for the Orders we want to count
+     *   }
+     * })
+    **/
+    count<T extends OrderCountArgs>(
+      args?: Subset<T, OrderCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], OrderCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Order.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OrderAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends OrderAggregateArgs>(args: Subset<T, OrderAggregateArgs>): Prisma.PrismaPromise<GetOrderAggregateType<T>>
+
+    /**
+     * Group by Order.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OrderGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends OrderGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: OrderGroupByArgs['orderBy'] }
+        : { orderBy?: OrderGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, OrderGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetOrderGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Order model
+   */
+  readonly fields: OrderFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Order.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__OrderClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    items<T extends Order$itemsArgs<ExtArgs> = {}>(args?: Subset<T, Order$itemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrderItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Order model
+   */
+  interface OrderFieldRefs {
+    readonly orderId: FieldRef<"Order", 'BigInt'>
+    readonly buyerUserId: FieldRef<"Order", 'BigInt'>
+    readonly status: FieldRef<"Order", 'ORDER_STATUS'>
+    readonly currency: FieldRef<"Order", 'CURRENCY'>
+    readonly totalAmount: FieldRef<"Order", 'Decimal'>
+    readonly createdAt: FieldRef<"Order", 'DateTime'>
+    readonly updatedAt: FieldRef<"Order", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Order findUnique
+   */
+  export type OrderFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Order
+     */
+    select?: OrderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Order
+     */
+    omit?: OrderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderInclude<ExtArgs> | null
+    /**
+     * Filter, which Order to fetch.
+     */
+    where: OrderWhereUniqueInput
+  }
+
+  /**
+   * Order findUniqueOrThrow
+   */
+  export type OrderFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Order
+     */
+    select?: OrderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Order
+     */
+    omit?: OrderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderInclude<ExtArgs> | null
+    /**
+     * Filter, which Order to fetch.
+     */
+    where: OrderWhereUniqueInput
+  }
+
+  /**
+   * Order findFirst
+   */
+  export type OrderFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Order
+     */
+    select?: OrderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Order
+     */
+    omit?: OrderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderInclude<ExtArgs> | null
+    /**
+     * Filter, which Order to fetch.
+     */
+    where?: OrderWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Orders to fetch.
+     */
+    orderBy?: OrderOrderByWithRelationInput | OrderOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Orders.
+     */
+    cursor?: OrderWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Orders from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Orders.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Orders.
+     */
+    distinct?: OrderScalarFieldEnum | OrderScalarFieldEnum[]
+  }
+
+  /**
+   * Order findFirstOrThrow
+   */
+  export type OrderFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Order
+     */
+    select?: OrderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Order
+     */
+    omit?: OrderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderInclude<ExtArgs> | null
+    /**
+     * Filter, which Order to fetch.
+     */
+    where?: OrderWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Orders to fetch.
+     */
+    orderBy?: OrderOrderByWithRelationInput | OrderOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Orders.
+     */
+    cursor?: OrderWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Orders from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Orders.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Orders.
+     */
+    distinct?: OrderScalarFieldEnum | OrderScalarFieldEnum[]
+  }
+
+  /**
+   * Order findMany
+   */
+  export type OrderFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Order
+     */
+    select?: OrderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Order
+     */
+    omit?: OrderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderInclude<ExtArgs> | null
+    /**
+     * Filter, which Orders to fetch.
+     */
+    where?: OrderWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Orders to fetch.
+     */
+    orderBy?: OrderOrderByWithRelationInput | OrderOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Orders.
+     */
+    cursor?: OrderWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Orders from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Orders.
+     */
+    skip?: number
+    distinct?: OrderScalarFieldEnum | OrderScalarFieldEnum[]
+  }
+
+  /**
+   * Order create
+   */
+  export type OrderCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Order
+     */
+    select?: OrderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Order
+     */
+    omit?: OrderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Order.
+     */
+    data: XOR<OrderCreateInput, OrderUncheckedCreateInput>
+  }
+
+  /**
+   * Order createMany
+   */
+  export type OrderCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Orders.
+     */
+    data: OrderCreateManyInput | OrderCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Order createManyAndReturn
+   */
+  export type OrderCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Order
+     */
+    select?: OrderSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Order
+     */
+    omit?: OrderOmit<ExtArgs> | null
+    /**
+     * The data used to create many Orders.
+     */
+    data: OrderCreateManyInput | OrderCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Order update
+   */
+  export type OrderUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Order
+     */
+    select?: OrderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Order
+     */
+    omit?: OrderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Order.
+     */
+    data: XOR<OrderUpdateInput, OrderUncheckedUpdateInput>
+    /**
+     * Choose, which Order to update.
+     */
+    where: OrderWhereUniqueInput
+  }
+
+  /**
+   * Order updateMany
+   */
+  export type OrderUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Orders.
+     */
+    data: XOR<OrderUpdateManyMutationInput, OrderUncheckedUpdateManyInput>
+    /**
+     * Filter which Orders to update
+     */
+    where?: OrderWhereInput
+    /**
+     * Limit how many Orders to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Order updateManyAndReturn
+   */
+  export type OrderUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Order
+     */
+    select?: OrderSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Order
+     */
+    omit?: OrderOmit<ExtArgs> | null
+    /**
+     * The data used to update Orders.
+     */
+    data: XOR<OrderUpdateManyMutationInput, OrderUncheckedUpdateManyInput>
+    /**
+     * Filter which Orders to update
+     */
+    where?: OrderWhereInput
+    /**
+     * Limit how many Orders to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Order upsert
+   */
+  export type OrderUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Order
+     */
+    select?: OrderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Order
+     */
+    omit?: OrderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Order to update in case it exists.
+     */
+    where: OrderWhereUniqueInput
+    /**
+     * In case the Order found by the `where` argument doesn't exist, create a new Order with this data.
+     */
+    create: XOR<OrderCreateInput, OrderUncheckedCreateInput>
+    /**
+     * In case the Order was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<OrderUpdateInput, OrderUncheckedUpdateInput>
+  }
+
+  /**
+   * Order delete
+   */
+  export type OrderDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Order
+     */
+    select?: OrderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Order
+     */
+    omit?: OrderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderInclude<ExtArgs> | null
+    /**
+     * Filter which Order to delete.
+     */
+    where: OrderWhereUniqueInput
+  }
+
+  /**
+   * Order deleteMany
+   */
+  export type OrderDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Orders to delete
+     */
+    where?: OrderWhereInput
+    /**
+     * Limit how many Orders to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Order.items
+   */
+  export type Order$itemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OrderItem
+     */
+    select?: OrderItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OrderItem
+     */
+    omit?: OrderItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderItemInclude<ExtArgs> | null
+    where?: OrderItemWhereInput
+    orderBy?: OrderItemOrderByWithRelationInput | OrderItemOrderByWithRelationInput[]
+    cursor?: OrderItemWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: OrderItemScalarFieldEnum | OrderItemScalarFieldEnum[]
+  }
+
+  /**
+   * Order without action
+   */
+  export type OrderDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Order
+     */
+    select?: OrderSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Order
+     */
+    omit?: OrderOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model OrderItem
+   */
+
+  export type AggregateOrderItem = {
+    _count: OrderItemCountAggregateOutputType | null
+    _avg: OrderItemAvgAggregateOutputType | null
+    _sum: OrderItemSumAggregateOutputType | null
+    _min: OrderItemMinAggregateOutputType | null
+    _max: OrderItemMaxAggregateOutputType | null
+  }
+
+  export type OrderItemAvgAggregateOutputType = {
+    orderItemId: number | null
+    orderId: number | null
+    eventId: number | null
+    eventDateId: number | null
+    eventDateZoneId: number | null
+    eventDateZoneAllocationId: number | null
+    quantity: number | null
+    seatId: number | null
+    unitPrice: Decimal | null
+    discountAmount: Decimal | null
+    finalPrice: Decimal | null
+  }
+
+  export type OrderItemSumAggregateOutputType = {
+    orderItemId: bigint | null
+    orderId: bigint | null
+    eventId: bigint | null
+    eventDateId: bigint | null
+    eventDateZoneId: bigint | null
+    eventDateZoneAllocationId: bigint | null
+    quantity: number | null
+    seatId: bigint | null
+    unitPrice: Decimal | null
+    discountAmount: Decimal | null
+    finalPrice: Decimal | null
+  }
+
+  export type OrderItemMinAggregateOutputType = {
+    orderItemId: bigint | null
+    orderId: bigint | null
+    eventId: bigint | null
+    eventDateId: bigint | null
+    eventDateZoneId: bigint | null
+    eventDateZoneAllocationId: bigint | null
+    quantity: number | null
+    seatId: bigint | null
+    unitPrice: Decimal | null
+    discountAmount: Decimal | null
+    finalPrice: Decimal | null
+  }
+
+  export type OrderItemMaxAggregateOutputType = {
+    orderItemId: bigint | null
+    orderId: bigint | null
+    eventId: bigint | null
+    eventDateId: bigint | null
+    eventDateZoneId: bigint | null
+    eventDateZoneAllocationId: bigint | null
+    quantity: number | null
+    seatId: bigint | null
+    unitPrice: Decimal | null
+    discountAmount: Decimal | null
+    finalPrice: Decimal | null
+  }
+
+  export type OrderItemCountAggregateOutputType = {
+    orderItemId: number
+    orderId: number
+    eventId: number
+    eventDateId: number
+    eventDateZoneId: number
+    eventDateZoneAllocationId: number
+    quantity: number
+    seatId: number
+    unitPrice: number
+    discountAmount: number
+    finalPrice: number
+    _all: number
+  }
+
+
+  export type OrderItemAvgAggregateInputType = {
+    orderItemId?: true
+    orderId?: true
+    eventId?: true
+    eventDateId?: true
+    eventDateZoneId?: true
+    eventDateZoneAllocationId?: true
+    quantity?: true
+    seatId?: true
+    unitPrice?: true
+    discountAmount?: true
+    finalPrice?: true
+  }
+
+  export type OrderItemSumAggregateInputType = {
+    orderItemId?: true
+    orderId?: true
+    eventId?: true
+    eventDateId?: true
+    eventDateZoneId?: true
+    eventDateZoneAllocationId?: true
+    quantity?: true
+    seatId?: true
+    unitPrice?: true
+    discountAmount?: true
+    finalPrice?: true
+  }
+
+  export type OrderItemMinAggregateInputType = {
+    orderItemId?: true
+    orderId?: true
+    eventId?: true
+    eventDateId?: true
+    eventDateZoneId?: true
+    eventDateZoneAllocationId?: true
+    quantity?: true
+    seatId?: true
+    unitPrice?: true
+    discountAmount?: true
+    finalPrice?: true
+  }
+
+  export type OrderItemMaxAggregateInputType = {
+    orderItemId?: true
+    orderId?: true
+    eventId?: true
+    eventDateId?: true
+    eventDateZoneId?: true
+    eventDateZoneAllocationId?: true
+    quantity?: true
+    seatId?: true
+    unitPrice?: true
+    discountAmount?: true
+    finalPrice?: true
+  }
+
+  export type OrderItemCountAggregateInputType = {
+    orderItemId?: true
+    orderId?: true
+    eventId?: true
+    eventDateId?: true
+    eventDateZoneId?: true
+    eventDateZoneAllocationId?: true
+    quantity?: true
+    seatId?: true
+    unitPrice?: true
+    discountAmount?: true
+    finalPrice?: true
+    _all?: true
+  }
+
+  export type OrderItemAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which OrderItem to aggregate.
+     */
+    where?: OrderItemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OrderItems to fetch.
+     */
+    orderBy?: OrderItemOrderByWithRelationInput | OrderItemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: OrderItemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OrderItems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OrderItems.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned OrderItems
+    **/
+    _count?: true | OrderItemCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: OrderItemAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: OrderItemSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: OrderItemMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: OrderItemMaxAggregateInputType
+  }
+
+  export type GetOrderItemAggregateType<T extends OrderItemAggregateArgs> = {
+        [P in keyof T & keyof AggregateOrderItem]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateOrderItem[P]>
+      : GetScalarType<T[P], AggregateOrderItem[P]>
+  }
+
+
+
+
+  export type OrderItemGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: OrderItemWhereInput
+    orderBy?: OrderItemOrderByWithAggregationInput | OrderItemOrderByWithAggregationInput[]
+    by: OrderItemScalarFieldEnum[] | OrderItemScalarFieldEnum
+    having?: OrderItemScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: OrderItemCountAggregateInputType | true
+    _avg?: OrderItemAvgAggregateInputType
+    _sum?: OrderItemSumAggregateInputType
+    _min?: OrderItemMinAggregateInputType
+    _max?: OrderItemMaxAggregateInputType
+  }
+
+  export type OrderItemGroupByOutputType = {
+    orderItemId: bigint
+    orderId: bigint
+    eventId: bigint
+    eventDateId: bigint
+    eventDateZoneId: bigint
+    eventDateZoneAllocationId: bigint | null
+    quantity: number | null
+    seatId: bigint | null
+    unitPrice: Decimal
+    discountAmount: Decimal | null
+    finalPrice: Decimal
+    _count: OrderItemCountAggregateOutputType | null
+    _avg: OrderItemAvgAggregateOutputType | null
+    _sum: OrderItemSumAggregateOutputType | null
+    _min: OrderItemMinAggregateOutputType | null
+    _max: OrderItemMaxAggregateOutputType | null
+  }
+
+  type GetOrderItemGroupByPayload<T extends OrderItemGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<OrderItemGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof OrderItemGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], OrderItemGroupByOutputType[P]>
+            : GetScalarType<T[P], OrderItemGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type OrderItemSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    orderItemId?: boolean
+    orderId?: boolean
+    eventId?: boolean
+    eventDateId?: boolean
+    eventDateZoneId?: boolean
+    eventDateZoneAllocationId?: boolean
+    quantity?: boolean
+    seatId?: boolean
+    unitPrice?: boolean
+    discountAmount?: boolean
+    finalPrice?: boolean
+    order?: boolean | OrderDefaultArgs<ExtArgs>
+    eventDate?: boolean | EventDateDefaultArgs<ExtArgs>
+    zone?: boolean | EventDateZoneDefaultArgs<ExtArgs>
+    seat?: boolean | OrderItem$seatArgs<ExtArgs>
+    allocation?: boolean | OrderItem$allocationArgs<ExtArgs>
+    Ticket?: boolean | OrderItem$TicketArgs<ExtArgs>
+    _count?: boolean | OrderItemCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["orderItem"]>
+
+  export type OrderItemSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    orderItemId?: boolean
+    orderId?: boolean
+    eventId?: boolean
+    eventDateId?: boolean
+    eventDateZoneId?: boolean
+    eventDateZoneAllocationId?: boolean
+    quantity?: boolean
+    seatId?: boolean
+    unitPrice?: boolean
+    discountAmount?: boolean
+    finalPrice?: boolean
+    order?: boolean | OrderDefaultArgs<ExtArgs>
+    eventDate?: boolean | EventDateDefaultArgs<ExtArgs>
+    zone?: boolean | EventDateZoneDefaultArgs<ExtArgs>
+    seat?: boolean | OrderItem$seatArgs<ExtArgs>
+    allocation?: boolean | OrderItem$allocationArgs<ExtArgs>
+  }, ExtArgs["result"]["orderItem"]>
+
+  export type OrderItemSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    orderItemId?: boolean
+    orderId?: boolean
+    eventId?: boolean
+    eventDateId?: boolean
+    eventDateZoneId?: boolean
+    eventDateZoneAllocationId?: boolean
+    quantity?: boolean
+    seatId?: boolean
+    unitPrice?: boolean
+    discountAmount?: boolean
+    finalPrice?: boolean
+    order?: boolean | OrderDefaultArgs<ExtArgs>
+    eventDate?: boolean | EventDateDefaultArgs<ExtArgs>
+    zone?: boolean | EventDateZoneDefaultArgs<ExtArgs>
+    seat?: boolean | OrderItem$seatArgs<ExtArgs>
+    allocation?: boolean | OrderItem$allocationArgs<ExtArgs>
+  }, ExtArgs["result"]["orderItem"]>
+
+  export type OrderItemSelectScalar = {
+    orderItemId?: boolean
+    orderId?: boolean
+    eventId?: boolean
+    eventDateId?: boolean
+    eventDateZoneId?: boolean
+    eventDateZoneAllocationId?: boolean
+    quantity?: boolean
+    seatId?: boolean
+    unitPrice?: boolean
+    discountAmount?: boolean
+    finalPrice?: boolean
+  }
+
+  export type OrderItemOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"orderItemId" | "orderId" | "eventId" | "eventDateId" | "eventDateZoneId" | "eventDateZoneAllocationId" | "quantity" | "seatId" | "unitPrice" | "discountAmount" | "finalPrice", ExtArgs["result"]["orderItem"]>
+  export type OrderItemInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    order?: boolean | OrderDefaultArgs<ExtArgs>
+    eventDate?: boolean | EventDateDefaultArgs<ExtArgs>
+    zone?: boolean | EventDateZoneDefaultArgs<ExtArgs>
+    seat?: boolean | OrderItem$seatArgs<ExtArgs>
+    allocation?: boolean | OrderItem$allocationArgs<ExtArgs>
+    Ticket?: boolean | OrderItem$TicketArgs<ExtArgs>
+    _count?: boolean | OrderItemCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type OrderItemIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    order?: boolean | OrderDefaultArgs<ExtArgs>
+    eventDate?: boolean | EventDateDefaultArgs<ExtArgs>
+    zone?: boolean | EventDateZoneDefaultArgs<ExtArgs>
+    seat?: boolean | OrderItem$seatArgs<ExtArgs>
+    allocation?: boolean | OrderItem$allocationArgs<ExtArgs>
+  }
+  export type OrderItemIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    order?: boolean | OrderDefaultArgs<ExtArgs>
+    eventDate?: boolean | EventDateDefaultArgs<ExtArgs>
+    zone?: boolean | EventDateZoneDefaultArgs<ExtArgs>
+    seat?: boolean | OrderItem$seatArgs<ExtArgs>
+    allocation?: boolean | OrderItem$allocationArgs<ExtArgs>
+  }
+
+  export type $OrderItemPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "OrderItem"
+    objects: {
+      order: Prisma.$OrderPayload<ExtArgs>
+      eventDate: Prisma.$EventDatePayload<ExtArgs>
+      zone: Prisma.$EventDateZonePayload<ExtArgs>
+      seat: Prisma.$SeatPayload<ExtArgs> | null
+      allocation: Prisma.$EventDateZoneAllocationPayload<ExtArgs> | null
+      Ticket: Prisma.$TicketPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      orderItemId: bigint
+      orderId: bigint
+      eventId: bigint
+      eventDateId: bigint
+      eventDateZoneId: bigint
+      eventDateZoneAllocationId: bigint | null
+      quantity: number | null
+      seatId: bigint | null
+      unitPrice: Prisma.Decimal
+      discountAmount: Prisma.Decimal | null
+      finalPrice: Prisma.Decimal
+    }, ExtArgs["result"]["orderItem"]>
+    composites: {}
+  }
+
+  type OrderItemGetPayload<S extends boolean | null | undefined | OrderItemDefaultArgs> = $Result.GetResult<Prisma.$OrderItemPayload, S>
+
+  type OrderItemCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<OrderItemFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: OrderItemCountAggregateInputType | true
+    }
+
+  export interface OrderItemDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['OrderItem'], meta: { name: 'OrderItem' } }
+    /**
+     * Find zero or one OrderItem that matches the filter.
+     * @param {OrderItemFindUniqueArgs} args - Arguments to find a OrderItem
+     * @example
+     * // Get one OrderItem
+     * const orderItem = await prisma.orderItem.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends OrderItemFindUniqueArgs>(args: SelectSubset<T, OrderItemFindUniqueArgs<ExtArgs>>): Prisma__OrderItemClient<$Result.GetResult<Prisma.$OrderItemPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one OrderItem that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {OrderItemFindUniqueOrThrowArgs} args - Arguments to find a OrderItem
+     * @example
+     * // Get one OrderItem
+     * const orderItem = await prisma.orderItem.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends OrderItemFindUniqueOrThrowArgs>(args: SelectSubset<T, OrderItemFindUniqueOrThrowArgs<ExtArgs>>): Prisma__OrderItemClient<$Result.GetResult<Prisma.$OrderItemPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first OrderItem that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OrderItemFindFirstArgs} args - Arguments to find a OrderItem
+     * @example
+     * // Get one OrderItem
+     * const orderItem = await prisma.orderItem.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends OrderItemFindFirstArgs>(args?: SelectSubset<T, OrderItemFindFirstArgs<ExtArgs>>): Prisma__OrderItemClient<$Result.GetResult<Prisma.$OrderItemPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first OrderItem that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OrderItemFindFirstOrThrowArgs} args - Arguments to find a OrderItem
+     * @example
+     * // Get one OrderItem
+     * const orderItem = await prisma.orderItem.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends OrderItemFindFirstOrThrowArgs>(args?: SelectSubset<T, OrderItemFindFirstOrThrowArgs<ExtArgs>>): Prisma__OrderItemClient<$Result.GetResult<Prisma.$OrderItemPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more OrderItems that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OrderItemFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all OrderItems
+     * const orderItems = await prisma.orderItem.findMany()
+     * 
+     * // Get first 10 OrderItems
+     * const orderItems = await prisma.orderItem.findMany({ take: 10 })
+     * 
+     * // Only select the `orderItemId`
+     * const orderItemWithOrderItemIdOnly = await prisma.orderItem.findMany({ select: { orderItemId: true } })
+     * 
+     */
+    findMany<T extends OrderItemFindManyArgs>(args?: SelectSubset<T, OrderItemFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrderItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a OrderItem.
+     * @param {OrderItemCreateArgs} args - Arguments to create a OrderItem.
+     * @example
+     * // Create one OrderItem
+     * const OrderItem = await prisma.orderItem.create({
+     *   data: {
+     *     // ... data to create a OrderItem
+     *   }
+     * })
+     * 
+     */
+    create<T extends OrderItemCreateArgs>(args: SelectSubset<T, OrderItemCreateArgs<ExtArgs>>): Prisma__OrderItemClient<$Result.GetResult<Prisma.$OrderItemPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many OrderItems.
+     * @param {OrderItemCreateManyArgs} args - Arguments to create many OrderItems.
+     * @example
+     * // Create many OrderItems
+     * const orderItem = await prisma.orderItem.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends OrderItemCreateManyArgs>(args?: SelectSubset<T, OrderItemCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many OrderItems and returns the data saved in the database.
+     * @param {OrderItemCreateManyAndReturnArgs} args - Arguments to create many OrderItems.
+     * @example
+     * // Create many OrderItems
+     * const orderItem = await prisma.orderItem.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many OrderItems and only return the `orderItemId`
+     * const orderItemWithOrderItemIdOnly = await prisma.orderItem.createManyAndReturn({
+     *   select: { orderItemId: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends OrderItemCreateManyAndReturnArgs>(args?: SelectSubset<T, OrderItemCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrderItemPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a OrderItem.
+     * @param {OrderItemDeleteArgs} args - Arguments to delete one OrderItem.
+     * @example
+     * // Delete one OrderItem
+     * const OrderItem = await prisma.orderItem.delete({
+     *   where: {
+     *     // ... filter to delete one OrderItem
+     *   }
+     * })
+     * 
+     */
+    delete<T extends OrderItemDeleteArgs>(args: SelectSubset<T, OrderItemDeleteArgs<ExtArgs>>): Prisma__OrderItemClient<$Result.GetResult<Prisma.$OrderItemPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one OrderItem.
+     * @param {OrderItemUpdateArgs} args - Arguments to update one OrderItem.
+     * @example
+     * // Update one OrderItem
+     * const orderItem = await prisma.orderItem.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends OrderItemUpdateArgs>(args: SelectSubset<T, OrderItemUpdateArgs<ExtArgs>>): Prisma__OrderItemClient<$Result.GetResult<Prisma.$OrderItemPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more OrderItems.
+     * @param {OrderItemDeleteManyArgs} args - Arguments to filter OrderItems to delete.
+     * @example
+     * // Delete a few OrderItems
+     * const { count } = await prisma.orderItem.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends OrderItemDeleteManyArgs>(args?: SelectSubset<T, OrderItemDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more OrderItems.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OrderItemUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many OrderItems
+     * const orderItem = await prisma.orderItem.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends OrderItemUpdateManyArgs>(args: SelectSubset<T, OrderItemUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more OrderItems and returns the data updated in the database.
+     * @param {OrderItemUpdateManyAndReturnArgs} args - Arguments to update many OrderItems.
+     * @example
+     * // Update many OrderItems
+     * const orderItem = await prisma.orderItem.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more OrderItems and only return the `orderItemId`
+     * const orderItemWithOrderItemIdOnly = await prisma.orderItem.updateManyAndReturn({
+     *   select: { orderItemId: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends OrderItemUpdateManyAndReturnArgs>(args: SelectSubset<T, OrderItemUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrderItemPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one OrderItem.
+     * @param {OrderItemUpsertArgs} args - Arguments to update or create a OrderItem.
+     * @example
+     * // Update or create a OrderItem
+     * const orderItem = await prisma.orderItem.upsert({
+     *   create: {
+     *     // ... data to create a OrderItem
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the OrderItem we want to update
+     *   }
+     * })
+     */
+    upsert<T extends OrderItemUpsertArgs>(args: SelectSubset<T, OrderItemUpsertArgs<ExtArgs>>): Prisma__OrderItemClient<$Result.GetResult<Prisma.$OrderItemPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of OrderItems.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OrderItemCountArgs} args - Arguments to filter OrderItems to count.
+     * @example
+     * // Count the number of OrderItems
+     * const count = await prisma.orderItem.count({
+     *   where: {
+     *     // ... the filter for the OrderItems we want to count
+     *   }
+     * })
+    **/
+    count<T extends OrderItemCountArgs>(
+      args?: Subset<T, OrderItemCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], OrderItemCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a OrderItem.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OrderItemAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends OrderItemAggregateArgs>(args: Subset<T, OrderItemAggregateArgs>): Prisma.PrismaPromise<GetOrderItemAggregateType<T>>
+
+    /**
+     * Group by OrderItem.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OrderItemGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends OrderItemGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: OrderItemGroupByArgs['orderBy'] }
+        : { orderBy?: OrderItemGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, OrderItemGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetOrderItemGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the OrderItem model
+   */
+  readonly fields: OrderItemFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for OrderItem.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__OrderItemClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    order<T extends OrderDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OrderDefaultArgs<ExtArgs>>): Prisma__OrderClient<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    eventDate<T extends EventDateDefaultArgs<ExtArgs> = {}>(args?: Subset<T, EventDateDefaultArgs<ExtArgs>>): Prisma__EventDateClient<$Result.GetResult<Prisma.$EventDatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    zone<T extends EventDateZoneDefaultArgs<ExtArgs> = {}>(args?: Subset<T, EventDateZoneDefaultArgs<ExtArgs>>): Prisma__EventDateZoneClient<$Result.GetResult<Prisma.$EventDateZonePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    seat<T extends OrderItem$seatArgs<ExtArgs> = {}>(args?: Subset<T, OrderItem$seatArgs<ExtArgs>>): Prisma__SeatClient<$Result.GetResult<Prisma.$SeatPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    allocation<T extends OrderItem$allocationArgs<ExtArgs> = {}>(args?: Subset<T, OrderItem$allocationArgs<ExtArgs>>): Prisma__EventDateZoneAllocationClient<$Result.GetResult<Prisma.$EventDateZoneAllocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    Ticket<T extends OrderItem$TicketArgs<ExtArgs> = {}>(args?: Subset<T, OrderItem$TicketArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the OrderItem model
+   */
+  interface OrderItemFieldRefs {
+    readonly orderItemId: FieldRef<"OrderItem", 'BigInt'>
+    readonly orderId: FieldRef<"OrderItem", 'BigInt'>
+    readonly eventId: FieldRef<"OrderItem", 'BigInt'>
+    readonly eventDateId: FieldRef<"OrderItem", 'BigInt'>
+    readonly eventDateZoneId: FieldRef<"OrderItem", 'BigInt'>
+    readonly eventDateZoneAllocationId: FieldRef<"OrderItem", 'BigInt'>
+    readonly quantity: FieldRef<"OrderItem", 'Int'>
+    readonly seatId: FieldRef<"OrderItem", 'BigInt'>
+    readonly unitPrice: FieldRef<"OrderItem", 'Decimal'>
+    readonly discountAmount: FieldRef<"OrderItem", 'Decimal'>
+    readonly finalPrice: FieldRef<"OrderItem", 'Decimal'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * OrderItem findUnique
+   */
+  export type OrderItemFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OrderItem
+     */
+    select?: OrderItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OrderItem
+     */
+    omit?: OrderItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderItemInclude<ExtArgs> | null
+    /**
+     * Filter, which OrderItem to fetch.
+     */
+    where: OrderItemWhereUniqueInput
+  }
+
+  /**
+   * OrderItem findUniqueOrThrow
+   */
+  export type OrderItemFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OrderItem
+     */
+    select?: OrderItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OrderItem
+     */
+    omit?: OrderItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderItemInclude<ExtArgs> | null
+    /**
+     * Filter, which OrderItem to fetch.
+     */
+    where: OrderItemWhereUniqueInput
+  }
+
+  /**
+   * OrderItem findFirst
+   */
+  export type OrderItemFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OrderItem
+     */
+    select?: OrderItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OrderItem
+     */
+    omit?: OrderItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderItemInclude<ExtArgs> | null
+    /**
+     * Filter, which OrderItem to fetch.
+     */
+    where?: OrderItemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OrderItems to fetch.
+     */
+    orderBy?: OrderItemOrderByWithRelationInput | OrderItemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for OrderItems.
+     */
+    cursor?: OrderItemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OrderItems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OrderItems.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of OrderItems.
+     */
+    distinct?: OrderItemScalarFieldEnum | OrderItemScalarFieldEnum[]
+  }
+
+  /**
+   * OrderItem findFirstOrThrow
+   */
+  export type OrderItemFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OrderItem
+     */
+    select?: OrderItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OrderItem
+     */
+    omit?: OrderItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderItemInclude<ExtArgs> | null
+    /**
+     * Filter, which OrderItem to fetch.
+     */
+    where?: OrderItemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OrderItems to fetch.
+     */
+    orderBy?: OrderItemOrderByWithRelationInput | OrderItemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for OrderItems.
+     */
+    cursor?: OrderItemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OrderItems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OrderItems.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of OrderItems.
+     */
+    distinct?: OrderItemScalarFieldEnum | OrderItemScalarFieldEnum[]
+  }
+
+  /**
+   * OrderItem findMany
+   */
+  export type OrderItemFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OrderItem
+     */
+    select?: OrderItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OrderItem
+     */
+    omit?: OrderItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderItemInclude<ExtArgs> | null
+    /**
+     * Filter, which OrderItems to fetch.
+     */
+    where?: OrderItemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OrderItems to fetch.
+     */
+    orderBy?: OrderItemOrderByWithRelationInput | OrderItemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing OrderItems.
+     */
+    cursor?: OrderItemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OrderItems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OrderItems.
+     */
+    skip?: number
+    distinct?: OrderItemScalarFieldEnum | OrderItemScalarFieldEnum[]
+  }
+
+  /**
+   * OrderItem create
+   */
+  export type OrderItemCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OrderItem
+     */
+    select?: OrderItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OrderItem
+     */
+    omit?: OrderItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderItemInclude<ExtArgs> | null
+    /**
+     * The data needed to create a OrderItem.
+     */
+    data: XOR<OrderItemCreateInput, OrderItemUncheckedCreateInput>
+  }
+
+  /**
+   * OrderItem createMany
+   */
+  export type OrderItemCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many OrderItems.
+     */
+    data: OrderItemCreateManyInput | OrderItemCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * OrderItem createManyAndReturn
+   */
+  export type OrderItemCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OrderItem
+     */
+    select?: OrderItemSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the OrderItem
+     */
+    omit?: OrderItemOmit<ExtArgs> | null
+    /**
+     * The data used to create many OrderItems.
+     */
+    data: OrderItemCreateManyInput | OrderItemCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderItemIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * OrderItem update
+   */
+  export type OrderItemUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OrderItem
+     */
+    select?: OrderItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OrderItem
+     */
+    omit?: OrderItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderItemInclude<ExtArgs> | null
+    /**
+     * The data needed to update a OrderItem.
+     */
+    data: XOR<OrderItemUpdateInput, OrderItemUncheckedUpdateInput>
+    /**
+     * Choose, which OrderItem to update.
+     */
+    where: OrderItemWhereUniqueInput
+  }
+
+  /**
+   * OrderItem updateMany
+   */
+  export type OrderItemUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update OrderItems.
+     */
+    data: XOR<OrderItemUpdateManyMutationInput, OrderItemUncheckedUpdateManyInput>
+    /**
+     * Filter which OrderItems to update
+     */
+    where?: OrderItemWhereInput
+    /**
+     * Limit how many OrderItems to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * OrderItem updateManyAndReturn
+   */
+  export type OrderItemUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OrderItem
+     */
+    select?: OrderItemSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the OrderItem
+     */
+    omit?: OrderItemOmit<ExtArgs> | null
+    /**
+     * The data used to update OrderItems.
+     */
+    data: XOR<OrderItemUpdateManyMutationInput, OrderItemUncheckedUpdateManyInput>
+    /**
+     * Filter which OrderItems to update
+     */
+    where?: OrderItemWhereInput
+    /**
+     * Limit how many OrderItems to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderItemIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * OrderItem upsert
+   */
+  export type OrderItemUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OrderItem
+     */
+    select?: OrderItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OrderItem
+     */
+    omit?: OrderItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderItemInclude<ExtArgs> | null
+    /**
+     * The filter to search for the OrderItem to update in case it exists.
+     */
+    where: OrderItemWhereUniqueInput
+    /**
+     * In case the OrderItem found by the `where` argument doesn't exist, create a new OrderItem with this data.
+     */
+    create: XOR<OrderItemCreateInput, OrderItemUncheckedCreateInput>
+    /**
+     * In case the OrderItem was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<OrderItemUpdateInput, OrderItemUncheckedUpdateInput>
+  }
+
+  /**
+   * OrderItem delete
+   */
+  export type OrderItemDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OrderItem
+     */
+    select?: OrderItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OrderItem
+     */
+    omit?: OrderItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderItemInclude<ExtArgs> | null
+    /**
+     * Filter which OrderItem to delete.
+     */
+    where: OrderItemWhereUniqueInput
+  }
+
+  /**
+   * OrderItem deleteMany
+   */
+  export type OrderItemDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which OrderItems to delete
+     */
+    where?: OrderItemWhereInput
+    /**
+     * Limit how many OrderItems to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * OrderItem.seat
+   */
+  export type OrderItem$seatArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Seat
+     */
+    select?: SeatSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Seat
+     */
+    omit?: SeatOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SeatInclude<ExtArgs> | null
+    where?: SeatWhereInput
+  }
+
+  /**
+   * OrderItem.allocation
+   */
+  export type OrderItem$allocationArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventDateZoneAllocation
+     */
+    select?: EventDateZoneAllocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EventDateZoneAllocation
+     */
+    omit?: EventDateZoneAllocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventDateZoneAllocationInclude<ExtArgs> | null
+    where?: EventDateZoneAllocationWhereInput
+  }
+
+  /**
+   * OrderItem.Ticket
+   */
+  export type OrderItem$TicketArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ticket
+     */
+    select?: TicketSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ticket
+     */
+    omit?: TicketOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TicketInclude<ExtArgs> | null
+    where?: TicketWhereInput
+    orderBy?: TicketOrderByWithRelationInput | TicketOrderByWithRelationInput[]
+    cursor?: TicketWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TicketScalarFieldEnum | TicketScalarFieldEnum[]
+  }
+
+  /**
+   * OrderItem without action
+   */
+  export type OrderItemDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OrderItem
+     */
+    select?: OrderItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OrderItem
+     */
+    omit?: OrderItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrderItemInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Ticket
+   */
+
+  export type AggregateTicket = {
+    _count: TicketCountAggregateOutputType | null
+    _avg: TicketAvgAggregateOutputType | null
+    _sum: TicketSumAggregateOutputType | null
+    _min: TicketMinAggregateOutputType | null
+    _max: TicketMaxAggregateOutputType | null
+  }
+
+  export type TicketAvgAggregateOutputType = {
+    ticketId: number | null
+    ownerUserId: number | null
+    orderItemId: number | null
+    eventId: number | null
+    eventDateId: number | null
+    eventDateZoneId: number | null
+    eventDateZoneAllocationId: number | null
+    seatId: number | null
+    pricePaid: Decimal | null
+  }
+
+  export type TicketSumAggregateOutputType = {
+    ticketId: bigint | null
+    ownerUserId: bigint | null
+    orderItemId: bigint | null
+    eventId: bigint | null
+    eventDateId: bigint | null
+    eventDateZoneId: bigint | null
+    eventDateZoneAllocationId: bigint | null
+    seatId: bigint | null
+    pricePaid: Decimal | null
+  }
+
+  export type TicketMinAggregateOutputType = {
+    ticketId: bigint | null
+    ownerUserId: bigint | null
+    orderItemId: bigint | null
+    eventId: bigint | null
+    eventDateId: bigint | null
+    eventDateZoneId: bigint | null
+    eventDateZoneAllocationId: bigint | null
+    seatId: bigint | null
+    pricePaid: Decimal | null
+    currency: $Enums.CURRENCY | null
+    issuedAt: Date | null
+    status: $Enums.TICKET_STATUS | null
+  }
+
+  export type TicketMaxAggregateOutputType = {
+    ticketId: bigint | null
+    ownerUserId: bigint | null
+    orderItemId: bigint | null
+    eventId: bigint | null
+    eventDateId: bigint | null
+    eventDateZoneId: bigint | null
+    eventDateZoneAllocationId: bigint | null
+    seatId: bigint | null
+    pricePaid: Decimal | null
+    currency: $Enums.CURRENCY | null
+    issuedAt: Date | null
+    status: $Enums.TICKET_STATUS | null
+  }
+
+  export type TicketCountAggregateOutputType = {
+    ticketId: number
+    ownerUserId: number
+    orderItemId: number
+    eventId: number
+    eventDateId: number
+    eventDateZoneId: number
+    eventDateZoneAllocationId: number
+    seatId: number
+    pricePaid: number
+    currency: number
+    issuedAt: number
+    status: number
+    _all: number
+  }
+
+
+  export type TicketAvgAggregateInputType = {
+    ticketId?: true
+    ownerUserId?: true
+    orderItemId?: true
+    eventId?: true
+    eventDateId?: true
+    eventDateZoneId?: true
+    eventDateZoneAllocationId?: true
+    seatId?: true
+    pricePaid?: true
+  }
+
+  export type TicketSumAggregateInputType = {
+    ticketId?: true
+    ownerUserId?: true
+    orderItemId?: true
+    eventId?: true
+    eventDateId?: true
+    eventDateZoneId?: true
+    eventDateZoneAllocationId?: true
+    seatId?: true
+    pricePaid?: true
+  }
+
+  export type TicketMinAggregateInputType = {
+    ticketId?: true
+    ownerUserId?: true
+    orderItemId?: true
+    eventId?: true
+    eventDateId?: true
+    eventDateZoneId?: true
+    eventDateZoneAllocationId?: true
+    seatId?: true
+    pricePaid?: true
+    currency?: true
+    issuedAt?: true
+    status?: true
+  }
+
+  export type TicketMaxAggregateInputType = {
+    ticketId?: true
+    ownerUserId?: true
+    orderItemId?: true
+    eventId?: true
+    eventDateId?: true
+    eventDateZoneId?: true
+    eventDateZoneAllocationId?: true
+    seatId?: true
+    pricePaid?: true
+    currency?: true
+    issuedAt?: true
+    status?: true
+  }
+
+  export type TicketCountAggregateInputType = {
+    ticketId?: true
+    ownerUserId?: true
+    orderItemId?: true
+    eventId?: true
+    eventDateId?: true
+    eventDateZoneId?: true
+    eventDateZoneAllocationId?: true
+    seatId?: true
+    pricePaid?: true
+    currency?: true
+    issuedAt?: true
+    status?: true
+    _all?: true
+  }
+
+  export type TicketAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Ticket to aggregate.
+     */
+    where?: TicketWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Tickets to fetch.
+     */
+    orderBy?: TicketOrderByWithRelationInput | TicketOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: TicketWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Tickets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Tickets.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Tickets
+    **/
+    _count?: true | TicketCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: TicketAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: TicketSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: TicketMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: TicketMaxAggregateInputType
+  }
+
+  export type GetTicketAggregateType<T extends TicketAggregateArgs> = {
+        [P in keyof T & keyof AggregateTicket]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateTicket[P]>
+      : GetScalarType<T[P], AggregateTicket[P]>
+  }
+
+
+
+
+  export type TicketGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TicketWhereInput
+    orderBy?: TicketOrderByWithAggregationInput | TicketOrderByWithAggregationInput[]
+    by: TicketScalarFieldEnum[] | TicketScalarFieldEnum
+    having?: TicketScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: TicketCountAggregateInputType | true
+    _avg?: TicketAvgAggregateInputType
+    _sum?: TicketSumAggregateInputType
+    _min?: TicketMinAggregateInputType
+    _max?: TicketMaxAggregateInputType
+  }
+
+  export type TicketGroupByOutputType = {
+    ticketId: bigint
+    ownerUserId: bigint | null
+    orderItemId: bigint
+    eventId: bigint
+    eventDateId: bigint
+    eventDateZoneId: bigint
+    eventDateZoneAllocationId: bigint | null
+    seatId: bigint | null
+    pricePaid: Decimal
+    currency: $Enums.CURRENCY
+    issuedAt: Date
+    status: $Enums.TICKET_STATUS
+    _count: TicketCountAggregateOutputType | null
+    _avg: TicketAvgAggregateOutputType | null
+    _sum: TicketSumAggregateOutputType | null
+    _min: TicketMinAggregateOutputType | null
+    _max: TicketMaxAggregateOutputType | null
+  }
+
+  type GetTicketGroupByPayload<T extends TicketGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<TicketGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof TicketGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], TicketGroupByOutputType[P]>
+            : GetScalarType<T[P], TicketGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type TicketSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    ticketId?: boolean
+    ownerUserId?: boolean
+    orderItemId?: boolean
+    eventId?: boolean
+    eventDateId?: boolean
+    eventDateZoneId?: boolean
+    eventDateZoneAllocationId?: boolean
+    seatId?: boolean
+    pricePaid?: boolean
+    currency?: boolean
+    issuedAt?: boolean
+    status?: boolean
+    item?: boolean | OrderItemDefaultArgs<ExtArgs>
+    eventDate?: boolean | EventDateDefaultArgs<ExtArgs>
+    zone?: boolean | EventDateZoneDefaultArgs<ExtArgs>
+    seat?: boolean | Ticket$seatArgs<ExtArgs>
+    allocation?: boolean | Ticket$allocationArgs<ExtArgs>
+    owner?: boolean | Ticket$ownerArgs<ExtArgs>
+  }, ExtArgs["result"]["ticket"]>
+
+  export type TicketSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    ticketId?: boolean
+    ownerUserId?: boolean
+    orderItemId?: boolean
+    eventId?: boolean
+    eventDateId?: boolean
+    eventDateZoneId?: boolean
+    eventDateZoneAllocationId?: boolean
+    seatId?: boolean
+    pricePaid?: boolean
+    currency?: boolean
+    issuedAt?: boolean
+    status?: boolean
+    item?: boolean | OrderItemDefaultArgs<ExtArgs>
+    eventDate?: boolean | EventDateDefaultArgs<ExtArgs>
+    zone?: boolean | EventDateZoneDefaultArgs<ExtArgs>
+    seat?: boolean | Ticket$seatArgs<ExtArgs>
+    allocation?: boolean | Ticket$allocationArgs<ExtArgs>
+    owner?: boolean | Ticket$ownerArgs<ExtArgs>
+  }, ExtArgs["result"]["ticket"]>
+
+  export type TicketSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    ticketId?: boolean
+    ownerUserId?: boolean
+    orderItemId?: boolean
+    eventId?: boolean
+    eventDateId?: boolean
+    eventDateZoneId?: boolean
+    eventDateZoneAllocationId?: boolean
+    seatId?: boolean
+    pricePaid?: boolean
+    currency?: boolean
+    issuedAt?: boolean
+    status?: boolean
+    item?: boolean | OrderItemDefaultArgs<ExtArgs>
+    eventDate?: boolean | EventDateDefaultArgs<ExtArgs>
+    zone?: boolean | EventDateZoneDefaultArgs<ExtArgs>
+    seat?: boolean | Ticket$seatArgs<ExtArgs>
+    allocation?: boolean | Ticket$allocationArgs<ExtArgs>
+    owner?: boolean | Ticket$ownerArgs<ExtArgs>
+  }, ExtArgs["result"]["ticket"]>
+
+  export type TicketSelectScalar = {
+    ticketId?: boolean
+    ownerUserId?: boolean
+    orderItemId?: boolean
+    eventId?: boolean
+    eventDateId?: boolean
+    eventDateZoneId?: boolean
+    eventDateZoneAllocationId?: boolean
+    seatId?: boolean
+    pricePaid?: boolean
+    currency?: boolean
+    issuedAt?: boolean
+    status?: boolean
+  }
+
+  export type TicketOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"ticketId" | "ownerUserId" | "orderItemId" | "eventId" | "eventDateId" | "eventDateZoneId" | "eventDateZoneAllocationId" | "seatId" | "pricePaid" | "currency" | "issuedAt" | "status", ExtArgs["result"]["ticket"]>
+  export type TicketInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    item?: boolean | OrderItemDefaultArgs<ExtArgs>
+    eventDate?: boolean | EventDateDefaultArgs<ExtArgs>
+    zone?: boolean | EventDateZoneDefaultArgs<ExtArgs>
+    seat?: boolean | Ticket$seatArgs<ExtArgs>
+    allocation?: boolean | Ticket$allocationArgs<ExtArgs>
+    owner?: boolean | Ticket$ownerArgs<ExtArgs>
+  }
+  export type TicketIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    item?: boolean | OrderItemDefaultArgs<ExtArgs>
+    eventDate?: boolean | EventDateDefaultArgs<ExtArgs>
+    zone?: boolean | EventDateZoneDefaultArgs<ExtArgs>
+    seat?: boolean | Ticket$seatArgs<ExtArgs>
+    allocation?: boolean | Ticket$allocationArgs<ExtArgs>
+    owner?: boolean | Ticket$ownerArgs<ExtArgs>
+  }
+  export type TicketIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    item?: boolean | OrderItemDefaultArgs<ExtArgs>
+    eventDate?: boolean | EventDateDefaultArgs<ExtArgs>
+    zone?: boolean | EventDateZoneDefaultArgs<ExtArgs>
+    seat?: boolean | Ticket$seatArgs<ExtArgs>
+    allocation?: boolean | Ticket$allocationArgs<ExtArgs>
+    owner?: boolean | Ticket$ownerArgs<ExtArgs>
+  }
+
+  export type $TicketPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Ticket"
+    objects: {
+      item: Prisma.$OrderItemPayload<ExtArgs>
+      eventDate: Prisma.$EventDatePayload<ExtArgs>
+      zone: Prisma.$EventDateZonePayload<ExtArgs>
+      seat: Prisma.$SeatPayload<ExtArgs> | null
+      allocation: Prisma.$EventDateZoneAllocationPayload<ExtArgs> | null
+      owner: Prisma.$UserPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      ticketId: bigint
+      ownerUserId: bigint | null
+      orderItemId: bigint
+      eventId: bigint
+      eventDateId: bigint
+      eventDateZoneId: bigint
+      eventDateZoneAllocationId: bigint | null
+      seatId: bigint | null
+      pricePaid: Prisma.Decimal
+      currency: $Enums.CURRENCY
+      issuedAt: Date
+      status: $Enums.TICKET_STATUS
+    }, ExtArgs["result"]["ticket"]>
+    composites: {}
+  }
+
+  type TicketGetPayload<S extends boolean | null | undefined | TicketDefaultArgs> = $Result.GetResult<Prisma.$TicketPayload, S>
+
+  type TicketCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<TicketFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: TicketCountAggregateInputType | true
+    }
+
+  export interface TicketDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Ticket'], meta: { name: 'Ticket' } }
+    /**
+     * Find zero or one Ticket that matches the filter.
+     * @param {TicketFindUniqueArgs} args - Arguments to find a Ticket
+     * @example
+     * // Get one Ticket
+     * const ticket = await prisma.ticket.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends TicketFindUniqueArgs>(args: SelectSubset<T, TicketFindUniqueArgs<ExtArgs>>): Prisma__TicketClient<$Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Ticket that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {TicketFindUniqueOrThrowArgs} args - Arguments to find a Ticket
+     * @example
+     * // Get one Ticket
+     * const ticket = await prisma.ticket.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends TicketFindUniqueOrThrowArgs>(args: SelectSubset<T, TicketFindUniqueOrThrowArgs<ExtArgs>>): Prisma__TicketClient<$Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Ticket that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TicketFindFirstArgs} args - Arguments to find a Ticket
+     * @example
+     * // Get one Ticket
+     * const ticket = await prisma.ticket.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends TicketFindFirstArgs>(args?: SelectSubset<T, TicketFindFirstArgs<ExtArgs>>): Prisma__TicketClient<$Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Ticket that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TicketFindFirstOrThrowArgs} args - Arguments to find a Ticket
+     * @example
+     * // Get one Ticket
+     * const ticket = await prisma.ticket.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends TicketFindFirstOrThrowArgs>(args?: SelectSubset<T, TicketFindFirstOrThrowArgs<ExtArgs>>): Prisma__TicketClient<$Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Tickets that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TicketFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Tickets
+     * const tickets = await prisma.ticket.findMany()
+     * 
+     * // Get first 10 Tickets
+     * const tickets = await prisma.ticket.findMany({ take: 10 })
+     * 
+     * // Only select the `ticketId`
+     * const ticketWithTicketIdOnly = await prisma.ticket.findMany({ select: { ticketId: true } })
+     * 
+     */
+    findMany<T extends TicketFindManyArgs>(args?: SelectSubset<T, TicketFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Ticket.
+     * @param {TicketCreateArgs} args - Arguments to create a Ticket.
+     * @example
+     * // Create one Ticket
+     * const Ticket = await prisma.ticket.create({
+     *   data: {
+     *     // ... data to create a Ticket
+     *   }
+     * })
+     * 
+     */
+    create<T extends TicketCreateArgs>(args: SelectSubset<T, TicketCreateArgs<ExtArgs>>): Prisma__TicketClient<$Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Tickets.
+     * @param {TicketCreateManyArgs} args - Arguments to create many Tickets.
+     * @example
+     * // Create many Tickets
+     * const ticket = await prisma.ticket.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends TicketCreateManyArgs>(args?: SelectSubset<T, TicketCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Tickets and returns the data saved in the database.
+     * @param {TicketCreateManyAndReturnArgs} args - Arguments to create many Tickets.
+     * @example
+     * // Create many Tickets
+     * const ticket = await prisma.ticket.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Tickets and only return the `ticketId`
+     * const ticketWithTicketIdOnly = await prisma.ticket.createManyAndReturn({
+     *   select: { ticketId: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends TicketCreateManyAndReturnArgs>(args?: SelectSubset<T, TicketCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Ticket.
+     * @param {TicketDeleteArgs} args - Arguments to delete one Ticket.
+     * @example
+     * // Delete one Ticket
+     * const Ticket = await prisma.ticket.delete({
+     *   where: {
+     *     // ... filter to delete one Ticket
+     *   }
+     * })
+     * 
+     */
+    delete<T extends TicketDeleteArgs>(args: SelectSubset<T, TicketDeleteArgs<ExtArgs>>): Prisma__TicketClient<$Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Ticket.
+     * @param {TicketUpdateArgs} args - Arguments to update one Ticket.
+     * @example
+     * // Update one Ticket
+     * const ticket = await prisma.ticket.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends TicketUpdateArgs>(args: SelectSubset<T, TicketUpdateArgs<ExtArgs>>): Prisma__TicketClient<$Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Tickets.
+     * @param {TicketDeleteManyArgs} args - Arguments to filter Tickets to delete.
+     * @example
+     * // Delete a few Tickets
+     * const { count } = await prisma.ticket.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends TicketDeleteManyArgs>(args?: SelectSubset<T, TicketDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Tickets.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TicketUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Tickets
+     * const ticket = await prisma.ticket.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends TicketUpdateManyArgs>(args: SelectSubset<T, TicketUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Tickets and returns the data updated in the database.
+     * @param {TicketUpdateManyAndReturnArgs} args - Arguments to update many Tickets.
+     * @example
+     * // Update many Tickets
+     * const ticket = await prisma.ticket.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Tickets and only return the `ticketId`
+     * const ticketWithTicketIdOnly = await prisma.ticket.updateManyAndReturn({
+     *   select: { ticketId: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends TicketUpdateManyAndReturnArgs>(args: SelectSubset<T, TicketUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Ticket.
+     * @param {TicketUpsertArgs} args - Arguments to update or create a Ticket.
+     * @example
+     * // Update or create a Ticket
+     * const ticket = await prisma.ticket.upsert({
+     *   create: {
+     *     // ... data to create a Ticket
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Ticket we want to update
+     *   }
+     * })
+     */
+    upsert<T extends TicketUpsertArgs>(args: SelectSubset<T, TicketUpsertArgs<ExtArgs>>): Prisma__TicketClient<$Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Tickets.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TicketCountArgs} args - Arguments to filter Tickets to count.
+     * @example
+     * // Count the number of Tickets
+     * const count = await prisma.ticket.count({
+     *   where: {
+     *     // ... the filter for the Tickets we want to count
+     *   }
+     * })
+    **/
+    count<T extends TicketCountArgs>(
+      args?: Subset<T, TicketCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], TicketCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Ticket.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TicketAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends TicketAggregateArgs>(args: Subset<T, TicketAggregateArgs>): Prisma.PrismaPromise<GetTicketAggregateType<T>>
+
+    /**
+     * Group by Ticket.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TicketGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends TicketGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: TicketGroupByArgs['orderBy'] }
+        : { orderBy?: TicketGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, TicketGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetTicketGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Ticket model
+   */
+  readonly fields: TicketFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Ticket.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__TicketClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    item<T extends OrderItemDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OrderItemDefaultArgs<ExtArgs>>): Prisma__OrderItemClient<$Result.GetResult<Prisma.$OrderItemPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    eventDate<T extends EventDateDefaultArgs<ExtArgs> = {}>(args?: Subset<T, EventDateDefaultArgs<ExtArgs>>): Prisma__EventDateClient<$Result.GetResult<Prisma.$EventDatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    zone<T extends EventDateZoneDefaultArgs<ExtArgs> = {}>(args?: Subset<T, EventDateZoneDefaultArgs<ExtArgs>>): Prisma__EventDateZoneClient<$Result.GetResult<Prisma.$EventDateZonePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    seat<T extends Ticket$seatArgs<ExtArgs> = {}>(args?: Subset<T, Ticket$seatArgs<ExtArgs>>): Prisma__SeatClient<$Result.GetResult<Prisma.$SeatPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    allocation<T extends Ticket$allocationArgs<ExtArgs> = {}>(args?: Subset<T, Ticket$allocationArgs<ExtArgs>>): Prisma__EventDateZoneAllocationClient<$Result.GetResult<Prisma.$EventDateZoneAllocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    owner<T extends Ticket$ownerArgs<ExtArgs> = {}>(args?: Subset<T, Ticket$ownerArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Ticket model
+   */
+  interface TicketFieldRefs {
+    readonly ticketId: FieldRef<"Ticket", 'BigInt'>
+    readonly ownerUserId: FieldRef<"Ticket", 'BigInt'>
+    readonly orderItemId: FieldRef<"Ticket", 'BigInt'>
+    readonly eventId: FieldRef<"Ticket", 'BigInt'>
+    readonly eventDateId: FieldRef<"Ticket", 'BigInt'>
+    readonly eventDateZoneId: FieldRef<"Ticket", 'BigInt'>
+    readonly eventDateZoneAllocationId: FieldRef<"Ticket", 'BigInt'>
+    readonly seatId: FieldRef<"Ticket", 'BigInt'>
+    readonly pricePaid: FieldRef<"Ticket", 'Decimal'>
+    readonly currency: FieldRef<"Ticket", 'CURRENCY'>
+    readonly issuedAt: FieldRef<"Ticket", 'DateTime'>
+    readonly status: FieldRef<"Ticket", 'TICKET_STATUS'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Ticket findUnique
+   */
+  export type TicketFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ticket
+     */
+    select?: TicketSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ticket
+     */
+    omit?: TicketOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TicketInclude<ExtArgs> | null
+    /**
+     * Filter, which Ticket to fetch.
+     */
+    where: TicketWhereUniqueInput
+  }
+
+  /**
+   * Ticket findUniqueOrThrow
+   */
+  export type TicketFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ticket
+     */
+    select?: TicketSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ticket
+     */
+    omit?: TicketOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TicketInclude<ExtArgs> | null
+    /**
+     * Filter, which Ticket to fetch.
+     */
+    where: TicketWhereUniqueInput
+  }
+
+  /**
+   * Ticket findFirst
+   */
+  export type TicketFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ticket
+     */
+    select?: TicketSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ticket
+     */
+    omit?: TicketOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TicketInclude<ExtArgs> | null
+    /**
+     * Filter, which Ticket to fetch.
+     */
+    where?: TicketWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Tickets to fetch.
+     */
+    orderBy?: TicketOrderByWithRelationInput | TicketOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Tickets.
+     */
+    cursor?: TicketWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Tickets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Tickets.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Tickets.
+     */
+    distinct?: TicketScalarFieldEnum | TicketScalarFieldEnum[]
+  }
+
+  /**
+   * Ticket findFirstOrThrow
+   */
+  export type TicketFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ticket
+     */
+    select?: TicketSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ticket
+     */
+    omit?: TicketOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TicketInclude<ExtArgs> | null
+    /**
+     * Filter, which Ticket to fetch.
+     */
+    where?: TicketWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Tickets to fetch.
+     */
+    orderBy?: TicketOrderByWithRelationInput | TicketOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Tickets.
+     */
+    cursor?: TicketWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Tickets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Tickets.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Tickets.
+     */
+    distinct?: TicketScalarFieldEnum | TicketScalarFieldEnum[]
+  }
+
+  /**
+   * Ticket findMany
+   */
+  export type TicketFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ticket
+     */
+    select?: TicketSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ticket
+     */
+    omit?: TicketOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TicketInclude<ExtArgs> | null
+    /**
+     * Filter, which Tickets to fetch.
+     */
+    where?: TicketWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Tickets to fetch.
+     */
+    orderBy?: TicketOrderByWithRelationInput | TicketOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Tickets.
+     */
+    cursor?: TicketWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Tickets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Tickets.
+     */
+    skip?: number
+    distinct?: TicketScalarFieldEnum | TicketScalarFieldEnum[]
+  }
+
+  /**
+   * Ticket create
+   */
+  export type TicketCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ticket
+     */
+    select?: TicketSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ticket
+     */
+    omit?: TicketOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TicketInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Ticket.
+     */
+    data: XOR<TicketCreateInput, TicketUncheckedCreateInput>
+  }
+
+  /**
+   * Ticket createMany
+   */
+  export type TicketCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Tickets.
+     */
+    data: TicketCreateManyInput | TicketCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Ticket createManyAndReturn
+   */
+  export type TicketCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ticket
+     */
+    select?: TicketSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ticket
+     */
+    omit?: TicketOmit<ExtArgs> | null
+    /**
+     * The data used to create many Tickets.
+     */
+    data: TicketCreateManyInput | TicketCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TicketIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Ticket update
+   */
+  export type TicketUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ticket
+     */
+    select?: TicketSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ticket
+     */
+    omit?: TicketOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TicketInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Ticket.
+     */
+    data: XOR<TicketUpdateInput, TicketUncheckedUpdateInput>
+    /**
+     * Choose, which Ticket to update.
+     */
+    where: TicketWhereUniqueInput
+  }
+
+  /**
+   * Ticket updateMany
+   */
+  export type TicketUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Tickets.
+     */
+    data: XOR<TicketUpdateManyMutationInput, TicketUncheckedUpdateManyInput>
+    /**
+     * Filter which Tickets to update
+     */
+    where?: TicketWhereInput
+    /**
+     * Limit how many Tickets to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Ticket updateManyAndReturn
+   */
+  export type TicketUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ticket
+     */
+    select?: TicketSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ticket
+     */
+    omit?: TicketOmit<ExtArgs> | null
+    /**
+     * The data used to update Tickets.
+     */
+    data: XOR<TicketUpdateManyMutationInput, TicketUncheckedUpdateManyInput>
+    /**
+     * Filter which Tickets to update
+     */
+    where?: TicketWhereInput
+    /**
+     * Limit how many Tickets to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TicketIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Ticket upsert
+   */
+  export type TicketUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ticket
+     */
+    select?: TicketSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ticket
+     */
+    omit?: TicketOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TicketInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Ticket to update in case it exists.
+     */
+    where: TicketWhereUniqueInput
+    /**
+     * In case the Ticket found by the `where` argument doesn't exist, create a new Ticket with this data.
+     */
+    create: XOR<TicketCreateInput, TicketUncheckedCreateInput>
+    /**
+     * In case the Ticket was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<TicketUpdateInput, TicketUncheckedUpdateInput>
+  }
+
+  /**
+   * Ticket delete
+   */
+  export type TicketDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ticket
+     */
+    select?: TicketSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ticket
+     */
+    omit?: TicketOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TicketInclude<ExtArgs> | null
+    /**
+     * Filter which Ticket to delete.
+     */
+    where: TicketWhereUniqueInput
+  }
+
+  /**
+   * Ticket deleteMany
+   */
+  export type TicketDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Tickets to delete
+     */
+    where?: TicketWhereInput
+    /**
+     * Limit how many Tickets to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Ticket.seat
+   */
+  export type Ticket$seatArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Seat
+     */
+    select?: SeatSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Seat
+     */
+    omit?: SeatOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SeatInclude<ExtArgs> | null
+    where?: SeatWhereInput
+  }
+
+  /**
+   * Ticket.allocation
+   */
+  export type Ticket$allocationArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventDateZoneAllocation
+     */
+    select?: EventDateZoneAllocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EventDateZoneAllocation
+     */
+    omit?: EventDateZoneAllocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventDateZoneAllocationInclude<ExtArgs> | null
+    where?: EventDateZoneAllocationWhereInput
+  }
+
+  /**
+   * Ticket.owner
+   */
+  export type Ticket$ownerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * Ticket without action
+   */
+  export type TicketDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ticket
+     */
+    select?: TicketSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ticket
+     */
+    omit?: TicketOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TicketInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Hold
+   */
+
+  export type AggregateHold = {
+    _count: HoldCountAggregateOutputType | null
+    _avg: HoldAvgAggregateOutputType | null
+    _sum: HoldSumAggregateOutputType | null
+    _min: HoldMinAggregateOutputType | null
+    _max: HoldMaxAggregateOutputType | null
+  }
+
+  export type HoldAvgAggregateOutputType = {
+    holdId: number | null
+    eventDateId: number | null
+    eventDateZoneId: number | null
+    seatId: number | null
+    quantity: number | null
+    buyerUserId: number | null
+  }
+
+  export type HoldSumAggregateOutputType = {
+    holdId: bigint | null
+    eventDateId: bigint | null
+    eventDateZoneId: bigint | null
+    seatId: bigint | null
+    quantity: number | null
+    buyerUserId: bigint | null
+  }
+
+  export type HoldMinAggregateOutputType = {
+    holdId: bigint | null
+    eventDateId: bigint | null
+    eventDateZoneId: bigint | null
+    seatId: bigint | null
+    quantity: number | null
+    buyerUserId: bigint | null
+    expiresAt: Date | null
+    createdAt: Date | null
+  }
+
+  export type HoldMaxAggregateOutputType = {
+    holdId: bigint | null
+    eventDateId: bigint | null
+    eventDateZoneId: bigint | null
+    seatId: bigint | null
+    quantity: number | null
+    buyerUserId: bigint | null
+    expiresAt: Date | null
+    createdAt: Date | null
+  }
+
+  export type HoldCountAggregateOutputType = {
+    holdId: number
+    eventDateId: number
+    eventDateZoneId: number
+    seatId: number
+    quantity: number
+    buyerUserId: number
+    expiresAt: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type HoldAvgAggregateInputType = {
+    holdId?: true
+    eventDateId?: true
+    eventDateZoneId?: true
+    seatId?: true
+    quantity?: true
+    buyerUserId?: true
+  }
+
+  export type HoldSumAggregateInputType = {
+    holdId?: true
+    eventDateId?: true
+    eventDateZoneId?: true
+    seatId?: true
+    quantity?: true
+    buyerUserId?: true
+  }
+
+  export type HoldMinAggregateInputType = {
+    holdId?: true
+    eventDateId?: true
+    eventDateZoneId?: true
+    seatId?: true
+    quantity?: true
+    buyerUserId?: true
+    expiresAt?: true
+    createdAt?: true
+  }
+
+  export type HoldMaxAggregateInputType = {
+    holdId?: true
+    eventDateId?: true
+    eventDateZoneId?: true
+    seatId?: true
+    quantity?: true
+    buyerUserId?: true
+    expiresAt?: true
+    createdAt?: true
+  }
+
+  export type HoldCountAggregateInputType = {
+    holdId?: true
+    eventDateId?: true
+    eventDateZoneId?: true
+    seatId?: true
+    quantity?: true
+    buyerUserId?: true
+    expiresAt?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type HoldAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Hold to aggregate.
+     */
+    where?: HoldWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Holds to fetch.
+     */
+    orderBy?: HoldOrderByWithRelationInput | HoldOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: HoldWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Holds from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Holds.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Holds
+    **/
+    _count?: true | HoldCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: HoldAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: HoldSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: HoldMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: HoldMaxAggregateInputType
+  }
+
+  export type GetHoldAggregateType<T extends HoldAggregateArgs> = {
+        [P in keyof T & keyof AggregateHold]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateHold[P]>
+      : GetScalarType<T[P], AggregateHold[P]>
+  }
+
+
+
+
+  export type HoldGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: HoldWhereInput
+    orderBy?: HoldOrderByWithAggregationInput | HoldOrderByWithAggregationInput[]
+    by: HoldScalarFieldEnum[] | HoldScalarFieldEnum
+    having?: HoldScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: HoldCountAggregateInputType | true
+    _avg?: HoldAvgAggregateInputType
+    _sum?: HoldSumAggregateInputType
+    _min?: HoldMinAggregateInputType
+    _max?: HoldMaxAggregateInputType
+  }
+
+  export type HoldGroupByOutputType = {
+    holdId: bigint
+    eventDateId: bigint
+    eventDateZoneId: bigint
+    seatId: bigint | null
+    quantity: number | null
+    buyerUserId: bigint | null
+    expiresAt: Date
+    createdAt: Date
+    _count: HoldCountAggregateOutputType | null
+    _avg: HoldAvgAggregateOutputType | null
+    _sum: HoldSumAggregateOutputType | null
+    _min: HoldMinAggregateOutputType | null
+    _max: HoldMaxAggregateOutputType | null
+  }
+
+  type GetHoldGroupByPayload<T extends HoldGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<HoldGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof HoldGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], HoldGroupByOutputType[P]>
+            : GetScalarType<T[P], HoldGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type HoldSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    holdId?: boolean
+    eventDateId?: boolean
+    eventDateZoneId?: boolean
+    seatId?: boolean
+    quantity?: boolean
+    buyerUserId?: boolean
+    expiresAt?: boolean
+    createdAt?: boolean
+    eventDate?: boolean | EventDateDefaultArgs<ExtArgs>
+    zone?: boolean | EventDateZoneDefaultArgs<ExtArgs>
+    seat?: boolean | Hold$seatArgs<ExtArgs>
+  }, ExtArgs["result"]["hold"]>
+
+  export type HoldSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    holdId?: boolean
+    eventDateId?: boolean
+    eventDateZoneId?: boolean
+    seatId?: boolean
+    quantity?: boolean
+    buyerUserId?: boolean
+    expiresAt?: boolean
+    createdAt?: boolean
+    eventDate?: boolean | EventDateDefaultArgs<ExtArgs>
+    zone?: boolean | EventDateZoneDefaultArgs<ExtArgs>
+    seat?: boolean | Hold$seatArgs<ExtArgs>
+  }, ExtArgs["result"]["hold"]>
+
+  export type HoldSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    holdId?: boolean
+    eventDateId?: boolean
+    eventDateZoneId?: boolean
+    seatId?: boolean
+    quantity?: boolean
+    buyerUserId?: boolean
+    expiresAt?: boolean
+    createdAt?: boolean
+    eventDate?: boolean | EventDateDefaultArgs<ExtArgs>
+    zone?: boolean | EventDateZoneDefaultArgs<ExtArgs>
+    seat?: boolean | Hold$seatArgs<ExtArgs>
+  }, ExtArgs["result"]["hold"]>
+
+  export type HoldSelectScalar = {
+    holdId?: boolean
+    eventDateId?: boolean
+    eventDateZoneId?: boolean
+    seatId?: boolean
+    quantity?: boolean
+    buyerUserId?: boolean
+    expiresAt?: boolean
+    createdAt?: boolean
+  }
+
+  export type HoldOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"holdId" | "eventDateId" | "eventDateZoneId" | "seatId" | "quantity" | "buyerUserId" | "expiresAt" | "createdAt", ExtArgs["result"]["hold"]>
+  export type HoldInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    eventDate?: boolean | EventDateDefaultArgs<ExtArgs>
+    zone?: boolean | EventDateZoneDefaultArgs<ExtArgs>
+    seat?: boolean | Hold$seatArgs<ExtArgs>
+  }
+  export type HoldIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    eventDate?: boolean | EventDateDefaultArgs<ExtArgs>
+    zone?: boolean | EventDateZoneDefaultArgs<ExtArgs>
+    seat?: boolean | Hold$seatArgs<ExtArgs>
+  }
+  export type HoldIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    eventDate?: boolean | EventDateDefaultArgs<ExtArgs>
+    zone?: boolean | EventDateZoneDefaultArgs<ExtArgs>
+    seat?: boolean | Hold$seatArgs<ExtArgs>
+  }
+
+  export type $HoldPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Hold"
+    objects: {
+      eventDate: Prisma.$EventDatePayload<ExtArgs>
+      zone: Prisma.$EventDateZonePayload<ExtArgs>
+      seat: Prisma.$SeatPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      holdId: bigint
+      eventDateId: bigint
+      eventDateZoneId: bigint
+      seatId: bigint | null
+      quantity: number | null
+      buyerUserId: bigint | null
+      expiresAt: Date
+      createdAt: Date
+    }, ExtArgs["result"]["hold"]>
+    composites: {}
+  }
+
+  type HoldGetPayload<S extends boolean | null | undefined | HoldDefaultArgs> = $Result.GetResult<Prisma.$HoldPayload, S>
+
+  type HoldCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<HoldFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: HoldCountAggregateInputType | true
+    }
+
+  export interface HoldDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Hold'], meta: { name: 'Hold' } }
+    /**
+     * Find zero or one Hold that matches the filter.
+     * @param {HoldFindUniqueArgs} args - Arguments to find a Hold
+     * @example
+     * // Get one Hold
+     * const hold = await prisma.hold.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends HoldFindUniqueArgs>(args: SelectSubset<T, HoldFindUniqueArgs<ExtArgs>>): Prisma__HoldClient<$Result.GetResult<Prisma.$HoldPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Hold that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {HoldFindUniqueOrThrowArgs} args - Arguments to find a Hold
+     * @example
+     * // Get one Hold
+     * const hold = await prisma.hold.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends HoldFindUniqueOrThrowArgs>(args: SelectSubset<T, HoldFindUniqueOrThrowArgs<ExtArgs>>): Prisma__HoldClient<$Result.GetResult<Prisma.$HoldPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Hold that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HoldFindFirstArgs} args - Arguments to find a Hold
+     * @example
+     * // Get one Hold
+     * const hold = await prisma.hold.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends HoldFindFirstArgs>(args?: SelectSubset<T, HoldFindFirstArgs<ExtArgs>>): Prisma__HoldClient<$Result.GetResult<Prisma.$HoldPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Hold that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HoldFindFirstOrThrowArgs} args - Arguments to find a Hold
+     * @example
+     * // Get one Hold
+     * const hold = await prisma.hold.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends HoldFindFirstOrThrowArgs>(args?: SelectSubset<T, HoldFindFirstOrThrowArgs<ExtArgs>>): Prisma__HoldClient<$Result.GetResult<Prisma.$HoldPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Holds that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HoldFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Holds
+     * const holds = await prisma.hold.findMany()
+     * 
+     * // Get first 10 Holds
+     * const holds = await prisma.hold.findMany({ take: 10 })
+     * 
+     * // Only select the `holdId`
+     * const holdWithHoldIdOnly = await prisma.hold.findMany({ select: { holdId: true } })
+     * 
+     */
+    findMany<T extends HoldFindManyArgs>(args?: SelectSubset<T, HoldFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HoldPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Hold.
+     * @param {HoldCreateArgs} args - Arguments to create a Hold.
+     * @example
+     * // Create one Hold
+     * const Hold = await prisma.hold.create({
+     *   data: {
+     *     // ... data to create a Hold
+     *   }
+     * })
+     * 
+     */
+    create<T extends HoldCreateArgs>(args: SelectSubset<T, HoldCreateArgs<ExtArgs>>): Prisma__HoldClient<$Result.GetResult<Prisma.$HoldPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Holds.
+     * @param {HoldCreateManyArgs} args - Arguments to create many Holds.
+     * @example
+     * // Create many Holds
+     * const hold = await prisma.hold.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends HoldCreateManyArgs>(args?: SelectSubset<T, HoldCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Holds and returns the data saved in the database.
+     * @param {HoldCreateManyAndReturnArgs} args - Arguments to create many Holds.
+     * @example
+     * // Create many Holds
+     * const hold = await prisma.hold.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Holds and only return the `holdId`
+     * const holdWithHoldIdOnly = await prisma.hold.createManyAndReturn({
+     *   select: { holdId: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends HoldCreateManyAndReturnArgs>(args?: SelectSubset<T, HoldCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HoldPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Hold.
+     * @param {HoldDeleteArgs} args - Arguments to delete one Hold.
+     * @example
+     * // Delete one Hold
+     * const Hold = await prisma.hold.delete({
+     *   where: {
+     *     // ... filter to delete one Hold
+     *   }
+     * })
+     * 
+     */
+    delete<T extends HoldDeleteArgs>(args: SelectSubset<T, HoldDeleteArgs<ExtArgs>>): Prisma__HoldClient<$Result.GetResult<Prisma.$HoldPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Hold.
+     * @param {HoldUpdateArgs} args - Arguments to update one Hold.
+     * @example
+     * // Update one Hold
+     * const hold = await prisma.hold.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends HoldUpdateArgs>(args: SelectSubset<T, HoldUpdateArgs<ExtArgs>>): Prisma__HoldClient<$Result.GetResult<Prisma.$HoldPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Holds.
+     * @param {HoldDeleteManyArgs} args - Arguments to filter Holds to delete.
+     * @example
+     * // Delete a few Holds
+     * const { count } = await prisma.hold.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends HoldDeleteManyArgs>(args?: SelectSubset<T, HoldDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Holds.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HoldUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Holds
+     * const hold = await prisma.hold.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends HoldUpdateManyArgs>(args: SelectSubset<T, HoldUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Holds and returns the data updated in the database.
+     * @param {HoldUpdateManyAndReturnArgs} args - Arguments to update many Holds.
+     * @example
+     * // Update many Holds
+     * const hold = await prisma.hold.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Holds and only return the `holdId`
+     * const holdWithHoldIdOnly = await prisma.hold.updateManyAndReturn({
+     *   select: { holdId: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends HoldUpdateManyAndReturnArgs>(args: SelectSubset<T, HoldUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$HoldPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Hold.
+     * @param {HoldUpsertArgs} args - Arguments to update or create a Hold.
+     * @example
+     * // Update or create a Hold
+     * const hold = await prisma.hold.upsert({
+     *   create: {
+     *     // ... data to create a Hold
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Hold we want to update
+     *   }
+     * })
+     */
+    upsert<T extends HoldUpsertArgs>(args: SelectSubset<T, HoldUpsertArgs<ExtArgs>>): Prisma__HoldClient<$Result.GetResult<Prisma.$HoldPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Holds.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HoldCountArgs} args - Arguments to filter Holds to count.
+     * @example
+     * // Count the number of Holds
+     * const count = await prisma.hold.count({
+     *   where: {
+     *     // ... the filter for the Holds we want to count
+     *   }
+     * })
+    **/
+    count<T extends HoldCountArgs>(
+      args?: Subset<T, HoldCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], HoldCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Hold.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HoldAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends HoldAggregateArgs>(args: Subset<T, HoldAggregateArgs>): Prisma.PrismaPromise<GetHoldAggregateType<T>>
+
+    /**
+     * Group by Hold.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {HoldGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends HoldGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: HoldGroupByArgs['orderBy'] }
+        : { orderBy?: HoldGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, HoldGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetHoldGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Hold model
+   */
+  readonly fields: HoldFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Hold.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__HoldClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    eventDate<T extends EventDateDefaultArgs<ExtArgs> = {}>(args?: Subset<T, EventDateDefaultArgs<ExtArgs>>): Prisma__EventDateClient<$Result.GetResult<Prisma.$EventDatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    zone<T extends EventDateZoneDefaultArgs<ExtArgs> = {}>(args?: Subset<T, EventDateZoneDefaultArgs<ExtArgs>>): Prisma__EventDateZoneClient<$Result.GetResult<Prisma.$EventDateZonePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    seat<T extends Hold$seatArgs<ExtArgs> = {}>(args?: Subset<T, Hold$seatArgs<ExtArgs>>): Prisma__SeatClient<$Result.GetResult<Prisma.$SeatPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Hold model
+   */
+  interface HoldFieldRefs {
+    readonly holdId: FieldRef<"Hold", 'BigInt'>
+    readonly eventDateId: FieldRef<"Hold", 'BigInt'>
+    readonly eventDateZoneId: FieldRef<"Hold", 'BigInt'>
+    readonly seatId: FieldRef<"Hold", 'BigInt'>
+    readonly quantity: FieldRef<"Hold", 'Int'>
+    readonly buyerUserId: FieldRef<"Hold", 'BigInt'>
+    readonly expiresAt: FieldRef<"Hold", 'DateTime'>
+    readonly createdAt: FieldRef<"Hold", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Hold findUnique
+   */
+  export type HoldFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Hold
+     */
+    select?: HoldSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Hold
+     */
+    omit?: HoldOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HoldInclude<ExtArgs> | null
+    /**
+     * Filter, which Hold to fetch.
+     */
+    where: HoldWhereUniqueInput
+  }
+
+  /**
+   * Hold findUniqueOrThrow
+   */
+  export type HoldFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Hold
+     */
+    select?: HoldSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Hold
+     */
+    omit?: HoldOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HoldInclude<ExtArgs> | null
+    /**
+     * Filter, which Hold to fetch.
+     */
+    where: HoldWhereUniqueInput
+  }
+
+  /**
+   * Hold findFirst
+   */
+  export type HoldFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Hold
+     */
+    select?: HoldSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Hold
+     */
+    omit?: HoldOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HoldInclude<ExtArgs> | null
+    /**
+     * Filter, which Hold to fetch.
+     */
+    where?: HoldWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Holds to fetch.
+     */
+    orderBy?: HoldOrderByWithRelationInput | HoldOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Holds.
+     */
+    cursor?: HoldWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Holds from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Holds.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Holds.
+     */
+    distinct?: HoldScalarFieldEnum | HoldScalarFieldEnum[]
+  }
+
+  /**
+   * Hold findFirstOrThrow
+   */
+  export type HoldFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Hold
+     */
+    select?: HoldSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Hold
+     */
+    omit?: HoldOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HoldInclude<ExtArgs> | null
+    /**
+     * Filter, which Hold to fetch.
+     */
+    where?: HoldWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Holds to fetch.
+     */
+    orderBy?: HoldOrderByWithRelationInput | HoldOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Holds.
+     */
+    cursor?: HoldWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Holds from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Holds.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Holds.
+     */
+    distinct?: HoldScalarFieldEnum | HoldScalarFieldEnum[]
+  }
+
+  /**
+   * Hold findMany
+   */
+  export type HoldFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Hold
+     */
+    select?: HoldSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Hold
+     */
+    omit?: HoldOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HoldInclude<ExtArgs> | null
+    /**
+     * Filter, which Holds to fetch.
+     */
+    where?: HoldWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Holds to fetch.
+     */
+    orderBy?: HoldOrderByWithRelationInput | HoldOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Holds.
+     */
+    cursor?: HoldWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Holds from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Holds.
+     */
+    skip?: number
+    distinct?: HoldScalarFieldEnum | HoldScalarFieldEnum[]
+  }
+
+  /**
+   * Hold create
+   */
+  export type HoldCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Hold
+     */
+    select?: HoldSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Hold
+     */
+    omit?: HoldOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HoldInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Hold.
+     */
+    data: XOR<HoldCreateInput, HoldUncheckedCreateInput>
+  }
+
+  /**
+   * Hold createMany
+   */
+  export type HoldCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Holds.
+     */
+    data: HoldCreateManyInput | HoldCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Hold createManyAndReturn
+   */
+  export type HoldCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Hold
+     */
+    select?: HoldSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Hold
+     */
+    omit?: HoldOmit<ExtArgs> | null
+    /**
+     * The data used to create many Holds.
+     */
+    data: HoldCreateManyInput | HoldCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HoldIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Hold update
+   */
+  export type HoldUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Hold
+     */
+    select?: HoldSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Hold
+     */
+    omit?: HoldOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HoldInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Hold.
+     */
+    data: XOR<HoldUpdateInput, HoldUncheckedUpdateInput>
+    /**
+     * Choose, which Hold to update.
+     */
+    where: HoldWhereUniqueInput
+  }
+
+  /**
+   * Hold updateMany
+   */
+  export type HoldUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Holds.
+     */
+    data: XOR<HoldUpdateManyMutationInput, HoldUncheckedUpdateManyInput>
+    /**
+     * Filter which Holds to update
+     */
+    where?: HoldWhereInput
+    /**
+     * Limit how many Holds to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Hold updateManyAndReturn
+   */
+  export type HoldUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Hold
+     */
+    select?: HoldSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Hold
+     */
+    omit?: HoldOmit<ExtArgs> | null
+    /**
+     * The data used to update Holds.
+     */
+    data: XOR<HoldUpdateManyMutationInput, HoldUncheckedUpdateManyInput>
+    /**
+     * Filter which Holds to update
+     */
+    where?: HoldWhereInput
+    /**
+     * Limit how many Holds to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HoldIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Hold upsert
+   */
+  export type HoldUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Hold
+     */
+    select?: HoldSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Hold
+     */
+    omit?: HoldOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HoldInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Hold to update in case it exists.
+     */
+    where: HoldWhereUniqueInput
+    /**
+     * In case the Hold found by the `where` argument doesn't exist, create a new Hold with this data.
+     */
+    create: XOR<HoldCreateInput, HoldUncheckedCreateInput>
+    /**
+     * In case the Hold was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<HoldUpdateInput, HoldUncheckedUpdateInput>
+  }
+
+  /**
+   * Hold delete
+   */
+  export type HoldDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Hold
+     */
+    select?: HoldSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Hold
+     */
+    omit?: HoldOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HoldInclude<ExtArgs> | null
+    /**
+     * Filter which Hold to delete.
+     */
+    where: HoldWhereUniqueInput
+  }
+
+  /**
+   * Hold deleteMany
+   */
+  export type HoldDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Holds to delete
+     */
+    where?: HoldWhereInput
+    /**
+     * Limit how many Holds to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Hold.seat
+   */
+  export type Hold$seatArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Seat
+     */
+    select?: SeatSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Seat
+     */
+    omit?: SeatOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SeatInclude<ExtArgs> | null
+    where?: SeatWhereInput
+  }
+
+  /**
+   * Hold without action
+   */
+  export type HoldDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Hold
+     */
+    select?: HoldSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Hold
+     */
+    omit?: HoldOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: HoldInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -19774,7 +25706,9 @@ export namespace Prisma {
     seatId: 'seatId',
     seatMapId: 'seatMapId',
     rowNumber: 'rowNumber',
-    colNumber: 'colNumber'
+    colNumber: 'colNumber',
+    status: 'status',
+    holdUntil: 'holdUntil'
   };
 
   export type SeatScalarFieldEnum = (typeof SeatScalarFieldEnum)[keyof typeof SeatScalarFieldEnum]
@@ -19807,6 +25741,68 @@ export namespace Prisma {
   };
 
   export type EventSalesPhaseScalarFieldEnum = (typeof EventSalesPhaseScalarFieldEnum)[keyof typeof EventSalesPhaseScalarFieldEnum]
+
+
+  export const OrderScalarFieldEnum: {
+    orderId: 'orderId',
+    buyerUserId: 'buyerUserId',
+    status: 'status',
+    currency: 'currency',
+    totalAmount: 'totalAmount',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum]
+
+
+  export const OrderItemScalarFieldEnum: {
+    orderItemId: 'orderItemId',
+    orderId: 'orderId',
+    eventId: 'eventId',
+    eventDateId: 'eventDateId',
+    eventDateZoneId: 'eventDateZoneId',
+    eventDateZoneAllocationId: 'eventDateZoneAllocationId',
+    quantity: 'quantity',
+    seatId: 'seatId',
+    unitPrice: 'unitPrice',
+    discountAmount: 'discountAmount',
+    finalPrice: 'finalPrice'
+  };
+
+  export type OrderItemScalarFieldEnum = (typeof OrderItemScalarFieldEnum)[keyof typeof OrderItemScalarFieldEnum]
+
+
+  export const TicketScalarFieldEnum: {
+    ticketId: 'ticketId',
+    ownerUserId: 'ownerUserId',
+    orderItemId: 'orderItemId',
+    eventId: 'eventId',
+    eventDateId: 'eventDateId',
+    eventDateZoneId: 'eventDateZoneId',
+    eventDateZoneAllocationId: 'eventDateZoneAllocationId',
+    seatId: 'seatId',
+    pricePaid: 'pricePaid',
+    currency: 'currency',
+    issuedAt: 'issuedAt',
+    status: 'status'
+  };
+
+  export type TicketScalarFieldEnum = (typeof TicketScalarFieldEnum)[keyof typeof TicketScalarFieldEnum]
+
+
+  export const HoldScalarFieldEnum: {
+    holdId: 'holdId',
+    eventDateId: 'eventDateId',
+    eventDateZoneId: 'eventDateZoneId',
+    seatId: 'seatId',
+    quantity: 'quantity',
+    buyerUserId: 'buyerUserId',
+    expiresAt: 'expiresAt',
+    createdAt: 'createdAt'
+  };
+
+  export type HoldScalarFieldEnum = (typeof HoldScalarFieldEnum)[keyof typeof HoldScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -20014,6 +26010,48 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'SEAT_STATUS'
+   */
+  export type EnumSEAT_STATUSFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SEAT_STATUS'>
+    
+
+
+  /**
+   * Reference to a field of type 'SEAT_STATUS[]'
+   */
+  export type ListEnumSEAT_STATUSFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SEAT_STATUS[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'ORDER_STATUS'
+   */
+  export type EnumORDER_STATUSFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ORDER_STATUS'>
+    
+
+
+  /**
+   * Reference to a field of type 'ORDER_STATUS[]'
+   */
+  export type ListEnumORDER_STATUSFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ORDER_STATUS[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'TICKET_STATUS'
+   */
+  export type EnumTICKET_STATUSFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TICKET_STATUS'>
+    
+
+
+  /**
+   * Reference to a field of type 'TICKET_STATUS[]'
+   */
+  export type ListEnumTICKET_STATUSFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TICKET_STATUS[]'>
+    
+
+
+  /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -20047,6 +26085,7 @@ export namespace Prisma {
     password?: XOR<PasswordUserNullableScalarRelationFilter, PasswordUserWhereInput> | null
     oauths?: OAuthUserListRelationFilter
     organizer?: XOR<OrganizerNullableScalarRelationFilter, OrganizerWhereInput> | null
+    Ticket?: TicketListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -20063,6 +26102,7 @@ export namespace Prisma {
     password?: PasswordUserOrderByWithRelationInput
     oauths?: OAuthUserOrderByRelationAggregateInput
     organizer?: OrganizerOrderByWithRelationInput
+    Ticket?: TicketOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -20082,6 +26122,7 @@ export namespace Prisma {
     password?: XOR<PasswordUserNullableScalarRelationFilter, PasswordUserWhereInput> | null
     oauths?: OAuthUserListRelationFilter
     organizer?: XOR<OrganizerNullableScalarRelationFilter, OrganizerWhereInput> | null
+    Ticket?: TicketListRelationFilter
   }, "userId" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -20627,6 +26668,9 @@ export namespace Prisma {
     endAt?: DateTimeFilter<"EventDate"> | Date | string
     event?: XOR<EventScalarRelationFilter, EventWhereInput>
     zoneDates?: EventDateZoneListRelationFilter
+    OrderItem?: OrderItemListRelationFilter
+    Ticket?: TicketListRelationFilter
+    Hold?: HoldListRelationFilter
   }
 
   export type EventDateOrderByWithRelationInput = {
@@ -20636,6 +26680,9 @@ export namespace Prisma {
     endAt?: SortOrder
     event?: EventOrderByWithRelationInput
     zoneDates?: EventDateZoneOrderByRelationAggregateInput
+    OrderItem?: OrderItemOrderByRelationAggregateInput
+    Ticket?: TicketOrderByRelationAggregateInput
+    Hold?: HoldOrderByRelationAggregateInput
   }
 
   export type EventDateWhereUniqueInput = Prisma.AtLeast<{
@@ -20648,6 +26695,9 @@ export namespace Prisma {
     endAt?: DateTimeFilter<"EventDate"> | Date | string
     event?: XOR<EventScalarRelationFilter, EventWhereInput>
     zoneDates?: EventDateZoneListRelationFilter
+    OrderItem?: OrderItemListRelationFilter
+    Ticket?: TicketListRelationFilter
+    Hold?: HoldListRelationFilter
   }, "eventDateId">
 
   export type EventDateOrderByWithAggregationInput = {
@@ -20690,6 +26740,9 @@ export namespace Prisma {
     eventDate?: XOR<EventDateScalarRelationFilter, EventDateWhereInput>
     seatMap?: XOR<SeatMapNullableScalarRelationFilter, SeatMapWhereInput> | null
     allocations?: EventDateZoneAllocationListRelationFilter
+    OrderItem?: OrderItemListRelationFilter
+    Ticket?: TicketListRelationFilter
+    Hold?: HoldListRelationFilter
   }
 
   export type EventDateZoneOrderByWithRelationInput = {
@@ -20707,6 +26760,9 @@ export namespace Prisma {
     eventDate?: EventDateOrderByWithRelationInput
     seatMap?: SeatMapOrderByWithRelationInput
     allocations?: EventDateZoneAllocationOrderByRelationAggregateInput
+    OrderItem?: OrderItemOrderByRelationAggregateInput
+    Ticket?: TicketOrderByRelationAggregateInput
+    Hold?: HoldOrderByRelationAggregateInput
   }
 
   export type EventDateZoneWhereUniqueInput = Prisma.AtLeast<{
@@ -20727,6 +26783,9 @@ export namespace Prisma {
     eventDate?: XOR<EventDateScalarRelationFilter, EventDateWhereInput>
     seatMap?: XOR<SeatMapNullableScalarRelationFilter, SeatMapWhereInput> | null
     allocations?: EventDateZoneAllocationListRelationFilter
+    OrderItem?: OrderItemListRelationFilter
+    Ticket?: TicketListRelationFilter
+    Hold?: HoldListRelationFilter
   }, "eventDateZoneId" | "seatMapId">
 
   export type EventDateZoneOrderByWithAggregationInput = {
@@ -20833,7 +26892,12 @@ export namespace Prisma {
     seatMapId?: BigIntFilter<"Seat"> | bigint | number
     rowNumber?: IntFilter<"Seat"> | number
     colNumber?: IntFilter<"Seat"> | number
+    status?: EnumSEAT_STATUSFilter<"Seat"> | $Enums.SEAT_STATUS
+    holdUntil?: DateTimeNullableFilter<"Seat"> | Date | string | null
     seatMap?: XOR<SeatMapScalarRelationFilter, SeatMapWhereInput>
+    OrderItem?: OrderItemListRelationFilter
+    Ticket?: TicketListRelationFilter
+    Hold?: HoldListRelationFilter
   }
 
   export type SeatOrderByWithRelationInput = {
@@ -20841,7 +26905,12 @@ export namespace Prisma {
     seatMapId?: SortOrder
     rowNumber?: SortOrder
     colNumber?: SortOrder
+    status?: SortOrder
+    holdUntil?: SortOrderInput | SortOrder
     seatMap?: SeatMapOrderByWithRelationInput
+    OrderItem?: OrderItemOrderByRelationAggregateInput
+    Ticket?: TicketOrderByRelationAggregateInput
+    Hold?: HoldOrderByRelationAggregateInput
   }
 
   export type SeatWhereUniqueInput = Prisma.AtLeast<{
@@ -20853,7 +26922,12 @@ export namespace Prisma {
     seatMapId?: BigIntFilter<"Seat"> | bigint | number
     rowNumber?: IntFilter<"Seat"> | number
     colNumber?: IntFilter<"Seat"> | number
+    status?: EnumSEAT_STATUSFilter<"Seat"> | $Enums.SEAT_STATUS
+    holdUntil?: DateTimeNullableFilter<"Seat"> | Date | string | null
     seatMap?: XOR<SeatMapScalarRelationFilter, SeatMapWhereInput>
+    OrderItem?: OrderItemListRelationFilter
+    Ticket?: TicketListRelationFilter
+    Hold?: HoldListRelationFilter
   }, "seatId" | "seatMapId_rowNumber_colNumber">
 
   export type SeatOrderByWithAggregationInput = {
@@ -20861,6 +26935,8 @@ export namespace Prisma {
     seatMapId?: SortOrder
     rowNumber?: SortOrder
     colNumber?: SortOrder
+    status?: SortOrder
+    holdUntil?: SortOrderInput | SortOrder
     _count?: SeatCountOrderByAggregateInput
     _avg?: SeatAvgOrderByAggregateInput
     _max?: SeatMaxOrderByAggregateInput
@@ -20876,6 +26952,8 @@ export namespace Prisma {
     seatMapId?: BigIntWithAggregatesFilter<"Seat"> | bigint | number
     rowNumber?: IntWithAggregatesFilter<"Seat"> | number
     colNumber?: IntWithAggregatesFilter<"Seat"> | number
+    status?: EnumSEAT_STATUSWithAggregatesFilter<"Seat"> | $Enums.SEAT_STATUS
+    holdUntil?: DateTimeNullableWithAggregatesFilter<"Seat"> | Date | string | null
   }
 
   export type EventDateZoneAllocationWhereInput = {
@@ -20891,6 +26969,8 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"EventDateZoneAllocation"> | Date | string
     updatedAt?: DateTimeFilter<"EventDateZoneAllocation"> | Date | string
     zone?: XOR<EventDateZoneScalarRelationFilter, EventDateZoneWhereInput>
+    OrderItem?: OrderItemListRelationFilter
+    Ticket?: TicketListRelationFilter
   }
 
   export type EventDateZoneAllocationOrderByWithRelationInput = {
@@ -20903,6 +26983,8 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     zone?: EventDateZoneOrderByWithRelationInput
+    OrderItem?: OrderItemOrderByRelationAggregateInput
+    Ticket?: TicketOrderByRelationAggregateInput
   }
 
   export type EventDateZoneAllocationWhereUniqueInput = Prisma.AtLeast<{
@@ -20918,6 +27000,8 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"EventDateZoneAllocation"> | Date | string
     updatedAt?: DateTimeFilter<"EventDateZoneAllocation"> | Date | string
     zone?: XOR<EventDateZoneScalarRelationFilter, EventDateZoneWhereInput>
+    OrderItem?: OrderItemListRelationFilter
+    Ticket?: TicketListRelationFilter
   }, "eventDateZoneAllocationId">
 
   export type EventDateZoneAllocationOrderByWithAggregationInput = {
@@ -21027,6 +27111,361 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"EventSalesPhase"> | Date | string
   }
 
+  export type OrderWhereInput = {
+    AND?: OrderWhereInput | OrderWhereInput[]
+    OR?: OrderWhereInput[]
+    NOT?: OrderWhereInput | OrderWhereInput[]
+    orderId?: BigIntFilter<"Order"> | bigint | number
+    buyerUserId?: BigIntFilter<"Order"> | bigint | number
+    status?: EnumORDER_STATUSFilter<"Order"> | $Enums.ORDER_STATUS
+    currency?: EnumCURRENCYFilter<"Order"> | $Enums.CURRENCY
+    totalAmount?: DecimalFilter<"Order"> | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFilter<"Order"> | Date | string
+    updatedAt?: DateTimeFilter<"Order"> | Date | string
+    items?: OrderItemListRelationFilter
+  }
+
+  export type OrderOrderByWithRelationInput = {
+    orderId?: SortOrder
+    buyerUserId?: SortOrder
+    status?: SortOrder
+    currency?: SortOrder
+    totalAmount?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    items?: OrderItemOrderByRelationAggregateInput
+  }
+
+  export type OrderWhereUniqueInput = Prisma.AtLeast<{
+    orderId?: bigint | number
+    AND?: OrderWhereInput | OrderWhereInput[]
+    OR?: OrderWhereInput[]
+    NOT?: OrderWhereInput | OrderWhereInput[]
+    buyerUserId?: BigIntFilter<"Order"> | bigint | number
+    status?: EnumORDER_STATUSFilter<"Order"> | $Enums.ORDER_STATUS
+    currency?: EnumCURRENCYFilter<"Order"> | $Enums.CURRENCY
+    totalAmount?: DecimalFilter<"Order"> | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFilter<"Order"> | Date | string
+    updatedAt?: DateTimeFilter<"Order"> | Date | string
+    items?: OrderItemListRelationFilter
+  }, "orderId">
+
+  export type OrderOrderByWithAggregationInput = {
+    orderId?: SortOrder
+    buyerUserId?: SortOrder
+    status?: SortOrder
+    currency?: SortOrder
+    totalAmount?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: OrderCountOrderByAggregateInput
+    _avg?: OrderAvgOrderByAggregateInput
+    _max?: OrderMaxOrderByAggregateInput
+    _min?: OrderMinOrderByAggregateInput
+    _sum?: OrderSumOrderByAggregateInput
+  }
+
+  export type OrderScalarWhereWithAggregatesInput = {
+    AND?: OrderScalarWhereWithAggregatesInput | OrderScalarWhereWithAggregatesInput[]
+    OR?: OrderScalarWhereWithAggregatesInput[]
+    NOT?: OrderScalarWhereWithAggregatesInput | OrderScalarWhereWithAggregatesInput[]
+    orderId?: BigIntWithAggregatesFilter<"Order"> | bigint | number
+    buyerUserId?: BigIntWithAggregatesFilter<"Order"> | bigint | number
+    status?: EnumORDER_STATUSWithAggregatesFilter<"Order"> | $Enums.ORDER_STATUS
+    currency?: EnumCURRENCYWithAggregatesFilter<"Order"> | $Enums.CURRENCY
+    totalAmount?: DecimalWithAggregatesFilter<"Order"> | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeWithAggregatesFilter<"Order"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Order"> | Date | string
+  }
+
+  export type OrderItemWhereInput = {
+    AND?: OrderItemWhereInput | OrderItemWhereInput[]
+    OR?: OrderItemWhereInput[]
+    NOT?: OrderItemWhereInput | OrderItemWhereInput[]
+    orderItemId?: BigIntFilter<"OrderItem"> | bigint | number
+    orderId?: BigIntFilter<"OrderItem"> | bigint | number
+    eventId?: BigIntFilter<"OrderItem"> | bigint | number
+    eventDateId?: BigIntFilter<"OrderItem"> | bigint | number
+    eventDateZoneId?: BigIntFilter<"OrderItem"> | bigint | number
+    eventDateZoneAllocationId?: BigIntNullableFilter<"OrderItem"> | bigint | number | null
+    quantity?: IntNullableFilter<"OrderItem"> | number | null
+    seatId?: BigIntNullableFilter<"OrderItem"> | bigint | number | null
+    unitPrice?: DecimalFilter<"OrderItem"> | Decimal | DecimalJsLike | number | string
+    discountAmount?: DecimalNullableFilter<"OrderItem"> | Decimal | DecimalJsLike | number | string | null
+    finalPrice?: DecimalFilter<"OrderItem"> | Decimal | DecimalJsLike | number | string
+    order?: XOR<OrderScalarRelationFilter, OrderWhereInput>
+    eventDate?: XOR<EventDateScalarRelationFilter, EventDateWhereInput>
+    zone?: XOR<EventDateZoneScalarRelationFilter, EventDateZoneWhereInput>
+    seat?: XOR<SeatNullableScalarRelationFilter, SeatWhereInput> | null
+    allocation?: XOR<EventDateZoneAllocationNullableScalarRelationFilter, EventDateZoneAllocationWhereInput> | null
+    Ticket?: TicketListRelationFilter
+  }
+
+  export type OrderItemOrderByWithRelationInput = {
+    orderItemId?: SortOrder
+    orderId?: SortOrder
+    eventId?: SortOrder
+    eventDateId?: SortOrder
+    eventDateZoneId?: SortOrder
+    eventDateZoneAllocationId?: SortOrderInput | SortOrder
+    quantity?: SortOrderInput | SortOrder
+    seatId?: SortOrderInput | SortOrder
+    unitPrice?: SortOrder
+    discountAmount?: SortOrderInput | SortOrder
+    finalPrice?: SortOrder
+    order?: OrderOrderByWithRelationInput
+    eventDate?: EventDateOrderByWithRelationInput
+    zone?: EventDateZoneOrderByWithRelationInput
+    seat?: SeatOrderByWithRelationInput
+    allocation?: EventDateZoneAllocationOrderByWithRelationInput
+    Ticket?: TicketOrderByRelationAggregateInput
+  }
+
+  export type OrderItemWhereUniqueInput = Prisma.AtLeast<{
+    orderItemId?: bigint | number
+    seatId?: bigint | number
+    AND?: OrderItemWhereInput | OrderItemWhereInput[]
+    OR?: OrderItemWhereInput[]
+    NOT?: OrderItemWhereInput | OrderItemWhereInput[]
+    orderId?: BigIntFilter<"OrderItem"> | bigint | number
+    eventId?: BigIntFilter<"OrderItem"> | bigint | number
+    eventDateId?: BigIntFilter<"OrderItem"> | bigint | number
+    eventDateZoneId?: BigIntFilter<"OrderItem"> | bigint | number
+    eventDateZoneAllocationId?: BigIntNullableFilter<"OrderItem"> | bigint | number | null
+    quantity?: IntNullableFilter<"OrderItem"> | number | null
+    unitPrice?: DecimalFilter<"OrderItem"> | Decimal | DecimalJsLike | number | string
+    discountAmount?: DecimalNullableFilter<"OrderItem"> | Decimal | DecimalJsLike | number | string | null
+    finalPrice?: DecimalFilter<"OrderItem"> | Decimal | DecimalJsLike | number | string
+    order?: XOR<OrderScalarRelationFilter, OrderWhereInput>
+    eventDate?: XOR<EventDateScalarRelationFilter, EventDateWhereInput>
+    zone?: XOR<EventDateZoneScalarRelationFilter, EventDateZoneWhereInput>
+    seat?: XOR<SeatNullableScalarRelationFilter, SeatWhereInput> | null
+    allocation?: XOR<EventDateZoneAllocationNullableScalarRelationFilter, EventDateZoneAllocationWhereInput> | null
+    Ticket?: TicketListRelationFilter
+  }, "orderItemId" | "seatId">
+
+  export type OrderItemOrderByWithAggregationInput = {
+    orderItemId?: SortOrder
+    orderId?: SortOrder
+    eventId?: SortOrder
+    eventDateId?: SortOrder
+    eventDateZoneId?: SortOrder
+    eventDateZoneAllocationId?: SortOrderInput | SortOrder
+    quantity?: SortOrderInput | SortOrder
+    seatId?: SortOrderInput | SortOrder
+    unitPrice?: SortOrder
+    discountAmount?: SortOrderInput | SortOrder
+    finalPrice?: SortOrder
+    _count?: OrderItemCountOrderByAggregateInput
+    _avg?: OrderItemAvgOrderByAggregateInput
+    _max?: OrderItemMaxOrderByAggregateInput
+    _min?: OrderItemMinOrderByAggregateInput
+    _sum?: OrderItemSumOrderByAggregateInput
+  }
+
+  export type OrderItemScalarWhereWithAggregatesInput = {
+    AND?: OrderItemScalarWhereWithAggregatesInput | OrderItemScalarWhereWithAggregatesInput[]
+    OR?: OrderItemScalarWhereWithAggregatesInput[]
+    NOT?: OrderItemScalarWhereWithAggregatesInput | OrderItemScalarWhereWithAggregatesInput[]
+    orderItemId?: BigIntWithAggregatesFilter<"OrderItem"> | bigint | number
+    orderId?: BigIntWithAggregatesFilter<"OrderItem"> | bigint | number
+    eventId?: BigIntWithAggregatesFilter<"OrderItem"> | bigint | number
+    eventDateId?: BigIntWithAggregatesFilter<"OrderItem"> | bigint | number
+    eventDateZoneId?: BigIntWithAggregatesFilter<"OrderItem"> | bigint | number
+    eventDateZoneAllocationId?: BigIntNullableWithAggregatesFilter<"OrderItem"> | bigint | number | null
+    quantity?: IntNullableWithAggregatesFilter<"OrderItem"> | number | null
+    seatId?: BigIntNullableWithAggregatesFilter<"OrderItem"> | bigint | number | null
+    unitPrice?: DecimalWithAggregatesFilter<"OrderItem"> | Decimal | DecimalJsLike | number | string
+    discountAmount?: DecimalNullableWithAggregatesFilter<"OrderItem"> | Decimal | DecimalJsLike | number | string | null
+    finalPrice?: DecimalWithAggregatesFilter<"OrderItem"> | Decimal | DecimalJsLike | number | string
+  }
+
+  export type TicketWhereInput = {
+    AND?: TicketWhereInput | TicketWhereInput[]
+    OR?: TicketWhereInput[]
+    NOT?: TicketWhereInput | TicketWhereInput[]
+    ticketId?: BigIntFilter<"Ticket"> | bigint | number
+    ownerUserId?: BigIntNullableFilter<"Ticket"> | bigint | number | null
+    orderItemId?: BigIntFilter<"Ticket"> | bigint | number
+    eventId?: BigIntFilter<"Ticket"> | bigint | number
+    eventDateId?: BigIntFilter<"Ticket"> | bigint | number
+    eventDateZoneId?: BigIntFilter<"Ticket"> | bigint | number
+    eventDateZoneAllocationId?: BigIntNullableFilter<"Ticket"> | bigint | number | null
+    seatId?: BigIntNullableFilter<"Ticket"> | bigint | number | null
+    pricePaid?: DecimalFilter<"Ticket"> | Decimal | DecimalJsLike | number | string
+    currency?: EnumCURRENCYFilter<"Ticket"> | $Enums.CURRENCY
+    issuedAt?: DateTimeFilter<"Ticket"> | Date | string
+    status?: EnumTICKET_STATUSFilter<"Ticket"> | $Enums.TICKET_STATUS
+    item?: XOR<OrderItemScalarRelationFilter, OrderItemWhereInput>
+    eventDate?: XOR<EventDateScalarRelationFilter, EventDateWhereInput>
+    zone?: XOR<EventDateZoneScalarRelationFilter, EventDateZoneWhereInput>
+    seat?: XOR<SeatNullableScalarRelationFilter, SeatWhereInput> | null
+    allocation?: XOR<EventDateZoneAllocationNullableScalarRelationFilter, EventDateZoneAllocationWhereInput> | null
+    owner?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }
+
+  export type TicketOrderByWithRelationInput = {
+    ticketId?: SortOrder
+    ownerUserId?: SortOrderInput | SortOrder
+    orderItemId?: SortOrder
+    eventId?: SortOrder
+    eventDateId?: SortOrder
+    eventDateZoneId?: SortOrder
+    eventDateZoneAllocationId?: SortOrderInput | SortOrder
+    seatId?: SortOrderInput | SortOrder
+    pricePaid?: SortOrder
+    currency?: SortOrder
+    issuedAt?: SortOrder
+    status?: SortOrder
+    item?: OrderItemOrderByWithRelationInput
+    eventDate?: EventDateOrderByWithRelationInput
+    zone?: EventDateZoneOrderByWithRelationInput
+    seat?: SeatOrderByWithRelationInput
+    allocation?: EventDateZoneAllocationOrderByWithRelationInput
+    owner?: UserOrderByWithRelationInput
+  }
+
+  export type TicketWhereUniqueInput = Prisma.AtLeast<{
+    ticketId?: bigint | number
+    eventDateId_seatId?: TicketEventDateIdSeatIdCompoundUniqueInput
+    AND?: TicketWhereInput | TicketWhereInput[]
+    OR?: TicketWhereInput[]
+    NOT?: TicketWhereInput | TicketWhereInput[]
+    ownerUserId?: BigIntNullableFilter<"Ticket"> | bigint | number | null
+    orderItemId?: BigIntFilter<"Ticket"> | bigint | number
+    eventId?: BigIntFilter<"Ticket"> | bigint | number
+    eventDateId?: BigIntFilter<"Ticket"> | bigint | number
+    eventDateZoneId?: BigIntFilter<"Ticket"> | bigint | number
+    eventDateZoneAllocationId?: BigIntNullableFilter<"Ticket"> | bigint | number | null
+    seatId?: BigIntNullableFilter<"Ticket"> | bigint | number | null
+    pricePaid?: DecimalFilter<"Ticket"> | Decimal | DecimalJsLike | number | string
+    currency?: EnumCURRENCYFilter<"Ticket"> | $Enums.CURRENCY
+    issuedAt?: DateTimeFilter<"Ticket"> | Date | string
+    status?: EnumTICKET_STATUSFilter<"Ticket"> | $Enums.TICKET_STATUS
+    item?: XOR<OrderItemScalarRelationFilter, OrderItemWhereInput>
+    eventDate?: XOR<EventDateScalarRelationFilter, EventDateWhereInput>
+    zone?: XOR<EventDateZoneScalarRelationFilter, EventDateZoneWhereInput>
+    seat?: XOR<SeatNullableScalarRelationFilter, SeatWhereInput> | null
+    allocation?: XOR<EventDateZoneAllocationNullableScalarRelationFilter, EventDateZoneAllocationWhereInput> | null
+    owner?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }, "ticketId" | "eventDateId_seatId">
+
+  export type TicketOrderByWithAggregationInput = {
+    ticketId?: SortOrder
+    ownerUserId?: SortOrderInput | SortOrder
+    orderItemId?: SortOrder
+    eventId?: SortOrder
+    eventDateId?: SortOrder
+    eventDateZoneId?: SortOrder
+    eventDateZoneAllocationId?: SortOrderInput | SortOrder
+    seatId?: SortOrderInput | SortOrder
+    pricePaid?: SortOrder
+    currency?: SortOrder
+    issuedAt?: SortOrder
+    status?: SortOrder
+    _count?: TicketCountOrderByAggregateInput
+    _avg?: TicketAvgOrderByAggregateInput
+    _max?: TicketMaxOrderByAggregateInput
+    _min?: TicketMinOrderByAggregateInput
+    _sum?: TicketSumOrderByAggregateInput
+  }
+
+  export type TicketScalarWhereWithAggregatesInput = {
+    AND?: TicketScalarWhereWithAggregatesInput | TicketScalarWhereWithAggregatesInput[]
+    OR?: TicketScalarWhereWithAggregatesInput[]
+    NOT?: TicketScalarWhereWithAggregatesInput | TicketScalarWhereWithAggregatesInput[]
+    ticketId?: BigIntWithAggregatesFilter<"Ticket"> | bigint | number
+    ownerUserId?: BigIntNullableWithAggregatesFilter<"Ticket"> | bigint | number | null
+    orderItemId?: BigIntWithAggregatesFilter<"Ticket"> | bigint | number
+    eventId?: BigIntWithAggregatesFilter<"Ticket"> | bigint | number
+    eventDateId?: BigIntWithAggregatesFilter<"Ticket"> | bigint | number
+    eventDateZoneId?: BigIntWithAggregatesFilter<"Ticket"> | bigint | number
+    eventDateZoneAllocationId?: BigIntNullableWithAggregatesFilter<"Ticket"> | bigint | number | null
+    seatId?: BigIntNullableWithAggregatesFilter<"Ticket"> | bigint | number | null
+    pricePaid?: DecimalWithAggregatesFilter<"Ticket"> | Decimal | DecimalJsLike | number | string
+    currency?: EnumCURRENCYWithAggregatesFilter<"Ticket"> | $Enums.CURRENCY
+    issuedAt?: DateTimeWithAggregatesFilter<"Ticket"> | Date | string
+    status?: EnumTICKET_STATUSWithAggregatesFilter<"Ticket"> | $Enums.TICKET_STATUS
+  }
+
+  export type HoldWhereInput = {
+    AND?: HoldWhereInput | HoldWhereInput[]
+    OR?: HoldWhereInput[]
+    NOT?: HoldWhereInput | HoldWhereInput[]
+    holdId?: BigIntFilter<"Hold"> | bigint | number
+    eventDateId?: BigIntFilter<"Hold"> | bigint | number
+    eventDateZoneId?: BigIntFilter<"Hold"> | bigint | number
+    seatId?: BigIntNullableFilter<"Hold"> | bigint | number | null
+    quantity?: IntNullableFilter<"Hold"> | number | null
+    buyerUserId?: BigIntNullableFilter<"Hold"> | bigint | number | null
+    expiresAt?: DateTimeFilter<"Hold"> | Date | string
+    createdAt?: DateTimeFilter<"Hold"> | Date | string
+    eventDate?: XOR<EventDateScalarRelationFilter, EventDateWhereInput>
+    zone?: XOR<EventDateZoneScalarRelationFilter, EventDateZoneWhereInput>
+    seat?: XOR<SeatNullableScalarRelationFilter, SeatWhereInput> | null
+  }
+
+  export type HoldOrderByWithRelationInput = {
+    holdId?: SortOrder
+    eventDateId?: SortOrder
+    eventDateZoneId?: SortOrder
+    seatId?: SortOrderInput | SortOrder
+    quantity?: SortOrderInput | SortOrder
+    buyerUserId?: SortOrderInput | SortOrder
+    expiresAt?: SortOrder
+    createdAt?: SortOrder
+    eventDate?: EventDateOrderByWithRelationInput
+    zone?: EventDateZoneOrderByWithRelationInput
+    seat?: SeatOrderByWithRelationInput
+  }
+
+  export type HoldWhereUniqueInput = Prisma.AtLeast<{
+    holdId?: bigint | number
+    seatId?: bigint | number
+    AND?: HoldWhereInput | HoldWhereInput[]
+    OR?: HoldWhereInput[]
+    NOT?: HoldWhereInput | HoldWhereInput[]
+    eventDateId?: BigIntFilter<"Hold"> | bigint | number
+    eventDateZoneId?: BigIntFilter<"Hold"> | bigint | number
+    quantity?: IntNullableFilter<"Hold"> | number | null
+    buyerUserId?: BigIntNullableFilter<"Hold"> | bigint | number | null
+    expiresAt?: DateTimeFilter<"Hold"> | Date | string
+    createdAt?: DateTimeFilter<"Hold"> | Date | string
+    eventDate?: XOR<EventDateScalarRelationFilter, EventDateWhereInput>
+    zone?: XOR<EventDateZoneScalarRelationFilter, EventDateZoneWhereInput>
+    seat?: XOR<SeatNullableScalarRelationFilter, SeatWhereInput> | null
+  }, "holdId" | "seatId">
+
+  export type HoldOrderByWithAggregationInput = {
+    holdId?: SortOrder
+    eventDateId?: SortOrder
+    eventDateZoneId?: SortOrder
+    seatId?: SortOrderInput | SortOrder
+    quantity?: SortOrderInput | SortOrder
+    buyerUserId?: SortOrderInput | SortOrder
+    expiresAt?: SortOrder
+    createdAt?: SortOrder
+    _count?: HoldCountOrderByAggregateInput
+    _avg?: HoldAvgOrderByAggregateInput
+    _max?: HoldMaxOrderByAggregateInput
+    _min?: HoldMinOrderByAggregateInput
+    _sum?: HoldSumOrderByAggregateInput
+  }
+
+  export type HoldScalarWhereWithAggregatesInput = {
+    AND?: HoldScalarWhereWithAggregatesInput | HoldScalarWhereWithAggregatesInput[]
+    OR?: HoldScalarWhereWithAggregatesInput[]
+    NOT?: HoldScalarWhereWithAggregatesInput | HoldScalarWhereWithAggregatesInput[]
+    holdId?: BigIntWithAggregatesFilter<"Hold"> | bigint | number
+    eventDateId?: BigIntWithAggregatesFilter<"Hold"> | bigint | number
+    eventDateZoneId?: BigIntWithAggregatesFilter<"Hold"> | bigint | number
+    seatId?: BigIntNullableWithAggregatesFilter<"Hold"> | bigint | number | null
+    quantity?: IntNullableWithAggregatesFilter<"Hold"> | number | null
+    buyerUserId?: BigIntNullableWithAggregatesFilter<"Hold"> | bigint | number | null
+    expiresAt?: DateTimeWithAggregatesFilter<"Hold"> | Date | string
+    createdAt?: DateTimeWithAggregatesFilter<"Hold"> | Date | string
+  }
+
   export type UserCreateInput = {
     userId?: bigint | number
     name: string
@@ -21041,6 +27480,7 @@ export namespace Prisma {
     password?: PasswordUserCreateNestedOneWithoutUserInput
     oauths?: OAuthUserCreateNestedManyWithoutUserInput
     organizer?: OrganizerCreateNestedOneWithoutUserInput
+    Ticket?: TicketCreateNestedManyWithoutOwnerInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -21057,6 +27497,7 @@ export namespace Prisma {
     password?: PasswordUserUncheckedCreateNestedOneWithoutUserInput
     oauths?: OAuthUserUncheckedCreateNestedManyWithoutUserInput
     organizer?: OrganizerUncheckedCreateNestedOneWithoutUserInput
+    Ticket?: TicketUncheckedCreateNestedManyWithoutOwnerInput
   }
 
   export type UserUpdateInput = {
@@ -21073,6 +27514,7 @@ export namespace Prisma {
     password?: PasswordUserUpdateOneWithoutUserNestedInput
     oauths?: OAuthUserUpdateManyWithoutUserNestedInput
     organizer?: OrganizerUpdateOneWithoutUserNestedInput
+    Ticket?: TicketUpdateManyWithoutOwnerNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -21089,6 +27531,7 @@ export namespace Prisma {
     password?: PasswordUserUncheckedUpdateOneWithoutUserNestedInput
     oauths?: OAuthUserUncheckedUpdateManyWithoutUserNestedInput
     organizer?: OrganizerUncheckedUpdateOneWithoutUserNestedInput
+    Ticket?: TicketUncheckedUpdateManyWithoutOwnerNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -21629,6 +28072,9 @@ export namespace Prisma {
     endAt: Date | string
     event: EventCreateNestedOneWithoutDatesInput
     zoneDates?: EventDateZoneCreateNestedManyWithoutEventDateInput
+    OrderItem?: OrderItemCreateNestedManyWithoutEventDateInput
+    Ticket?: TicketCreateNestedManyWithoutEventDateInput
+    Hold?: HoldCreateNestedManyWithoutEventDateInput
   }
 
   export type EventDateUncheckedCreateInput = {
@@ -21637,6 +28083,9 @@ export namespace Prisma {
     startAt: Date | string
     endAt: Date | string
     zoneDates?: EventDateZoneUncheckedCreateNestedManyWithoutEventDateInput
+    OrderItem?: OrderItemUncheckedCreateNestedManyWithoutEventDateInput
+    Ticket?: TicketUncheckedCreateNestedManyWithoutEventDateInput
+    Hold?: HoldUncheckedCreateNestedManyWithoutEventDateInput
   }
 
   export type EventDateUpdateInput = {
@@ -21645,6 +28094,9 @@ export namespace Prisma {
     endAt?: DateTimeFieldUpdateOperationsInput | Date | string
     event?: EventUpdateOneRequiredWithoutDatesNestedInput
     zoneDates?: EventDateZoneUpdateManyWithoutEventDateNestedInput
+    OrderItem?: OrderItemUpdateManyWithoutEventDateNestedInput
+    Ticket?: TicketUpdateManyWithoutEventDateNestedInput
+    Hold?: HoldUpdateManyWithoutEventDateNestedInput
   }
 
   export type EventDateUncheckedUpdateInput = {
@@ -21653,6 +28105,9 @@ export namespace Prisma {
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: DateTimeFieldUpdateOperationsInput | Date | string
     zoneDates?: EventDateZoneUncheckedUpdateManyWithoutEventDateNestedInput
+    OrderItem?: OrderItemUncheckedUpdateManyWithoutEventDateNestedInput
+    Ticket?: TicketUncheckedUpdateManyWithoutEventDateNestedInput
+    Hold?: HoldUncheckedUpdateManyWithoutEventDateNestedInput
   }
 
   export type EventDateCreateManyInput = {
@@ -21688,6 +28143,9 @@ export namespace Prisma {
     eventDate: EventDateCreateNestedOneWithoutZoneDatesInput
     seatMap?: SeatMapCreateNestedOneWithoutEventDateZoneInput
     allocations?: EventDateZoneAllocationCreateNestedManyWithoutZoneInput
+    OrderItem?: OrderItemCreateNestedManyWithoutZoneInput
+    Ticket?: TicketCreateNestedManyWithoutZoneInput
+    Hold?: HoldCreateNestedManyWithoutZoneInput
   }
 
   export type EventDateZoneUncheckedCreateInput = {
@@ -21703,6 +28161,9 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     allocations?: EventDateZoneAllocationUncheckedCreateNestedManyWithoutZoneInput
+    OrderItem?: OrderItemUncheckedCreateNestedManyWithoutZoneInput
+    Ticket?: TicketUncheckedCreateNestedManyWithoutZoneInput
+    Hold?: HoldUncheckedCreateNestedManyWithoutZoneInput
   }
 
   export type EventDateZoneUpdateInput = {
@@ -21718,6 +28179,9 @@ export namespace Prisma {
     eventDate?: EventDateUpdateOneRequiredWithoutZoneDatesNestedInput
     seatMap?: SeatMapUpdateOneWithoutEventDateZoneNestedInput
     allocations?: EventDateZoneAllocationUpdateManyWithoutZoneNestedInput
+    OrderItem?: OrderItemUpdateManyWithoutZoneNestedInput
+    Ticket?: TicketUpdateManyWithoutZoneNestedInput
+    Hold?: HoldUpdateManyWithoutZoneNestedInput
   }
 
   export type EventDateZoneUncheckedUpdateInput = {
@@ -21733,6 +28197,9 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     allocations?: EventDateZoneAllocationUncheckedUpdateManyWithoutZoneNestedInput
+    OrderItem?: OrderItemUncheckedUpdateManyWithoutZoneNestedInput
+    Ticket?: TicketUncheckedUpdateManyWithoutZoneNestedInput
+    Hold?: HoldUncheckedUpdateManyWithoutZoneNestedInput
   }
 
   export type EventDateZoneCreateManyInput = {
@@ -21843,7 +28310,12 @@ export namespace Prisma {
     seatId?: bigint | number
     rowNumber: number
     colNumber: number
+    status?: $Enums.SEAT_STATUS
+    holdUntil?: Date | string | null
     seatMap: SeatMapCreateNestedOneWithoutOccupiedSeatsInput
+    OrderItem?: OrderItemCreateNestedManyWithoutSeatInput
+    Ticket?: TicketCreateNestedManyWithoutSeatInput
+    Hold?: HoldCreateNestedManyWithoutSeatInput
   }
 
   export type SeatUncheckedCreateInput = {
@@ -21851,13 +28323,23 @@ export namespace Prisma {
     seatMapId: bigint | number
     rowNumber: number
     colNumber: number
+    status?: $Enums.SEAT_STATUS
+    holdUntil?: Date | string | null
+    OrderItem?: OrderItemUncheckedCreateNestedManyWithoutSeatInput
+    Ticket?: TicketUncheckedCreateNestedManyWithoutSeatInput
+    Hold?: HoldUncheckedCreateNestedManyWithoutSeatInput
   }
 
   export type SeatUpdateInput = {
     seatId?: BigIntFieldUpdateOperationsInput | bigint | number
     rowNumber?: IntFieldUpdateOperationsInput | number
     colNumber?: IntFieldUpdateOperationsInput | number
+    status?: EnumSEAT_STATUSFieldUpdateOperationsInput | $Enums.SEAT_STATUS
+    holdUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     seatMap?: SeatMapUpdateOneRequiredWithoutOccupiedSeatsNestedInput
+    OrderItem?: OrderItemUpdateManyWithoutSeatNestedInput
+    Ticket?: TicketUpdateManyWithoutSeatNestedInput
+    Hold?: HoldUpdateManyWithoutSeatNestedInput
   }
 
   export type SeatUncheckedUpdateInput = {
@@ -21865,6 +28347,11 @@ export namespace Prisma {
     seatMapId?: BigIntFieldUpdateOperationsInput | bigint | number
     rowNumber?: IntFieldUpdateOperationsInput | number
     colNumber?: IntFieldUpdateOperationsInput | number
+    status?: EnumSEAT_STATUSFieldUpdateOperationsInput | $Enums.SEAT_STATUS
+    holdUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    OrderItem?: OrderItemUncheckedUpdateManyWithoutSeatNestedInput
+    Ticket?: TicketUncheckedUpdateManyWithoutSeatNestedInput
+    Hold?: HoldUncheckedUpdateManyWithoutSeatNestedInput
   }
 
   export type SeatCreateManyInput = {
@@ -21872,12 +28359,16 @@ export namespace Prisma {
     seatMapId: bigint | number
     rowNumber: number
     colNumber: number
+    status?: $Enums.SEAT_STATUS
+    holdUntil?: Date | string | null
   }
 
   export type SeatUpdateManyMutationInput = {
     seatId?: BigIntFieldUpdateOperationsInput | bigint | number
     rowNumber?: IntFieldUpdateOperationsInput | number
     colNumber?: IntFieldUpdateOperationsInput | number
+    status?: EnumSEAT_STATUSFieldUpdateOperationsInput | $Enums.SEAT_STATUS
+    holdUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type SeatUncheckedUpdateManyInput = {
@@ -21885,6 +28376,8 @@ export namespace Prisma {
     seatMapId?: BigIntFieldUpdateOperationsInput | bigint | number
     rowNumber?: IntFieldUpdateOperationsInput | number
     colNumber?: IntFieldUpdateOperationsInput | number
+    status?: EnumSEAT_STATUSFieldUpdateOperationsInput | $Enums.SEAT_STATUS
+    holdUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type EventDateZoneAllocationCreateInput = {
@@ -21896,6 +28389,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     zone: EventDateZoneCreateNestedOneWithoutAllocationsInput
+    OrderItem?: OrderItemCreateNestedManyWithoutAllocationInput
+    Ticket?: TicketCreateNestedManyWithoutAllocationInput
   }
 
   export type EventDateZoneAllocationUncheckedCreateInput = {
@@ -21907,6 +28402,8 @@ export namespace Prisma {
     remainingQuantity?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    OrderItem?: OrderItemUncheckedCreateNestedManyWithoutAllocationInput
+    Ticket?: TicketUncheckedCreateNestedManyWithoutAllocationInput
   }
 
   export type EventDateZoneAllocationUpdateInput = {
@@ -21918,6 +28415,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     zone?: EventDateZoneUpdateOneRequiredWithoutAllocationsNestedInput
+    OrderItem?: OrderItemUpdateManyWithoutAllocationNestedInput
+    Ticket?: TicketUpdateManyWithoutAllocationNestedInput
   }
 
   export type EventDateZoneAllocationUncheckedUpdateInput = {
@@ -21929,6 +28428,8 @@ export namespace Prisma {
     remainingQuantity?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    OrderItem?: OrderItemUncheckedUpdateManyWithoutAllocationNestedInput
+    Ticket?: TicketUncheckedUpdateManyWithoutAllocationNestedInput
   }
 
   export type EventDateZoneAllocationCreateManyInput = {
@@ -22046,6 +28547,350 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type OrderCreateInput = {
+    orderId?: bigint | number
+    buyerUserId: bigint | number
+    status?: $Enums.ORDER_STATUS
+    currency: $Enums.CURRENCY
+    totalAmount: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    items?: OrderItemCreateNestedManyWithoutOrderInput
+  }
+
+  export type OrderUncheckedCreateInput = {
+    orderId?: bigint | number
+    buyerUserId: bigint | number
+    status?: $Enums.ORDER_STATUS
+    currency: $Enums.CURRENCY
+    totalAmount: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    items?: OrderItemUncheckedCreateNestedManyWithoutOrderInput
+  }
+
+  export type OrderUpdateInput = {
+    orderId?: BigIntFieldUpdateOperationsInput | bigint | number
+    buyerUserId?: BigIntFieldUpdateOperationsInput | bigint | number
+    status?: EnumORDER_STATUSFieldUpdateOperationsInput | $Enums.ORDER_STATUS
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    totalAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    items?: OrderItemUpdateManyWithoutOrderNestedInput
+  }
+
+  export type OrderUncheckedUpdateInput = {
+    orderId?: BigIntFieldUpdateOperationsInput | bigint | number
+    buyerUserId?: BigIntFieldUpdateOperationsInput | bigint | number
+    status?: EnumORDER_STATUSFieldUpdateOperationsInput | $Enums.ORDER_STATUS
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    totalAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    items?: OrderItemUncheckedUpdateManyWithoutOrderNestedInput
+  }
+
+  export type OrderCreateManyInput = {
+    orderId?: bigint | number
+    buyerUserId: bigint | number
+    status?: $Enums.ORDER_STATUS
+    currency: $Enums.CURRENCY
+    totalAmount: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type OrderUpdateManyMutationInput = {
+    orderId?: BigIntFieldUpdateOperationsInput | bigint | number
+    buyerUserId?: BigIntFieldUpdateOperationsInput | bigint | number
+    status?: EnumORDER_STATUSFieldUpdateOperationsInput | $Enums.ORDER_STATUS
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    totalAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OrderUncheckedUpdateManyInput = {
+    orderId?: BigIntFieldUpdateOperationsInput | bigint | number
+    buyerUserId?: BigIntFieldUpdateOperationsInput | bigint | number
+    status?: EnumORDER_STATUSFieldUpdateOperationsInput | $Enums.ORDER_STATUS
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    totalAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OrderItemCreateInput = {
+    orderItemId?: bigint | number
+    eventId: bigint | number
+    quantity?: number | null
+    unitPrice: Decimal | DecimalJsLike | number | string
+    discountAmount?: Decimal | DecimalJsLike | number | string | null
+    finalPrice: Decimal | DecimalJsLike | number | string
+    order: OrderCreateNestedOneWithoutItemsInput
+    eventDate: EventDateCreateNestedOneWithoutOrderItemInput
+    zone: EventDateZoneCreateNestedOneWithoutOrderItemInput
+    seat?: SeatCreateNestedOneWithoutOrderItemInput
+    allocation?: EventDateZoneAllocationCreateNestedOneWithoutOrderItemInput
+    Ticket?: TicketCreateNestedManyWithoutItemInput
+  }
+
+  export type OrderItemUncheckedCreateInput = {
+    orderItemId?: bigint | number
+    orderId: bigint | number
+    eventId: bigint | number
+    eventDateId: bigint | number
+    eventDateZoneId: bigint | number
+    eventDateZoneAllocationId?: bigint | number | null
+    quantity?: number | null
+    seatId?: bigint | number | null
+    unitPrice: Decimal | DecimalJsLike | number | string
+    discountAmount?: Decimal | DecimalJsLike | number | string | null
+    finalPrice: Decimal | DecimalJsLike | number | string
+    Ticket?: TicketUncheckedCreateNestedManyWithoutItemInput
+  }
+
+  export type OrderItemUpdateInput = {
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    unitPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discountAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    finalPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    order?: OrderUpdateOneRequiredWithoutItemsNestedInput
+    eventDate?: EventDateUpdateOneRequiredWithoutOrderItemNestedInput
+    zone?: EventDateZoneUpdateOneRequiredWithoutOrderItemNestedInput
+    seat?: SeatUpdateOneWithoutOrderItemNestedInput
+    allocation?: EventDateZoneAllocationUpdateOneWithoutOrderItemNestedInput
+    Ticket?: TicketUpdateManyWithoutItemNestedInput
+  }
+
+  export type OrderItemUncheckedUpdateInput = {
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    orderId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneAllocationId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    seatId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    unitPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discountAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    finalPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    Ticket?: TicketUncheckedUpdateManyWithoutItemNestedInput
+  }
+
+  export type OrderItemCreateManyInput = {
+    orderItemId?: bigint | number
+    orderId: bigint | number
+    eventId: bigint | number
+    eventDateId: bigint | number
+    eventDateZoneId: bigint | number
+    eventDateZoneAllocationId?: bigint | number | null
+    quantity?: number | null
+    seatId?: bigint | number | null
+    unitPrice: Decimal | DecimalJsLike | number | string
+    discountAmount?: Decimal | DecimalJsLike | number | string | null
+    finalPrice: Decimal | DecimalJsLike | number | string
+  }
+
+  export type OrderItemUpdateManyMutationInput = {
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    unitPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discountAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    finalPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+  }
+
+  export type OrderItemUncheckedUpdateManyInput = {
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    orderId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneAllocationId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    seatId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    unitPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discountAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    finalPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+  }
+
+  export type TicketCreateInput = {
+    ticketId?: bigint | number
+    eventId: bigint | number
+    pricePaid: Decimal | DecimalJsLike | number | string
+    currency?: $Enums.CURRENCY
+    issuedAt?: Date | string
+    status?: $Enums.TICKET_STATUS
+    item: OrderItemCreateNestedOneWithoutTicketInput
+    eventDate: EventDateCreateNestedOneWithoutTicketInput
+    zone: EventDateZoneCreateNestedOneWithoutTicketInput
+    seat?: SeatCreateNestedOneWithoutTicketInput
+    allocation?: EventDateZoneAllocationCreateNestedOneWithoutTicketInput
+    owner?: UserCreateNestedOneWithoutTicketInput
+  }
+
+  export type TicketUncheckedCreateInput = {
+    ticketId?: bigint | number
+    ownerUserId?: bigint | number | null
+    orderItemId: bigint | number
+    eventId: bigint | number
+    eventDateId: bigint | number
+    eventDateZoneId: bigint | number
+    eventDateZoneAllocationId?: bigint | number | null
+    seatId?: bigint | number | null
+    pricePaid: Decimal | DecimalJsLike | number | string
+    currency?: $Enums.CURRENCY
+    issuedAt?: Date | string
+    status?: $Enums.TICKET_STATUS
+  }
+
+  export type TicketUpdateInput = {
+    ticketId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    pricePaid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    issuedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumTICKET_STATUSFieldUpdateOperationsInput | $Enums.TICKET_STATUS
+    item?: OrderItemUpdateOneRequiredWithoutTicketNestedInput
+    eventDate?: EventDateUpdateOneRequiredWithoutTicketNestedInput
+    zone?: EventDateZoneUpdateOneRequiredWithoutTicketNestedInput
+    seat?: SeatUpdateOneWithoutTicketNestedInput
+    allocation?: EventDateZoneAllocationUpdateOneWithoutTicketNestedInput
+    owner?: UserUpdateOneWithoutTicketNestedInput
+  }
+
+  export type TicketUncheckedUpdateInput = {
+    ticketId?: BigIntFieldUpdateOperationsInput | bigint | number
+    ownerUserId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneAllocationId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    seatId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    pricePaid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    issuedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumTICKET_STATUSFieldUpdateOperationsInput | $Enums.TICKET_STATUS
+  }
+
+  export type TicketCreateManyInput = {
+    ticketId?: bigint | number
+    ownerUserId?: bigint | number | null
+    orderItemId: bigint | number
+    eventId: bigint | number
+    eventDateId: bigint | number
+    eventDateZoneId: bigint | number
+    eventDateZoneAllocationId?: bigint | number | null
+    seatId?: bigint | number | null
+    pricePaid: Decimal | DecimalJsLike | number | string
+    currency?: $Enums.CURRENCY
+    issuedAt?: Date | string
+    status?: $Enums.TICKET_STATUS
+  }
+
+  export type TicketUpdateManyMutationInput = {
+    ticketId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    pricePaid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    issuedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumTICKET_STATUSFieldUpdateOperationsInput | $Enums.TICKET_STATUS
+  }
+
+  export type TicketUncheckedUpdateManyInput = {
+    ticketId?: BigIntFieldUpdateOperationsInput | bigint | number
+    ownerUserId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneAllocationId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    seatId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    pricePaid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    issuedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumTICKET_STATUSFieldUpdateOperationsInput | $Enums.TICKET_STATUS
+  }
+
+  export type HoldCreateInput = {
+    holdId?: bigint | number
+    quantity?: number | null
+    buyerUserId?: bigint | number | null
+    expiresAt: Date | string
+    createdAt?: Date | string
+    eventDate: EventDateCreateNestedOneWithoutHoldInput
+    zone: EventDateZoneCreateNestedOneWithoutHoldInput
+    seat?: SeatCreateNestedOneWithoutHoldInput
+  }
+
+  export type HoldUncheckedCreateInput = {
+    holdId?: bigint | number
+    eventDateId: bigint | number
+    eventDateZoneId: bigint | number
+    seatId?: bigint | number | null
+    quantity?: number | null
+    buyerUserId?: bigint | number | null
+    expiresAt: Date | string
+    createdAt?: Date | string
+  }
+
+  export type HoldUpdateInput = {
+    holdId?: BigIntFieldUpdateOperationsInput | bigint | number
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    buyerUserId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    eventDate?: EventDateUpdateOneRequiredWithoutHoldNestedInput
+    zone?: EventDateZoneUpdateOneRequiredWithoutHoldNestedInput
+    seat?: SeatUpdateOneWithoutHoldNestedInput
+  }
+
+  export type HoldUncheckedUpdateInput = {
+    holdId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    seatId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    buyerUserId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HoldCreateManyInput = {
+    holdId?: bigint | number
+    eventDateId: bigint | number
+    eventDateZoneId: bigint | number
+    seatId?: bigint | number | null
+    quantity?: number | null
+    buyerUserId?: bigint | number | null
+    expiresAt: Date | string
+    createdAt?: Date | string
+  }
+
+  export type HoldUpdateManyMutationInput = {
+    holdId?: BigIntFieldUpdateOperationsInput | bigint | number
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    buyerUserId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HoldUncheckedUpdateManyInput = {
+    holdId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    seatId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    buyerUserId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type BigIntFilter<$PrismaModel = never> = {
     equals?: bigint | number | BigIntFieldRefInput<$PrismaModel>
     in?: bigint[] | number[] | ListBigIntFieldRefInput<$PrismaModel>
@@ -22139,12 +28984,22 @@ export namespace Prisma {
     isNot?: OrganizerWhereInput | null
   }
 
+  export type TicketListRelationFilter = {
+    every?: TicketWhereInput
+    some?: TicketWhereInput
+    none?: TicketWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
   }
 
   export type OAuthUserOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type TicketOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -22810,7 +29665,27 @@ export namespace Prisma {
     none?: EventDateZoneWhereInput
   }
 
+  export type OrderItemListRelationFilter = {
+    every?: OrderItemWhereInput
+    some?: OrderItemWhereInput
+    none?: OrderItemWhereInput
+  }
+
+  export type HoldListRelationFilter = {
+    every?: HoldWhereInput
+    some?: HoldWhereInput
+    none?: HoldWhereInput
+  }
+
   export type EventDateZoneOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type OrderItemOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type HoldOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -23010,6 +29885,13 @@ export namespace Prisma {
     cols?: SortOrder
   }
 
+  export type EnumSEAT_STATUSFilter<$PrismaModel = never> = {
+    equals?: $Enums.SEAT_STATUS | EnumSEAT_STATUSFieldRefInput<$PrismaModel>
+    in?: $Enums.SEAT_STATUS[] | ListEnumSEAT_STATUSFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SEAT_STATUS[] | ListEnumSEAT_STATUSFieldRefInput<$PrismaModel>
+    not?: NestedEnumSEAT_STATUSFilter<$PrismaModel> | $Enums.SEAT_STATUS
+  }
+
   export type SeatMapScalarRelationFilter = {
     is?: SeatMapWhereInput
     isNot?: SeatMapWhereInput
@@ -23026,6 +29908,8 @@ export namespace Prisma {
     seatMapId?: SortOrder
     rowNumber?: SortOrder
     colNumber?: SortOrder
+    status?: SortOrder
+    holdUntil?: SortOrder
   }
 
   export type SeatAvgOrderByAggregateInput = {
@@ -23040,6 +29924,8 @@ export namespace Prisma {
     seatMapId?: SortOrder
     rowNumber?: SortOrder
     colNumber?: SortOrder
+    status?: SortOrder
+    holdUntil?: SortOrder
   }
 
   export type SeatMinOrderByAggregateInput = {
@@ -23047,6 +29933,8 @@ export namespace Prisma {
     seatMapId?: SortOrder
     rowNumber?: SortOrder
     colNumber?: SortOrder
+    status?: SortOrder
+    holdUntil?: SortOrder
   }
 
   export type SeatSumOrderByAggregateInput = {
@@ -23054,6 +29942,16 @@ export namespace Prisma {
     seatMapId?: SortOrder
     rowNumber?: SortOrder
     colNumber?: SortOrder
+  }
+
+  export type EnumSEAT_STATUSWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.SEAT_STATUS | EnumSEAT_STATUSFieldRefInput<$PrismaModel>
+    in?: $Enums.SEAT_STATUS[] | ListEnumSEAT_STATUSFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SEAT_STATUS[] | ListEnumSEAT_STATUSFieldRefInput<$PrismaModel>
+    not?: NestedEnumSEAT_STATUSWithAggregatesFilter<$PrismaModel> | $Enums.SEAT_STATUS
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumSEAT_STATUSFilter<$PrismaModel>
+    _max?: NestedEnumSEAT_STATUSFilter<$PrismaModel>
   }
 
   export type IntNullableFilter<$PrismaModel = never> = {
@@ -23185,6 +30083,329 @@ export namespace Prisma {
     percentage?: SortOrder
   }
 
+  export type EnumORDER_STATUSFilter<$PrismaModel = never> = {
+    equals?: $Enums.ORDER_STATUS | EnumORDER_STATUSFieldRefInput<$PrismaModel>
+    in?: $Enums.ORDER_STATUS[] | ListEnumORDER_STATUSFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ORDER_STATUS[] | ListEnumORDER_STATUSFieldRefInput<$PrismaModel>
+    not?: NestedEnumORDER_STATUSFilter<$PrismaModel> | $Enums.ORDER_STATUS
+  }
+
+  export type OrderCountOrderByAggregateInput = {
+    orderId?: SortOrder
+    buyerUserId?: SortOrder
+    status?: SortOrder
+    currency?: SortOrder
+    totalAmount?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type OrderAvgOrderByAggregateInput = {
+    orderId?: SortOrder
+    buyerUserId?: SortOrder
+    totalAmount?: SortOrder
+  }
+
+  export type OrderMaxOrderByAggregateInput = {
+    orderId?: SortOrder
+    buyerUserId?: SortOrder
+    status?: SortOrder
+    currency?: SortOrder
+    totalAmount?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type OrderMinOrderByAggregateInput = {
+    orderId?: SortOrder
+    buyerUserId?: SortOrder
+    status?: SortOrder
+    currency?: SortOrder
+    totalAmount?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type OrderSumOrderByAggregateInput = {
+    orderId?: SortOrder
+    buyerUserId?: SortOrder
+    totalAmount?: SortOrder
+  }
+
+  export type EnumORDER_STATUSWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ORDER_STATUS | EnumORDER_STATUSFieldRefInput<$PrismaModel>
+    in?: $Enums.ORDER_STATUS[] | ListEnumORDER_STATUSFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ORDER_STATUS[] | ListEnumORDER_STATUSFieldRefInput<$PrismaModel>
+    not?: NestedEnumORDER_STATUSWithAggregatesFilter<$PrismaModel> | $Enums.ORDER_STATUS
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumORDER_STATUSFilter<$PrismaModel>
+    _max?: NestedEnumORDER_STATUSFilter<$PrismaModel>
+  }
+
+  export type DecimalNullableFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+  }
+
+  export type OrderScalarRelationFilter = {
+    is?: OrderWhereInput
+    isNot?: OrderWhereInput
+  }
+
+  export type SeatNullableScalarRelationFilter = {
+    is?: SeatWhereInput | null
+    isNot?: SeatWhereInput | null
+  }
+
+  export type EventDateZoneAllocationNullableScalarRelationFilter = {
+    is?: EventDateZoneAllocationWhereInput | null
+    isNot?: EventDateZoneAllocationWhereInput | null
+  }
+
+  export type OrderItemCountOrderByAggregateInput = {
+    orderItemId?: SortOrder
+    orderId?: SortOrder
+    eventId?: SortOrder
+    eventDateId?: SortOrder
+    eventDateZoneId?: SortOrder
+    eventDateZoneAllocationId?: SortOrder
+    quantity?: SortOrder
+    seatId?: SortOrder
+    unitPrice?: SortOrder
+    discountAmount?: SortOrder
+    finalPrice?: SortOrder
+  }
+
+  export type OrderItemAvgOrderByAggregateInput = {
+    orderItemId?: SortOrder
+    orderId?: SortOrder
+    eventId?: SortOrder
+    eventDateId?: SortOrder
+    eventDateZoneId?: SortOrder
+    eventDateZoneAllocationId?: SortOrder
+    quantity?: SortOrder
+    seatId?: SortOrder
+    unitPrice?: SortOrder
+    discountAmount?: SortOrder
+    finalPrice?: SortOrder
+  }
+
+  export type OrderItemMaxOrderByAggregateInput = {
+    orderItemId?: SortOrder
+    orderId?: SortOrder
+    eventId?: SortOrder
+    eventDateId?: SortOrder
+    eventDateZoneId?: SortOrder
+    eventDateZoneAllocationId?: SortOrder
+    quantity?: SortOrder
+    seatId?: SortOrder
+    unitPrice?: SortOrder
+    discountAmount?: SortOrder
+    finalPrice?: SortOrder
+  }
+
+  export type OrderItemMinOrderByAggregateInput = {
+    orderItemId?: SortOrder
+    orderId?: SortOrder
+    eventId?: SortOrder
+    eventDateId?: SortOrder
+    eventDateZoneId?: SortOrder
+    eventDateZoneAllocationId?: SortOrder
+    quantity?: SortOrder
+    seatId?: SortOrder
+    unitPrice?: SortOrder
+    discountAmount?: SortOrder
+    finalPrice?: SortOrder
+  }
+
+  export type OrderItemSumOrderByAggregateInput = {
+    orderItemId?: SortOrder
+    orderId?: SortOrder
+    eventId?: SortOrder
+    eventDateId?: SortOrder
+    eventDateZoneId?: SortOrder
+    eventDateZoneAllocationId?: SortOrder
+    quantity?: SortOrder
+    seatId?: SortOrder
+    unitPrice?: SortOrder
+    discountAmount?: SortOrder
+    finalPrice?: SortOrder
+  }
+
+  export type DecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedDecimalNullableFilter<$PrismaModel>
+    _sum?: NestedDecimalNullableFilter<$PrismaModel>
+    _min?: NestedDecimalNullableFilter<$PrismaModel>
+    _max?: NestedDecimalNullableFilter<$PrismaModel>
+  }
+
+  export type EnumTICKET_STATUSFilter<$PrismaModel = never> = {
+    equals?: $Enums.TICKET_STATUS | EnumTICKET_STATUSFieldRefInput<$PrismaModel>
+    in?: $Enums.TICKET_STATUS[] | ListEnumTICKET_STATUSFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TICKET_STATUS[] | ListEnumTICKET_STATUSFieldRefInput<$PrismaModel>
+    not?: NestedEnumTICKET_STATUSFilter<$PrismaModel> | $Enums.TICKET_STATUS
+  }
+
+  export type OrderItemScalarRelationFilter = {
+    is?: OrderItemWhereInput
+    isNot?: OrderItemWhereInput
+  }
+
+  export type UserNullableScalarRelationFilter = {
+    is?: UserWhereInput | null
+    isNot?: UserWhereInput | null
+  }
+
+  export type TicketEventDateIdSeatIdCompoundUniqueInput = {
+    eventDateId: bigint | number
+    seatId: bigint | number
+  }
+
+  export type TicketCountOrderByAggregateInput = {
+    ticketId?: SortOrder
+    ownerUserId?: SortOrder
+    orderItemId?: SortOrder
+    eventId?: SortOrder
+    eventDateId?: SortOrder
+    eventDateZoneId?: SortOrder
+    eventDateZoneAllocationId?: SortOrder
+    seatId?: SortOrder
+    pricePaid?: SortOrder
+    currency?: SortOrder
+    issuedAt?: SortOrder
+    status?: SortOrder
+  }
+
+  export type TicketAvgOrderByAggregateInput = {
+    ticketId?: SortOrder
+    ownerUserId?: SortOrder
+    orderItemId?: SortOrder
+    eventId?: SortOrder
+    eventDateId?: SortOrder
+    eventDateZoneId?: SortOrder
+    eventDateZoneAllocationId?: SortOrder
+    seatId?: SortOrder
+    pricePaid?: SortOrder
+  }
+
+  export type TicketMaxOrderByAggregateInput = {
+    ticketId?: SortOrder
+    ownerUserId?: SortOrder
+    orderItemId?: SortOrder
+    eventId?: SortOrder
+    eventDateId?: SortOrder
+    eventDateZoneId?: SortOrder
+    eventDateZoneAllocationId?: SortOrder
+    seatId?: SortOrder
+    pricePaid?: SortOrder
+    currency?: SortOrder
+    issuedAt?: SortOrder
+    status?: SortOrder
+  }
+
+  export type TicketMinOrderByAggregateInput = {
+    ticketId?: SortOrder
+    ownerUserId?: SortOrder
+    orderItemId?: SortOrder
+    eventId?: SortOrder
+    eventDateId?: SortOrder
+    eventDateZoneId?: SortOrder
+    eventDateZoneAllocationId?: SortOrder
+    seatId?: SortOrder
+    pricePaid?: SortOrder
+    currency?: SortOrder
+    issuedAt?: SortOrder
+    status?: SortOrder
+  }
+
+  export type TicketSumOrderByAggregateInput = {
+    ticketId?: SortOrder
+    ownerUserId?: SortOrder
+    orderItemId?: SortOrder
+    eventId?: SortOrder
+    eventDateId?: SortOrder
+    eventDateZoneId?: SortOrder
+    eventDateZoneAllocationId?: SortOrder
+    seatId?: SortOrder
+    pricePaid?: SortOrder
+  }
+
+  export type EnumTICKET_STATUSWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.TICKET_STATUS | EnumTICKET_STATUSFieldRefInput<$PrismaModel>
+    in?: $Enums.TICKET_STATUS[] | ListEnumTICKET_STATUSFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TICKET_STATUS[] | ListEnumTICKET_STATUSFieldRefInput<$PrismaModel>
+    not?: NestedEnumTICKET_STATUSWithAggregatesFilter<$PrismaModel> | $Enums.TICKET_STATUS
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumTICKET_STATUSFilter<$PrismaModel>
+    _max?: NestedEnumTICKET_STATUSFilter<$PrismaModel>
+  }
+
+  export type HoldCountOrderByAggregateInput = {
+    holdId?: SortOrder
+    eventDateId?: SortOrder
+    eventDateZoneId?: SortOrder
+    seatId?: SortOrder
+    quantity?: SortOrder
+    buyerUserId?: SortOrder
+    expiresAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type HoldAvgOrderByAggregateInput = {
+    holdId?: SortOrder
+    eventDateId?: SortOrder
+    eventDateZoneId?: SortOrder
+    seatId?: SortOrder
+    quantity?: SortOrder
+    buyerUserId?: SortOrder
+  }
+
+  export type HoldMaxOrderByAggregateInput = {
+    holdId?: SortOrder
+    eventDateId?: SortOrder
+    eventDateZoneId?: SortOrder
+    seatId?: SortOrder
+    quantity?: SortOrder
+    buyerUserId?: SortOrder
+    expiresAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type HoldMinOrderByAggregateInput = {
+    holdId?: SortOrder
+    eventDateId?: SortOrder
+    eventDateZoneId?: SortOrder
+    seatId?: SortOrder
+    quantity?: SortOrder
+    buyerUserId?: SortOrder
+    expiresAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type HoldSumOrderByAggregateInput = {
+    holdId?: SortOrder
+    eventDateId?: SortOrder
+    eventDateZoneId?: SortOrder
+    seatId?: SortOrder
+    quantity?: SortOrder
+    buyerUserId?: SortOrder
+  }
+
   export type PasswordUserCreateNestedOneWithoutUserInput = {
     create?: XOR<PasswordUserCreateWithoutUserInput, PasswordUserUncheckedCreateWithoutUserInput>
     connectOrCreate?: PasswordUserCreateOrConnectWithoutUserInput
@@ -23204,6 +30425,13 @@ export namespace Prisma {
     connect?: OrganizerWhereUniqueInput
   }
 
+  export type TicketCreateNestedManyWithoutOwnerInput = {
+    create?: XOR<TicketCreateWithoutOwnerInput, TicketUncheckedCreateWithoutOwnerInput> | TicketCreateWithoutOwnerInput[] | TicketUncheckedCreateWithoutOwnerInput[]
+    connectOrCreate?: TicketCreateOrConnectWithoutOwnerInput | TicketCreateOrConnectWithoutOwnerInput[]
+    createMany?: TicketCreateManyOwnerInputEnvelope
+    connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+  }
+
   export type PasswordUserUncheckedCreateNestedOneWithoutUserInput = {
     create?: XOR<PasswordUserCreateWithoutUserInput, PasswordUserUncheckedCreateWithoutUserInput>
     connectOrCreate?: PasswordUserCreateOrConnectWithoutUserInput
@@ -23221,6 +30449,13 @@ export namespace Prisma {
     create?: XOR<OrganizerCreateWithoutUserInput, OrganizerUncheckedCreateWithoutUserInput>
     connectOrCreate?: OrganizerCreateOrConnectWithoutUserInput
     connect?: OrganizerWhereUniqueInput
+  }
+
+  export type TicketUncheckedCreateNestedManyWithoutOwnerInput = {
+    create?: XOR<TicketCreateWithoutOwnerInput, TicketUncheckedCreateWithoutOwnerInput> | TicketCreateWithoutOwnerInput[] | TicketUncheckedCreateWithoutOwnerInput[]
+    connectOrCreate?: TicketCreateOrConnectWithoutOwnerInput | TicketCreateOrConnectWithoutOwnerInput[]
+    createMany?: TicketCreateManyOwnerInputEnvelope
+    connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
   }
 
   export type BigIntFieldUpdateOperationsInput = {
@@ -23289,6 +30524,20 @@ export namespace Prisma {
     update?: XOR<XOR<OrganizerUpdateToOneWithWhereWithoutUserInput, OrganizerUpdateWithoutUserInput>, OrganizerUncheckedUpdateWithoutUserInput>
   }
 
+  export type TicketUpdateManyWithoutOwnerNestedInput = {
+    create?: XOR<TicketCreateWithoutOwnerInput, TicketUncheckedCreateWithoutOwnerInput> | TicketCreateWithoutOwnerInput[] | TicketUncheckedCreateWithoutOwnerInput[]
+    connectOrCreate?: TicketCreateOrConnectWithoutOwnerInput | TicketCreateOrConnectWithoutOwnerInput[]
+    upsert?: TicketUpsertWithWhereUniqueWithoutOwnerInput | TicketUpsertWithWhereUniqueWithoutOwnerInput[]
+    createMany?: TicketCreateManyOwnerInputEnvelope
+    set?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    disconnect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    delete?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    update?: TicketUpdateWithWhereUniqueWithoutOwnerInput | TicketUpdateWithWhereUniqueWithoutOwnerInput[]
+    updateMany?: TicketUpdateManyWithWhereWithoutOwnerInput | TicketUpdateManyWithWhereWithoutOwnerInput[]
+    deleteMany?: TicketScalarWhereInput | TicketScalarWhereInput[]
+  }
+
   export type PasswordUserUncheckedUpdateOneWithoutUserNestedInput = {
     create?: XOR<PasswordUserCreateWithoutUserInput, PasswordUserUncheckedCreateWithoutUserInput>
     connectOrCreate?: PasswordUserCreateOrConnectWithoutUserInput
@@ -23321,6 +30570,20 @@ export namespace Prisma {
     delete?: OrganizerWhereInput | boolean
     connect?: OrganizerWhereUniqueInput
     update?: XOR<XOR<OrganizerUpdateToOneWithWhereWithoutUserInput, OrganizerUpdateWithoutUserInput>, OrganizerUncheckedUpdateWithoutUserInput>
+  }
+
+  export type TicketUncheckedUpdateManyWithoutOwnerNestedInput = {
+    create?: XOR<TicketCreateWithoutOwnerInput, TicketUncheckedCreateWithoutOwnerInput> | TicketCreateWithoutOwnerInput[] | TicketUncheckedCreateWithoutOwnerInput[]
+    connectOrCreate?: TicketCreateOrConnectWithoutOwnerInput | TicketCreateOrConnectWithoutOwnerInput[]
+    upsert?: TicketUpsertWithWhereUniqueWithoutOwnerInput | TicketUpsertWithWhereUniqueWithoutOwnerInput[]
+    createMany?: TicketCreateManyOwnerInputEnvelope
+    set?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    disconnect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    delete?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    update?: TicketUpdateWithWhereUniqueWithoutOwnerInput | TicketUpdateWithWhereUniqueWithoutOwnerInput[]
+    updateMany?: TicketUpdateManyWithWhereWithoutOwnerInput | TicketUpdateManyWithWhereWithoutOwnerInput[]
+    deleteMany?: TicketScalarWhereInput | TicketScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutPasswordInput = {
@@ -23774,11 +31037,53 @@ export namespace Prisma {
     connect?: EventDateZoneWhereUniqueInput | EventDateZoneWhereUniqueInput[]
   }
 
+  export type OrderItemCreateNestedManyWithoutEventDateInput = {
+    create?: XOR<OrderItemCreateWithoutEventDateInput, OrderItemUncheckedCreateWithoutEventDateInput> | OrderItemCreateWithoutEventDateInput[] | OrderItemUncheckedCreateWithoutEventDateInput[]
+    connectOrCreate?: OrderItemCreateOrConnectWithoutEventDateInput | OrderItemCreateOrConnectWithoutEventDateInput[]
+    createMany?: OrderItemCreateManyEventDateInputEnvelope
+    connect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+  }
+
+  export type TicketCreateNestedManyWithoutEventDateInput = {
+    create?: XOR<TicketCreateWithoutEventDateInput, TicketUncheckedCreateWithoutEventDateInput> | TicketCreateWithoutEventDateInput[] | TicketUncheckedCreateWithoutEventDateInput[]
+    connectOrCreate?: TicketCreateOrConnectWithoutEventDateInput | TicketCreateOrConnectWithoutEventDateInput[]
+    createMany?: TicketCreateManyEventDateInputEnvelope
+    connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+  }
+
+  export type HoldCreateNestedManyWithoutEventDateInput = {
+    create?: XOR<HoldCreateWithoutEventDateInput, HoldUncheckedCreateWithoutEventDateInput> | HoldCreateWithoutEventDateInput[] | HoldUncheckedCreateWithoutEventDateInput[]
+    connectOrCreate?: HoldCreateOrConnectWithoutEventDateInput | HoldCreateOrConnectWithoutEventDateInput[]
+    createMany?: HoldCreateManyEventDateInputEnvelope
+    connect?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
+  }
+
   export type EventDateZoneUncheckedCreateNestedManyWithoutEventDateInput = {
     create?: XOR<EventDateZoneCreateWithoutEventDateInput, EventDateZoneUncheckedCreateWithoutEventDateInput> | EventDateZoneCreateWithoutEventDateInput[] | EventDateZoneUncheckedCreateWithoutEventDateInput[]
     connectOrCreate?: EventDateZoneCreateOrConnectWithoutEventDateInput | EventDateZoneCreateOrConnectWithoutEventDateInput[]
     createMany?: EventDateZoneCreateManyEventDateInputEnvelope
     connect?: EventDateZoneWhereUniqueInput | EventDateZoneWhereUniqueInput[]
+  }
+
+  export type OrderItemUncheckedCreateNestedManyWithoutEventDateInput = {
+    create?: XOR<OrderItemCreateWithoutEventDateInput, OrderItemUncheckedCreateWithoutEventDateInput> | OrderItemCreateWithoutEventDateInput[] | OrderItemUncheckedCreateWithoutEventDateInput[]
+    connectOrCreate?: OrderItemCreateOrConnectWithoutEventDateInput | OrderItemCreateOrConnectWithoutEventDateInput[]
+    createMany?: OrderItemCreateManyEventDateInputEnvelope
+    connect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+  }
+
+  export type TicketUncheckedCreateNestedManyWithoutEventDateInput = {
+    create?: XOR<TicketCreateWithoutEventDateInput, TicketUncheckedCreateWithoutEventDateInput> | TicketCreateWithoutEventDateInput[] | TicketUncheckedCreateWithoutEventDateInput[]
+    connectOrCreate?: TicketCreateOrConnectWithoutEventDateInput | TicketCreateOrConnectWithoutEventDateInput[]
+    createMany?: TicketCreateManyEventDateInputEnvelope
+    connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+  }
+
+  export type HoldUncheckedCreateNestedManyWithoutEventDateInput = {
+    create?: XOR<HoldCreateWithoutEventDateInput, HoldUncheckedCreateWithoutEventDateInput> | HoldCreateWithoutEventDateInput[] | HoldUncheckedCreateWithoutEventDateInput[]
+    connectOrCreate?: HoldCreateOrConnectWithoutEventDateInput | HoldCreateOrConnectWithoutEventDateInput[]
+    createMany?: HoldCreateManyEventDateInputEnvelope
+    connect?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
   }
 
   export type EventUpdateOneRequiredWithoutDatesNestedInput = {
@@ -23803,6 +31108,48 @@ export namespace Prisma {
     deleteMany?: EventDateZoneScalarWhereInput | EventDateZoneScalarWhereInput[]
   }
 
+  export type OrderItemUpdateManyWithoutEventDateNestedInput = {
+    create?: XOR<OrderItemCreateWithoutEventDateInput, OrderItemUncheckedCreateWithoutEventDateInput> | OrderItemCreateWithoutEventDateInput[] | OrderItemUncheckedCreateWithoutEventDateInput[]
+    connectOrCreate?: OrderItemCreateOrConnectWithoutEventDateInput | OrderItemCreateOrConnectWithoutEventDateInput[]
+    upsert?: OrderItemUpsertWithWhereUniqueWithoutEventDateInput | OrderItemUpsertWithWhereUniqueWithoutEventDateInput[]
+    createMany?: OrderItemCreateManyEventDateInputEnvelope
+    set?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    disconnect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    delete?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    connect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    update?: OrderItemUpdateWithWhereUniqueWithoutEventDateInput | OrderItemUpdateWithWhereUniqueWithoutEventDateInput[]
+    updateMany?: OrderItemUpdateManyWithWhereWithoutEventDateInput | OrderItemUpdateManyWithWhereWithoutEventDateInput[]
+    deleteMany?: OrderItemScalarWhereInput | OrderItemScalarWhereInput[]
+  }
+
+  export type TicketUpdateManyWithoutEventDateNestedInput = {
+    create?: XOR<TicketCreateWithoutEventDateInput, TicketUncheckedCreateWithoutEventDateInput> | TicketCreateWithoutEventDateInput[] | TicketUncheckedCreateWithoutEventDateInput[]
+    connectOrCreate?: TicketCreateOrConnectWithoutEventDateInput | TicketCreateOrConnectWithoutEventDateInput[]
+    upsert?: TicketUpsertWithWhereUniqueWithoutEventDateInput | TicketUpsertWithWhereUniqueWithoutEventDateInput[]
+    createMany?: TicketCreateManyEventDateInputEnvelope
+    set?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    disconnect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    delete?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    update?: TicketUpdateWithWhereUniqueWithoutEventDateInput | TicketUpdateWithWhereUniqueWithoutEventDateInput[]
+    updateMany?: TicketUpdateManyWithWhereWithoutEventDateInput | TicketUpdateManyWithWhereWithoutEventDateInput[]
+    deleteMany?: TicketScalarWhereInput | TicketScalarWhereInput[]
+  }
+
+  export type HoldUpdateManyWithoutEventDateNestedInput = {
+    create?: XOR<HoldCreateWithoutEventDateInput, HoldUncheckedCreateWithoutEventDateInput> | HoldCreateWithoutEventDateInput[] | HoldUncheckedCreateWithoutEventDateInput[]
+    connectOrCreate?: HoldCreateOrConnectWithoutEventDateInput | HoldCreateOrConnectWithoutEventDateInput[]
+    upsert?: HoldUpsertWithWhereUniqueWithoutEventDateInput | HoldUpsertWithWhereUniqueWithoutEventDateInput[]
+    createMany?: HoldCreateManyEventDateInputEnvelope
+    set?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
+    disconnect?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
+    delete?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
+    connect?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
+    update?: HoldUpdateWithWhereUniqueWithoutEventDateInput | HoldUpdateWithWhereUniqueWithoutEventDateInput[]
+    updateMany?: HoldUpdateManyWithWhereWithoutEventDateInput | HoldUpdateManyWithWhereWithoutEventDateInput[]
+    deleteMany?: HoldScalarWhereInput | HoldScalarWhereInput[]
+  }
+
   export type EventDateZoneUncheckedUpdateManyWithoutEventDateNestedInput = {
     create?: XOR<EventDateZoneCreateWithoutEventDateInput, EventDateZoneUncheckedCreateWithoutEventDateInput> | EventDateZoneCreateWithoutEventDateInput[] | EventDateZoneUncheckedCreateWithoutEventDateInput[]
     connectOrCreate?: EventDateZoneCreateOrConnectWithoutEventDateInput | EventDateZoneCreateOrConnectWithoutEventDateInput[]
@@ -23815,6 +31162,48 @@ export namespace Prisma {
     update?: EventDateZoneUpdateWithWhereUniqueWithoutEventDateInput | EventDateZoneUpdateWithWhereUniqueWithoutEventDateInput[]
     updateMany?: EventDateZoneUpdateManyWithWhereWithoutEventDateInput | EventDateZoneUpdateManyWithWhereWithoutEventDateInput[]
     deleteMany?: EventDateZoneScalarWhereInput | EventDateZoneScalarWhereInput[]
+  }
+
+  export type OrderItemUncheckedUpdateManyWithoutEventDateNestedInput = {
+    create?: XOR<OrderItemCreateWithoutEventDateInput, OrderItemUncheckedCreateWithoutEventDateInput> | OrderItemCreateWithoutEventDateInput[] | OrderItemUncheckedCreateWithoutEventDateInput[]
+    connectOrCreate?: OrderItemCreateOrConnectWithoutEventDateInput | OrderItemCreateOrConnectWithoutEventDateInput[]
+    upsert?: OrderItemUpsertWithWhereUniqueWithoutEventDateInput | OrderItemUpsertWithWhereUniqueWithoutEventDateInput[]
+    createMany?: OrderItemCreateManyEventDateInputEnvelope
+    set?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    disconnect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    delete?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    connect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    update?: OrderItemUpdateWithWhereUniqueWithoutEventDateInput | OrderItemUpdateWithWhereUniqueWithoutEventDateInput[]
+    updateMany?: OrderItemUpdateManyWithWhereWithoutEventDateInput | OrderItemUpdateManyWithWhereWithoutEventDateInput[]
+    deleteMany?: OrderItemScalarWhereInput | OrderItemScalarWhereInput[]
+  }
+
+  export type TicketUncheckedUpdateManyWithoutEventDateNestedInput = {
+    create?: XOR<TicketCreateWithoutEventDateInput, TicketUncheckedCreateWithoutEventDateInput> | TicketCreateWithoutEventDateInput[] | TicketUncheckedCreateWithoutEventDateInput[]
+    connectOrCreate?: TicketCreateOrConnectWithoutEventDateInput | TicketCreateOrConnectWithoutEventDateInput[]
+    upsert?: TicketUpsertWithWhereUniqueWithoutEventDateInput | TicketUpsertWithWhereUniqueWithoutEventDateInput[]
+    createMany?: TicketCreateManyEventDateInputEnvelope
+    set?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    disconnect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    delete?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    update?: TicketUpdateWithWhereUniqueWithoutEventDateInput | TicketUpdateWithWhereUniqueWithoutEventDateInput[]
+    updateMany?: TicketUpdateManyWithWhereWithoutEventDateInput | TicketUpdateManyWithWhereWithoutEventDateInput[]
+    deleteMany?: TicketScalarWhereInput | TicketScalarWhereInput[]
+  }
+
+  export type HoldUncheckedUpdateManyWithoutEventDateNestedInput = {
+    create?: XOR<HoldCreateWithoutEventDateInput, HoldUncheckedCreateWithoutEventDateInput> | HoldCreateWithoutEventDateInput[] | HoldUncheckedCreateWithoutEventDateInput[]
+    connectOrCreate?: HoldCreateOrConnectWithoutEventDateInput | HoldCreateOrConnectWithoutEventDateInput[]
+    upsert?: HoldUpsertWithWhereUniqueWithoutEventDateInput | HoldUpsertWithWhereUniqueWithoutEventDateInput[]
+    createMany?: HoldCreateManyEventDateInputEnvelope
+    set?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
+    disconnect?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
+    delete?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
+    connect?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
+    update?: HoldUpdateWithWhereUniqueWithoutEventDateInput | HoldUpdateWithWhereUniqueWithoutEventDateInput[]
+    updateMany?: HoldUpdateManyWithWhereWithoutEventDateInput | HoldUpdateManyWithWhereWithoutEventDateInput[]
+    deleteMany?: HoldScalarWhereInput | HoldScalarWhereInput[]
   }
 
   export type EventDateCreateNestedOneWithoutZoneDatesInput = {
@@ -23836,11 +31225,53 @@ export namespace Prisma {
     connect?: EventDateZoneAllocationWhereUniqueInput | EventDateZoneAllocationWhereUniqueInput[]
   }
 
+  export type OrderItemCreateNestedManyWithoutZoneInput = {
+    create?: XOR<OrderItemCreateWithoutZoneInput, OrderItemUncheckedCreateWithoutZoneInput> | OrderItemCreateWithoutZoneInput[] | OrderItemUncheckedCreateWithoutZoneInput[]
+    connectOrCreate?: OrderItemCreateOrConnectWithoutZoneInput | OrderItemCreateOrConnectWithoutZoneInput[]
+    createMany?: OrderItemCreateManyZoneInputEnvelope
+    connect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+  }
+
+  export type TicketCreateNestedManyWithoutZoneInput = {
+    create?: XOR<TicketCreateWithoutZoneInput, TicketUncheckedCreateWithoutZoneInput> | TicketCreateWithoutZoneInput[] | TicketUncheckedCreateWithoutZoneInput[]
+    connectOrCreate?: TicketCreateOrConnectWithoutZoneInput | TicketCreateOrConnectWithoutZoneInput[]
+    createMany?: TicketCreateManyZoneInputEnvelope
+    connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+  }
+
+  export type HoldCreateNestedManyWithoutZoneInput = {
+    create?: XOR<HoldCreateWithoutZoneInput, HoldUncheckedCreateWithoutZoneInput> | HoldCreateWithoutZoneInput[] | HoldUncheckedCreateWithoutZoneInput[]
+    connectOrCreate?: HoldCreateOrConnectWithoutZoneInput | HoldCreateOrConnectWithoutZoneInput[]
+    createMany?: HoldCreateManyZoneInputEnvelope
+    connect?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
+  }
+
   export type EventDateZoneAllocationUncheckedCreateNestedManyWithoutZoneInput = {
     create?: XOR<EventDateZoneAllocationCreateWithoutZoneInput, EventDateZoneAllocationUncheckedCreateWithoutZoneInput> | EventDateZoneAllocationCreateWithoutZoneInput[] | EventDateZoneAllocationUncheckedCreateWithoutZoneInput[]
     connectOrCreate?: EventDateZoneAllocationCreateOrConnectWithoutZoneInput | EventDateZoneAllocationCreateOrConnectWithoutZoneInput[]
     createMany?: EventDateZoneAllocationCreateManyZoneInputEnvelope
     connect?: EventDateZoneAllocationWhereUniqueInput | EventDateZoneAllocationWhereUniqueInput[]
+  }
+
+  export type OrderItemUncheckedCreateNestedManyWithoutZoneInput = {
+    create?: XOR<OrderItemCreateWithoutZoneInput, OrderItemUncheckedCreateWithoutZoneInput> | OrderItemCreateWithoutZoneInput[] | OrderItemUncheckedCreateWithoutZoneInput[]
+    connectOrCreate?: OrderItemCreateOrConnectWithoutZoneInput | OrderItemCreateOrConnectWithoutZoneInput[]
+    createMany?: OrderItemCreateManyZoneInputEnvelope
+    connect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+  }
+
+  export type TicketUncheckedCreateNestedManyWithoutZoneInput = {
+    create?: XOR<TicketCreateWithoutZoneInput, TicketUncheckedCreateWithoutZoneInput> | TicketCreateWithoutZoneInput[] | TicketUncheckedCreateWithoutZoneInput[]
+    connectOrCreate?: TicketCreateOrConnectWithoutZoneInput | TicketCreateOrConnectWithoutZoneInput[]
+    createMany?: TicketCreateManyZoneInputEnvelope
+    connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+  }
+
+  export type HoldUncheckedCreateNestedManyWithoutZoneInput = {
+    create?: XOR<HoldCreateWithoutZoneInput, HoldUncheckedCreateWithoutZoneInput> | HoldCreateWithoutZoneInput[] | HoldUncheckedCreateWithoutZoneInput[]
+    connectOrCreate?: HoldCreateOrConnectWithoutZoneInput | HoldCreateOrConnectWithoutZoneInput[]
+    createMany?: HoldCreateManyZoneInputEnvelope
+    connect?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
   }
 
   export type EnumZONE_KINDFieldUpdateOperationsInput = {
@@ -23883,6 +31314,48 @@ export namespace Prisma {
     deleteMany?: EventDateZoneAllocationScalarWhereInput | EventDateZoneAllocationScalarWhereInput[]
   }
 
+  export type OrderItemUpdateManyWithoutZoneNestedInput = {
+    create?: XOR<OrderItemCreateWithoutZoneInput, OrderItemUncheckedCreateWithoutZoneInput> | OrderItemCreateWithoutZoneInput[] | OrderItemUncheckedCreateWithoutZoneInput[]
+    connectOrCreate?: OrderItemCreateOrConnectWithoutZoneInput | OrderItemCreateOrConnectWithoutZoneInput[]
+    upsert?: OrderItemUpsertWithWhereUniqueWithoutZoneInput | OrderItemUpsertWithWhereUniqueWithoutZoneInput[]
+    createMany?: OrderItemCreateManyZoneInputEnvelope
+    set?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    disconnect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    delete?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    connect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    update?: OrderItemUpdateWithWhereUniqueWithoutZoneInput | OrderItemUpdateWithWhereUniqueWithoutZoneInput[]
+    updateMany?: OrderItemUpdateManyWithWhereWithoutZoneInput | OrderItemUpdateManyWithWhereWithoutZoneInput[]
+    deleteMany?: OrderItemScalarWhereInput | OrderItemScalarWhereInput[]
+  }
+
+  export type TicketUpdateManyWithoutZoneNestedInput = {
+    create?: XOR<TicketCreateWithoutZoneInput, TicketUncheckedCreateWithoutZoneInput> | TicketCreateWithoutZoneInput[] | TicketUncheckedCreateWithoutZoneInput[]
+    connectOrCreate?: TicketCreateOrConnectWithoutZoneInput | TicketCreateOrConnectWithoutZoneInput[]
+    upsert?: TicketUpsertWithWhereUniqueWithoutZoneInput | TicketUpsertWithWhereUniqueWithoutZoneInput[]
+    createMany?: TicketCreateManyZoneInputEnvelope
+    set?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    disconnect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    delete?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    update?: TicketUpdateWithWhereUniqueWithoutZoneInput | TicketUpdateWithWhereUniqueWithoutZoneInput[]
+    updateMany?: TicketUpdateManyWithWhereWithoutZoneInput | TicketUpdateManyWithWhereWithoutZoneInput[]
+    deleteMany?: TicketScalarWhereInput | TicketScalarWhereInput[]
+  }
+
+  export type HoldUpdateManyWithoutZoneNestedInput = {
+    create?: XOR<HoldCreateWithoutZoneInput, HoldUncheckedCreateWithoutZoneInput> | HoldCreateWithoutZoneInput[] | HoldUncheckedCreateWithoutZoneInput[]
+    connectOrCreate?: HoldCreateOrConnectWithoutZoneInput | HoldCreateOrConnectWithoutZoneInput[]
+    upsert?: HoldUpsertWithWhereUniqueWithoutZoneInput | HoldUpsertWithWhereUniqueWithoutZoneInput[]
+    createMany?: HoldCreateManyZoneInputEnvelope
+    set?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
+    disconnect?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
+    delete?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
+    connect?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
+    update?: HoldUpdateWithWhereUniqueWithoutZoneInput | HoldUpdateWithWhereUniqueWithoutZoneInput[]
+    updateMany?: HoldUpdateManyWithWhereWithoutZoneInput | HoldUpdateManyWithWhereWithoutZoneInput[]
+    deleteMany?: HoldScalarWhereInput | HoldScalarWhereInput[]
+  }
+
   export type EventDateZoneAllocationUncheckedUpdateManyWithoutZoneNestedInput = {
     create?: XOR<EventDateZoneAllocationCreateWithoutZoneInput, EventDateZoneAllocationUncheckedCreateWithoutZoneInput> | EventDateZoneAllocationCreateWithoutZoneInput[] | EventDateZoneAllocationUncheckedCreateWithoutZoneInput[]
     connectOrCreate?: EventDateZoneAllocationCreateOrConnectWithoutZoneInput | EventDateZoneAllocationCreateOrConnectWithoutZoneInput[]
@@ -23895,6 +31368,48 @@ export namespace Prisma {
     update?: EventDateZoneAllocationUpdateWithWhereUniqueWithoutZoneInput | EventDateZoneAllocationUpdateWithWhereUniqueWithoutZoneInput[]
     updateMany?: EventDateZoneAllocationUpdateManyWithWhereWithoutZoneInput | EventDateZoneAllocationUpdateManyWithWhereWithoutZoneInput[]
     deleteMany?: EventDateZoneAllocationScalarWhereInput | EventDateZoneAllocationScalarWhereInput[]
+  }
+
+  export type OrderItemUncheckedUpdateManyWithoutZoneNestedInput = {
+    create?: XOR<OrderItemCreateWithoutZoneInput, OrderItemUncheckedCreateWithoutZoneInput> | OrderItemCreateWithoutZoneInput[] | OrderItemUncheckedCreateWithoutZoneInput[]
+    connectOrCreate?: OrderItemCreateOrConnectWithoutZoneInput | OrderItemCreateOrConnectWithoutZoneInput[]
+    upsert?: OrderItemUpsertWithWhereUniqueWithoutZoneInput | OrderItemUpsertWithWhereUniqueWithoutZoneInput[]
+    createMany?: OrderItemCreateManyZoneInputEnvelope
+    set?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    disconnect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    delete?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    connect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    update?: OrderItemUpdateWithWhereUniqueWithoutZoneInput | OrderItemUpdateWithWhereUniqueWithoutZoneInput[]
+    updateMany?: OrderItemUpdateManyWithWhereWithoutZoneInput | OrderItemUpdateManyWithWhereWithoutZoneInput[]
+    deleteMany?: OrderItemScalarWhereInput | OrderItemScalarWhereInput[]
+  }
+
+  export type TicketUncheckedUpdateManyWithoutZoneNestedInput = {
+    create?: XOR<TicketCreateWithoutZoneInput, TicketUncheckedCreateWithoutZoneInput> | TicketCreateWithoutZoneInput[] | TicketUncheckedCreateWithoutZoneInput[]
+    connectOrCreate?: TicketCreateOrConnectWithoutZoneInput | TicketCreateOrConnectWithoutZoneInput[]
+    upsert?: TicketUpsertWithWhereUniqueWithoutZoneInput | TicketUpsertWithWhereUniqueWithoutZoneInput[]
+    createMany?: TicketCreateManyZoneInputEnvelope
+    set?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    disconnect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    delete?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    update?: TicketUpdateWithWhereUniqueWithoutZoneInput | TicketUpdateWithWhereUniqueWithoutZoneInput[]
+    updateMany?: TicketUpdateManyWithWhereWithoutZoneInput | TicketUpdateManyWithWhereWithoutZoneInput[]
+    deleteMany?: TicketScalarWhereInput | TicketScalarWhereInput[]
+  }
+
+  export type HoldUncheckedUpdateManyWithoutZoneNestedInput = {
+    create?: XOR<HoldCreateWithoutZoneInput, HoldUncheckedCreateWithoutZoneInput> | HoldCreateWithoutZoneInput[] | HoldUncheckedCreateWithoutZoneInput[]
+    connectOrCreate?: HoldCreateOrConnectWithoutZoneInput | HoldCreateOrConnectWithoutZoneInput[]
+    upsert?: HoldUpsertWithWhereUniqueWithoutZoneInput | HoldUpsertWithWhereUniqueWithoutZoneInput[]
+    createMany?: HoldCreateManyZoneInputEnvelope
+    set?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
+    disconnect?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
+    delete?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
+    connect?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
+    update?: HoldUpdateWithWhereUniqueWithoutZoneInput | HoldUpdateWithWhereUniqueWithoutZoneInput[]
+    updateMany?: HoldUpdateManyWithWhereWithoutZoneInput | HoldUpdateManyWithWhereWithoutZoneInput[]
+    deleteMany?: HoldScalarWhereInput | HoldScalarWhereInput[]
   }
 
   export type SeatCreateNestedManyWithoutSeatMapInput = {
@@ -23977,6 +31492,52 @@ export namespace Prisma {
     connect?: SeatMapWhereUniqueInput
   }
 
+  export type OrderItemCreateNestedManyWithoutSeatInput = {
+    create?: XOR<OrderItemCreateWithoutSeatInput, OrderItemUncheckedCreateWithoutSeatInput> | OrderItemCreateWithoutSeatInput[] | OrderItemUncheckedCreateWithoutSeatInput[]
+    connectOrCreate?: OrderItemCreateOrConnectWithoutSeatInput | OrderItemCreateOrConnectWithoutSeatInput[]
+    createMany?: OrderItemCreateManySeatInputEnvelope
+    connect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+  }
+
+  export type TicketCreateNestedManyWithoutSeatInput = {
+    create?: XOR<TicketCreateWithoutSeatInput, TicketUncheckedCreateWithoutSeatInput> | TicketCreateWithoutSeatInput[] | TicketUncheckedCreateWithoutSeatInput[]
+    connectOrCreate?: TicketCreateOrConnectWithoutSeatInput | TicketCreateOrConnectWithoutSeatInput[]
+    createMany?: TicketCreateManySeatInputEnvelope
+    connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+  }
+
+  export type HoldCreateNestedManyWithoutSeatInput = {
+    create?: XOR<HoldCreateWithoutSeatInput, HoldUncheckedCreateWithoutSeatInput> | HoldCreateWithoutSeatInput[] | HoldUncheckedCreateWithoutSeatInput[]
+    connectOrCreate?: HoldCreateOrConnectWithoutSeatInput | HoldCreateOrConnectWithoutSeatInput[]
+    createMany?: HoldCreateManySeatInputEnvelope
+    connect?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
+  }
+
+  export type OrderItemUncheckedCreateNestedManyWithoutSeatInput = {
+    create?: XOR<OrderItemCreateWithoutSeatInput, OrderItemUncheckedCreateWithoutSeatInput> | OrderItemCreateWithoutSeatInput[] | OrderItemUncheckedCreateWithoutSeatInput[]
+    connectOrCreate?: OrderItemCreateOrConnectWithoutSeatInput | OrderItemCreateOrConnectWithoutSeatInput[]
+    createMany?: OrderItemCreateManySeatInputEnvelope
+    connect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+  }
+
+  export type TicketUncheckedCreateNestedManyWithoutSeatInput = {
+    create?: XOR<TicketCreateWithoutSeatInput, TicketUncheckedCreateWithoutSeatInput> | TicketCreateWithoutSeatInput[] | TicketUncheckedCreateWithoutSeatInput[]
+    connectOrCreate?: TicketCreateOrConnectWithoutSeatInput | TicketCreateOrConnectWithoutSeatInput[]
+    createMany?: TicketCreateManySeatInputEnvelope
+    connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+  }
+
+  export type HoldUncheckedCreateNestedManyWithoutSeatInput = {
+    create?: XOR<HoldCreateWithoutSeatInput, HoldUncheckedCreateWithoutSeatInput> | HoldCreateWithoutSeatInput[] | HoldUncheckedCreateWithoutSeatInput[]
+    connectOrCreate?: HoldCreateOrConnectWithoutSeatInput | HoldCreateOrConnectWithoutSeatInput[]
+    createMany?: HoldCreateManySeatInputEnvelope
+    connect?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
+  }
+
+  export type EnumSEAT_STATUSFieldUpdateOperationsInput = {
+    set?: $Enums.SEAT_STATUS
+  }
+
   export type SeatMapUpdateOneRequiredWithoutOccupiedSeatsNestedInput = {
     create?: XOR<SeatMapCreateWithoutOccupiedSeatsInput, SeatMapUncheckedCreateWithoutOccupiedSeatsInput>
     connectOrCreate?: SeatMapCreateOrConnectWithoutOccupiedSeatsInput
@@ -23985,10 +31546,122 @@ export namespace Prisma {
     update?: XOR<XOR<SeatMapUpdateToOneWithWhereWithoutOccupiedSeatsInput, SeatMapUpdateWithoutOccupiedSeatsInput>, SeatMapUncheckedUpdateWithoutOccupiedSeatsInput>
   }
 
+  export type OrderItemUpdateManyWithoutSeatNestedInput = {
+    create?: XOR<OrderItemCreateWithoutSeatInput, OrderItemUncheckedCreateWithoutSeatInput> | OrderItemCreateWithoutSeatInput[] | OrderItemUncheckedCreateWithoutSeatInput[]
+    connectOrCreate?: OrderItemCreateOrConnectWithoutSeatInput | OrderItemCreateOrConnectWithoutSeatInput[]
+    upsert?: OrderItemUpsertWithWhereUniqueWithoutSeatInput | OrderItemUpsertWithWhereUniqueWithoutSeatInput[]
+    createMany?: OrderItemCreateManySeatInputEnvelope
+    set?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    disconnect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    delete?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    connect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    update?: OrderItemUpdateWithWhereUniqueWithoutSeatInput | OrderItemUpdateWithWhereUniqueWithoutSeatInput[]
+    updateMany?: OrderItemUpdateManyWithWhereWithoutSeatInput | OrderItemUpdateManyWithWhereWithoutSeatInput[]
+    deleteMany?: OrderItemScalarWhereInput | OrderItemScalarWhereInput[]
+  }
+
+  export type TicketUpdateManyWithoutSeatNestedInput = {
+    create?: XOR<TicketCreateWithoutSeatInput, TicketUncheckedCreateWithoutSeatInput> | TicketCreateWithoutSeatInput[] | TicketUncheckedCreateWithoutSeatInput[]
+    connectOrCreate?: TicketCreateOrConnectWithoutSeatInput | TicketCreateOrConnectWithoutSeatInput[]
+    upsert?: TicketUpsertWithWhereUniqueWithoutSeatInput | TicketUpsertWithWhereUniqueWithoutSeatInput[]
+    createMany?: TicketCreateManySeatInputEnvelope
+    set?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    disconnect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    delete?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    update?: TicketUpdateWithWhereUniqueWithoutSeatInput | TicketUpdateWithWhereUniqueWithoutSeatInput[]
+    updateMany?: TicketUpdateManyWithWhereWithoutSeatInput | TicketUpdateManyWithWhereWithoutSeatInput[]
+    deleteMany?: TicketScalarWhereInput | TicketScalarWhereInput[]
+  }
+
+  export type HoldUpdateManyWithoutSeatNestedInput = {
+    create?: XOR<HoldCreateWithoutSeatInput, HoldUncheckedCreateWithoutSeatInput> | HoldCreateWithoutSeatInput[] | HoldUncheckedCreateWithoutSeatInput[]
+    connectOrCreate?: HoldCreateOrConnectWithoutSeatInput | HoldCreateOrConnectWithoutSeatInput[]
+    upsert?: HoldUpsertWithWhereUniqueWithoutSeatInput | HoldUpsertWithWhereUniqueWithoutSeatInput[]
+    createMany?: HoldCreateManySeatInputEnvelope
+    set?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
+    disconnect?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
+    delete?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
+    connect?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
+    update?: HoldUpdateWithWhereUniqueWithoutSeatInput | HoldUpdateWithWhereUniqueWithoutSeatInput[]
+    updateMany?: HoldUpdateManyWithWhereWithoutSeatInput | HoldUpdateManyWithWhereWithoutSeatInput[]
+    deleteMany?: HoldScalarWhereInput | HoldScalarWhereInput[]
+  }
+
+  export type OrderItemUncheckedUpdateManyWithoutSeatNestedInput = {
+    create?: XOR<OrderItemCreateWithoutSeatInput, OrderItemUncheckedCreateWithoutSeatInput> | OrderItemCreateWithoutSeatInput[] | OrderItemUncheckedCreateWithoutSeatInput[]
+    connectOrCreate?: OrderItemCreateOrConnectWithoutSeatInput | OrderItemCreateOrConnectWithoutSeatInput[]
+    upsert?: OrderItemUpsertWithWhereUniqueWithoutSeatInput | OrderItemUpsertWithWhereUniqueWithoutSeatInput[]
+    createMany?: OrderItemCreateManySeatInputEnvelope
+    set?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    disconnect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    delete?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    connect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    update?: OrderItemUpdateWithWhereUniqueWithoutSeatInput | OrderItemUpdateWithWhereUniqueWithoutSeatInput[]
+    updateMany?: OrderItemUpdateManyWithWhereWithoutSeatInput | OrderItemUpdateManyWithWhereWithoutSeatInput[]
+    deleteMany?: OrderItemScalarWhereInput | OrderItemScalarWhereInput[]
+  }
+
+  export type TicketUncheckedUpdateManyWithoutSeatNestedInput = {
+    create?: XOR<TicketCreateWithoutSeatInput, TicketUncheckedCreateWithoutSeatInput> | TicketCreateWithoutSeatInput[] | TicketUncheckedCreateWithoutSeatInput[]
+    connectOrCreate?: TicketCreateOrConnectWithoutSeatInput | TicketCreateOrConnectWithoutSeatInput[]
+    upsert?: TicketUpsertWithWhereUniqueWithoutSeatInput | TicketUpsertWithWhereUniqueWithoutSeatInput[]
+    createMany?: TicketCreateManySeatInputEnvelope
+    set?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    disconnect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    delete?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    update?: TicketUpdateWithWhereUniqueWithoutSeatInput | TicketUpdateWithWhereUniqueWithoutSeatInput[]
+    updateMany?: TicketUpdateManyWithWhereWithoutSeatInput | TicketUpdateManyWithWhereWithoutSeatInput[]
+    deleteMany?: TicketScalarWhereInput | TicketScalarWhereInput[]
+  }
+
+  export type HoldUncheckedUpdateManyWithoutSeatNestedInput = {
+    create?: XOR<HoldCreateWithoutSeatInput, HoldUncheckedCreateWithoutSeatInput> | HoldCreateWithoutSeatInput[] | HoldUncheckedCreateWithoutSeatInput[]
+    connectOrCreate?: HoldCreateOrConnectWithoutSeatInput | HoldCreateOrConnectWithoutSeatInput[]
+    upsert?: HoldUpsertWithWhereUniqueWithoutSeatInput | HoldUpsertWithWhereUniqueWithoutSeatInput[]
+    createMany?: HoldCreateManySeatInputEnvelope
+    set?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
+    disconnect?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
+    delete?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
+    connect?: HoldWhereUniqueInput | HoldWhereUniqueInput[]
+    update?: HoldUpdateWithWhereUniqueWithoutSeatInput | HoldUpdateWithWhereUniqueWithoutSeatInput[]
+    updateMany?: HoldUpdateManyWithWhereWithoutSeatInput | HoldUpdateManyWithWhereWithoutSeatInput[]
+    deleteMany?: HoldScalarWhereInput | HoldScalarWhereInput[]
+  }
+
   export type EventDateZoneCreateNestedOneWithoutAllocationsInput = {
     create?: XOR<EventDateZoneCreateWithoutAllocationsInput, EventDateZoneUncheckedCreateWithoutAllocationsInput>
     connectOrCreate?: EventDateZoneCreateOrConnectWithoutAllocationsInput
     connect?: EventDateZoneWhereUniqueInput
+  }
+
+  export type OrderItemCreateNestedManyWithoutAllocationInput = {
+    create?: XOR<OrderItemCreateWithoutAllocationInput, OrderItemUncheckedCreateWithoutAllocationInput> | OrderItemCreateWithoutAllocationInput[] | OrderItemUncheckedCreateWithoutAllocationInput[]
+    connectOrCreate?: OrderItemCreateOrConnectWithoutAllocationInput | OrderItemCreateOrConnectWithoutAllocationInput[]
+    createMany?: OrderItemCreateManyAllocationInputEnvelope
+    connect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+  }
+
+  export type TicketCreateNestedManyWithoutAllocationInput = {
+    create?: XOR<TicketCreateWithoutAllocationInput, TicketUncheckedCreateWithoutAllocationInput> | TicketCreateWithoutAllocationInput[] | TicketUncheckedCreateWithoutAllocationInput[]
+    connectOrCreate?: TicketCreateOrConnectWithoutAllocationInput | TicketCreateOrConnectWithoutAllocationInput[]
+    createMany?: TicketCreateManyAllocationInputEnvelope
+    connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+  }
+
+  export type OrderItemUncheckedCreateNestedManyWithoutAllocationInput = {
+    create?: XOR<OrderItemCreateWithoutAllocationInput, OrderItemUncheckedCreateWithoutAllocationInput> | OrderItemCreateWithoutAllocationInput[] | OrderItemUncheckedCreateWithoutAllocationInput[]
+    connectOrCreate?: OrderItemCreateOrConnectWithoutAllocationInput | OrderItemCreateOrConnectWithoutAllocationInput[]
+    createMany?: OrderItemCreateManyAllocationInputEnvelope
+    connect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+  }
+
+  export type TicketUncheckedCreateNestedManyWithoutAllocationInput = {
+    create?: XOR<TicketCreateWithoutAllocationInput, TicketUncheckedCreateWithoutAllocationInput> | TicketCreateWithoutAllocationInput[] | TicketUncheckedCreateWithoutAllocationInput[]
+    connectOrCreate?: TicketCreateOrConnectWithoutAllocationInput | TicketCreateOrConnectWithoutAllocationInput[]
+    createMany?: TicketCreateManyAllocationInputEnvelope
+    connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
   }
 
   export type NullableIntFieldUpdateOperationsInput = {
@@ -24007,6 +31680,62 @@ export namespace Prisma {
     update?: XOR<XOR<EventDateZoneUpdateToOneWithWhereWithoutAllocationsInput, EventDateZoneUpdateWithoutAllocationsInput>, EventDateZoneUncheckedUpdateWithoutAllocationsInput>
   }
 
+  export type OrderItemUpdateManyWithoutAllocationNestedInput = {
+    create?: XOR<OrderItemCreateWithoutAllocationInput, OrderItemUncheckedCreateWithoutAllocationInput> | OrderItemCreateWithoutAllocationInput[] | OrderItemUncheckedCreateWithoutAllocationInput[]
+    connectOrCreate?: OrderItemCreateOrConnectWithoutAllocationInput | OrderItemCreateOrConnectWithoutAllocationInput[]
+    upsert?: OrderItemUpsertWithWhereUniqueWithoutAllocationInput | OrderItemUpsertWithWhereUniqueWithoutAllocationInput[]
+    createMany?: OrderItemCreateManyAllocationInputEnvelope
+    set?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    disconnect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    delete?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    connect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    update?: OrderItemUpdateWithWhereUniqueWithoutAllocationInput | OrderItemUpdateWithWhereUniqueWithoutAllocationInput[]
+    updateMany?: OrderItemUpdateManyWithWhereWithoutAllocationInput | OrderItemUpdateManyWithWhereWithoutAllocationInput[]
+    deleteMany?: OrderItemScalarWhereInput | OrderItemScalarWhereInput[]
+  }
+
+  export type TicketUpdateManyWithoutAllocationNestedInput = {
+    create?: XOR<TicketCreateWithoutAllocationInput, TicketUncheckedCreateWithoutAllocationInput> | TicketCreateWithoutAllocationInput[] | TicketUncheckedCreateWithoutAllocationInput[]
+    connectOrCreate?: TicketCreateOrConnectWithoutAllocationInput | TicketCreateOrConnectWithoutAllocationInput[]
+    upsert?: TicketUpsertWithWhereUniqueWithoutAllocationInput | TicketUpsertWithWhereUniqueWithoutAllocationInput[]
+    createMany?: TicketCreateManyAllocationInputEnvelope
+    set?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    disconnect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    delete?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    update?: TicketUpdateWithWhereUniqueWithoutAllocationInput | TicketUpdateWithWhereUniqueWithoutAllocationInput[]
+    updateMany?: TicketUpdateManyWithWhereWithoutAllocationInput | TicketUpdateManyWithWhereWithoutAllocationInput[]
+    deleteMany?: TicketScalarWhereInput | TicketScalarWhereInput[]
+  }
+
+  export type OrderItemUncheckedUpdateManyWithoutAllocationNestedInput = {
+    create?: XOR<OrderItemCreateWithoutAllocationInput, OrderItemUncheckedCreateWithoutAllocationInput> | OrderItemCreateWithoutAllocationInput[] | OrderItemUncheckedCreateWithoutAllocationInput[]
+    connectOrCreate?: OrderItemCreateOrConnectWithoutAllocationInput | OrderItemCreateOrConnectWithoutAllocationInput[]
+    upsert?: OrderItemUpsertWithWhereUniqueWithoutAllocationInput | OrderItemUpsertWithWhereUniqueWithoutAllocationInput[]
+    createMany?: OrderItemCreateManyAllocationInputEnvelope
+    set?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    disconnect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    delete?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    connect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    update?: OrderItemUpdateWithWhereUniqueWithoutAllocationInput | OrderItemUpdateWithWhereUniqueWithoutAllocationInput[]
+    updateMany?: OrderItemUpdateManyWithWhereWithoutAllocationInput | OrderItemUpdateManyWithWhereWithoutAllocationInput[]
+    deleteMany?: OrderItemScalarWhereInput | OrderItemScalarWhereInput[]
+  }
+
+  export type TicketUncheckedUpdateManyWithoutAllocationNestedInput = {
+    create?: XOR<TicketCreateWithoutAllocationInput, TicketUncheckedCreateWithoutAllocationInput> | TicketCreateWithoutAllocationInput[] | TicketUncheckedCreateWithoutAllocationInput[]
+    connectOrCreate?: TicketCreateOrConnectWithoutAllocationInput | TicketCreateOrConnectWithoutAllocationInput[]
+    upsert?: TicketUpsertWithWhereUniqueWithoutAllocationInput | TicketUpsertWithWhereUniqueWithoutAllocationInput[]
+    createMany?: TicketCreateManyAllocationInputEnvelope
+    set?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    disconnect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    delete?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    update?: TicketUpdateWithWhereUniqueWithoutAllocationInput | TicketUpdateWithWhereUniqueWithoutAllocationInput[]
+    updateMany?: TicketUpdateManyWithWhereWithoutAllocationInput | TicketUpdateManyWithWhereWithoutAllocationInput[]
+    deleteMany?: TicketScalarWhereInput | TicketScalarWhereInput[]
+  }
+
   export type EventCreateNestedOneWithoutSalesPhasesInput = {
     create?: XOR<EventCreateWithoutSalesPhasesInput, EventUncheckedCreateWithoutSalesPhasesInput>
     connectOrCreate?: EventCreateOrConnectWithoutSalesPhasesInput
@@ -24019,6 +31748,314 @@ export namespace Prisma {
     upsert?: EventUpsertWithoutSalesPhasesInput
     connect?: EventWhereUniqueInput
     update?: XOR<XOR<EventUpdateToOneWithWhereWithoutSalesPhasesInput, EventUpdateWithoutSalesPhasesInput>, EventUncheckedUpdateWithoutSalesPhasesInput>
+  }
+
+  export type OrderItemCreateNestedManyWithoutOrderInput = {
+    create?: XOR<OrderItemCreateWithoutOrderInput, OrderItemUncheckedCreateWithoutOrderInput> | OrderItemCreateWithoutOrderInput[] | OrderItemUncheckedCreateWithoutOrderInput[]
+    connectOrCreate?: OrderItemCreateOrConnectWithoutOrderInput | OrderItemCreateOrConnectWithoutOrderInput[]
+    createMany?: OrderItemCreateManyOrderInputEnvelope
+    connect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+  }
+
+  export type OrderItemUncheckedCreateNestedManyWithoutOrderInput = {
+    create?: XOR<OrderItemCreateWithoutOrderInput, OrderItemUncheckedCreateWithoutOrderInput> | OrderItemCreateWithoutOrderInput[] | OrderItemUncheckedCreateWithoutOrderInput[]
+    connectOrCreate?: OrderItemCreateOrConnectWithoutOrderInput | OrderItemCreateOrConnectWithoutOrderInput[]
+    createMany?: OrderItemCreateManyOrderInputEnvelope
+    connect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+  }
+
+  export type EnumORDER_STATUSFieldUpdateOperationsInput = {
+    set?: $Enums.ORDER_STATUS
+  }
+
+  export type OrderItemUpdateManyWithoutOrderNestedInput = {
+    create?: XOR<OrderItemCreateWithoutOrderInput, OrderItemUncheckedCreateWithoutOrderInput> | OrderItemCreateWithoutOrderInput[] | OrderItemUncheckedCreateWithoutOrderInput[]
+    connectOrCreate?: OrderItemCreateOrConnectWithoutOrderInput | OrderItemCreateOrConnectWithoutOrderInput[]
+    upsert?: OrderItemUpsertWithWhereUniqueWithoutOrderInput | OrderItemUpsertWithWhereUniqueWithoutOrderInput[]
+    createMany?: OrderItemCreateManyOrderInputEnvelope
+    set?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    disconnect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    delete?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    connect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    update?: OrderItemUpdateWithWhereUniqueWithoutOrderInput | OrderItemUpdateWithWhereUniqueWithoutOrderInput[]
+    updateMany?: OrderItemUpdateManyWithWhereWithoutOrderInput | OrderItemUpdateManyWithWhereWithoutOrderInput[]
+    deleteMany?: OrderItemScalarWhereInput | OrderItemScalarWhereInput[]
+  }
+
+  export type OrderItemUncheckedUpdateManyWithoutOrderNestedInput = {
+    create?: XOR<OrderItemCreateWithoutOrderInput, OrderItemUncheckedCreateWithoutOrderInput> | OrderItemCreateWithoutOrderInput[] | OrderItemUncheckedCreateWithoutOrderInput[]
+    connectOrCreate?: OrderItemCreateOrConnectWithoutOrderInput | OrderItemCreateOrConnectWithoutOrderInput[]
+    upsert?: OrderItemUpsertWithWhereUniqueWithoutOrderInput | OrderItemUpsertWithWhereUniqueWithoutOrderInput[]
+    createMany?: OrderItemCreateManyOrderInputEnvelope
+    set?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    disconnect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    delete?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    connect?: OrderItemWhereUniqueInput | OrderItemWhereUniqueInput[]
+    update?: OrderItemUpdateWithWhereUniqueWithoutOrderInput | OrderItemUpdateWithWhereUniqueWithoutOrderInput[]
+    updateMany?: OrderItemUpdateManyWithWhereWithoutOrderInput | OrderItemUpdateManyWithWhereWithoutOrderInput[]
+    deleteMany?: OrderItemScalarWhereInput | OrderItemScalarWhereInput[]
+  }
+
+  export type OrderCreateNestedOneWithoutItemsInput = {
+    create?: XOR<OrderCreateWithoutItemsInput, OrderUncheckedCreateWithoutItemsInput>
+    connectOrCreate?: OrderCreateOrConnectWithoutItemsInput
+    connect?: OrderWhereUniqueInput
+  }
+
+  export type EventDateCreateNestedOneWithoutOrderItemInput = {
+    create?: XOR<EventDateCreateWithoutOrderItemInput, EventDateUncheckedCreateWithoutOrderItemInput>
+    connectOrCreate?: EventDateCreateOrConnectWithoutOrderItemInput
+    connect?: EventDateWhereUniqueInput
+  }
+
+  export type EventDateZoneCreateNestedOneWithoutOrderItemInput = {
+    create?: XOR<EventDateZoneCreateWithoutOrderItemInput, EventDateZoneUncheckedCreateWithoutOrderItemInput>
+    connectOrCreate?: EventDateZoneCreateOrConnectWithoutOrderItemInput
+    connect?: EventDateZoneWhereUniqueInput
+  }
+
+  export type SeatCreateNestedOneWithoutOrderItemInput = {
+    create?: XOR<SeatCreateWithoutOrderItemInput, SeatUncheckedCreateWithoutOrderItemInput>
+    connectOrCreate?: SeatCreateOrConnectWithoutOrderItemInput
+    connect?: SeatWhereUniqueInput
+  }
+
+  export type EventDateZoneAllocationCreateNestedOneWithoutOrderItemInput = {
+    create?: XOR<EventDateZoneAllocationCreateWithoutOrderItemInput, EventDateZoneAllocationUncheckedCreateWithoutOrderItemInput>
+    connectOrCreate?: EventDateZoneAllocationCreateOrConnectWithoutOrderItemInput
+    connect?: EventDateZoneAllocationWhereUniqueInput
+  }
+
+  export type TicketCreateNestedManyWithoutItemInput = {
+    create?: XOR<TicketCreateWithoutItemInput, TicketUncheckedCreateWithoutItemInput> | TicketCreateWithoutItemInput[] | TicketUncheckedCreateWithoutItemInput[]
+    connectOrCreate?: TicketCreateOrConnectWithoutItemInput | TicketCreateOrConnectWithoutItemInput[]
+    createMany?: TicketCreateManyItemInputEnvelope
+    connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+  }
+
+  export type TicketUncheckedCreateNestedManyWithoutItemInput = {
+    create?: XOR<TicketCreateWithoutItemInput, TicketUncheckedCreateWithoutItemInput> | TicketCreateWithoutItemInput[] | TicketUncheckedCreateWithoutItemInput[]
+    connectOrCreate?: TicketCreateOrConnectWithoutItemInput | TicketCreateOrConnectWithoutItemInput[]
+    createMany?: TicketCreateManyItemInputEnvelope
+    connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+  }
+
+  export type NullableDecimalFieldUpdateOperationsInput = {
+    set?: Decimal | DecimalJsLike | number | string | null
+    increment?: Decimal | DecimalJsLike | number | string
+    decrement?: Decimal | DecimalJsLike | number | string
+    multiply?: Decimal | DecimalJsLike | number | string
+    divide?: Decimal | DecimalJsLike | number | string
+  }
+
+  export type OrderUpdateOneRequiredWithoutItemsNestedInput = {
+    create?: XOR<OrderCreateWithoutItemsInput, OrderUncheckedCreateWithoutItemsInput>
+    connectOrCreate?: OrderCreateOrConnectWithoutItemsInput
+    upsert?: OrderUpsertWithoutItemsInput
+    connect?: OrderWhereUniqueInput
+    update?: XOR<XOR<OrderUpdateToOneWithWhereWithoutItemsInput, OrderUpdateWithoutItemsInput>, OrderUncheckedUpdateWithoutItemsInput>
+  }
+
+  export type EventDateUpdateOneRequiredWithoutOrderItemNestedInput = {
+    create?: XOR<EventDateCreateWithoutOrderItemInput, EventDateUncheckedCreateWithoutOrderItemInput>
+    connectOrCreate?: EventDateCreateOrConnectWithoutOrderItemInput
+    upsert?: EventDateUpsertWithoutOrderItemInput
+    connect?: EventDateWhereUniqueInput
+    update?: XOR<XOR<EventDateUpdateToOneWithWhereWithoutOrderItemInput, EventDateUpdateWithoutOrderItemInput>, EventDateUncheckedUpdateWithoutOrderItemInput>
+  }
+
+  export type EventDateZoneUpdateOneRequiredWithoutOrderItemNestedInput = {
+    create?: XOR<EventDateZoneCreateWithoutOrderItemInput, EventDateZoneUncheckedCreateWithoutOrderItemInput>
+    connectOrCreate?: EventDateZoneCreateOrConnectWithoutOrderItemInput
+    upsert?: EventDateZoneUpsertWithoutOrderItemInput
+    connect?: EventDateZoneWhereUniqueInput
+    update?: XOR<XOR<EventDateZoneUpdateToOneWithWhereWithoutOrderItemInput, EventDateZoneUpdateWithoutOrderItemInput>, EventDateZoneUncheckedUpdateWithoutOrderItemInput>
+  }
+
+  export type SeatUpdateOneWithoutOrderItemNestedInput = {
+    create?: XOR<SeatCreateWithoutOrderItemInput, SeatUncheckedCreateWithoutOrderItemInput>
+    connectOrCreate?: SeatCreateOrConnectWithoutOrderItemInput
+    upsert?: SeatUpsertWithoutOrderItemInput
+    disconnect?: SeatWhereInput | boolean
+    delete?: SeatWhereInput | boolean
+    connect?: SeatWhereUniqueInput
+    update?: XOR<XOR<SeatUpdateToOneWithWhereWithoutOrderItemInput, SeatUpdateWithoutOrderItemInput>, SeatUncheckedUpdateWithoutOrderItemInput>
+  }
+
+  export type EventDateZoneAllocationUpdateOneWithoutOrderItemNestedInput = {
+    create?: XOR<EventDateZoneAllocationCreateWithoutOrderItemInput, EventDateZoneAllocationUncheckedCreateWithoutOrderItemInput>
+    connectOrCreate?: EventDateZoneAllocationCreateOrConnectWithoutOrderItemInput
+    upsert?: EventDateZoneAllocationUpsertWithoutOrderItemInput
+    disconnect?: EventDateZoneAllocationWhereInput | boolean
+    delete?: EventDateZoneAllocationWhereInput | boolean
+    connect?: EventDateZoneAllocationWhereUniqueInput
+    update?: XOR<XOR<EventDateZoneAllocationUpdateToOneWithWhereWithoutOrderItemInput, EventDateZoneAllocationUpdateWithoutOrderItemInput>, EventDateZoneAllocationUncheckedUpdateWithoutOrderItemInput>
+  }
+
+  export type TicketUpdateManyWithoutItemNestedInput = {
+    create?: XOR<TicketCreateWithoutItemInput, TicketUncheckedCreateWithoutItemInput> | TicketCreateWithoutItemInput[] | TicketUncheckedCreateWithoutItemInput[]
+    connectOrCreate?: TicketCreateOrConnectWithoutItemInput | TicketCreateOrConnectWithoutItemInput[]
+    upsert?: TicketUpsertWithWhereUniqueWithoutItemInput | TicketUpsertWithWhereUniqueWithoutItemInput[]
+    createMany?: TicketCreateManyItemInputEnvelope
+    set?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    disconnect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    delete?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    update?: TicketUpdateWithWhereUniqueWithoutItemInput | TicketUpdateWithWhereUniqueWithoutItemInput[]
+    updateMany?: TicketUpdateManyWithWhereWithoutItemInput | TicketUpdateManyWithWhereWithoutItemInput[]
+    deleteMany?: TicketScalarWhereInput | TicketScalarWhereInput[]
+  }
+
+  export type TicketUncheckedUpdateManyWithoutItemNestedInput = {
+    create?: XOR<TicketCreateWithoutItemInput, TicketUncheckedCreateWithoutItemInput> | TicketCreateWithoutItemInput[] | TicketUncheckedCreateWithoutItemInput[]
+    connectOrCreate?: TicketCreateOrConnectWithoutItemInput | TicketCreateOrConnectWithoutItemInput[]
+    upsert?: TicketUpsertWithWhereUniqueWithoutItemInput | TicketUpsertWithWhereUniqueWithoutItemInput[]
+    createMany?: TicketCreateManyItemInputEnvelope
+    set?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    disconnect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    delete?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    update?: TicketUpdateWithWhereUniqueWithoutItemInput | TicketUpdateWithWhereUniqueWithoutItemInput[]
+    updateMany?: TicketUpdateManyWithWhereWithoutItemInput | TicketUpdateManyWithWhereWithoutItemInput[]
+    deleteMany?: TicketScalarWhereInput | TicketScalarWhereInput[]
+  }
+
+  export type OrderItemCreateNestedOneWithoutTicketInput = {
+    create?: XOR<OrderItemCreateWithoutTicketInput, OrderItemUncheckedCreateWithoutTicketInput>
+    connectOrCreate?: OrderItemCreateOrConnectWithoutTicketInput
+    connect?: OrderItemWhereUniqueInput
+  }
+
+  export type EventDateCreateNestedOneWithoutTicketInput = {
+    create?: XOR<EventDateCreateWithoutTicketInput, EventDateUncheckedCreateWithoutTicketInput>
+    connectOrCreate?: EventDateCreateOrConnectWithoutTicketInput
+    connect?: EventDateWhereUniqueInput
+  }
+
+  export type EventDateZoneCreateNestedOneWithoutTicketInput = {
+    create?: XOR<EventDateZoneCreateWithoutTicketInput, EventDateZoneUncheckedCreateWithoutTicketInput>
+    connectOrCreate?: EventDateZoneCreateOrConnectWithoutTicketInput
+    connect?: EventDateZoneWhereUniqueInput
+  }
+
+  export type SeatCreateNestedOneWithoutTicketInput = {
+    create?: XOR<SeatCreateWithoutTicketInput, SeatUncheckedCreateWithoutTicketInput>
+    connectOrCreate?: SeatCreateOrConnectWithoutTicketInput
+    connect?: SeatWhereUniqueInput
+  }
+
+  export type EventDateZoneAllocationCreateNestedOneWithoutTicketInput = {
+    create?: XOR<EventDateZoneAllocationCreateWithoutTicketInput, EventDateZoneAllocationUncheckedCreateWithoutTicketInput>
+    connectOrCreate?: EventDateZoneAllocationCreateOrConnectWithoutTicketInput
+    connect?: EventDateZoneAllocationWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutTicketInput = {
+    create?: XOR<UserCreateWithoutTicketInput, UserUncheckedCreateWithoutTicketInput>
+    connectOrCreate?: UserCreateOrConnectWithoutTicketInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type EnumTICKET_STATUSFieldUpdateOperationsInput = {
+    set?: $Enums.TICKET_STATUS
+  }
+
+  export type OrderItemUpdateOneRequiredWithoutTicketNestedInput = {
+    create?: XOR<OrderItemCreateWithoutTicketInput, OrderItemUncheckedCreateWithoutTicketInput>
+    connectOrCreate?: OrderItemCreateOrConnectWithoutTicketInput
+    upsert?: OrderItemUpsertWithoutTicketInput
+    connect?: OrderItemWhereUniqueInput
+    update?: XOR<XOR<OrderItemUpdateToOneWithWhereWithoutTicketInput, OrderItemUpdateWithoutTicketInput>, OrderItemUncheckedUpdateWithoutTicketInput>
+  }
+
+  export type EventDateUpdateOneRequiredWithoutTicketNestedInput = {
+    create?: XOR<EventDateCreateWithoutTicketInput, EventDateUncheckedCreateWithoutTicketInput>
+    connectOrCreate?: EventDateCreateOrConnectWithoutTicketInput
+    upsert?: EventDateUpsertWithoutTicketInput
+    connect?: EventDateWhereUniqueInput
+    update?: XOR<XOR<EventDateUpdateToOneWithWhereWithoutTicketInput, EventDateUpdateWithoutTicketInput>, EventDateUncheckedUpdateWithoutTicketInput>
+  }
+
+  export type EventDateZoneUpdateOneRequiredWithoutTicketNestedInput = {
+    create?: XOR<EventDateZoneCreateWithoutTicketInput, EventDateZoneUncheckedCreateWithoutTicketInput>
+    connectOrCreate?: EventDateZoneCreateOrConnectWithoutTicketInput
+    upsert?: EventDateZoneUpsertWithoutTicketInput
+    connect?: EventDateZoneWhereUniqueInput
+    update?: XOR<XOR<EventDateZoneUpdateToOneWithWhereWithoutTicketInput, EventDateZoneUpdateWithoutTicketInput>, EventDateZoneUncheckedUpdateWithoutTicketInput>
+  }
+
+  export type SeatUpdateOneWithoutTicketNestedInput = {
+    create?: XOR<SeatCreateWithoutTicketInput, SeatUncheckedCreateWithoutTicketInput>
+    connectOrCreate?: SeatCreateOrConnectWithoutTicketInput
+    upsert?: SeatUpsertWithoutTicketInput
+    disconnect?: SeatWhereInput | boolean
+    delete?: SeatWhereInput | boolean
+    connect?: SeatWhereUniqueInput
+    update?: XOR<XOR<SeatUpdateToOneWithWhereWithoutTicketInput, SeatUpdateWithoutTicketInput>, SeatUncheckedUpdateWithoutTicketInput>
+  }
+
+  export type EventDateZoneAllocationUpdateOneWithoutTicketNestedInput = {
+    create?: XOR<EventDateZoneAllocationCreateWithoutTicketInput, EventDateZoneAllocationUncheckedCreateWithoutTicketInput>
+    connectOrCreate?: EventDateZoneAllocationCreateOrConnectWithoutTicketInput
+    upsert?: EventDateZoneAllocationUpsertWithoutTicketInput
+    disconnect?: EventDateZoneAllocationWhereInput | boolean
+    delete?: EventDateZoneAllocationWhereInput | boolean
+    connect?: EventDateZoneAllocationWhereUniqueInput
+    update?: XOR<XOR<EventDateZoneAllocationUpdateToOneWithWhereWithoutTicketInput, EventDateZoneAllocationUpdateWithoutTicketInput>, EventDateZoneAllocationUncheckedUpdateWithoutTicketInput>
+  }
+
+  export type UserUpdateOneWithoutTicketNestedInput = {
+    create?: XOR<UserCreateWithoutTicketInput, UserUncheckedCreateWithoutTicketInput>
+    connectOrCreate?: UserCreateOrConnectWithoutTicketInput
+    upsert?: UserUpsertWithoutTicketInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutTicketInput, UserUpdateWithoutTicketInput>, UserUncheckedUpdateWithoutTicketInput>
+  }
+
+  export type EventDateCreateNestedOneWithoutHoldInput = {
+    create?: XOR<EventDateCreateWithoutHoldInput, EventDateUncheckedCreateWithoutHoldInput>
+    connectOrCreate?: EventDateCreateOrConnectWithoutHoldInput
+    connect?: EventDateWhereUniqueInput
+  }
+
+  export type EventDateZoneCreateNestedOneWithoutHoldInput = {
+    create?: XOR<EventDateZoneCreateWithoutHoldInput, EventDateZoneUncheckedCreateWithoutHoldInput>
+    connectOrCreate?: EventDateZoneCreateOrConnectWithoutHoldInput
+    connect?: EventDateZoneWhereUniqueInput
+  }
+
+  export type SeatCreateNestedOneWithoutHoldInput = {
+    create?: XOR<SeatCreateWithoutHoldInput, SeatUncheckedCreateWithoutHoldInput>
+    connectOrCreate?: SeatCreateOrConnectWithoutHoldInput
+    connect?: SeatWhereUniqueInput
+  }
+
+  export type EventDateUpdateOneRequiredWithoutHoldNestedInput = {
+    create?: XOR<EventDateCreateWithoutHoldInput, EventDateUncheckedCreateWithoutHoldInput>
+    connectOrCreate?: EventDateCreateOrConnectWithoutHoldInput
+    upsert?: EventDateUpsertWithoutHoldInput
+    connect?: EventDateWhereUniqueInput
+    update?: XOR<XOR<EventDateUpdateToOneWithWhereWithoutHoldInput, EventDateUpdateWithoutHoldInput>, EventDateUncheckedUpdateWithoutHoldInput>
+  }
+
+  export type EventDateZoneUpdateOneRequiredWithoutHoldNestedInput = {
+    create?: XOR<EventDateZoneCreateWithoutHoldInput, EventDateZoneUncheckedCreateWithoutHoldInput>
+    connectOrCreate?: EventDateZoneCreateOrConnectWithoutHoldInput
+    upsert?: EventDateZoneUpsertWithoutHoldInput
+    connect?: EventDateZoneWhereUniqueInput
+    update?: XOR<XOR<EventDateZoneUpdateToOneWithWhereWithoutHoldInput, EventDateZoneUpdateWithoutHoldInput>, EventDateZoneUncheckedUpdateWithoutHoldInput>
+  }
+
+  export type SeatUpdateOneWithoutHoldNestedInput = {
+    create?: XOR<SeatCreateWithoutHoldInput, SeatUncheckedCreateWithoutHoldInput>
+    connectOrCreate?: SeatCreateOrConnectWithoutHoldInput
+    upsert?: SeatUpsertWithoutHoldInput
+    disconnect?: SeatWhereInput | boolean
+    delete?: SeatWhereInput | boolean
+    connect?: SeatWhereUniqueInput
+    update?: XOR<XOR<SeatUpdateToOneWithWhereWithoutHoldInput, SeatUpdateWithoutHoldInput>, SeatUncheckedUpdateWithoutHoldInput>
   }
 
   export type NestedBigIntFilter<$PrismaModel = never> = {
@@ -24406,6 +32443,23 @@ export namespace Prisma {
     _max?: NestedEnumCURRENCYFilter<$PrismaModel>
   }
 
+  export type NestedEnumSEAT_STATUSFilter<$PrismaModel = never> = {
+    equals?: $Enums.SEAT_STATUS | EnumSEAT_STATUSFieldRefInput<$PrismaModel>
+    in?: $Enums.SEAT_STATUS[] | ListEnumSEAT_STATUSFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SEAT_STATUS[] | ListEnumSEAT_STATUSFieldRefInput<$PrismaModel>
+    not?: NestedEnumSEAT_STATUSFilter<$PrismaModel> | $Enums.SEAT_STATUS
+  }
+
+  export type NestedEnumSEAT_STATUSWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.SEAT_STATUS | EnumSEAT_STATUSFieldRefInput<$PrismaModel>
+    in?: $Enums.SEAT_STATUS[] | ListEnumSEAT_STATUSFieldRefInput<$PrismaModel>
+    notIn?: $Enums.SEAT_STATUS[] | ListEnumSEAT_STATUSFieldRefInput<$PrismaModel>
+    not?: NestedEnumSEAT_STATUSWithAggregatesFilter<$PrismaModel> | $Enums.SEAT_STATUS
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumSEAT_STATUSFilter<$PrismaModel>
+    _max?: NestedEnumSEAT_STATUSFilter<$PrismaModel>
+  }
+
   export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
@@ -24420,6 +32474,67 @@ export namespace Prisma {
     _sum?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedIntNullableFilter<$PrismaModel>
     _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type NestedEnumORDER_STATUSFilter<$PrismaModel = never> = {
+    equals?: $Enums.ORDER_STATUS | EnumORDER_STATUSFieldRefInput<$PrismaModel>
+    in?: $Enums.ORDER_STATUS[] | ListEnumORDER_STATUSFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ORDER_STATUS[] | ListEnumORDER_STATUSFieldRefInput<$PrismaModel>
+    not?: NestedEnumORDER_STATUSFilter<$PrismaModel> | $Enums.ORDER_STATUS
+  }
+
+  export type NestedEnumORDER_STATUSWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ORDER_STATUS | EnumORDER_STATUSFieldRefInput<$PrismaModel>
+    in?: $Enums.ORDER_STATUS[] | ListEnumORDER_STATUSFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ORDER_STATUS[] | ListEnumORDER_STATUSFieldRefInput<$PrismaModel>
+    not?: NestedEnumORDER_STATUSWithAggregatesFilter<$PrismaModel> | $Enums.ORDER_STATUS
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumORDER_STATUSFilter<$PrismaModel>
+    _max?: NestedEnumORDER_STATUSFilter<$PrismaModel>
+  }
+
+  export type NestedDecimalNullableFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+  }
+
+  export type NestedDecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedDecimalNullableFilter<$PrismaModel>
+    _sum?: NestedDecimalNullableFilter<$PrismaModel>
+    _min?: NestedDecimalNullableFilter<$PrismaModel>
+    _max?: NestedDecimalNullableFilter<$PrismaModel>
+  }
+
+  export type NestedEnumTICKET_STATUSFilter<$PrismaModel = never> = {
+    equals?: $Enums.TICKET_STATUS | EnumTICKET_STATUSFieldRefInput<$PrismaModel>
+    in?: $Enums.TICKET_STATUS[] | ListEnumTICKET_STATUSFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TICKET_STATUS[] | ListEnumTICKET_STATUSFieldRefInput<$PrismaModel>
+    not?: NestedEnumTICKET_STATUSFilter<$PrismaModel> | $Enums.TICKET_STATUS
+  }
+
+  export type NestedEnumTICKET_STATUSWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.TICKET_STATUS | EnumTICKET_STATUSFieldRefInput<$PrismaModel>
+    in?: $Enums.TICKET_STATUS[] | ListEnumTICKET_STATUSFieldRefInput<$PrismaModel>
+    notIn?: $Enums.TICKET_STATUS[] | ListEnumTICKET_STATUSFieldRefInput<$PrismaModel>
+    not?: NestedEnumTICKET_STATUSWithAggregatesFilter<$PrismaModel> | $Enums.TICKET_STATUS
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumTICKET_STATUSFilter<$PrismaModel>
+    _max?: NestedEnumTICKET_STATUSFilter<$PrismaModel>
   }
 
   export type PasswordUserCreateWithoutUserInput = {
@@ -24475,6 +32590,44 @@ export namespace Prisma {
   export type OrganizerCreateOrConnectWithoutUserInput = {
     where: OrganizerWhereUniqueInput
     create: XOR<OrganizerCreateWithoutUserInput, OrganizerUncheckedCreateWithoutUserInput>
+  }
+
+  export type TicketCreateWithoutOwnerInput = {
+    ticketId?: bigint | number
+    eventId: bigint | number
+    pricePaid: Decimal | DecimalJsLike | number | string
+    currency?: $Enums.CURRENCY
+    issuedAt?: Date | string
+    status?: $Enums.TICKET_STATUS
+    item: OrderItemCreateNestedOneWithoutTicketInput
+    eventDate: EventDateCreateNestedOneWithoutTicketInput
+    zone: EventDateZoneCreateNestedOneWithoutTicketInput
+    seat?: SeatCreateNestedOneWithoutTicketInput
+    allocation?: EventDateZoneAllocationCreateNestedOneWithoutTicketInput
+  }
+
+  export type TicketUncheckedCreateWithoutOwnerInput = {
+    ticketId?: bigint | number
+    orderItemId: bigint | number
+    eventId: bigint | number
+    eventDateId: bigint | number
+    eventDateZoneId: bigint | number
+    eventDateZoneAllocationId?: bigint | number | null
+    seatId?: bigint | number | null
+    pricePaid: Decimal | DecimalJsLike | number | string
+    currency?: $Enums.CURRENCY
+    issuedAt?: Date | string
+    status?: $Enums.TICKET_STATUS
+  }
+
+  export type TicketCreateOrConnectWithoutOwnerInput = {
+    where: TicketWhereUniqueInput
+    create: XOR<TicketCreateWithoutOwnerInput, TicketUncheckedCreateWithoutOwnerInput>
+  }
+
+  export type TicketCreateManyOwnerInputEnvelope = {
+    data: TicketCreateManyOwnerInput | TicketCreateManyOwnerInput[]
+    skipDuplicates?: boolean
   }
 
   export type PasswordUserUpsertWithoutUserInput = {
@@ -24549,6 +32702,40 @@ export namespace Prisma {
     events?: EventUncheckedUpdateManyWithoutOrganizerNestedInput
   }
 
+  export type TicketUpsertWithWhereUniqueWithoutOwnerInput = {
+    where: TicketWhereUniqueInput
+    update: XOR<TicketUpdateWithoutOwnerInput, TicketUncheckedUpdateWithoutOwnerInput>
+    create: XOR<TicketCreateWithoutOwnerInput, TicketUncheckedCreateWithoutOwnerInput>
+  }
+
+  export type TicketUpdateWithWhereUniqueWithoutOwnerInput = {
+    where: TicketWhereUniqueInput
+    data: XOR<TicketUpdateWithoutOwnerInput, TicketUncheckedUpdateWithoutOwnerInput>
+  }
+
+  export type TicketUpdateManyWithWhereWithoutOwnerInput = {
+    where: TicketScalarWhereInput
+    data: XOR<TicketUpdateManyMutationInput, TicketUncheckedUpdateManyWithoutOwnerInput>
+  }
+
+  export type TicketScalarWhereInput = {
+    AND?: TicketScalarWhereInput | TicketScalarWhereInput[]
+    OR?: TicketScalarWhereInput[]
+    NOT?: TicketScalarWhereInput | TicketScalarWhereInput[]
+    ticketId?: BigIntFilter<"Ticket"> | bigint | number
+    ownerUserId?: BigIntNullableFilter<"Ticket"> | bigint | number | null
+    orderItemId?: BigIntFilter<"Ticket"> | bigint | number
+    eventId?: BigIntFilter<"Ticket"> | bigint | number
+    eventDateId?: BigIntFilter<"Ticket"> | bigint | number
+    eventDateZoneId?: BigIntFilter<"Ticket"> | bigint | number
+    eventDateZoneAllocationId?: BigIntNullableFilter<"Ticket"> | bigint | number | null
+    seatId?: BigIntNullableFilter<"Ticket"> | bigint | number | null
+    pricePaid?: DecimalFilter<"Ticket"> | Decimal | DecimalJsLike | number | string
+    currency?: EnumCURRENCYFilter<"Ticket"> | $Enums.CURRENCY
+    issuedAt?: DateTimeFilter<"Ticket"> | Date | string
+    status?: EnumTICKET_STATUSFilter<"Ticket"> | $Enums.TICKET_STATUS
+  }
+
   export type UserCreateWithoutPasswordInput = {
     userId?: bigint | number
     name: string
@@ -24562,6 +32749,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     oauths?: OAuthUserCreateNestedManyWithoutUserInput
     organizer?: OrganizerCreateNestedOneWithoutUserInput
+    Ticket?: TicketCreateNestedManyWithoutOwnerInput
   }
 
   export type UserUncheckedCreateWithoutPasswordInput = {
@@ -24577,6 +32765,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     oauths?: OAuthUserUncheckedCreateNestedManyWithoutUserInput
     organizer?: OrganizerUncheckedCreateNestedOneWithoutUserInput
+    Ticket?: TicketUncheckedCreateNestedManyWithoutOwnerInput
   }
 
   export type UserCreateOrConnectWithoutPasswordInput = {
@@ -24608,6 +32797,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     oauths?: OAuthUserUpdateManyWithoutUserNestedInput
     organizer?: OrganizerUpdateOneWithoutUserNestedInput
+    Ticket?: TicketUpdateManyWithoutOwnerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPasswordInput = {
@@ -24623,6 +32813,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     oauths?: OAuthUserUncheckedUpdateManyWithoutUserNestedInput
     organizer?: OrganizerUncheckedUpdateOneWithoutUserNestedInput
+    Ticket?: TicketUncheckedUpdateManyWithoutOwnerNestedInput
   }
 
   export type UserCreateWithoutOauthsInput = {
@@ -24638,6 +32829,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     password?: PasswordUserCreateNestedOneWithoutUserInput
     organizer?: OrganizerCreateNestedOneWithoutUserInput
+    Ticket?: TicketCreateNestedManyWithoutOwnerInput
   }
 
   export type UserUncheckedCreateWithoutOauthsInput = {
@@ -24653,6 +32845,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     password?: PasswordUserUncheckedCreateNestedOneWithoutUserInput
     organizer?: OrganizerUncheckedCreateNestedOneWithoutUserInput
+    Ticket?: TicketUncheckedCreateNestedManyWithoutOwnerInput
   }
 
   export type UserCreateOrConnectWithoutOauthsInput = {
@@ -24684,6 +32877,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     password?: PasswordUserUpdateOneWithoutUserNestedInput
     organizer?: OrganizerUpdateOneWithoutUserNestedInput
+    Ticket?: TicketUpdateManyWithoutOwnerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOauthsInput = {
@@ -24699,6 +32893,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     password?: PasswordUserUncheckedUpdateOneWithoutUserNestedInput
     organizer?: OrganizerUncheckedUpdateOneWithoutUserNestedInput
+    Ticket?: TicketUncheckedUpdateManyWithoutOwnerNestedInput
   }
 
   export type UserCreateWithoutOrganizerInput = {
@@ -24714,6 +32909,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     password?: PasswordUserCreateNestedOneWithoutUserInput
     oauths?: OAuthUserCreateNestedManyWithoutUserInput
+    Ticket?: TicketCreateNestedManyWithoutOwnerInput
   }
 
   export type UserUncheckedCreateWithoutOrganizerInput = {
@@ -24729,6 +32925,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     password?: PasswordUserUncheckedCreateNestedOneWithoutUserInput
     oauths?: OAuthUserUncheckedCreateNestedManyWithoutUserInput
+    Ticket?: TicketUncheckedCreateNestedManyWithoutOwnerInput
   }
 
   export type UserCreateOrConnectWithoutOrganizerInput = {
@@ -24804,6 +33001,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     password?: PasswordUserUpdateOneWithoutUserNestedInput
     oauths?: OAuthUserUpdateManyWithoutUserNestedInput
+    Ticket?: TicketUpdateManyWithoutOwnerNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOrganizerInput = {
@@ -24819,6 +33017,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     password?: PasswordUserUncheckedUpdateOneWithoutUserNestedInput
     oauths?: OAuthUserUncheckedUpdateManyWithoutUserNestedInput
+    Ticket?: TicketUncheckedUpdateManyWithoutOwnerNestedInput
   }
 
   export type EventUpsertWithWhereUniqueWithoutOrganizerInput = {
@@ -25272,6 +33471,9 @@ export namespace Prisma {
     startAt: Date | string
     endAt: Date | string
     zoneDates?: EventDateZoneCreateNestedManyWithoutEventDateInput
+    OrderItem?: OrderItemCreateNestedManyWithoutEventDateInput
+    Ticket?: TicketCreateNestedManyWithoutEventDateInput
+    Hold?: HoldCreateNestedManyWithoutEventDateInput
   }
 
   export type EventDateUncheckedCreateWithoutEventInput = {
@@ -25279,6 +33481,9 @@ export namespace Prisma {
     startAt: Date | string
     endAt: Date | string
     zoneDates?: EventDateZoneUncheckedCreateNestedManyWithoutEventDateInput
+    OrderItem?: OrderItemUncheckedCreateNestedManyWithoutEventDateInput
+    Ticket?: TicketUncheckedCreateNestedManyWithoutEventDateInput
+    Hold?: HoldUncheckedCreateNestedManyWithoutEventDateInput
   }
 
   export type EventDateCreateOrConnectWithoutEventInput = {
@@ -25532,6 +33737,9 @@ export namespace Prisma {
     updatedAt?: Date | string
     seatMap?: SeatMapCreateNestedOneWithoutEventDateZoneInput
     allocations?: EventDateZoneAllocationCreateNestedManyWithoutZoneInput
+    OrderItem?: OrderItemCreateNestedManyWithoutZoneInput
+    Ticket?: TicketCreateNestedManyWithoutZoneInput
+    Hold?: HoldCreateNestedManyWithoutZoneInput
   }
 
   export type EventDateZoneUncheckedCreateWithoutEventDateInput = {
@@ -25546,6 +33754,9 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     allocations?: EventDateZoneAllocationUncheckedCreateNestedManyWithoutZoneInput
+    OrderItem?: OrderItemUncheckedCreateNestedManyWithoutZoneInput
+    Ticket?: TicketUncheckedCreateNestedManyWithoutZoneInput
+    Hold?: HoldUncheckedCreateNestedManyWithoutZoneInput
   }
 
   export type EventDateZoneCreateOrConnectWithoutEventDateInput = {
@@ -25555,6 +33766,112 @@ export namespace Prisma {
 
   export type EventDateZoneCreateManyEventDateInputEnvelope = {
     data: EventDateZoneCreateManyEventDateInput | EventDateZoneCreateManyEventDateInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type OrderItemCreateWithoutEventDateInput = {
+    orderItemId?: bigint | number
+    eventId: bigint | number
+    quantity?: number | null
+    unitPrice: Decimal | DecimalJsLike | number | string
+    discountAmount?: Decimal | DecimalJsLike | number | string | null
+    finalPrice: Decimal | DecimalJsLike | number | string
+    order: OrderCreateNestedOneWithoutItemsInput
+    zone: EventDateZoneCreateNestedOneWithoutOrderItemInput
+    seat?: SeatCreateNestedOneWithoutOrderItemInput
+    allocation?: EventDateZoneAllocationCreateNestedOneWithoutOrderItemInput
+    Ticket?: TicketCreateNestedManyWithoutItemInput
+  }
+
+  export type OrderItemUncheckedCreateWithoutEventDateInput = {
+    orderItemId?: bigint | number
+    orderId: bigint | number
+    eventId: bigint | number
+    eventDateZoneId: bigint | number
+    eventDateZoneAllocationId?: bigint | number | null
+    quantity?: number | null
+    seatId?: bigint | number | null
+    unitPrice: Decimal | DecimalJsLike | number | string
+    discountAmount?: Decimal | DecimalJsLike | number | string | null
+    finalPrice: Decimal | DecimalJsLike | number | string
+    Ticket?: TicketUncheckedCreateNestedManyWithoutItemInput
+  }
+
+  export type OrderItemCreateOrConnectWithoutEventDateInput = {
+    where: OrderItemWhereUniqueInput
+    create: XOR<OrderItemCreateWithoutEventDateInput, OrderItemUncheckedCreateWithoutEventDateInput>
+  }
+
+  export type OrderItemCreateManyEventDateInputEnvelope = {
+    data: OrderItemCreateManyEventDateInput | OrderItemCreateManyEventDateInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type TicketCreateWithoutEventDateInput = {
+    ticketId?: bigint | number
+    eventId: bigint | number
+    pricePaid: Decimal | DecimalJsLike | number | string
+    currency?: $Enums.CURRENCY
+    issuedAt?: Date | string
+    status?: $Enums.TICKET_STATUS
+    item: OrderItemCreateNestedOneWithoutTicketInput
+    zone: EventDateZoneCreateNestedOneWithoutTicketInput
+    seat?: SeatCreateNestedOneWithoutTicketInput
+    allocation?: EventDateZoneAllocationCreateNestedOneWithoutTicketInput
+    owner?: UserCreateNestedOneWithoutTicketInput
+  }
+
+  export type TicketUncheckedCreateWithoutEventDateInput = {
+    ticketId?: bigint | number
+    ownerUserId?: bigint | number | null
+    orderItemId: bigint | number
+    eventId: bigint | number
+    eventDateZoneId: bigint | number
+    eventDateZoneAllocationId?: bigint | number | null
+    seatId?: bigint | number | null
+    pricePaid: Decimal | DecimalJsLike | number | string
+    currency?: $Enums.CURRENCY
+    issuedAt?: Date | string
+    status?: $Enums.TICKET_STATUS
+  }
+
+  export type TicketCreateOrConnectWithoutEventDateInput = {
+    where: TicketWhereUniqueInput
+    create: XOR<TicketCreateWithoutEventDateInput, TicketUncheckedCreateWithoutEventDateInput>
+  }
+
+  export type TicketCreateManyEventDateInputEnvelope = {
+    data: TicketCreateManyEventDateInput | TicketCreateManyEventDateInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type HoldCreateWithoutEventDateInput = {
+    holdId?: bigint | number
+    quantity?: number | null
+    buyerUserId?: bigint | number | null
+    expiresAt: Date | string
+    createdAt?: Date | string
+    zone: EventDateZoneCreateNestedOneWithoutHoldInput
+    seat?: SeatCreateNestedOneWithoutHoldInput
+  }
+
+  export type HoldUncheckedCreateWithoutEventDateInput = {
+    holdId?: bigint | number
+    eventDateZoneId: bigint | number
+    seatId?: bigint | number | null
+    quantity?: number | null
+    buyerUserId?: bigint | number | null
+    expiresAt: Date | string
+    createdAt?: Date | string
+  }
+
+  export type HoldCreateOrConnectWithoutEventDateInput = {
+    where: HoldWhereUniqueInput
+    create: XOR<HoldCreateWithoutEventDateInput, HoldUncheckedCreateWithoutEventDateInput>
+  }
+
+  export type HoldCreateManyEventDateInputEnvelope = {
+    data: HoldCreateManyEventDateInput | HoldCreateManyEventDateInput[]
     skipDuplicates?: boolean
   }
 
@@ -25636,11 +33953,93 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"EventDateZone"> | Date | string
   }
 
+  export type OrderItemUpsertWithWhereUniqueWithoutEventDateInput = {
+    where: OrderItemWhereUniqueInput
+    update: XOR<OrderItemUpdateWithoutEventDateInput, OrderItemUncheckedUpdateWithoutEventDateInput>
+    create: XOR<OrderItemCreateWithoutEventDateInput, OrderItemUncheckedCreateWithoutEventDateInput>
+  }
+
+  export type OrderItemUpdateWithWhereUniqueWithoutEventDateInput = {
+    where: OrderItemWhereUniqueInput
+    data: XOR<OrderItemUpdateWithoutEventDateInput, OrderItemUncheckedUpdateWithoutEventDateInput>
+  }
+
+  export type OrderItemUpdateManyWithWhereWithoutEventDateInput = {
+    where: OrderItemScalarWhereInput
+    data: XOR<OrderItemUpdateManyMutationInput, OrderItemUncheckedUpdateManyWithoutEventDateInput>
+  }
+
+  export type OrderItemScalarWhereInput = {
+    AND?: OrderItemScalarWhereInput | OrderItemScalarWhereInput[]
+    OR?: OrderItemScalarWhereInput[]
+    NOT?: OrderItemScalarWhereInput | OrderItemScalarWhereInput[]
+    orderItemId?: BigIntFilter<"OrderItem"> | bigint | number
+    orderId?: BigIntFilter<"OrderItem"> | bigint | number
+    eventId?: BigIntFilter<"OrderItem"> | bigint | number
+    eventDateId?: BigIntFilter<"OrderItem"> | bigint | number
+    eventDateZoneId?: BigIntFilter<"OrderItem"> | bigint | number
+    eventDateZoneAllocationId?: BigIntNullableFilter<"OrderItem"> | bigint | number | null
+    quantity?: IntNullableFilter<"OrderItem"> | number | null
+    seatId?: BigIntNullableFilter<"OrderItem"> | bigint | number | null
+    unitPrice?: DecimalFilter<"OrderItem"> | Decimal | DecimalJsLike | number | string
+    discountAmount?: DecimalNullableFilter<"OrderItem"> | Decimal | DecimalJsLike | number | string | null
+    finalPrice?: DecimalFilter<"OrderItem"> | Decimal | DecimalJsLike | number | string
+  }
+
+  export type TicketUpsertWithWhereUniqueWithoutEventDateInput = {
+    where: TicketWhereUniqueInput
+    update: XOR<TicketUpdateWithoutEventDateInput, TicketUncheckedUpdateWithoutEventDateInput>
+    create: XOR<TicketCreateWithoutEventDateInput, TicketUncheckedCreateWithoutEventDateInput>
+  }
+
+  export type TicketUpdateWithWhereUniqueWithoutEventDateInput = {
+    where: TicketWhereUniqueInput
+    data: XOR<TicketUpdateWithoutEventDateInput, TicketUncheckedUpdateWithoutEventDateInput>
+  }
+
+  export type TicketUpdateManyWithWhereWithoutEventDateInput = {
+    where: TicketScalarWhereInput
+    data: XOR<TicketUpdateManyMutationInput, TicketUncheckedUpdateManyWithoutEventDateInput>
+  }
+
+  export type HoldUpsertWithWhereUniqueWithoutEventDateInput = {
+    where: HoldWhereUniqueInput
+    update: XOR<HoldUpdateWithoutEventDateInput, HoldUncheckedUpdateWithoutEventDateInput>
+    create: XOR<HoldCreateWithoutEventDateInput, HoldUncheckedCreateWithoutEventDateInput>
+  }
+
+  export type HoldUpdateWithWhereUniqueWithoutEventDateInput = {
+    where: HoldWhereUniqueInput
+    data: XOR<HoldUpdateWithoutEventDateInput, HoldUncheckedUpdateWithoutEventDateInput>
+  }
+
+  export type HoldUpdateManyWithWhereWithoutEventDateInput = {
+    where: HoldScalarWhereInput
+    data: XOR<HoldUpdateManyMutationInput, HoldUncheckedUpdateManyWithoutEventDateInput>
+  }
+
+  export type HoldScalarWhereInput = {
+    AND?: HoldScalarWhereInput | HoldScalarWhereInput[]
+    OR?: HoldScalarWhereInput[]
+    NOT?: HoldScalarWhereInput | HoldScalarWhereInput[]
+    holdId?: BigIntFilter<"Hold"> | bigint | number
+    eventDateId?: BigIntFilter<"Hold"> | bigint | number
+    eventDateZoneId?: BigIntFilter<"Hold"> | bigint | number
+    seatId?: BigIntNullableFilter<"Hold"> | bigint | number | null
+    quantity?: IntNullableFilter<"Hold"> | number | null
+    buyerUserId?: BigIntNullableFilter<"Hold"> | bigint | number | null
+    expiresAt?: DateTimeFilter<"Hold"> | Date | string
+    createdAt?: DateTimeFilter<"Hold"> | Date | string
+  }
+
   export type EventDateCreateWithoutZoneDatesInput = {
     eventDateId?: bigint | number
     startAt: Date | string
     endAt: Date | string
     event: EventCreateNestedOneWithoutDatesInput
+    OrderItem?: OrderItemCreateNestedManyWithoutEventDateInput
+    Ticket?: TicketCreateNestedManyWithoutEventDateInput
+    Hold?: HoldCreateNestedManyWithoutEventDateInput
   }
 
   export type EventDateUncheckedCreateWithoutZoneDatesInput = {
@@ -25648,6 +34047,9 @@ export namespace Prisma {
     eventId: bigint | number
     startAt: Date | string
     endAt: Date | string
+    OrderItem?: OrderItemUncheckedCreateNestedManyWithoutEventDateInput
+    Ticket?: TicketUncheckedCreateNestedManyWithoutEventDateInput
+    Hold?: HoldUncheckedCreateNestedManyWithoutEventDateInput
   }
 
   export type EventDateCreateOrConnectWithoutZoneDatesInput = {
@@ -25686,6 +34088,8 @@ export namespace Prisma {
     remainingQuantity?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    OrderItem?: OrderItemCreateNestedManyWithoutAllocationInput
+    Ticket?: TicketCreateNestedManyWithoutAllocationInput
   }
 
   export type EventDateZoneAllocationUncheckedCreateWithoutZoneInput = {
@@ -25696,6 +34100,8 @@ export namespace Prisma {
     remainingQuantity?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    OrderItem?: OrderItemUncheckedCreateNestedManyWithoutAllocationInput
+    Ticket?: TicketUncheckedCreateNestedManyWithoutAllocationInput
   }
 
   export type EventDateZoneAllocationCreateOrConnectWithoutZoneInput = {
@@ -25705,6 +34111,112 @@ export namespace Prisma {
 
   export type EventDateZoneAllocationCreateManyZoneInputEnvelope = {
     data: EventDateZoneAllocationCreateManyZoneInput | EventDateZoneAllocationCreateManyZoneInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type OrderItemCreateWithoutZoneInput = {
+    orderItemId?: bigint | number
+    eventId: bigint | number
+    quantity?: number | null
+    unitPrice: Decimal | DecimalJsLike | number | string
+    discountAmount?: Decimal | DecimalJsLike | number | string | null
+    finalPrice: Decimal | DecimalJsLike | number | string
+    order: OrderCreateNestedOneWithoutItemsInput
+    eventDate: EventDateCreateNestedOneWithoutOrderItemInput
+    seat?: SeatCreateNestedOneWithoutOrderItemInput
+    allocation?: EventDateZoneAllocationCreateNestedOneWithoutOrderItemInput
+    Ticket?: TicketCreateNestedManyWithoutItemInput
+  }
+
+  export type OrderItemUncheckedCreateWithoutZoneInput = {
+    orderItemId?: bigint | number
+    orderId: bigint | number
+    eventId: bigint | number
+    eventDateId: bigint | number
+    eventDateZoneAllocationId?: bigint | number | null
+    quantity?: number | null
+    seatId?: bigint | number | null
+    unitPrice: Decimal | DecimalJsLike | number | string
+    discountAmount?: Decimal | DecimalJsLike | number | string | null
+    finalPrice: Decimal | DecimalJsLike | number | string
+    Ticket?: TicketUncheckedCreateNestedManyWithoutItemInput
+  }
+
+  export type OrderItemCreateOrConnectWithoutZoneInput = {
+    where: OrderItemWhereUniqueInput
+    create: XOR<OrderItemCreateWithoutZoneInput, OrderItemUncheckedCreateWithoutZoneInput>
+  }
+
+  export type OrderItemCreateManyZoneInputEnvelope = {
+    data: OrderItemCreateManyZoneInput | OrderItemCreateManyZoneInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type TicketCreateWithoutZoneInput = {
+    ticketId?: bigint | number
+    eventId: bigint | number
+    pricePaid: Decimal | DecimalJsLike | number | string
+    currency?: $Enums.CURRENCY
+    issuedAt?: Date | string
+    status?: $Enums.TICKET_STATUS
+    item: OrderItemCreateNestedOneWithoutTicketInput
+    eventDate: EventDateCreateNestedOneWithoutTicketInput
+    seat?: SeatCreateNestedOneWithoutTicketInput
+    allocation?: EventDateZoneAllocationCreateNestedOneWithoutTicketInput
+    owner?: UserCreateNestedOneWithoutTicketInput
+  }
+
+  export type TicketUncheckedCreateWithoutZoneInput = {
+    ticketId?: bigint | number
+    ownerUserId?: bigint | number | null
+    orderItemId: bigint | number
+    eventId: bigint | number
+    eventDateId: bigint | number
+    eventDateZoneAllocationId?: bigint | number | null
+    seatId?: bigint | number | null
+    pricePaid: Decimal | DecimalJsLike | number | string
+    currency?: $Enums.CURRENCY
+    issuedAt?: Date | string
+    status?: $Enums.TICKET_STATUS
+  }
+
+  export type TicketCreateOrConnectWithoutZoneInput = {
+    where: TicketWhereUniqueInput
+    create: XOR<TicketCreateWithoutZoneInput, TicketUncheckedCreateWithoutZoneInput>
+  }
+
+  export type TicketCreateManyZoneInputEnvelope = {
+    data: TicketCreateManyZoneInput | TicketCreateManyZoneInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type HoldCreateWithoutZoneInput = {
+    holdId?: bigint | number
+    quantity?: number | null
+    buyerUserId?: bigint | number | null
+    expiresAt: Date | string
+    createdAt?: Date | string
+    eventDate: EventDateCreateNestedOneWithoutHoldInput
+    seat?: SeatCreateNestedOneWithoutHoldInput
+  }
+
+  export type HoldUncheckedCreateWithoutZoneInput = {
+    holdId?: bigint | number
+    eventDateId: bigint | number
+    seatId?: bigint | number | null
+    quantity?: number | null
+    buyerUserId?: bigint | number | null
+    expiresAt: Date | string
+    createdAt?: Date | string
+  }
+
+  export type HoldCreateOrConnectWithoutZoneInput = {
+    where: HoldWhereUniqueInput
+    create: XOR<HoldCreateWithoutZoneInput, HoldUncheckedCreateWithoutZoneInput>
+  }
+
+  export type HoldCreateManyZoneInputEnvelope = {
+    data: HoldCreateManyZoneInput | HoldCreateManyZoneInput[]
     skipDuplicates?: boolean
   }
 
@@ -25724,6 +34236,9 @@ export namespace Prisma {
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: DateTimeFieldUpdateOperationsInput | Date | string
     event?: EventUpdateOneRequiredWithoutDatesNestedInput
+    OrderItem?: OrderItemUpdateManyWithoutEventDateNestedInput
+    Ticket?: TicketUpdateManyWithoutEventDateNestedInput
+    Hold?: HoldUpdateManyWithoutEventDateNestedInput
   }
 
   export type EventDateUncheckedUpdateWithoutZoneDatesInput = {
@@ -25731,6 +34246,9 @@ export namespace Prisma {
     eventId?: BigIntFieldUpdateOperationsInput | bigint | number
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    OrderItem?: OrderItemUncheckedUpdateManyWithoutEventDateNestedInput
+    Ticket?: TicketUncheckedUpdateManyWithoutEventDateNestedInput
+    Hold?: HoldUncheckedUpdateManyWithoutEventDateNestedInput
   }
 
   export type SeatMapUpsertWithoutEventDateZoneInput = {
@@ -25792,16 +34310,74 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"EventDateZoneAllocation"> | Date | string
   }
 
+  export type OrderItemUpsertWithWhereUniqueWithoutZoneInput = {
+    where: OrderItemWhereUniqueInput
+    update: XOR<OrderItemUpdateWithoutZoneInput, OrderItemUncheckedUpdateWithoutZoneInput>
+    create: XOR<OrderItemCreateWithoutZoneInput, OrderItemUncheckedCreateWithoutZoneInput>
+  }
+
+  export type OrderItemUpdateWithWhereUniqueWithoutZoneInput = {
+    where: OrderItemWhereUniqueInput
+    data: XOR<OrderItemUpdateWithoutZoneInput, OrderItemUncheckedUpdateWithoutZoneInput>
+  }
+
+  export type OrderItemUpdateManyWithWhereWithoutZoneInput = {
+    where: OrderItemScalarWhereInput
+    data: XOR<OrderItemUpdateManyMutationInput, OrderItemUncheckedUpdateManyWithoutZoneInput>
+  }
+
+  export type TicketUpsertWithWhereUniqueWithoutZoneInput = {
+    where: TicketWhereUniqueInput
+    update: XOR<TicketUpdateWithoutZoneInput, TicketUncheckedUpdateWithoutZoneInput>
+    create: XOR<TicketCreateWithoutZoneInput, TicketUncheckedCreateWithoutZoneInput>
+  }
+
+  export type TicketUpdateWithWhereUniqueWithoutZoneInput = {
+    where: TicketWhereUniqueInput
+    data: XOR<TicketUpdateWithoutZoneInput, TicketUncheckedUpdateWithoutZoneInput>
+  }
+
+  export type TicketUpdateManyWithWhereWithoutZoneInput = {
+    where: TicketScalarWhereInput
+    data: XOR<TicketUpdateManyMutationInput, TicketUncheckedUpdateManyWithoutZoneInput>
+  }
+
+  export type HoldUpsertWithWhereUniqueWithoutZoneInput = {
+    where: HoldWhereUniqueInput
+    update: XOR<HoldUpdateWithoutZoneInput, HoldUncheckedUpdateWithoutZoneInput>
+    create: XOR<HoldCreateWithoutZoneInput, HoldUncheckedCreateWithoutZoneInput>
+  }
+
+  export type HoldUpdateWithWhereUniqueWithoutZoneInput = {
+    where: HoldWhereUniqueInput
+    data: XOR<HoldUpdateWithoutZoneInput, HoldUncheckedUpdateWithoutZoneInput>
+  }
+
+  export type HoldUpdateManyWithWhereWithoutZoneInput = {
+    where: HoldScalarWhereInput
+    data: XOR<HoldUpdateManyMutationInput, HoldUncheckedUpdateManyWithoutZoneInput>
+  }
+
   export type SeatCreateWithoutSeatMapInput = {
     seatId?: bigint | number
     rowNumber: number
     colNumber: number
+    status?: $Enums.SEAT_STATUS
+    holdUntil?: Date | string | null
+    OrderItem?: OrderItemCreateNestedManyWithoutSeatInput
+    Ticket?: TicketCreateNestedManyWithoutSeatInput
+    Hold?: HoldCreateNestedManyWithoutSeatInput
   }
 
   export type SeatUncheckedCreateWithoutSeatMapInput = {
     seatId?: bigint | number
     rowNumber: number
     colNumber: number
+    status?: $Enums.SEAT_STATUS
+    holdUntil?: Date | string | null
+    OrderItem?: OrderItemUncheckedCreateNestedManyWithoutSeatInput
+    Ticket?: TicketUncheckedCreateNestedManyWithoutSeatInput
+    Hold?: HoldUncheckedCreateNestedManyWithoutSeatInput
   }
 
   export type SeatCreateOrConnectWithoutSeatMapInput = {
@@ -25826,6 +34402,9 @@ export namespace Prisma {
     updatedAt?: Date | string
     eventDate: EventDateCreateNestedOneWithoutZoneDatesInput
     allocations?: EventDateZoneAllocationCreateNestedManyWithoutZoneInput
+    OrderItem?: OrderItemCreateNestedManyWithoutZoneInput
+    Ticket?: TicketCreateNestedManyWithoutZoneInput
+    Hold?: HoldCreateNestedManyWithoutZoneInput
   }
 
   export type EventDateZoneUncheckedCreateWithoutSeatMapInput = {
@@ -25840,6 +34419,9 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     allocations?: EventDateZoneAllocationUncheckedCreateNestedManyWithoutZoneInput
+    OrderItem?: OrderItemUncheckedCreateNestedManyWithoutZoneInput
+    Ticket?: TicketUncheckedCreateNestedManyWithoutZoneInput
+    Hold?: HoldUncheckedCreateNestedManyWithoutZoneInput
   }
 
   export type EventDateZoneCreateOrConnectWithoutSeatMapInput = {
@@ -25871,6 +34453,8 @@ export namespace Prisma {
     seatMapId?: BigIntFilter<"Seat"> | bigint | number
     rowNumber?: IntFilter<"Seat"> | number
     colNumber?: IntFilter<"Seat"> | number
+    status?: EnumSEAT_STATUSFilter<"Seat"> | $Enums.SEAT_STATUS
+    holdUntil?: DateTimeNullableFilter<"Seat"> | Date | string | null
   }
 
   export type EventDateZoneUpsertWithoutSeatMapInput = {
@@ -25896,6 +34480,9 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     eventDate?: EventDateUpdateOneRequiredWithoutZoneDatesNestedInput
     allocations?: EventDateZoneAllocationUpdateManyWithoutZoneNestedInput
+    OrderItem?: OrderItemUpdateManyWithoutZoneNestedInput
+    Ticket?: TicketUpdateManyWithoutZoneNestedInput
+    Hold?: HoldUpdateManyWithoutZoneNestedInput
   }
 
   export type EventDateZoneUncheckedUpdateWithoutSeatMapInput = {
@@ -25910,6 +34497,9 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     allocations?: EventDateZoneAllocationUncheckedUpdateManyWithoutZoneNestedInput
+    OrderItem?: OrderItemUncheckedUpdateManyWithoutZoneNestedInput
+    Ticket?: TicketUncheckedUpdateManyWithoutZoneNestedInput
+    Hold?: HoldUncheckedUpdateManyWithoutZoneNestedInput
   }
 
   export type SeatMapCreateWithoutOccupiedSeatsInput = {
@@ -25933,6 +34523,112 @@ export namespace Prisma {
   export type SeatMapCreateOrConnectWithoutOccupiedSeatsInput = {
     where: SeatMapWhereUniqueInput
     create: XOR<SeatMapCreateWithoutOccupiedSeatsInput, SeatMapUncheckedCreateWithoutOccupiedSeatsInput>
+  }
+
+  export type OrderItemCreateWithoutSeatInput = {
+    orderItemId?: bigint | number
+    eventId: bigint | number
+    quantity?: number | null
+    unitPrice: Decimal | DecimalJsLike | number | string
+    discountAmount?: Decimal | DecimalJsLike | number | string | null
+    finalPrice: Decimal | DecimalJsLike | number | string
+    order: OrderCreateNestedOneWithoutItemsInput
+    eventDate: EventDateCreateNestedOneWithoutOrderItemInput
+    zone: EventDateZoneCreateNestedOneWithoutOrderItemInput
+    allocation?: EventDateZoneAllocationCreateNestedOneWithoutOrderItemInput
+    Ticket?: TicketCreateNestedManyWithoutItemInput
+  }
+
+  export type OrderItemUncheckedCreateWithoutSeatInput = {
+    orderItemId?: bigint | number
+    orderId: bigint | number
+    eventId: bigint | number
+    eventDateId: bigint | number
+    eventDateZoneId: bigint | number
+    eventDateZoneAllocationId?: bigint | number | null
+    quantity?: number | null
+    unitPrice: Decimal | DecimalJsLike | number | string
+    discountAmount?: Decimal | DecimalJsLike | number | string | null
+    finalPrice: Decimal | DecimalJsLike | number | string
+    Ticket?: TicketUncheckedCreateNestedManyWithoutItemInput
+  }
+
+  export type OrderItemCreateOrConnectWithoutSeatInput = {
+    where: OrderItemWhereUniqueInput
+    create: XOR<OrderItemCreateWithoutSeatInput, OrderItemUncheckedCreateWithoutSeatInput>
+  }
+
+  export type OrderItemCreateManySeatInputEnvelope = {
+    data: OrderItemCreateManySeatInput | OrderItemCreateManySeatInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type TicketCreateWithoutSeatInput = {
+    ticketId?: bigint | number
+    eventId: bigint | number
+    pricePaid: Decimal | DecimalJsLike | number | string
+    currency?: $Enums.CURRENCY
+    issuedAt?: Date | string
+    status?: $Enums.TICKET_STATUS
+    item: OrderItemCreateNestedOneWithoutTicketInput
+    eventDate: EventDateCreateNestedOneWithoutTicketInput
+    zone: EventDateZoneCreateNestedOneWithoutTicketInput
+    allocation?: EventDateZoneAllocationCreateNestedOneWithoutTicketInput
+    owner?: UserCreateNestedOneWithoutTicketInput
+  }
+
+  export type TicketUncheckedCreateWithoutSeatInput = {
+    ticketId?: bigint | number
+    ownerUserId?: bigint | number | null
+    orderItemId: bigint | number
+    eventId: bigint | number
+    eventDateId: bigint | number
+    eventDateZoneId: bigint | number
+    eventDateZoneAllocationId?: bigint | number | null
+    pricePaid: Decimal | DecimalJsLike | number | string
+    currency?: $Enums.CURRENCY
+    issuedAt?: Date | string
+    status?: $Enums.TICKET_STATUS
+  }
+
+  export type TicketCreateOrConnectWithoutSeatInput = {
+    where: TicketWhereUniqueInput
+    create: XOR<TicketCreateWithoutSeatInput, TicketUncheckedCreateWithoutSeatInput>
+  }
+
+  export type TicketCreateManySeatInputEnvelope = {
+    data: TicketCreateManySeatInput | TicketCreateManySeatInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type HoldCreateWithoutSeatInput = {
+    holdId?: bigint | number
+    quantity?: number | null
+    buyerUserId?: bigint | number | null
+    expiresAt: Date | string
+    createdAt?: Date | string
+    eventDate: EventDateCreateNestedOneWithoutHoldInput
+    zone: EventDateZoneCreateNestedOneWithoutHoldInput
+  }
+
+  export type HoldUncheckedCreateWithoutSeatInput = {
+    holdId?: bigint | number
+    eventDateId: bigint | number
+    eventDateZoneId: bigint | number
+    quantity?: number | null
+    buyerUserId?: bigint | number | null
+    expiresAt: Date | string
+    createdAt?: Date | string
+  }
+
+  export type HoldCreateOrConnectWithoutSeatInput = {
+    where: HoldWhereUniqueInput
+    create: XOR<HoldCreateWithoutSeatInput, HoldUncheckedCreateWithoutSeatInput>
+  }
+
+  export type HoldCreateManySeatInputEnvelope = {
+    data: HoldCreateManySeatInput | HoldCreateManySeatInput[]
+    skipDuplicates?: boolean
   }
 
   export type SeatMapUpsertWithoutOccupiedSeatsInput = {
@@ -25964,6 +34660,54 @@ export namespace Prisma {
     EventDateZone?: EventDateZoneUncheckedUpdateOneWithoutSeatMapNestedInput
   }
 
+  export type OrderItemUpsertWithWhereUniqueWithoutSeatInput = {
+    where: OrderItemWhereUniqueInput
+    update: XOR<OrderItemUpdateWithoutSeatInput, OrderItemUncheckedUpdateWithoutSeatInput>
+    create: XOR<OrderItemCreateWithoutSeatInput, OrderItemUncheckedCreateWithoutSeatInput>
+  }
+
+  export type OrderItemUpdateWithWhereUniqueWithoutSeatInput = {
+    where: OrderItemWhereUniqueInput
+    data: XOR<OrderItemUpdateWithoutSeatInput, OrderItemUncheckedUpdateWithoutSeatInput>
+  }
+
+  export type OrderItemUpdateManyWithWhereWithoutSeatInput = {
+    where: OrderItemScalarWhereInput
+    data: XOR<OrderItemUpdateManyMutationInput, OrderItemUncheckedUpdateManyWithoutSeatInput>
+  }
+
+  export type TicketUpsertWithWhereUniqueWithoutSeatInput = {
+    where: TicketWhereUniqueInput
+    update: XOR<TicketUpdateWithoutSeatInput, TicketUncheckedUpdateWithoutSeatInput>
+    create: XOR<TicketCreateWithoutSeatInput, TicketUncheckedCreateWithoutSeatInput>
+  }
+
+  export type TicketUpdateWithWhereUniqueWithoutSeatInput = {
+    where: TicketWhereUniqueInput
+    data: XOR<TicketUpdateWithoutSeatInput, TicketUncheckedUpdateWithoutSeatInput>
+  }
+
+  export type TicketUpdateManyWithWhereWithoutSeatInput = {
+    where: TicketScalarWhereInput
+    data: XOR<TicketUpdateManyMutationInput, TicketUncheckedUpdateManyWithoutSeatInput>
+  }
+
+  export type HoldUpsertWithWhereUniqueWithoutSeatInput = {
+    where: HoldWhereUniqueInput
+    update: XOR<HoldUpdateWithoutSeatInput, HoldUncheckedUpdateWithoutSeatInput>
+    create: XOR<HoldCreateWithoutSeatInput, HoldUncheckedCreateWithoutSeatInput>
+  }
+
+  export type HoldUpdateWithWhereUniqueWithoutSeatInput = {
+    where: HoldWhereUniqueInput
+    data: XOR<HoldUpdateWithoutSeatInput, HoldUncheckedUpdateWithoutSeatInput>
+  }
+
+  export type HoldUpdateManyWithWhereWithoutSeatInput = {
+    where: HoldScalarWhereInput
+    data: XOR<HoldUpdateManyMutationInput, HoldUncheckedUpdateManyWithoutSeatInput>
+  }
+
   export type EventDateZoneCreateWithoutAllocationsInput = {
     eventDateZoneId?: bigint | number
     name: string
@@ -25976,6 +34720,9 @@ export namespace Prisma {
     updatedAt?: Date | string
     eventDate: EventDateCreateNestedOneWithoutZoneDatesInput
     seatMap?: SeatMapCreateNestedOneWithoutEventDateZoneInput
+    OrderItem?: OrderItemCreateNestedManyWithoutZoneInput
+    Ticket?: TicketCreateNestedManyWithoutZoneInput
+    Hold?: HoldCreateNestedManyWithoutZoneInput
   }
 
   export type EventDateZoneUncheckedCreateWithoutAllocationsInput = {
@@ -25990,11 +34737,90 @@ export namespace Prisma {
     currency: $Enums.CURRENCY
     createdAt?: Date | string
     updatedAt?: Date | string
+    OrderItem?: OrderItemUncheckedCreateNestedManyWithoutZoneInput
+    Ticket?: TicketUncheckedCreateNestedManyWithoutZoneInput
+    Hold?: HoldUncheckedCreateNestedManyWithoutZoneInput
   }
 
   export type EventDateZoneCreateOrConnectWithoutAllocationsInput = {
     where: EventDateZoneWhereUniqueInput
     create: XOR<EventDateZoneCreateWithoutAllocationsInput, EventDateZoneUncheckedCreateWithoutAllocationsInput>
+  }
+
+  export type OrderItemCreateWithoutAllocationInput = {
+    orderItemId?: bigint | number
+    eventId: bigint | number
+    quantity?: number | null
+    unitPrice: Decimal | DecimalJsLike | number | string
+    discountAmount?: Decimal | DecimalJsLike | number | string | null
+    finalPrice: Decimal | DecimalJsLike | number | string
+    order: OrderCreateNestedOneWithoutItemsInput
+    eventDate: EventDateCreateNestedOneWithoutOrderItemInput
+    zone: EventDateZoneCreateNestedOneWithoutOrderItemInput
+    seat?: SeatCreateNestedOneWithoutOrderItemInput
+    Ticket?: TicketCreateNestedManyWithoutItemInput
+  }
+
+  export type OrderItemUncheckedCreateWithoutAllocationInput = {
+    orderItemId?: bigint | number
+    orderId: bigint | number
+    eventId: bigint | number
+    eventDateId: bigint | number
+    eventDateZoneId: bigint | number
+    quantity?: number | null
+    seatId?: bigint | number | null
+    unitPrice: Decimal | DecimalJsLike | number | string
+    discountAmount?: Decimal | DecimalJsLike | number | string | null
+    finalPrice: Decimal | DecimalJsLike | number | string
+    Ticket?: TicketUncheckedCreateNestedManyWithoutItemInput
+  }
+
+  export type OrderItemCreateOrConnectWithoutAllocationInput = {
+    where: OrderItemWhereUniqueInput
+    create: XOR<OrderItemCreateWithoutAllocationInput, OrderItemUncheckedCreateWithoutAllocationInput>
+  }
+
+  export type OrderItemCreateManyAllocationInputEnvelope = {
+    data: OrderItemCreateManyAllocationInput | OrderItemCreateManyAllocationInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type TicketCreateWithoutAllocationInput = {
+    ticketId?: bigint | number
+    eventId: bigint | number
+    pricePaid: Decimal | DecimalJsLike | number | string
+    currency?: $Enums.CURRENCY
+    issuedAt?: Date | string
+    status?: $Enums.TICKET_STATUS
+    item: OrderItemCreateNestedOneWithoutTicketInput
+    eventDate: EventDateCreateNestedOneWithoutTicketInput
+    zone: EventDateZoneCreateNestedOneWithoutTicketInput
+    seat?: SeatCreateNestedOneWithoutTicketInput
+    owner?: UserCreateNestedOneWithoutTicketInput
+  }
+
+  export type TicketUncheckedCreateWithoutAllocationInput = {
+    ticketId?: bigint | number
+    ownerUserId?: bigint | number | null
+    orderItemId: bigint | number
+    eventId: bigint | number
+    eventDateId: bigint | number
+    eventDateZoneId: bigint | number
+    seatId?: bigint | number | null
+    pricePaid: Decimal | DecimalJsLike | number | string
+    currency?: $Enums.CURRENCY
+    issuedAt?: Date | string
+    status?: $Enums.TICKET_STATUS
+  }
+
+  export type TicketCreateOrConnectWithoutAllocationInput = {
+    where: TicketWhereUniqueInput
+    create: XOR<TicketCreateWithoutAllocationInput, TicketUncheckedCreateWithoutAllocationInput>
+  }
+
+  export type TicketCreateManyAllocationInputEnvelope = {
+    data: TicketCreateManyAllocationInput | TicketCreateManyAllocationInput[]
+    skipDuplicates?: boolean
   }
 
   export type EventDateZoneUpsertWithoutAllocationsInput = {
@@ -26020,6 +34846,9 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     eventDate?: EventDateUpdateOneRequiredWithoutZoneDatesNestedInput
     seatMap?: SeatMapUpdateOneWithoutEventDateZoneNestedInput
+    OrderItem?: OrderItemUpdateManyWithoutZoneNestedInput
+    Ticket?: TicketUpdateManyWithoutZoneNestedInput
+    Hold?: HoldUpdateManyWithoutZoneNestedInput
   }
 
   export type EventDateZoneUncheckedUpdateWithoutAllocationsInput = {
@@ -26034,6 +34863,41 @@ export namespace Prisma {
     currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    OrderItem?: OrderItemUncheckedUpdateManyWithoutZoneNestedInput
+    Ticket?: TicketUncheckedUpdateManyWithoutZoneNestedInput
+    Hold?: HoldUncheckedUpdateManyWithoutZoneNestedInput
+  }
+
+  export type OrderItemUpsertWithWhereUniqueWithoutAllocationInput = {
+    where: OrderItemWhereUniqueInput
+    update: XOR<OrderItemUpdateWithoutAllocationInput, OrderItemUncheckedUpdateWithoutAllocationInput>
+    create: XOR<OrderItemCreateWithoutAllocationInput, OrderItemUncheckedCreateWithoutAllocationInput>
+  }
+
+  export type OrderItemUpdateWithWhereUniqueWithoutAllocationInput = {
+    where: OrderItemWhereUniqueInput
+    data: XOR<OrderItemUpdateWithoutAllocationInput, OrderItemUncheckedUpdateWithoutAllocationInput>
+  }
+
+  export type OrderItemUpdateManyWithWhereWithoutAllocationInput = {
+    where: OrderItemScalarWhereInput
+    data: XOR<OrderItemUpdateManyMutationInput, OrderItemUncheckedUpdateManyWithoutAllocationInput>
+  }
+
+  export type TicketUpsertWithWhereUniqueWithoutAllocationInput = {
+    where: TicketWhereUniqueInput
+    update: XOR<TicketUpdateWithoutAllocationInput, TicketUncheckedUpdateWithoutAllocationInput>
+    create: XOR<TicketCreateWithoutAllocationInput, TicketUncheckedCreateWithoutAllocationInput>
+  }
+
+  export type TicketUpdateWithWhereUniqueWithoutAllocationInput = {
+    where: TicketWhereUniqueInput
+    data: XOR<TicketUpdateWithoutAllocationInput, TicketUncheckedUpdateWithoutAllocationInput>
+  }
+
+  export type TicketUpdateManyWithWhereWithoutAllocationInput = {
+    where: TicketScalarWhereInput
+    data: XOR<TicketUpdateManyMutationInput, TicketUncheckedUpdateManyWithoutAllocationInput>
   }
 
   export type EventCreateWithoutSalesPhasesInput = {
@@ -26120,10 +34984,1068 @@ export namespace Prisma {
     dates?: EventDateUncheckedUpdateManyWithoutEventNestedInput
   }
 
+  export type OrderItemCreateWithoutOrderInput = {
+    orderItemId?: bigint | number
+    eventId: bigint | number
+    quantity?: number | null
+    unitPrice: Decimal | DecimalJsLike | number | string
+    discountAmount?: Decimal | DecimalJsLike | number | string | null
+    finalPrice: Decimal | DecimalJsLike | number | string
+    eventDate: EventDateCreateNestedOneWithoutOrderItemInput
+    zone: EventDateZoneCreateNestedOneWithoutOrderItemInput
+    seat?: SeatCreateNestedOneWithoutOrderItemInput
+    allocation?: EventDateZoneAllocationCreateNestedOneWithoutOrderItemInput
+    Ticket?: TicketCreateNestedManyWithoutItemInput
+  }
+
+  export type OrderItemUncheckedCreateWithoutOrderInput = {
+    orderItemId?: bigint | number
+    eventId: bigint | number
+    eventDateId: bigint | number
+    eventDateZoneId: bigint | number
+    eventDateZoneAllocationId?: bigint | number | null
+    quantity?: number | null
+    seatId?: bigint | number | null
+    unitPrice: Decimal | DecimalJsLike | number | string
+    discountAmount?: Decimal | DecimalJsLike | number | string | null
+    finalPrice: Decimal | DecimalJsLike | number | string
+    Ticket?: TicketUncheckedCreateNestedManyWithoutItemInput
+  }
+
+  export type OrderItemCreateOrConnectWithoutOrderInput = {
+    where: OrderItemWhereUniqueInput
+    create: XOR<OrderItemCreateWithoutOrderInput, OrderItemUncheckedCreateWithoutOrderInput>
+  }
+
+  export type OrderItemCreateManyOrderInputEnvelope = {
+    data: OrderItemCreateManyOrderInput | OrderItemCreateManyOrderInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type OrderItemUpsertWithWhereUniqueWithoutOrderInput = {
+    where: OrderItemWhereUniqueInput
+    update: XOR<OrderItemUpdateWithoutOrderInput, OrderItemUncheckedUpdateWithoutOrderInput>
+    create: XOR<OrderItemCreateWithoutOrderInput, OrderItemUncheckedCreateWithoutOrderInput>
+  }
+
+  export type OrderItemUpdateWithWhereUniqueWithoutOrderInput = {
+    where: OrderItemWhereUniqueInput
+    data: XOR<OrderItemUpdateWithoutOrderInput, OrderItemUncheckedUpdateWithoutOrderInput>
+  }
+
+  export type OrderItemUpdateManyWithWhereWithoutOrderInput = {
+    where: OrderItemScalarWhereInput
+    data: XOR<OrderItemUpdateManyMutationInput, OrderItemUncheckedUpdateManyWithoutOrderInput>
+  }
+
+  export type OrderCreateWithoutItemsInput = {
+    orderId?: bigint | number
+    buyerUserId: bigint | number
+    status?: $Enums.ORDER_STATUS
+    currency: $Enums.CURRENCY
+    totalAmount: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type OrderUncheckedCreateWithoutItemsInput = {
+    orderId?: bigint | number
+    buyerUserId: bigint | number
+    status?: $Enums.ORDER_STATUS
+    currency: $Enums.CURRENCY
+    totalAmount: Decimal | DecimalJsLike | number | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type OrderCreateOrConnectWithoutItemsInput = {
+    where: OrderWhereUniqueInput
+    create: XOR<OrderCreateWithoutItemsInput, OrderUncheckedCreateWithoutItemsInput>
+  }
+
+  export type EventDateCreateWithoutOrderItemInput = {
+    eventDateId?: bigint | number
+    startAt: Date | string
+    endAt: Date | string
+    event: EventCreateNestedOneWithoutDatesInput
+    zoneDates?: EventDateZoneCreateNestedManyWithoutEventDateInput
+    Ticket?: TicketCreateNestedManyWithoutEventDateInput
+    Hold?: HoldCreateNestedManyWithoutEventDateInput
+  }
+
+  export type EventDateUncheckedCreateWithoutOrderItemInput = {
+    eventDateId?: bigint | number
+    eventId: bigint | number
+    startAt: Date | string
+    endAt: Date | string
+    zoneDates?: EventDateZoneUncheckedCreateNestedManyWithoutEventDateInput
+    Ticket?: TicketUncheckedCreateNestedManyWithoutEventDateInput
+    Hold?: HoldUncheckedCreateNestedManyWithoutEventDateInput
+  }
+
+  export type EventDateCreateOrConnectWithoutOrderItemInput = {
+    where: EventDateWhereUniqueInput
+    create: XOR<EventDateCreateWithoutOrderItemInput, EventDateUncheckedCreateWithoutOrderItemInput>
+  }
+
+  export type EventDateZoneCreateWithoutOrderItemInput = {
+    eventDateZoneId?: bigint | number
+    name: string
+    kind: $Enums.ZONE_KIND
+    basePrice: Decimal | DecimalJsLike | number | string
+    capacity: number
+    capacityRemaining: number
+    currency: $Enums.CURRENCY
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    eventDate: EventDateCreateNestedOneWithoutZoneDatesInput
+    seatMap?: SeatMapCreateNestedOneWithoutEventDateZoneInput
+    allocations?: EventDateZoneAllocationCreateNestedManyWithoutZoneInput
+    Ticket?: TicketCreateNestedManyWithoutZoneInput
+    Hold?: HoldCreateNestedManyWithoutZoneInput
+  }
+
+  export type EventDateZoneUncheckedCreateWithoutOrderItemInput = {
+    eventDateZoneId?: bigint | number
+    eventDateId: bigint | number
+    name: string
+    kind: $Enums.ZONE_KIND
+    basePrice: Decimal | DecimalJsLike | number | string
+    capacity: number
+    capacityRemaining: number
+    seatMapId?: bigint | number | null
+    currency: $Enums.CURRENCY
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    allocations?: EventDateZoneAllocationUncheckedCreateNestedManyWithoutZoneInput
+    Ticket?: TicketUncheckedCreateNestedManyWithoutZoneInput
+    Hold?: HoldUncheckedCreateNestedManyWithoutZoneInput
+  }
+
+  export type EventDateZoneCreateOrConnectWithoutOrderItemInput = {
+    where: EventDateZoneWhereUniqueInput
+    create: XOR<EventDateZoneCreateWithoutOrderItemInput, EventDateZoneUncheckedCreateWithoutOrderItemInput>
+  }
+
+  export type SeatCreateWithoutOrderItemInput = {
+    seatId?: bigint | number
+    rowNumber: number
+    colNumber: number
+    status?: $Enums.SEAT_STATUS
+    holdUntil?: Date | string | null
+    seatMap: SeatMapCreateNestedOneWithoutOccupiedSeatsInput
+    Ticket?: TicketCreateNestedManyWithoutSeatInput
+    Hold?: HoldCreateNestedManyWithoutSeatInput
+  }
+
+  export type SeatUncheckedCreateWithoutOrderItemInput = {
+    seatId?: bigint | number
+    seatMapId: bigint | number
+    rowNumber: number
+    colNumber: number
+    status?: $Enums.SEAT_STATUS
+    holdUntil?: Date | string | null
+    Ticket?: TicketUncheckedCreateNestedManyWithoutSeatInput
+    Hold?: HoldUncheckedCreateNestedManyWithoutSeatInput
+  }
+
+  export type SeatCreateOrConnectWithoutOrderItemInput = {
+    where: SeatWhereUniqueInput
+    create: XOR<SeatCreateWithoutOrderItemInput, SeatUncheckedCreateWithoutOrderItemInput>
+  }
+
+  export type EventDateZoneAllocationCreateWithoutOrderItemInput = {
+    eventDateZoneAllocationId?: bigint | number
+    audienceName: string
+    discountPercent: Decimal | DecimalJsLike | number | string
+    allocatedQuantity: number
+    remainingQuantity?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    zone: EventDateZoneCreateNestedOneWithoutAllocationsInput
+    Ticket?: TicketCreateNestedManyWithoutAllocationInput
+  }
+
+  export type EventDateZoneAllocationUncheckedCreateWithoutOrderItemInput = {
+    eventDateZoneAllocationId?: bigint | number
+    eventDateZoneId: bigint | number
+    audienceName: string
+    discountPercent: Decimal | DecimalJsLike | number | string
+    allocatedQuantity: number
+    remainingQuantity?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    Ticket?: TicketUncheckedCreateNestedManyWithoutAllocationInput
+  }
+
+  export type EventDateZoneAllocationCreateOrConnectWithoutOrderItemInput = {
+    where: EventDateZoneAllocationWhereUniqueInput
+    create: XOR<EventDateZoneAllocationCreateWithoutOrderItemInput, EventDateZoneAllocationUncheckedCreateWithoutOrderItemInput>
+  }
+
+  export type TicketCreateWithoutItemInput = {
+    ticketId?: bigint | number
+    eventId: bigint | number
+    pricePaid: Decimal | DecimalJsLike | number | string
+    currency?: $Enums.CURRENCY
+    issuedAt?: Date | string
+    status?: $Enums.TICKET_STATUS
+    eventDate: EventDateCreateNestedOneWithoutTicketInput
+    zone: EventDateZoneCreateNestedOneWithoutTicketInput
+    seat?: SeatCreateNestedOneWithoutTicketInput
+    allocation?: EventDateZoneAllocationCreateNestedOneWithoutTicketInput
+    owner?: UserCreateNestedOneWithoutTicketInput
+  }
+
+  export type TicketUncheckedCreateWithoutItemInput = {
+    ticketId?: bigint | number
+    ownerUserId?: bigint | number | null
+    eventId: bigint | number
+    eventDateId: bigint | number
+    eventDateZoneId: bigint | number
+    eventDateZoneAllocationId?: bigint | number | null
+    seatId?: bigint | number | null
+    pricePaid: Decimal | DecimalJsLike | number | string
+    currency?: $Enums.CURRENCY
+    issuedAt?: Date | string
+    status?: $Enums.TICKET_STATUS
+  }
+
+  export type TicketCreateOrConnectWithoutItemInput = {
+    where: TicketWhereUniqueInput
+    create: XOR<TicketCreateWithoutItemInput, TicketUncheckedCreateWithoutItemInput>
+  }
+
+  export type TicketCreateManyItemInputEnvelope = {
+    data: TicketCreateManyItemInput | TicketCreateManyItemInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type OrderUpsertWithoutItemsInput = {
+    update: XOR<OrderUpdateWithoutItemsInput, OrderUncheckedUpdateWithoutItemsInput>
+    create: XOR<OrderCreateWithoutItemsInput, OrderUncheckedCreateWithoutItemsInput>
+    where?: OrderWhereInput
+  }
+
+  export type OrderUpdateToOneWithWhereWithoutItemsInput = {
+    where?: OrderWhereInput
+    data: XOR<OrderUpdateWithoutItemsInput, OrderUncheckedUpdateWithoutItemsInput>
+  }
+
+  export type OrderUpdateWithoutItemsInput = {
+    orderId?: BigIntFieldUpdateOperationsInput | bigint | number
+    buyerUserId?: BigIntFieldUpdateOperationsInput | bigint | number
+    status?: EnumORDER_STATUSFieldUpdateOperationsInput | $Enums.ORDER_STATUS
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    totalAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OrderUncheckedUpdateWithoutItemsInput = {
+    orderId?: BigIntFieldUpdateOperationsInput | bigint | number
+    buyerUserId?: BigIntFieldUpdateOperationsInput | bigint | number
+    status?: EnumORDER_STATUSFieldUpdateOperationsInput | $Enums.ORDER_STATUS
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    totalAmount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EventDateUpsertWithoutOrderItemInput = {
+    update: XOR<EventDateUpdateWithoutOrderItemInput, EventDateUncheckedUpdateWithoutOrderItemInput>
+    create: XOR<EventDateCreateWithoutOrderItemInput, EventDateUncheckedCreateWithoutOrderItemInput>
+    where?: EventDateWhereInput
+  }
+
+  export type EventDateUpdateToOneWithWhereWithoutOrderItemInput = {
+    where?: EventDateWhereInput
+    data: XOR<EventDateUpdateWithoutOrderItemInput, EventDateUncheckedUpdateWithoutOrderItemInput>
+  }
+
+  export type EventDateUpdateWithoutOrderItemInput = {
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    startAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    event?: EventUpdateOneRequiredWithoutDatesNestedInput
+    zoneDates?: EventDateZoneUpdateManyWithoutEventDateNestedInput
+    Ticket?: TicketUpdateManyWithoutEventDateNestedInput
+    Hold?: HoldUpdateManyWithoutEventDateNestedInput
+  }
+
+  export type EventDateUncheckedUpdateWithoutOrderItemInput = {
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    startAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    zoneDates?: EventDateZoneUncheckedUpdateManyWithoutEventDateNestedInput
+    Ticket?: TicketUncheckedUpdateManyWithoutEventDateNestedInput
+    Hold?: HoldUncheckedUpdateManyWithoutEventDateNestedInput
+  }
+
+  export type EventDateZoneUpsertWithoutOrderItemInput = {
+    update: XOR<EventDateZoneUpdateWithoutOrderItemInput, EventDateZoneUncheckedUpdateWithoutOrderItemInput>
+    create: XOR<EventDateZoneCreateWithoutOrderItemInput, EventDateZoneUncheckedCreateWithoutOrderItemInput>
+    where?: EventDateZoneWhereInput
+  }
+
+  export type EventDateZoneUpdateToOneWithWhereWithoutOrderItemInput = {
+    where?: EventDateZoneWhereInput
+    data: XOR<EventDateZoneUpdateWithoutOrderItemInput, EventDateZoneUncheckedUpdateWithoutOrderItemInput>
+  }
+
+  export type EventDateZoneUpdateWithoutOrderItemInput = {
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    name?: StringFieldUpdateOperationsInput | string
+    kind?: EnumZONE_KINDFieldUpdateOperationsInput | $Enums.ZONE_KIND
+    basePrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    capacity?: IntFieldUpdateOperationsInput | number
+    capacityRemaining?: IntFieldUpdateOperationsInput | number
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    eventDate?: EventDateUpdateOneRequiredWithoutZoneDatesNestedInput
+    seatMap?: SeatMapUpdateOneWithoutEventDateZoneNestedInput
+    allocations?: EventDateZoneAllocationUpdateManyWithoutZoneNestedInput
+    Ticket?: TicketUpdateManyWithoutZoneNestedInput
+    Hold?: HoldUpdateManyWithoutZoneNestedInput
+  }
+
+  export type EventDateZoneUncheckedUpdateWithoutOrderItemInput = {
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    name?: StringFieldUpdateOperationsInput | string
+    kind?: EnumZONE_KINDFieldUpdateOperationsInput | $Enums.ZONE_KIND
+    basePrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    capacity?: IntFieldUpdateOperationsInput | number
+    capacityRemaining?: IntFieldUpdateOperationsInput | number
+    seatMapId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    allocations?: EventDateZoneAllocationUncheckedUpdateManyWithoutZoneNestedInput
+    Ticket?: TicketUncheckedUpdateManyWithoutZoneNestedInput
+    Hold?: HoldUncheckedUpdateManyWithoutZoneNestedInput
+  }
+
+  export type SeatUpsertWithoutOrderItemInput = {
+    update: XOR<SeatUpdateWithoutOrderItemInput, SeatUncheckedUpdateWithoutOrderItemInput>
+    create: XOR<SeatCreateWithoutOrderItemInput, SeatUncheckedCreateWithoutOrderItemInput>
+    where?: SeatWhereInput
+  }
+
+  export type SeatUpdateToOneWithWhereWithoutOrderItemInput = {
+    where?: SeatWhereInput
+    data: XOR<SeatUpdateWithoutOrderItemInput, SeatUncheckedUpdateWithoutOrderItemInput>
+  }
+
+  export type SeatUpdateWithoutOrderItemInput = {
+    seatId?: BigIntFieldUpdateOperationsInput | bigint | number
+    rowNumber?: IntFieldUpdateOperationsInput | number
+    colNumber?: IntFieldUpdateOperationsInput | number
+    status?: EnumSEAT_STATUSFieldUpdateOperationsInput | $Enums.SEAT_STATUS
+    holdUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    seatMap?: SeatMapUpdateOneRequiredWithoutOccupiedSeatsNestedInput
+    Ticket?: TicketUpdateManyWithoutSeatNestedInput
+    Hold?: HoldUpdateManyWithoutSeatNestedInput
+  }
+
+  export type SeatUncheckedUpdateWithoutOrderItemInput = {
+    seatId?: BigIntFieldUpdateOperationsInput | bigint | number
+    seatMapId?: BigIntFieldUpdateOperationsInput | bigint | number
+    rowNumber?: IntFieldUpdateOperationsInput | number
+    colNumber?: IntFieldUpdateOperationsInput | number
+    status?: EnumSEAT_STATUSFieldUpdateOperationsInput | $Enums.SEAT_STATUS
+    holdUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    Ticket?: TicketUncheckedUpdateManyWithoutSeatNestedInput
+    Hold?: HoldUncheckedUpdateManyWithoutSeatNestedInput
+  }
+
+  export type EventDateZoneAllocationUpsertWithoutOrderItemInput = {
+    update: XOR<EventDateZoneAllocationUpdateWithoutOrderItemInput, EventDateZoneAllocationUncheckedUpdateWithoutOrderItemInput>
+    create: XOR<EventDateZoneAllocationCreateWithoutOrderItemInput, EventDateZoneAllocationUncheckedCreateWithoutOrderItemInput>
+    where?: EventDateZoneAllocationWhereInput
+  }
+
+  export type EventDateZoneAllocationUpdateToOneWithWhereWithoutOrderItemInput = {
+    where?: EventDateZoneAllocationWhereInput
+    data: XOR<EventDateZoneAllocationUpdateWithoutOrderItemInput, EventDateZoneAllocationUncheckedUpdateWithoutOrderItemInput>
+  }
+
+  export type EventDateZoneAllocationUpdateWithoutOrderItemInput = {
+    eventDateZoneAllocationId?: BigIntFieldUpdateOperationsInput | bigint | number
+    audienceName?: StringFieldUpdateOperationsInput | string
+    discountPercent?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    allocatedQuantity?: IntFieldUpdateOperationsInput | number
+    remainingQuantity?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    zone?: EventDateZoneUpdateOneRequiredWithoutAllocationsNestedInput
+    Ticket?: TicketUpdateManyWithoutAllocationNestedInput
+  }
+
+  export type EventDateZoneAllocationUncheckedUpdateWithoutOrderItemInput = {
+    eventDateZoneAllocationId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    audienceName?: StringFieldUpdateOperationsInput | string
+    discountPercent?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    allocatedQuantity?: IntFieldUpdateOperationsInput | number
+    remainingQuantity?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    Ticket?: TicketUncheckedUpdateManyWithoutAllocationNestedInput
+  }
+
+  export type TicketUpsertWithWhereUniqueWithoutItemInput = {
+    where: TicketWhereUniqueInput
+    update: XOR<TicketUpdateWithoutItemInput, TicketUncheckedUpdateWithoutItemInput>
+    create: XOR<TicketCreateWithoutItemInput, TicketUncheckedCreateWithoutItemInput>
+  }
+
+  export type TicketUpdateWithWhereUniqueWithoutItemInput = {
+    where: TicketWhereUniqueInput
+    data: XOR<TicketUpdateWithoutItemInput, TicketUncheckedUpdateWithoutItemInput>
+  }
+
+  export type TicketUpdateManyWithWhereWithoutItemInput = {
+    where: TicketScalarWhereInput
+    data: XOR<TicketUpdateManyMutationInput, TicketUncheckedUpdateManyWithoutItemInput>
+  }
+
+  export type OrderItemCreateWithoutTicketInput = {
+    orderItemId?: bigint | number
+    eventId: bigint | number
+    quantity?: number | null
+    unitPrice: Decimal | DecimalJsLike | number | string
+    discountAmount?: Decimal | DecimalJsLike | number | string | null
+    finalPrice: Decimal | DecimalJsLike | number | string
+    order: OrderCreateNestedOneWithoutItemsInput
+    eventDate: EventDateCreateNestedOneWithoutOrderItemInput
+    zone: EventDateZoneCreateNestedOneWithoutOrderItemInput
+    seat?: SeatCreateNestedOneWithoutOrderItemInput
+    allocation?: EventDateZoneAllocationCreateNestedOneWithoutOrderItemInput
+  }
+
+  export type OrderItemUncheckedCreateWithoutTicketInput = {
+    orderItemId?: bigint | number
+    orderId: bigint | number
+    eventId: bigint | number
+    eventDateId: bigint | number
+    eventDateZoneId: bigint | number
+    eventDateZoneAllocationId?: bigint | number | null
+    quantity?: number | null
+    seatId?: bigint | number | null
+    unitPrice: Decimal | DecimalJsLike | number | string
+    discountAmount?: Decimal | DecimalJsLike | number | string | null
+    finalPrice: Decimal | DecimalJsLike | number | string
+  }
+
+  export type OrderItemCreateOrConnectWithoutTicketInput = {
+    where: OrderItemWhereUniqueInput
+    create: XOR<OrderItemCreateWithoutTicketInput, OrderItemUncheckedCreateWithoutTicketInput>
+  }
+
+  export type EventDateCreateWithoutTicketInput = {
+    eventDateId?: bigint | number
+    startAt: Date | string
+    endAt: Date | string
+    event: EventCreateNestedOneWithoutDatesInput
+    zoneDates?: EventDateZoneCreateNestedManyWithoutEventDateInput
+    OrderItem?: OrderItemCreateNestedManyWithoutEventDateInput
+    Hold?: HoldCreateNestedManyWithoutEventDateInput
+  }
+
+  export type EventDateUncheckedCreateWithoutTicketInput = {
+    eventDateId?: bigint | number
+    eventId: bigint | number
+    startAt: Date | string
+    endAt: Date | string
+    zoneDates?: EventDateZoneUncheckedCreateNestedManyWithoutEventDateInput
+    OrderItem?: OrderItemUncheckedCreateNestedManyWithoutEventDateInput
+    Hold?: HoldUncheckedCreateNestedManyWithoutEventDateInput
+  }
+
+  export type EventDateCreateOrConnectWithoutTicketInput = {
+    where: EventDateWhereUniqueInput
+    create: XOR<EventDateCreateWithoutTicketInput, EventDateUncheckedCreateWithoutTicketInput>
+  }
+
+  export type EventDateZoneCreateWithoutTicketInput = {
+    eventDateZoneId?: bigint | number
+    name: string
+    kind: $Enums.ZONE_KIND
+    basePrice: Decimal | DecimalJsLike | number | string
+    capacity: number
+    capacityRemaining: number
+    currency: $Enums.CURRENCY
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    eventDate: EventDateCreateNestedOneWithoutZoneDatesInput
+    seatMap?: SeatMapCreateNestedOneWithoutEventDateZoneInput
+    allocations?: EventDateZoneAllocationCreateNestedManyWithoutZoneInput
+    OrderItem?: OrderItemCreateNestedManyWithoutZoneInput
+    Hold?: HoldCreateNestedManyWithoutZoneInput
+  }
+
+  export type EventDateZoneUncheckedCreateWithoutTicketInput = {
+    eventDateZoneId?: bigint | number
+    eventDateId: bigint | number
+    name: string
+    kind: $Enums.ZONE_KIND
+    basePrice: Decimal | DecimalJsLike | number | string
+    capacity: number
+    capacityRemaining: number
+    seatMapId?: bigint | number | null
+    currency: $Enums.CURRENCY
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    allocations?: EventDateZoneAllocationUncheckedCreateNestedManyWithoutZoneInput
+    OrderItem?: OrderItemUncheckedCreateNestedManyWithoutZoneInput
+    Hold?: HoldUncheckedCreateNestedManyWithoutZoneInput
+  }
+
+  export type EventDateZoneCreateOrConnectWithoutTicketInput = {
+    where: EventDateZoneWhereUniqueInput
+    create: XOR<EventDateZoneCreateWithoutTicketInput, EventDateZoneUncheckedCreateWithoutTicketInput>
+  }
+
+  export type SeatCreateWithoutTicketInput = {
+    seatId?: bigint | number
+    rowNumber: number
+    colNumber: number
+    status?: $Enums.SEAT_STATUS
+    holdUntil?: Date | string | null
+    seatMap: SeatMapCreateNestedOneWithoutOccupiedSeatsInput
+    OrderItem?: OrderItemCreateNestedManyWithoutSeatInput
+    Hold?: HoldCreateNestedManyWithoutSeatInput
+  }
+
+  export type SeatUncheckedCreateWithoutTicketInput = {
+    seatId?: bigint | number
+    seatMapId: bigint | number
+    rowNumber: number
+    colNumber: number
+    status?: $Enums.SEAT_STATUS
+    holdUntil?: Date | string | null
+    OrderItem?: OrderItemUncheckedCreateNestedManyWithoutSeatInput
+    Hold?: HoldUncheckedCreateNestedManyWithoutSeatInput
+  }
+
+  export type SeatCreateOrConnectWithoutTicketInput = {
+    where: SeatWhereUniqueInput
+    create: XOR<SeatCreateWithoutTicketInput, SeatUncheckedCreateWithoutTicketInput>
+  }
+
+  export type EventDateZoneAllocationCreateWithoutTicketInput = {
+    eventDateZoneAllocationId?: bigint | number
+    audienceName: string
+    discountPercent: Decimal | DecimalJsLike | number | string
+    allocatedQuantity: number
+    remainingQuantity?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    zone: EventDateZoneCreateNestedOneWithoutAllocationsInput
+    OrderItem?: OrderItemCreateNestedManyWithoutAllocationInput
+  }
+
+  export type EventDateZoneAllocationUncheckedCreateWithoutTicketInput = {
+    eventDateZoneAllocationId?: bigint | number
+    eventDateZoneId: bigint | number
+    audienceName: string
+    discountPercent: Decimal | DecimalJsLike | number | string
+    allocatedQuantity: number
+    remainingQuantity?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    OrderItem?: OrderItemUncheckedCreateNestedManyWithoutAllocationInput
+  }
+
+  export type EventDateZoneAllocationCreateOrConnectWithoutTicketInput = {
+    where: EventDateZoneAllocationWhereUniqueInput
+    create: XOR<EventDateZoneAllocationCreateWithoutTicketInput, EventDateZoneAllocationUncheckedCreateWithoutTicketInput>
+  }
+
+  export type UserCreateWithoutTicketInput = {
+    userId?: bigint | number
+    name: string
+    lastName: string
+    phone?: string | null
+    email: string
+    birthdate?: Date | string | null
+    gender?: $Enums.GENDER | null
+    status?: $Enums.STATUS_USER
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    password?: PasswordUserCreateNestedOneWithoutUserInput
+    oauths?: OAuthUserCreateNestedManyWithoutUserInput
+    organizer?: OrganizerCreateNestedOneWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutTicketInput = {
+    userId?: bigint | number
+    name: string
+    lastName: string
+    phone?: string | null
+    email: string
+    birthdate?: Date | string | null
+    gender?: $Enums.GENDER | null
+    status?: $Enums.STATUS_USER
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    password?: PasswordUserUncheckedCreateNestedOneWithoutUserInput
+    oauths?: OAuthUserUncheckedCreateNestedManyWithoutUserInput
+    organizer?: OrganizerUncheckedCreateNestedOneWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutTicketInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutTicketInput, UserUncheckedCreateWithoutTicketInput>
+  }
+
+  export type OrderItemUpsertWithoutTicketInput = {
+    update: XOR<OrderItemUpdateWithoutTicketInput, OrderItemUncheckedUpdateWithoutTicketInput>
+    create: XOR<OrderItemCreateWithoutTicketInput, OrderItemUncheckedCreateWithoutTicketInput>
+    where?: OrderItemWhereInput
+  }
+
+  export type OrderItemUpdateToOneWithWhereWithoutTicketInput = {
+    where?: OrderItemWhereInput
+    data: XOR<OrderItemUpdateWithoutTicketInput, OrderItemUncheckedUpdateWithoutTicketInput>
+  }
+
+  export type OrderItemUpdateWithoutTicketInput = {
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    unitPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discountAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    finalPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    order?: OrderUpdateOneRequiredWithoutItemsNestedInput
+    eventDate?: EventDateUpdateOneRequiredWithoutOrderItemNestedInput
+    zone?: EventDateZoneUpdateOneRequiredWithoutOrderItemNestedInput
+    seat?: SeatUpdateOneWithoutOrderItemNestedInput
+    allocation?: EventDateZoneAllocationUpdateOneWithoutOrderItemNestedInput
+  }
+
+  export type OrderItemUncheckedUpdateWithoutTicketInput = {
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    orderId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneAllocationId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    seatId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    unitPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discountAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    finalPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+  }
+
+  export type EventDateUpsertWithoutTicketInput = {
+    update: XOR<EventDateUpdateWithoutTicketInput, EventDateUncheckedUpdateWithoutTicketInput>
+    create: XOR<EventDateCreateWithoutTicketInput, EventDateUncheckedCreateWithoutTicketInput>
+    where?: EventDateWhereInput
+  }
+
+  export type EventDateUpdateToOneWithWhereWithoutTicketInput = {
+    where?: EventDateWhereInput
+    data: XOR<EventDateUpdateWithoutTicketInput, EventDateUncheckedUpdateWithoutTicketInput>
+  }
+
+  export type EventDateUpdateWithoutTicketInput = {
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    startAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    event?: EventUpdateOneRequiredWithoutDatesNestedInput
+    zoneDates?: EventDateZoneUpdateManyWithoutEventDateNestedInput
+    OrderItem?: OrderItemUpdateManyWithoutEventDateNestedInput
+    Hold?: HoldUpdateManyWithoutEventDateNestedInput
+  }
+
+  export type EventDateUncheckedUpdateWithoutTicketInput = {
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    startAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    zoneDates?: EventDateZoneUncheckedUpdateManyWithoutEventDateNestedInput
+    OrderItem?: OrderItemUncheckedUpdateManyWithoutEventDateNestedInput
+    Hold?: HoldUncheckedUpdateManyWithoutEventDateNestedInput
+  }
+
+  export type EventDateZoneUpsertWithoutTicketInput = {
+    update: XOR<EventDateZoneUpdateWithoutTicketInput, EventDateZoneUncheckedUpdateWithoutTicketInput>
+    create: XOR<EventDateZoneCreateWithoutTicketInput, EventDateZoneUncheckedCreateWithoutTicketInput>
+    where?: EventDateZoneWhereInput
+  }
+
+  export type EventDateZoneUpdateToOneWithWhereWithoutTicketInput = {
+    where?: EventDateZoneWhereInput
+    data: XOR<EventDateZoneUpdateWithoutTicketInput, EventDateZoneUncheckedUpdateWithoutTicketInput>
+  }
+
+  export type EventDateZoneUpdateWithoutTicketInput = {
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    name?: StringFieldUpdateOperationsInput | string
+    kind?: EnumZONE_KINDFieldUpdateOperationsInput | $Enums.ZONE_KIND
+    basePrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    capacity?: IntFieldUpdateOperationsInput | number
+    capacityRemaining?: IntFieldUpdateOperationsInput | number
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    eventDate?: EventDateUpdateOneRequiredWithoutZoneDatesNestedInput
+    seatMap?: SeatMapUpdateOneWithoutEventDateZoneNestedInput
+    allocations?: EventDateZoneAllocationUpdateManyWithoutZoneNestedInput
+    OrderItem?: OrderItemUpdateManyWithoutZoneNestedInput
+    Hold?: HoldUpdateManyWithoutZoneNestedInput
+  }
+
+  export type EventDateZoneUncheckedUpdateWithoutTicketInput = {
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    name?: StringFieldUpdateOperationsInput | string
+    kind?: EnumZONE_KINDFieldUpdateOperationsInput | $Enums.ZONE_KIND
+    basePrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    capacity?: IntFieldUpdateOperationsInput | number
+    capacityRemaining?: IntFieldUpdateOperationsInput | number
+    seatMapId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    allocations?: EventDateZoneAllocationUncheckedUpdateManyWithoutZoneNestedInput
+    OrderItem?: OrderItemUncheckedUpdateManyWithoutZoneNestedInput
+    Hold?: HoldUncheckedUpdateManyWithoutZoneNestedInput
+  }
+
+  export type SeatUpsertWithoutTicketInput = {
+    update: XOR<SeatUpdateWithoutTicketInput, SeatUncheckedUpdateWithoutTicketInput>
+    create: XOR<SeatCreateWithoutTicketInput, SeatUncheckedCreateWithoutTicketInput>
+    where?: SeatWhereInput
+  }
+
+  export type SeatUpdateToOneWithWhereWithoutTicketInput = {
+    where?: SeatWhereInput
+    data: XOR<SeatUpdateWithoutTicketInput, SeatUncheckedUpdateWithoutTicketInput>
+  }
+
+  export type SeatUpdateWithoutTicketInput = {
+    seatId?: BigIntFieldUpdateOperationsInput | bigint | number
+    rowNumber?: IntFieldUpdateOperationsInput | number
+    colNumber?: IntFieldUpdateOperationsInput | number
+    status?: EnumSEAT_STATUSFieldUpdateOperationsInput | $Enums.SEAT_STATUS
+    holdUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    seatMap?: SeatMapUpdateOneRequiredWithoutOccupiedSeatsNestedInput
+    OrderItem?: OrderItemUpdateManyWithoutSeatNestedInput
+    Hold?: HoldUpdateManyWithoutSeatNestedInput
+  }
+
+  export type SeatUncheckedUpdateWithoutTicketInput = {
+    seatId?: BigIntFieldUpdateOperationsInput | bigint | number
+    seatMapId?: BigIntFieldUpdateOperationsInput | bigint | number
+    rowNumber?: IntFieldUpdateOperationsInput | number
+    colNumber?: IntFieldUpdateOperationsInput | number
+    status?: EnumSEAT_STATUSFieldUpdateOperationsInput | $Enums.SEAT_STATUS
+    holdUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    OrderItem?: OrderItemUncheckedUpdateManyWithoutSeatNestedInput
+    Hold?: HoldUncheckedUpdateManyWithoutSeatNestedInput
+  }
+
+  export type EventDateZoneAllocationUpsertWithoutTicketInput = {
+    update: XOR<EventDateZoneAllocationUpdateWithoutTicketInput, EventDateZoneAllocationUncheckedUpdateWithoutTicketInput>
+    create: XOR<EventDateZoneAllocationCreateWithoutTicketInput, EventDateZoneAllocationUncheckedCreateWithoutTicketInput>
+    where?: EventDateZoneAllocationWhereInput
+  }
+
+  export type EventDateZoneAllocationUpdateToOneWithWhereWithoutTicketInput = {
+    where?: EventDateZoneAllocationWhereInput
+    data: XOR<EventDateZoneAllocationUpdateWithoutTicketInput, EventDateZoneAllocationUncheckedUpdateWithoutTicketInput>
+  }
+
+  export type EventDateZoneAllocationUpdateWithoutTicketInput = {
+    eventDateZoneAllocationId?: BigIntFieldUpdateOperationsInput | bigint | number
+    audienceName?: StringFieldUpdateOperationsInput | string
+    discountPercent?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    allocatedQuantity?: IntFieldUpdateOperationsInput | number
+    remainingQuantity?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    zone?: EventDateZoneUpdateOneRequiredWithoutAllocationsNestedInput
+    OrderItem?: OrderItemUpdateManyWithoutAllocationNestedInput
+  }
+
+  export type EventDateZoneAllocationUncheckedUpdateWithoutTicketInput = {
+    eventDateZoneAllocationId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    audienceName?: StringFieldUpdateOperationsInput | string
+    discountPercent?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    allocatedQuantity?: IntFieldUpdateOperationsInput | number
+    remainingQuantity?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    OrderItem?: OrderItemUncheckedUpdateManyWithoutAllocationNestedInput
+  }
+
+  export type UserUpsertWithoutTicketInput = {
+    update: XOR<UserUpdateWithoutTicketInput, UserUncheckedUpdateWithoutTicketInput>
+    create: XOR<UserCreateWithoutTicketInput, UserUncheckedCreateWithoutTicketInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutTicketInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutTicketInput, UserUncheckedUpdateWithoutTicketInput>
+  }
+
+  export type UserUpdateWithoutTicketInput = {
+    userId?: BigIntFieldUpdateOperationsInput | bigint | number
+    name?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    birthdate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    gender?: NullableEnumGENDERFieldUpdateOperationsInput | $Enums.GENDER | null
+    status?: EnumSTATUS_USERFieldUpdateOperationsInput | $Enums.STATUS_USER
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    password?: PasswordUserUpdateOneWithoutUserNestedInput
+    oauths?: OAuthUserUpdateManyWithoutUserNestedInput
+    organizer?: OrganizerUpdateOneWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutTicketInput = {
+    userId?: BigIntFieldUpdateOperationsInput | bigint | number
+    name?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    birthdate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    gender?: NullableEnumGENDERFieldUpdateOperationsInput | $Enums.GENDER | null
+    status?: EnumSTATUS_USERFieldUpdateOperationsInput | $Enums.STATUS_USER
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    password?: PasswordUserUncheckedUpdateOneWithoutUserNestedInput
+    oauths?: OAuthUserUncheckedUpdateManyWithoutUserNestedInput
+    organizer?: OrganizerUncheckedUpdateOneWithoutUserNestedInput
+  }
+
+  export type EventDateCreateWithoutHoldInput = {
+    eventDateId?: bigint | number
+    startAt: Date | string
+    endAt: Date | string
+    event: EventCreateNestedOneWithoutDatesInput
+    zoneDates?: EventDateZoneCreateNestedManyWithoutEventDateInput
+    OrderItem?: OrderItemCreateNestedManyWithoutEventDateInput
+    Ticket?: TicketCreateNestedManyWithoutEventDateInput
+  }
+
+  export type EventDateUncheckedCreateWithoutHoldInput = {
+    eventDateId?: bigint | number
+    eventId: bigint | number
+    startAt: Date | string
+    endAt: Date | string
+    zoneDates?: EventDateZoneUncheckedCreateNestedManyWithoutEventDateInput
+    OrderItem?: OrderItemUncheckedCreateNestedManyWithoutEventDateInput
+    Ticket?: TicketUncheckedCreateNestedManyWithoutEventDateInput
+  }
+
+  export type EventDateCreateOrConnectWithoutHoldInput = {
+    where: EventDateWhereUniqueInput
+    create: XOR<EventDateCreateWithoutHoldInput, EventDateUncheckedCreateWithoutHoldInput>
+  }
+
+  export type EventDateZoneCreateWithoutHoldInput = {
+    eventDateZoneId?: bigint | number
+    name: string
+    kind: $Enums.ZONE_KIND
+    basePrice: Decimal | DecimalJsLike | number | string
+    capacity: number
+    capacityRemaining: number
+    currency: $Enums.CURRENCY
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    eventDate: EventDateCreateNestedOneWithoutZoneDatesInput
+    seatMap?: SeatMapCreateNestedOneWithoutEventDateZoneInput
+    allocations?: EventDateZoneAllocationCreateNestedManyWithoutZoneInput
+    OrderItem?: OrderItemCreateNestedManyWithoutZoneInput
+    Ticket?: TicketCreateNestedManyWithoutZoneInput
+  }
+
+  export type EventDateZoneUncheckedCreateWithoutHoldInput = {
+    eventDateZoneId?: bigint | number
+    eventDateId: bigint | number
+    name: string
+    kind: $Enums.ZONE_KIND
+    basePrice: Decimal | DecimalJsLike | number | string
+    capacity: number
+    capacityRemaining: number
+    seatMapId?: bigint | number | null
+    currency: $Enums.CURRENCY
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    allocations?: EventDateZoneAllocationUncheckedCreateNestedManyWithoutZoneInput
+    OrderItem?: OrderItemUncheckedCreateNestedManyWithoutZoneInput
+    Ticket?: TicketUncheckedCreateNestedManyWithoutZoneInput
+  }
+
+  export type EventDateZoneCreateOrConnectWithoutHoldInput = {
+    where: EventDateZoneWhereUniqueInput
+    create: XOR<EventDateZoneCreateWithoutHoldInput, EventDateZoneUncheckedCreateWithoutHoldInput>
+  }
+
+  export type SeatCreateWithoutHoldInput = {
+    seatId?: bigint | number
+    rowNumber: number
+    colNumber: number
+    status?: $Enums.SEAT_STATUS
+    holdUntil?: Date | string | null
+    seatMap: SeatMapCreateNestedOneWithoutOccupiedSeatsInput
+    OrderItem?: OrderItemCreateNestedManyWithoutSeatInput
+    Ticket?: TicketCreateNestedManyWithoutSeatInput
+  }
+
+  export type SeatUncheckedCreateWithoutHoldInput = {
+    seatId?: bigint | number
+    seatMapId: bigint | number
+    rowNumber: number
+    colNumber: number
+    status?: $Enums.SEAT_STATUS
+    holdUntil?: Date | string | null
+    OrderItem?: OrderItemUncheckedCreateNestedManyWithoutSeatInput
+    Ticket?: TicketUncheckedCreateNestedManyWithoutSeatInput
+  }
+
+  export type SeatCreateOrConnectWithoutHoldInput = {
+    where: SeatWhereUniqueInput
+    create: XOR<SeatCreateWithoutHoldInput, SeatUncheckedCreateWithoutHoldInput>
+  }
+
+  export type EventDateUpsertWithoutHoldInput = {
+    update: XOR<EventDateUpdateWithoutHoldInput, EventDateUncheckedUpdateWithoutHoldInput>
+    create: XOR<EventDateCreateWithoutHoldInput, EventDateUncheckedCreateWithoutHoldInput>
+    where?: EventDateWhereInput
+  }
+
+  export type EventDateUpdateToOneWithWhereWithoutHoldInput = {
+    where?: EventDateWhereInput
+    data: XOR<EventDateUpdateWithoutHoldInput, EventDateUncheckedUpdateWithoutHoldInput>
+  }
+
+  export type EventDateUpdateWithoutHoldInput = {
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    startAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    event?: EventUpdateOneRequiredWithoutDatesNestedInput
+    zoneDates?: EventDateZoneUpdateManyWithoutEventDateNestedInput
+    OrderItem?: OrderItemUpdateManyWithoutEventDateNestedInput
+    Ticket?: TicketUpdateManyWithoutEventDateNestedInput
+  }
+
+  export type EventDateUncheckedUpdateWithoutHoldInput = {
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    startAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    zoneDates?: EventDateZoneUncheckedUpdateManyWithoutEventDateNestedInput
+    OrderItem?: OrderItemUncheckedUpdateManyWithoutEventDateNestedInput
+    Ticket?: TicketUncheckedUpdateManyWithoutEventDateNestedInput
+  }
+
+  export type EventDateZoneUpsertWithoutHoldInput = {
+    update: XOR<EventDateZoneUpdateWithoutHoldInput, EventDateZoneUncheckedUpdateWithoutHoldInput>
+    create: XOR<EventDateZoneCreateWithoutHoldInput, EventDateZoneUncheckedCreateWithoutHoldInput>
+    where?: EventDateZoneWhereInput
+  }
+
+  export type EventDateZoneUpdateToOneWithWhereWithoutHoldInput = {
+    where?: EventDateZoneWhereInput
+    data: XOR<EventDateZoneUpdateWithoutHoldInput, EventDateZoneUncheckedUpdateWithoutHoldInput>
+  }
+
+  export type EventDateZoneUpdateWithoutHoldInput = {
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    name?: StringFieldUpdateOperationsInput | string
+    kind?: EnumZONE_KINDFieldUpdateOperationsInput | $Enums.ZONE_KIND
+    basePrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    capacity?: IntFieldUpdateOperationsInput | number
+    capacityRemaining?: IntFieldUpdateOperationsInput | number
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    eventDate?: EventDateUpdateOneRequiredWithoutZoneDatesNestedInput
+    seatMap?: SeatMapUpdateOneWithoutEventDateZoneNestedInput
+    allocations?: EventDateZoneAllocationUpdateManyWithoutZoneNestedInput
+    OrderItem?: OrderItemUpdateManyWithoutZoneNestedInput
+    Ticket?: TicketUpdateManyWithoutZoneNestedInput
+  }
+
+  export type EventDateZoneUncheckedUpdateWithoutHoldInput = {
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    name?: StringFieldUpdateOperationsInput | string
+    kind?: EnumZONE_KINDFieldUpdateOperationsInput | $Enums.ZONE_KIND
+    basePrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    capacity?: IntFieldUpdateOperationsInput | number
+    capacityRemaining?: IntFieldUpdateOperationsInput | number
+    seatMapId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    allocations?: EventDateZoneAllocationUncheckedUpdateManyWithoutZoneNestedInput
+    OrderItem?: OrderItemUncheckedUpdateManyWithoutZoneNestedInput
+    Ticket?: TicketUncheckedUpdateManyWithoutZoneNestedInput
+  }
+
+  export type SeatUpsertWithoutHoldInput = {
+    update: XOR<SeatUpdateWithoutHoldInput, SeatUncheckedUpdateWithoutHoldInput>
+    create: XOR<SeatCreateWithoutHoldInput, SeatUncheckedCreateWithoutHoldInput>
+    where?: SeatWhereInput
+  }
+
+  export type SeatUpdateToOneWithWhereWithoutHoldInput = {
+    where?: SeatWhereInput
+    data: XOR<SeatUpdateWithoutHoldInput, SeatUncheckedUpdateWithoutHoldInput>
+  }
+
+  export type SeatUpdateWithoutHoldInput = {
+    seatId?: BigIntFieldUpdateOperationsInput | bigint | number
+    rowNumber?: IntFieldUpdateOperationsInput | number
+    colNumber?: IntFieldUpdateOperationsInput | number
+    status?: EnumSEAT_STATUSFieldUpdateOperationsInput | $Enums.SEAT_STATUS
+    holdUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    seatMap?: SeatMapUpdateOneRequiredWithoutOccupiedSeatsNestedInput
+    OrderItem?: OrderItemUpdateManyWithoutSeatNestedInput
+    Ticket?: TicketUpdateManyWithoutSeatNestedInput
+  }
+
+  export type SeatUncheckedUpdateWithoutHoldInput = {
+    seatId?: BigIntFieldUpdateOperationsInput | bigint | number
+    seatMapId?: BigIntFieldUpdateOperationsInput | bigint | number
+    rowNumber?: IntFieldUpdateOperationsInput | number
+    colNumber?: IntFieldUpdateOperationsInput | number
+    status?: EnumSEAT_STATUSFieldUpdateOperationsInput | $Enums.SEAT_STATUS
+    holdUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    OrderItem?: OrderItemUncheckedUpdateManyWithoutSeatNestedInput
+    Ticket?: TicketUncheckedUpdateManyWithoutSeatNestedInput
+  }
+
   export type OAuthUserCreateManyUserInput = {
     id?: number
     provider: string
     providerUserId: string
+  }
+
+  export type TicketCreateManyOwnerInput = {
+    ticketId?: bigint | number
+    orderItemId: bigint | number
+    eventId: bigint | number
+    eventDateId: bigint | number
+    eventDateZoneId: bigint | number
+    eventDateZoneAllocationId?: bigint | number | null
+    seatId?: bigint | number | null
+    pricePaid: Decimal | DecimalJsLike | number | string
+    currency?: $Enums.CURRENCY
+    issuedAt?: Date | string
+    status?: $Enums.TICKET_STATUS
   }
 
   export type OAuthUserUpdateWithoutUserInput = {
@@ -26141,6 +36063,48 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     provider?: StringFieldUpdateOperationsInput | string
     providerUserId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type TicketUpdateWithoutOwnerInput = {
+    ticketId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    pricePaid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    issuedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumTICKET_STATUSFieldUpdateOperationsInput | $Enums.TICKET_STATUS
+    item?: OrderItemUpdateOneRequiredWithoutTicketNestedInput
+    eventDate?: EventDateUpdateOneRequiredWithoutTicketNestedInput
+    zone?: EventDateZoneUpdateOneRequiredWithoutTicketNestedInput
+    seat?: SeatUpdateOneWithoutTicketNestedInput
+    allocation?: EventDateZoneAllocationUpdateOneWithoutTicketNestedInput
+  }
+
+  export type TicketUncheckedUpdateWithoutOwnerInput = {
+    ticketId?: BigIntFieldUpdateOperationsInput | bigint | number
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneAllocationId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    seatId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    pricePaid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    issuedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumTICKET_STATUSFieldUpdateOperationsInput | $Enums.TICKET_STATUS
+  }
+
+  export type TicketUncheckedUpdateManyWithoutOwnerInput = {
+    ticketId?: BigIntFieldUpdateOperationsInput | bigint | number
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneAllocationId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    seatId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    pricePaid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    issuedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumTICKET_STATUSFieldUpdateOperationsInput | $Enums.TICKET_STATUS
   }
 
   export type EventCreateManyOrganizerInput = {
@@ -26333,6 +36297,9 @@ export namespace Prisma {
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: DateTimeFieldUpdateOperationsInput | Date | string
     zoneDates?: EventDateZoneUpdateManyWithoutEventDateNestedInput
+    OrderItem?: OrderItemUpdateManyWithoutEventDateNestedInput
+    Ticket?: TicketUpdateManyWithoutEventDateNestedInput
+    Hold?: HoldUpdateManyWithoutEventDateNestedInput
   }
 
   export type EventDateUncheckedUpdateWithoutEventInput = {
@@ -26340,6 +36307,9 @@ export namespace Prisma {
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: DateTimeFieldUpdateOperationsInput | Date | string
     zoneDates?: EventDateZoneUncheckedUpdateManyWithoutEventDateNestedInput
+    OrderItem?: OrderItemUncheckedUpdateManyWithoutEventDateNestedInput
+    Ticket?: TicketUncheckedUpdateManyWithoutEventDateNestedInput
+    Hold?: HoldUncheckedUpdateManyWithoutEventDateNestedInput
   }
 
   export type EventDateUncheckedUpdateManyWithoutEventInput = {
@@ -26394,6 +36364,43 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type OrderItemCreateManyEventDateInput = {
+    orderItemId?: bigint | number
+    orderId: bigint | number
+    eventId: bigint | number
+    eventDateZoneId: bigint | number
+    eventDateZoneAllocationId?: bigint | number | null
+    quantity?: number | null
+    seatId?: bigint | number | null
+    unitPrice: Decimal | DecimalJsLike | number | string
+    discountAmount?: Decimal | DecimalJsLike | number | string | null
+    finalPrice: Decimal | DecimalJsLike | number | string
+  }
+
+  export type TicketCreateManyEventDateInput = {
+    ticketId?: bigint | number
+    ownerUserId?: bigint | number | null
+    orderItemId: bigint | number
+    eventId: bigint | number
+    eventDateZoneId: bigint | number
+    eventDateZoneAllocationId?: bigint | number | null
+    seatId?: bigint | number | null
+    pricePaid: Decimal | DecimalJsLike | number | string
+    currency?: $Enums.CURRENCY
+    issuedAt?: Date | string
+    status?: $Enums.TICKET_STATUS
+  }
+
+  export type HoldCreateManyEventDateInput = {
+    holdId?: bigint | number
+    eventDateZoneId: bigint | number
+    seatId?: bigint | number | null
+    quantity?: number | null
+    buyerUserId?: bigint | number | null
+    expiresAt: Date | string
+    createdAt?: Date | string
+  }
+
   export type EventDateZoneUpdateWithoutEventDateInput = {
     eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
     name?: StringFieldUpdateOperationsInput | string
@@ -26406,6 +36413,9 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     seatMap?: SeatMapUpdateOneWithoutEventDateZoneNestedInput
     allocations?: EventDateZoneAllocationUpdateManyWithoutZoneNestedInput
+    OrderItem?: OrderItemUpdateManyWithoutZoneNestedInput
+    Ticket?: TicketUpdateManyWithoutZoneNestedInput
+    Hold?: HoldUpdateManyWithoutZoneNestedInput
   }
 
   export type EventDateZoneUncheckedUpdateWithoutEventDateInput = {
@@ -26420,6 +36430,9 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     allocations?: EventDateZoneAllocationUncheckedUpdateManyWithoutZoneNestedInput
+    OrderItem?: OrderItemUncheckedUpdateManyWithoutZoneNestedInput
+    Ticket?: TicketUncheckedUpdateManyWithoutZoneNestedInput
+    Hold?: HoldUncheckedUpdateManyWithoutZoneNestedInput
   }
 
   export type EventDateZoneUncheckedUpdateManyWithoutEventDateInput = {
@@ -26435,6 +36448,119 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type OrderItemUpdateWithoutEventDateInput = {
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    unitPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discountAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    finalPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    order?: OrderUpdateOneRequiredWithoutItemsNestedInput
+    zone?: EventDateZoneUpdateOneRequiredWithoutOrderItemNestedInput
+    seat?: SeatUpdateOneWithoutOrderItemNestedInput
+    allocation?: EventDateZoneAllocationUpdateOneWithoutOrderItemNestedInput
+    Ticket?: TicketUpdateManyWithoutItemNestedInput
+  }
+
+  export type OrderItemUncheckedUpdateWithoutEventDateInput = {
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    orderId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneAllocationId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    seatId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    unitPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discountAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    finalPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    Ticket?: TicketUncheckedUpdateManyWithoutItemNestedInput
+  }
+
+  export type OrderItemUncheckedUpdateManyWithoutEventDateInput = {
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    orderId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneAllocationId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    seatId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    unitPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discountAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    finalPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+  }
+
+  export type TicketUpdateWithoutEventDateInput = {
+    ticketId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    pricePaid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    issuedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumTICKET_STATUSFieldUpdateOperationsInput | $Enums.TICKET_STATUS
+    item?: OrderItemUpdateOneRequiredWithoutTicketNestedInput
+    zone?: EventDateZoneUpdateOneRequiredWithoutTicketNestedInput
+    seat?: SeatUpdateOneWithoutTicketNestedInput
+    allocation?: EventDateZoneAllocationUpdateOneWithoutTicketNestedInput
+    owner?: UserUpdateOneWithoutTicketNestedInput
+  }
+
+  export type TicketUncheckedUpdateWithoutEventDateInput = {
+    ticketId?: BigIntFieldUpdateOperationsInput | bigint | number
+    ownerUserId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneAllocationId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    seatId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    pricePaid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    issuedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumTICKET_STATUSFieldUpdateOperationsInput | $Enums.TICKET_STATUS
+  }
+
+  export type TicketUncheckedUpdateManyWithoutEventDateInput = {
+    ticketId?: BigIntFieldUpdateOperationsInput | bigint | number
+    ownerUserId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneAllocationId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    seatId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    pricePaid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    issuedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumTICKET_STATUSFieldUpdateOperationsInput | $Enums.TICKET_STATUS
+  }
+
+  export type HoldUpdateWithoutEventDateInput = {
+    holdId?: BigIntFieldUpdateOperationsInput | bigint | number
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    buyerUserId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    zone?: EventDateZoneUpdateOneRequiredWithoutHoldNestedInput
+    seat?: SeatUpdateOneWithoutHoldNestedInput
+  }
+
+  export type HoldUncheckedUpdateWithoutEventDateInput = {
+    holdId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    seatId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    buyerUserId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HoldUncheckedUpdateManyWithoutEventDateInput = {
+    holdId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    seatId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    buyerUserId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type EventDateZoneAllocationCreateManyZoneInput = {
     eventDateZoneAllocationId?: bigint | number
     audienceName: string
@@ -26445,6 +36571,43 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type OrderItemCreateManyZoneInput = {
+    orderItemId?: bigint | number
+    orderId: bigint | number
+    eventId: bigint | number
+    eventDateId: bigint | number
+    eventDateZoneAllocationId?: bigint | number | null
+    quantity?: number | null
+    seatId?: bigint | number | null
+    unitPrice: Decimal | DecimalJsLike | number | string
+    discountAmount?: Decimal | DecimalJsLike | number | string | null
+    finalPrice: Decimal | DecimalJsLike | number | string
+  }
+
+  export type TicketCreateManyZoneInput = {
+    ticketId?: bigint | number
+    ownerUserId?: bigint | number | null
+    orderItemId: bigint | number
+    eventId: bigint | number
+    eventDateId: bigint | number
+    eventDateZoneAllocationId?: bigint | number | null
+    seatId?: bigint | number | null
+    pricePaid: Decimal | DecimalJsLike | number | string
+    currency?: $Enums.CURRENCY
+    issuedAt?: Date | string
+    status?: $Enums.TICKET_STATUS
+  }
+
+  export type HoldCreateManyZoneInput = {
+    holdId?: bigint | number
+    eventDateId: bigint | number
+    seatId?: bigint | number | null
+    quantity?: number | null
+    buyerUserId?: bigint | number | null
+    expiresAt: Date | string
+    createdAt?: Date | string
+  }
+
   export type EventDateZoneAllocationUpdateWithoutZoneInput = {
     eventDateZoneAllocationId?: BigIntFieldUpdateOperationsInput | bigint | number
     audienceName?: StringFieldUpdateOperationsInput | string
@@ -26453,6 +36616,8 @@ export namespace Prisma {
     remainingQuantity?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    OrderItem?: OrderItemUpdateManyWithoutAllocationNestedInput
+    Ticket?: TicketUpdateManyWithoutAllocationNestedInput
   }
 
   export type EventDateZoneAllocationUncheckedUpdateWithoutZoneInput = {
@@ -26463,6 +36628,8 @@ export namespace Prisma {
     remainingQuantity?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    OrderItem?: OrderItemUncheckedUpdateManyWithoutAllocationNestedInput
+    Ticket?: TicketUncheckedUpdateManyWithoutAllocationNestedInput
   }
 
   export type EventDateZoneAllocationUncheckedUpdateManyWithoutZoneInput = {
@@ -26475,28 +36642,525 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type OrderItemUpdateWithoutZoneInput = {
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    unitPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discountAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    finalPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    order?: OrderUpdateOneRequiredWithoutItemsNestedInput
+    eventDate?: EventDateUpdateOneRequiredWithoutOrderItemNestedInput
+    seat?: SeatUpdateOneWithoutOrderItemNestedInput
+    allocation?: EventDateZoneAllocationUpdateOneWithoutOrderItemNestedInput
+    Ticket?: TicketUpdateManyWithoutItemNestedInput
+  }
+
+  export type OrderItemUncheckedUpdateWithoutZoneInput = {
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    orderId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneAllocationId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    seatId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    unitPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discountAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    finalPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    Ticket?: TicketUncheckedUpdateManyWithoutItemNestedInput
+  }
+
+  export type OrderItemUncheckedUpdateManyWithoutZoneInput = {
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    orderId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneAllocationId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    seatId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    unitPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discountAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    finalPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+  }
+
+  export type TicketUpdateWithoutZoneInput = {
+    ticketId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    pricePaid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    issuedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumTICKET_STATUSFieldUpdateOperationsInput | $Enums.TICKET_STATUS
+    item?: OrderItemUpdateOneRequiredWithoutTicketNestedInput
+    eventDate?: EventDateUpdateOneRequiredWithoutTicketNestedInput
+    seat?: SeatUpdateOneWithoutTicketNestedInput
+    allocation?: EventDateZoneAllocationUpdateOneWithoutTicketNestedInput
+    owner?: UserUpdateOneWithoutTicketNestedInput
+  }
+
+  export type TicketUncheckedUpdateWithoutZoneInput = {
+    ticketId?: BigIntFieldUpdateOperationsInput | bigint | number
+    ownerUserId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneAllocationId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    seatId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    pricePaid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    issuedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumTICKET_STATUSFieldUpdateOperationsInput | $Enums.TICKET_STATUS
+  }
+
+  export type TicketUncheckedUpdateManyWithoutZoneInput = {
+    ticketId?: BigIntFieldUpdateOperationsInput | bigint | number
+    ownerUserId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneAllocationId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    seatId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    pricePaid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    issuedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumTICKET_STATUSFieldUpdateOperationsInput | $Enums.TICKET_STATUS
+  }
+
+  export type HoldUpdateWithoutZoneInput = {
+    holdId?: BigIntFieldUpdateOperationsInput | bigint | number
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    buyerUserId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    eventDate?: EventDateUpdateOneRequiredWithoutHoldNestedInput
+    seat?: SeatUpdateOneWithoutHoldNestedInput
+  }
+
+  export type HoldUncheckedUpdateWithoutZoneInput = {
+    holdId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    seatId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    buyerUserId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HoldUncheckedUpdateManyWithoutZoneInput = {
+    holdId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    seatId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    buyerUserId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type SeatCreateManySeatMapInput = {
     seatId?: bigint | number
     rowNumber: number
     colNumber: number
+    status?: $Enums.SEAT_STATUS
+    holdUntil?: Date | string | null
   }
 
   export type SeatUpdateWithoutSeatMapInput = {
     seatId?: BigIntFieldUpdateOperationsInput | bigint | number
     rowNumber?: IntFieldUpdateOperationsInput | number
     colNumber?: IntFieldUpdateOperationsInput | number
+    status?: EnumSEAT_STATUSFieldUpdateOperationsInput | $Enums.SEAT_STATUS
+    holdUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    OrderItem?: OrderItemUpdateManyWithoutSeatNestedInput
+    Ticket?: TicketUpdateManyWithoutSeatNestedInput
+    Hold?: HoldUpdateManyWithoutSeatNestedInput
   }
 
   export type SeatUncheckedUpdateWithoutSeatMapInput = {
     seatId?: BigIntFieldUpdateOperationsInput | bigint | number
     rowNumber?: IntFieldUpdateOperationsInput | number
     colNumber?: IntFieldUpdateOperationsInput | number
+    status?: EnumSEAT_STATUSFieldUpdateOperationsInput | $Enums.SEAT_STATUS
+    holdUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    OrderItem?: OrderItemUncheckedUpdateManyWithoutSeatNestedInput
+    Ticket?: TicketUncheckedUpdateManyWithoutSeatNestedInput
+    Hold?: HoldUncheckedUpdateManyWithoutSeatNestedInput
   }
 
   export type SeatUncheckedUpdateManyWithoutSeatMapInput = {
     seatId?: BigIntFieldUpdateOperationsInput | bigint | number
     rowNumber?: IntFieldUpdateOperationsInput | number
     colNumber?: IntFieldUpdateOperationsInput | number
+    status?: EnumSEAT_STATUSFieldUpdateOperationsInput | $Enums.SEAT_STATUS
+    holdUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type OrderItemCreateManySeatInput = {
+    orderItemId?: bigint | number
+    orderId: bigint | number
+    eventId: bigint | number
+    eventDateId: bigint | number
+    eventDateZoneId: bigint | number
+    eventDateZoneAllocationId?: bigint | number | null
+    quantity?: number | null
+    unitPrice: Decimal | DecimalJsLike | number | string
+    discountAmount?: Decimal | DecimalJsLike | number | string | null
+    finalPrice: Decimal | DecimalJsLike | number | string
+  }
+
+  export type TicketCreateManySeatInput = {
+    ticketId?: bigint | number
+    ownerUserId?: bigint | number | null
+    orderItemId: bigint | number
+    eventId: bigint | number
+    eventDateId: bigint | number
+    eventDateZoneId: bigint | number
+    eventDateZoneAllocationId?: bigint | number | null
+    pricePaid: Decimal | DecimalJsLike | number | string
+    currency?: $Enums.CURRENCY
+    issuedAt?: Date | string
+    status?: $Enums.TICKET_STATUS
+  }
+
+  export type HoldCreateManySeatInput = {
+    holdId?: bigint | number
+    eventDateId: bigint | number
+    eventDateZoneId: bigint | number
+    quantity?: number | null
+    buyerUserId?: bigint | number | null
+    expiresAt: Date | string
+    createdAt?: Date | string
+  }
+
+  export type OrderItemUpdateWithoutSeatInput = {
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    unitPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discountAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    finalPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    order?: OrderUpdateOneRequiredWithoutItemsNestedInput
+    eventDate?: EventDateUpdateOneRequiredWithoutOrderItemNestedInput
+    zone?: EventDateZoneUpdateOneRequiredWithoutOrderItemNestedInput
+    allocation?: EventDateZoneAllocationUpdateOneWithoutOrderItemNestedInput
+    Ticket?: TicketUpdateManyWithoutItemNestedInput
+  }
+
+  export type OrderItemUncheckedUpdateWithoutSeatInput = {
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    orderId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneAllocationId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    unitPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discountAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    finalPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    Ticket?: TicketUncheckedUpdateManyWithoutItemNestedInput
+  }
+
+  export type OrderItemUncheckedUpdateManyWithoutSeatInput = {
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    orderId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneAllocationId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    unitPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discountAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    finalPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+  }
+
+  export type TicketUpdateWithoutSeatInput = {
+    ticketId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    pricePaid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    issuedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumTICKET_STATUSFieldUpdateOperationsInput | $Enums.TICKET_STATUS
+    item?: OrderItemUpdateOneRequiredWithoutTicketNestedInput
+    eventDate?: EventDateUpdateOneRequiredWithoutTicketNestedInput
+    zone?: EventDateZoneUpdateOneRequiredWithoutTicketNestedInput
+    allocation?: EventDateZoneAllocationUpdateOneWithoutTicketNestedInput
+    owner?: UserUpdateOneWithoutTicketNestedInput
+  }
+
+  export type TicketUncheckedUpdateWithoutSeatInput = {
+    ticketId?: BigIntFieldUpdateOperationsInput | bigint | number
+    ownerUserId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneAllocationId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    pricePaid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    issuedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumTICKET_STATUSFieldUpdateOperationsInput | $Enums.TICKET_STATUS
+  }
+
+  export type TicketUncheckedUpdateManyWithoutSeatInput = {
+    ticketId?: BigIntFieldUpdateOperationsInput | bigint | number
+    ownerUserId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneAllocationId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    pricePaid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    issuedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumTICKET_STATUSFieldUpdateOperationsInput | $Enums.TICKET_STATUS
+  }
+
+  export type HoldUpdateWithoutSeatInput = {
+    holdId?: BigIntFieldUpdateOperationsInput | bigint | number
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    buyerUserId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    eventDate?: EventDateUpdateOneRequiredWithoutHoldNestedInput
+    zone?: EventDateZoneUpdateOneRequiredWithoutHoldNestedInput
+  }
+
+  export type HoldUncheckedUpdateWithoutSeatInput = {
+    holdId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    buyerUserId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type HoldUncheckedUpdateManyWithoutSeatInput = {
+    holdId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    buyerUserId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OrderItemCreateManyAllocationInput = {
+    orderItemId?: bigint | number
+    orderId: bigint | number
+    eventId: bigint | number
+    eventDateId: bigint | number
+    eventDateZoneId: bigint | number
+    quantity?: number | null
+    seatId?: bigint | number | null
+    unitPrice: Decimal | DecimalJsLike | number | string
+    discountAmount?: Decimal | DecimalJsLike | number | string | null
+    finalPrice: Decimal | DecimalJsLike | number | string
+  }
+
+  export type TicketCreateManyAllocationInput = {
+    ticketId?: bigint | number
+    ownerUserId?: bigint | number | null
+    orderItemId: bigint | number
+    eventId: bigint | number
+    eventDateId: bigint | number
+    eventDateZoneId: bigint | number
+    seatId?: bigint | number | null
+    pricePaid: Decimal | DecimalJsLike | number | string
+    currency?: $Enums.CURRENCY
+    issuedAt?: Date | string
+    status?: $Enums.TICKET_STATUS
+  }
+
+  export type OrderItemUpdateWithoutAllocationInput = {
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    unitPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discountAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    finalPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    order?: OrderUpdateOneRequiredWithoutItemsNestedInput
+    eventDate?: EventDateUpdateOneRequiredWithoutOrderItemNestedInput
+    zone?: EventDateZoneUpdateOneRequiredWithoutOrderItemNestedInput
+    seat?: SeatUpdateOneWithoutOrderItemNestedInput
+    Ticket?: TicketUpdateManyWithoutItemNestedInput
+  }
+
+  export type OrderItemUncheckedUpdateWithoutAllocationInput = {
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    orderId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    seatId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    unitPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discountAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    finalPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    Ticket?: TicketUncheckedUpdateManyWithoutItemNestedInput
+  }
+
+  export type OrderItemUncheckedUpdateManyWithoutAllocationInput = {
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    orderId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    seatId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    unitPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discountAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    finalPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+  }
+
+  export type TicketUpdateWithoutAllocationInput = {
+    ticketId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    pricePaid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    issuedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumTICKET_STATUSFieldUpdateOperationsInput | $Enums.TICKET_STATUS
+    item?: OrderItemUpdateOneRequiredWithoutTicketNestedInput
+    eventDate?: EventDateUpdateOneRequiredWithoutTicketNestedInput
+    zone?: EventDateZoneUpdateOneRequiredWithoutTicketNestedInput
+    seat?: SeatUpdateOneWithoutTicketNestedInput
+    owner?: UserUpdateOneWithoutTicketNestedInput
+  }
+
+  export type TicketUncheckedUpdateWithoutAllocationInput = {
+    ticketId?: BigIntFieldUpdateOperationsInput | bigint | number
+    ownerUserId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    seatId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    pricePaid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    issuedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumTICKET_STATUSFieldUpdateOperationsInput | $Enums.TICKET_STATUS
+  }
+
+  export type TicketUncheckedUpdateManyWithoutAllocationInput = {
+    ticketId?: BigIntFieldUpdateOperationsInput | bigint | number
+    ownerUserId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    seatId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    pricePaid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    issuedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumTICKET_STATUSFieldUpdateOperationsInput | $Enums.TICKET_STATUS
+  }
+
+  export type OrderItemCreateManyOrderInput = {
+    orderItemId?: bigint | number
+    eventId: bigint | number
+    eventDateId: bigint | number
+    eventDateZoneId: bigint | number
+    eventDateZoneAllocationId?: bigint | number | null
+    quantity?: number | null
+    seatId?: bigint | number | null
+    unitPrice: Decimal | DecimalJsLike | number | string
+    discountAmount?: Decimal | DecimalJsLike | number | string | null
+    finalPrice: Decimal | DecimalJsLike | number | string
+  }
+
+  export type OrderItemUpdateWithoutOrderInput = {
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    unitPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discountAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    finalPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    eventDate?: EventDateUpdateOneRequiredWithoutOrderItemNestedInput
+    zone?: EventDateZoneUpdateOneRequiredWithoutOrderItemNestedInput
+    seat?: SeatUpdateOneWithoutOrderItemNestedInput
+    allocation?: EventDateZoneAllocationUpdateOneWithoutOrderItemNestedInput
+    Ticket?: TicketUpdateManyWithoutItemNestedInput
+  }
+
+  export type OrderItemUncheckedUpdateWithoutOrderInput = {
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneAllocationId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    seatId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    unitPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discountAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    finalPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    Ticket?: TicketUncheckedUpdateManyWithoutItemNestedInput
+  }
+
+  export type OrderItemUncheckedUpdateManyWithoutOrderInput = {
+    orderItemId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneAllocationId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    quantity?: NullableIntFieldUpdateOperationsInput | number | null
+    seatId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    unitPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    discountAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    finalPrice?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+  }
+
+  export type TicketCreateManyItemInput = {
+    ticketId?: bigint | number
+    ownerUserId?: bigint | number | null
+    eventId: bigint | number
+    eventDateId: bigint | number
+    eventDateZoneId: bigint | number
+    eventDateZoneAllocationId?: bigint | number | null
+    seatId?: bigint | number | null
+    pricePaid: Decimal | DecimalJsLike | number | string
+    currency?: $Enums.CURRENCY
+    issuedAt?: Date | string
+    status?: $Enums.TICKET_STATUS
+  }
+
+  export type TicketUpdateWithoutItemInput = {
+    ticketId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    pricePaid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    issuedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumTICKET_STATUSFieldUpdateOperationsInput | $Enums.TICKET_STATUS
+    eventDate?: EventDateUpdateOneRequiredWithoutTicketNestedInput
+    zone?: EventDateZoneUpdateOneRequiredWithoutTicketNestedInput
+    seat?: SeatUpdateOneWithoutTicketNestedInput
+    allocation?: EventDateZoneAllocationUpdateOneWithoutTicketNestedInput
+    owner?: UserUpdateOneWithoutTicketNestedInput
+  }
+
+  export type TicketUncheckedUpdateWithoutItemInput = {
+    ticketId?: BigIntFieldUpdateOperationsInput | bigint | number
+    ownerUserId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneAllocationId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    seatId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    pricePaid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    issuedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumTICKET_STATUSFieldUpdateOperationsInput | $Enums.TICKET_STATUS
+  }
+
+  export type TicketUncheckedUpdateManyWithoutItemInput = {
+    ticketId?: BigIntFieldUpdateOperationsInput | bigint | number
+    ownerUserId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    eventId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneId?: BigIntFieldUpdateOperationsInput | bigint | number
+    eventDateZoneAllocationId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    seatId?: NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+    pricePaid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: EnumCURRENCYFieldUpdateOperationsInput | $Enums.CURRENCY
+    issuedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumTICKET_STATUSFieldUpdateOperationsInput | $Enums.TICKET_STATUS
   }
 
 
