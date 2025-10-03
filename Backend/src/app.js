@@ -43,6 +43,6 @@ app.use(route+'/event', event);
 app.use(route+'/venue', venue);
 app.use(route+'/event-sales-phase', eventSalesPhase);
 
-app.listen(4000, () => console.log('Servidor corriendo en http://localhost:4000'));
+//app.listen(4000, () => console.log('Servidor corriendo en http://localhost:4000')); // ya se encuentra en el archivo.server.js
 
 export default app;
