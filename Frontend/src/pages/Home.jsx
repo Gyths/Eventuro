@@ -10,7 +10,8 @@ export default function Home() {
         {isAuthenticated ? `Hola, ${user?.email} 👋` : "Bienvenido 👋"}
       </h1>
       <p className="mt-2 text-gray-600">
-        Aquí podrías mostrar recomendaciones, mis tickets u otro contenido público.
+        Aquí podrías mostrar recomendaciones, mis tickets u otro contenido
+        público.
       </p>
       {/* secciones y grids compartidos */}
     </section>

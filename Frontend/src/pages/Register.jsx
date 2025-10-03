@@ -1,12 +1,12 @@
 import { useNavigate } from "react-router-dom";
-import RegisterCard from "../components/RegistroCard"; 
+import RegisterCard from "../components/RegistroCard";
 import { useAuth } from "../services/auth/AuthContext.jsx";
 
 export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
 
-    return (
+  return (
     <section
       className="
         min-h-screen          
@@ -17,21 +17,16 @@ export default function Register() {
       "
     >
       <div className="w-full max-w-2xl">
-                <RegisterCard
-                    onSubmit={async (data) => {
-                    // TODO: enviar a tu API real
-                    
-                    register({ email: data.email });
-                    navigate("/app");
-                    }}
-                    onLogin={() => navigate("/login")}
-                />
+        <RegisterCard
+          onSubmit={async (data) => {
+            // TODO: enviar a tu API real
+
+            register({ email: data.email });
+            navigate("/app");
+          }}
+          onLogin={() => navigate("/login")}
+        />
       </div>
     </section>
   );
 }
-
-
-
-
-

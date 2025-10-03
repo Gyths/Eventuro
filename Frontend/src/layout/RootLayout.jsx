@@ -1,12 +1,12 @@
 // src/layout/RootLayout.jsx
-import { Outlet, useNavigate, useLocation } from "react-router-dom"; 
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import TopBar from "../components/topbar/TopBar";
 import { useAuth } from "../services/auth/AuthContext";
 
 export default function RootLayout() {
   const { isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
-  const { pathname } = useLocation();                              
+  const { pathname } = useLocation();
 
   const hideTop = pathname === "/login" || pathname === "/registro";
 
