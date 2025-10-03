@@ -20,7 +20,7 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import Home from "./pages/Home.jsx";
 import { Navigate } from "react-router-dom";
 import AuthCallback from "./pages/AuthCallback";
-import CrearEventoPaso1 from "./pages/CrearEventoPaso1.jsx";
+import CrearEventoPaso1 from "./pages/CrearEventoPaso1";
 import CrearEventoPaso2 from "./pages/CrearEventoPaso2";
 import CrearEventoPaso3 from "./pages/CrearEventoPaso3";
 
