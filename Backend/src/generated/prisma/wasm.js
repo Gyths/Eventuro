@@ -125,6 +125,113 @@ exports.Prisma.OrganizerScalarFieldEnum = {
   idNumber: 'idNumber'
 };
 
+exports.Prisma.EventCategoryScalarFieldEnum = {
+  eventCategoryId: 'eventCategoryId',
+  initials: 'initials',
+  description: 'description',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.EventToCategoryScalarFieldEnum = {
+  eventId: 'eventId',
+  eventCategoryId: 'eventCategoryId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.VenueScalarFieldEnum = {
+  venueId: 'venueId',
+  eventId: 'eventId',
+  city: 'city',
+  address: 'address',
+  addressUrl: 'addressUrl',
+  reference: 'reference',
+  capacity: 'capacity',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.FeeScalarFieldEnum = {
+  feeId: 'feeId',
+  percentage: 'percentage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.EventScalarFieldEnum = {
+  eventId: 'eventId',
+  organizerId: 'organizerId',
+  feeId: 'feeId',
+  title: 'title',
+  status: 'status',
+  inPerson: 'inPerson',
+  description: 'description',
+  accessPolicy: 'accessPolicy',
+  accessPolicyDescription: 'accessPolicyDescription',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.EventDateScalarFieldEnum = {
+  eventDateId: 'eventDateId',
+  eventId: 'eventId',
+  startAt: 'startAt',
+  endAt: 'endAt'
+};
+
+exports.Prisma.EventDateZoneScalarFieldEnum = {
+  eventDateZoneId: 'eventDateZoneId',
+  eventDateId: 'eventDateId',
+  name: 'name',
+  kind: 'kind',
+  basePrice: 'basePrice',
+  capacity: 'capacity',
+  capacityRemaining: 'capacityRemaining',
+  seatMapId: 'seatMapId',
+  currency: 'currency',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SeatMapScalarFieldEnum = {
+  seatMapId: 'seatMapId',
+  rows: 'rows',
+  cols: 'cols',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SeatScalarFieldEnum = {
+  seatId: 'seatId',
+  seatMapId: 'seatMapId',
+  rowNumber: 'rowNumber',
+  colNumber: 'colNumber'
+};
+
+exports.Prisma.EventDateZoneAllocationScalarFieldEnum = {
+  eventDateZoneAllocationId: 'eventDateZoneAllocationId',
+  eventDateZoneId: 'eventDateZoneId',
+  audienceName: 'audienceName',
+  discountPercent: 'discountPercent',
+  allocatedQuantity: 'allocatedQuantity',
+  remainingQuantity: 'remainingQuantity',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.EventSalesPhaseScalarFieldEnum = {
+  eventSalesPhaseId: 'eventSalesPhaseId',
+  eventId: 'eventId',
+  name: 'name',
+  startAt: 'startAt',
+  endAt: 'endAt',
+  percentage: 'percentage',
+  active: 'active',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -156,11 +263,44 @@ exports.ID_TYPE = exports.$Enums.ID_TYPE = {
   DNI: 'DNI'
 };
 
+exports.ACCESS_POLICY = exports.$Enums.ACCESS_POLICY = {
+  E: 'E',
+  T: 'T',
+  AO: 'AO'
+};
+
+exports.EVENT_STATUS = exports.$Enums.EVENT_STATUS = {
+  P: 'P',
+  A: 'A',
+  D: 'D'
+};
+
+exports.ZONE_KIND = exports.$Enums.ZONE_KIND = {
+  GENERAL: 'GENERAL',
+  SEATED: 'SEATED'
+};
+
+exports.CURRENCY = exports.$Enums.CURRENCY = {
+  S: 'S',
+  USD: 'USD'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   PasswordUser: 'PasswordUser',
   OAuthUser: 'OAuthUser',
-  Organizer: 'Organizer'
+  Organizer: 'Organizer',
+  EventCategory: 'EventCategory',
+  EventToCategory: 'EventToCategory',
+  Venue: 'Venue',
+  Fee: 'Fee',
+  Event: 'Event',
+  EventDate: 'EventDate',
+  EventDateZone: 'EventDateZone',
+  SeatMap: 'SeatMap',
+  Seat: 'Seat',
+  EventDateZoneAllocation: 'EventDateZoneAllocation',
+  EventSalesPhase: 'EventSalesPhase'
 };
 /**
  * Create the Client
@@ -173,7 +313,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\user\\Documents\\IngSoft\\Eventuro\\Backend\\src\\generated\\prisma",
+      "value": "C:\\Users\\marco\\Documents\\Repositorios\\Repositorios_Universidad\\Ingesoft\\Eventuro\\Backend\\src\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -187,7 +327,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\user\\Documents\\IngSoft\\Eventuro\\Backend\\src\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\marco\\Documents\\Repositorios\\Repositorios_Universidad\\Ingesoft\\Eventuro\\Backend\\src\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -201,7 +341,6 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
-  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
@@ -210,13 +349,13 @@ const config = {
       }
     }
   },
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\n// ====================== Enums ======================\nenum GENDER {\n  M // male\n  F // female\n  O // other\n}\n\nenum STATUS_USER {\n  A // active\n  S // suspended\n  D // deleted\n}\n\nenum ID_TYPE {\n  RUC\n  DNI\n}\n\n// ====================== Models ======================\n\n// Usuario general\nmodel User {\n  userId    BigInt      @id @default(autoincrement()) @db.BigInt\n  name      String\n  lastName  String\n  phone     String?\n  email     String      @unique\n  birthdate DateTime?\n  gender    GENDER?\n  status    STATUS_USER @default(A)\n\n  // Relaciones\n  password  PasswordUser?\n  oauths    OAuthUser[]\n  organizer Organizer?\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\n// Usuario con login por contraseña (1:1 con User)\nmodel PasswordUser {\n  userId         BigInt @id @db.BigInt\n  hashedPassword String\n\n  user User @relation(fields: [userId], references: [userId], onDelete: Cascade)\n}\n\n// Usuario con login externo OAuth (Google, etc.)\nmodel OAuthUser {\n  id             Int    @id @default(autoincrement())\n  userId         BigInt @db.BigInt\n  provider       String\n  providerUserId String\n\n  user User @relation(fields: [userId], references: [userId], onDelete: Cascade)\n\n  @@unique([provider, providerUserId])\n  @@index([userId])\n}\n\n// Organizador (1:1 con User)\nmodel Organizer {\n  organizerId BigInt  @id @default(autoincrement()) @db.BigInt\n  userId      BigInt  @unique @db.BigInt\n  companyName String\n  idType      ID_TYPE\n  idNumber    String  @unique\n\n  user User @relation(fields: [userId], references: [userId], onDelete: Cascade)\n}\n",
-  "inlineSchemaHash": "740ac725b4ca38c26ebc379d6340ad02c03c1885aee4685475d3b39ad756d003",
+  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\n// ====================== Enums ======================\nenum GENDER {\n  M // male\n  F // female\n  O // other\n}\n\nenum STATUS_USER {\n  A // active\n  S // suspended\n  D // deleted\n}\n\nenum ID_TYPE {\n  RUC\n  DNI\n}\n\nenum ACCESS_POLICY {\n  E //everyone: todo el mundo\n  T //teenagers: mayores a 14 con compañia adulta\n  AO //adults only: mayores a 18\n}\n\nenum EVENT_STATUS {\n  P //pending: pendiente\n  A //acepted: aceptado\n  D //denied: denegado\n}\n\nenum ZONE_KIND {\n  GENERAL //aforo\n  SEATED //asientos numerados\n}\n\nenum CURRENCY {\n  S\n  USD\n}\n\n// ====================== Models ======================\n\n// Usuario general\nmodel User {\n  userId    BigInt      @id @default(autoincrement()) @db.BigInt\n  name      String\n  lastName  String\n  phone     String?\n  email     String      @unique\n  birthdate DateTime?\n  gender    GENDER?\n  status    STATUS_USER @default(A)\n\n  // Relaciones\n  password  PasswordUser?\n  oauths    OAuthUser[]\n  organizer Organizer?\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\n// Usuario con login por contraseña (1:1 con User)\nmodel PasswordUser {\n  userId         BigInt @id @db.BigInt\n  hashedPassword String\n\n  user User @relation(fields: [userId], references: [userId], onDelete: Cascade)\n}\n\n// Usuario con login externo OAuth (Google, etc.)\nmodel OAuthUser {\n  id             Int    @id @default(autoincrement())\n  userId         BigInt @db.BigInt\n  provider       String\n  providerUserId String\n\n  user User @relation(fields: [userId], references: [userId], onDelete: Cascade)\n\n  @@unique([provider, providerUserId])\n  @@index([userId])\n}\n\n// Organizador (1:1 con User)\nmodel Organizer {\n  organizerId BigInt  @id @default(autoincrement()) @db.BigInt\n  userId      BigInt  @unique @db.BigInt\n  companyName String\n  idType      ID_TYPE\n  idNumber    String  @unique\n\n  user   User    @relation(fields: [userId], references: [userId], onDelete: Cascade)\n  events Event[]\n}\n\n// Categorías de un evento\nmodel EventCategory {\n  eventCategoryId BigInt @id @default(autoincrement()) @db.BigInt\n  initials        String @unique\n  description     String\n\n  //relaciones\n  events EventToCategory[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\n//Tabla intermedia entre Evento y Categorías\nmodel EventToCategory {\n  eventId         BigInt @db.BigInt\n  eventCategoryId BigInt @db.BigInt\n\n  //relaciones\n  event    Event         @relation(fields: [eventId], references: [eventId], onDelete: Cascade)\n  category EventCategory @relation(fields: [eventCategoryId], references: [eventCategoryId], onDelete: Cascade)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@id([eventId, eventCategoryId])\n}\n\n// Local de un evento\nmodel Venue {\n  venueId    BigInt  @id @default(autoincrement()) @db.BigInt\n  eventId    BigInt  @unique @db.BigInt\n  city       String?\n  address    String?\n  addressUrl String?\n  reference  String?\n  capacity   Int\n\n  //relacion\n  event Event @relation(\"EventVenue\", fields: [eventId], references: [eventId], onDelete: Cascade)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\n//tarifa\nmodel Fee {\n  feeId      BigInt  @id @default(autoincrement()) @db.BigInt\n  percentage Decimal @db.Decimal(10, 2)\n\n  //relacion\n  event Event[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\n// Evento\nmodel Event {\n  eventId                 BigInt        @id @default(autoincrement()) @db.BigInt\n  organizerId             BigInt        @db.BigInt\n  feeId                   BigInt?       @db.BigInt\n  title                   String\n  status                  EVENT_STATUS  @default(P)\n  inPerson                Boolean\n  description             String\n  accessPolicy            ACCESS_POLICY\n  accessPolicyDescription String?\n\n  //Relaciones\n  organizer   Organizer         @relation(fields: [organizerId], references: [organizerId])\n  venue       Venue?            @relation(\"EventVenue\")\n  fee         Fee?              @relation(fields: [feeId], references: [feeId], onDelete: SetNull)\n  categories  EventToCategory[]\n  dates       EventDate[]\n  salesPhases EventSalesPhase[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@index([organizerId])\n  @@index([feeId])\n  @@index([title])\n}\n\nmodel EventDate {\n  eventDateId BigInt   @id @default(autoincrement()) @db.BigInt\n  eventId     BigInt   @db.BigInt\n  startAt     DateTime\n  endAt       DateTime\n\n  //relaciones\n  event     Event           @relation(fields: [eventId], references: [eventId], onDelete: Cascade)\n  zoneDates EventDateZone[]\n\n  @@index([eventId, startAt])\n}\n\nmodel EventDateZone {\n  eventDateZoneId   BigInt    @id @default(autoincrement()) @db.BigInt\n  eventDateId       BigInt    @db.BigInt\n  name              String\n  kind              ZONE_KIND\n  basePrice         Decimal   @db.Decimal(10, 2)\n  capacity          Int\n  capacityRemaining Int\n  seatMapId         BigInt?   @unique @db.BigInt\n  currency          CURRENCY\n\n  //relaciones\n  eventDate   EventDate                 @relation(fields: [eventDateId], references: [eventDateId], onDelete: Cascade)\n  seatMap     SeatMap?                  @relation(fields: [seatMapId], references: [seatMapId], onDelete: SetNull)\n  allocations EventDateZoneAllocation[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel SeatMap {\n  seatMapId BigInt @id @default(autoincrement()) @db.BigInt\n  rows      Int\n  cols      Int\n\n  //relaciones\n  occupiedSeats Seat[]\n  EventDateZone EventDateZone?\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel Seat {\n  seatId    BigInt @id @default(autoincrement()) @db.BigInt\n  seatMapId BigInt @db.BigInt\n  rowNumber Int\n  colNumber Int\n\n  //relaciones\n  seatMap SeatMap @relation(fields: [seatMapId], references: [seatMapId], onDelete: Cascade)\n\n  @@unique([seatMapId, rowNumber, colNumber])\n  @@index([seatMapId])\n}\n\nmodel EventDateZoneAllocation {\n  eventDateZoneAllocationId BigInt  @id @default(autoincrement()) @db.BigInt\n  eventDateZoneId           BigInt  @db.BigInt\n  audienceName              String\n  discountPercent           Decimal @db.Decimal(5, 2)\n  allocatedQuantity         Int\n  remainingQuantity         Int?\n\n  //relaciones\n  zone EventDateZone @relation(fields: [eventDateZoneId], references: [eventDateZoneId], onDelete: Cascade)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@index([eventDateZoneId, audienceName])\n}\n\n//se deberia dis\nmodel EventSalesPhase {\n  eventSalesPhaseId BigInt    @id @default(autoincrement()) @db.BigInt\n  eventId           BigInt    @db.BigInt\n  name              String\n  startAt           DateTime?\n  endAt             DateTime?\n  percentage        Decimal   @db.Decimal(10, 2)\n  active            Boolean   @default(false)\n\n  event Event @relation(fields: [eventId], references: [eventId], onDelete: Cascade)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@index([eventId, startAt])\n}\n",
+  "inlineSchemaHash": "36b5dccf7bf772906f39c4179c996e1882e49ca97ba9cb96ad25785bdf639d6d",
   "copyEngine": true
 }
 config.dirname = '/'
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"lastName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"phone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"birthdate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"gender\",\"kind\":\"enum\",\"type\":\"GENDER\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"STATUS_USER\"},{\"name\":\"password\",\"kind\":\"object\",\"type\":\"PasswordUser\",\"relationName\":\"PasswordUserToUser\"},{\"name\":\"oauths\",\"kind\":\"object\",\"type\":\"OAuthUser\",\"relationName\":\"OAuthUserToUser\"},{\"name\":\"organizer\",\"kind\":\"object\",\"type\":\"Organizer\",\"relationName\":\"OrganizerToUser\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"PasswordUser\":{\"fields\":[{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"hashedPassword\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"PasswordUserToUser\"}],\"dbName\":null},\"OAuthUser\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"provider\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"providerUserId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"OAuthUserToUser\"}],\"dbName\":null},\"Organizer\":{\"fields\":[{\"name\":\"organizerId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"companyName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"idType\",\"kind\":\"enum\",\"type\":\"ID_TYPE\"},{\"name\":\"idNumber\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"OrganizerToUser\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"lastName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"phone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"birthdate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"gender\",\"kind\":\"enum\",\"type\":\"GENDER\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"STATUS_USER\"},{\"name\":\"password\",\"kind\":\"object\",\"type\":\"PasswordUser\",\"relationName\":\"PasswordUserToUser\"},{\"name\":\"oauths\",\"kind\":\"object\",\"type\":\"OAuthUser\",\"relationName\":\"OAuthUserToUser\"},{\"name\":\"organizer\",\"kind\":\"object\",\"type\":\"Organizer\",\"relationName\":\"OrganizerToUser\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"PasswordUser\":{\"fields\":[{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"hashedPassword\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"PasswordUserToUser\"}],\"dbName\":null},\"OAuthUser\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"provider\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"providerUserId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"OAuthUserToUser\"}],\"dbName\":null},\"Organizer\":{\"fields\":[{\"name\":\"organizerId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"companyName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"idType\",\"kind\":\"enum\",\"type\":\"ID_TYPE\"},{\"name\":\"idNumber\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"OrganizerToUser\"},{\"name\":\"events\",\"kind\":\"object\",\"type\":\"Event\",\"relationName\":\"EventToOrganizer\"}],\"dbName\":null},\"EventCategory\":{\"fields\":[{\"name\":\"eventCategoryId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"initials\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"events\",\"kind\":\"object\",\"type\":\"EventToCategory\",\"relationName\":\"EventCategoryToEventToCategory\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"EventToCategory\":{\"fields\":[{\"name\":\"eventId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"eventCategoryId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"event\",\"kind\":\"object\",\"type\":\"Event\",\"relationName\":\"EventToEventToCategory\"},{\"name\":\"category\",\"kind\":\"object\",\"type\":\"EventCategory\",\"relationName\":\"EventCategoryToEventToCategory\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Venue\":{\"fields\":[{\"name\":\"venueId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"eventId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"city\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"address\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"addressUrl\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"reference\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"capacity\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"event\",\"kind\":\"object\",\"type\":\"Event\",\"relationName\":\"EventVenue\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Fee\":{\"fields\":[{\"name\":\"feeId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"percentage\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"event\",\"kind\":\"object\",\"type\":\"Event\",\"relationName\":\"EventToFee\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Event\":{\"fields\":[{\"name\":\"eventId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"organizerId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"feeId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"EVENT_STATUS\"},{\"name\":\"inPerson\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"accessPolicy\",\"kind\":\"enum\",\"type\":\"ACCESS_POLICY\"},{\"name\":\"accessPolicyDescription\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"organizer\",\"kind\":\"object\",\"type\":\"Organizer\",\"relationName\":\"EventToOrganizer\"},{\"name\":\"venue\",\"kind\":\"object\",\"type\":\"Venue\",\"relationName\":\"EventVenue\"},{\"name\":\"fee\",\"kind\":\"object\",\"type\":\"Fee\",\"relationName\":\"EventToFee\"},{\"name\":\"categories\",\"kind\":\"object\",\"type\":\"EventToCategory\",\"relationName\":\"EventToEventToCategory\"},{\"name\":\"dates\",\"kind\":\"object\",\"type\":\"EventDate\",\"relationName\":\"EventToEventDate\"},{\"name\":\"salesPhases\",\"kind\":\"object\",\"type\":\"EventSalesPhase\",\"relationName\":\"EventToEventSalesPhase\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"EventDate\":{\"fields\":[{\"name\":\"eventDateId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"eventId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"startAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"endAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"event\",\"kind\":\"object\",\"type\":\"Event\",\"relationName\":\"EventToEventDate\"},{\"name\":\"zoneDates\",\"kind\":\"object\",\"type\":\"EventDateZone\",\"relationName\":\"EventDateToEventDateZone\"}],\"dbName\":null},\"EventDateZone\":{\"fields\":[{\"name\":\"eventDateZoneId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"eventDateId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"kind\",\"kind\":\"enum\",\"type\":\"ZONE_KIND\"},{\"name\":\"basePrice\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"capacity\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"capacityRemaining\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"seatMapId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"currency\",\"kind\":\"enum\",\"type\":\"CURRENCY\"},{\"name\":\"eventDate\",\"kind\":\"object\",\"type\":\"EventDate\",\"relationName\":\"EventDateToEventDateZone\"},{\"name\":\"seatMap\",\"kind\":\"object\",\"type\":\"SeatMap\",\"relationName\":\"EventDateZoneToSeatMap\"},{\"name\":\"allocations\",\"kind\":\"object\",\"type\":\"EventDateZoneAllocation\",\"relationName\":\"EventDateZoneToEventDateZoneAllocation\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"SeatMap\":{\"fields\":[{\"name\":\"seatMapId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"rows\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"cols\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"occupiedSeats\",\"kind\":\"object\",\"type\":\"Seat\",\"relationName\":\"SeatToSeatMap\"},{\"name\":\"EventDateZone\",\"kind\":\"object\",\"type\":\"EventDateZone\",\"relationName\":\"EventDateZoneToSeatMap\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Seat\":{\"fields\":[{\"name\":\"seatId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"seatMapId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"rowNumber\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"colNumber\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"seatMap\",\"kind\":\"object\",\"type\":\"SeatMap\",\"relationName\":\"SeatToSeatMap\"}],\"dbName\":null},\"EventDateZoneAllocation\":{\"fields\":[{\"name\":\"eventDateZoneAllocationId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"eventDateZoneId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"audienceName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"discountPercent\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"allocatedQuantity\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"remainingQuantity\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"zone\",\"kind\":\"object\",\"type\":\"EventDateZone\",\"relationName\":\"EventDateZoneToEventDateZoneAllocation\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"EventSalesPhase\":{\"fields\":[{\"name\":\"eventSalesPhaseId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"eventId\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"startAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"endAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"percentage\",\"kind\":\"scalar\",\"type\":\"Decimal\"},{\"name\":\"active\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"event\",\"kind\":\"object\",\"type\":\"Event\",\"relationName\":\"EventToEventSalesPhase\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.engineWasm = {
   getRuntime: async () => require('./query_engine_bg.js'),
