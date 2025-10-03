@@ -39,6 +39,10 @@ function App() {
           <Route path="crearEventoPaso1" element={<CrearEventoPaso1 />} />
           <Route path="crearEventoPaso2" element={<CrearEventoPaso2 />} />
           <Route path="crearEventoPaso3" element={<CrearEventoPaso3 />} />
+          <Route path="detalle-evento" element={<EventInf />} />
+          {/*<Route element={<ProtectedRoute />}>*/}
+          <Route path="pago" element={<Payment />} />
+          {/*</Route>*/}
           <Route path="app/*" element={<Navigate to="/" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

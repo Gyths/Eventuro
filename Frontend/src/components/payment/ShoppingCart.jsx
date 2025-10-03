@@ -1,4 +1,10 @@
-export default function ShoppingCart({ termsAccepted, optionSelected }) {
+import { useState } from "react";
+
+export default function ShoppingCart({
+  termsAccepted,
+  optionSelected,
+  openModal,
+}) {
   const tickets = [
     { tipo: "Entrada General", precio: 50 },
     { tipo: "VIP", precio: 120 },
@@ -22,6 +28,7 @@ export default function ShoppingCart({ termsAccepted, optionSelected }) {
       );
     }
     if (valido) {
+      openModal();
       console.log("Procesando compra con el método de pago:", optionSelected);
     }
   };
