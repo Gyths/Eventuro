@@ -26,3 +26,20 @@ export async function createEventRepo({ organizerId, title, inPerson, descriptio
         return row;
     });
 }
+
+
+
+export async function listEventRepo() {
+  return prisma.event.findMany({
+    select: {
+        eventId: true,
+        organizerId: true,
+        title: true,
+        status: true,
+        inPerson: true,
+        description: true,
+        accessPolicy: true,
+        accessPolicyDescription: true,
+    },
+  });
+}

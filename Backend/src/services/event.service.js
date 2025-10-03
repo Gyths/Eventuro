@@ -1,4 +1,4 @@
-import { createEventRepo } from '../repositories/event.repo.js';
+import { createEventRepo, listEventRepo } from '../repositories/event.repo.js';
 
 const ACCESS_POLICY = new Set(['E', 'T', 'AO'])
 
@@ -23,4 +23,9 @@ export async function createEventSvc(input) {
     }
 
     return createEventRepo({organizerId, title, inPerson, description, accessPolicy, accessPolicyDescription});
+}
+
+export async function listEventSvc() {
+  
+  return listEventRepo();
 }
