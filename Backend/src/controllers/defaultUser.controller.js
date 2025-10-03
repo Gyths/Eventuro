@@ -1,7 +1,7 @@
 
 import bcrypt from 'bcrypt';
 import { toJSONSafe } from '../utils/serialize.js';
-import { createDefaultUserSvc } from '../services/defaultUser.service.js';
+import { createDefaultUserSvc,listDefaultUserSvc } from '../services/defaultUser.service.js';
 
 
 export async function createDefaultUser(req, res) {
@@ -13,3 +13,12 @@ export async function createDefaultUser(req, res) {
     }
 }
 
+
+export async function listDefaultUser(req, res) {
+  try {
+    const users = await listDefaultUserSvc();
+    return res.status(200).json(toJSONSafe(users));
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
+}

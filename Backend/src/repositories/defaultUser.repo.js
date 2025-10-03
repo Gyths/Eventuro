@@ -28,3 +28,18 @@ export async function createDefaultUserRepo({ name, lastName, phone, email, birt
   });
 }
 
+
+
+export async function listDefaultUserRepo() {
+  return prisma.user.findMany({
+    select: {
+      userId: true,
+      name: true,
+      lastName: true,
+      phone: true,
+      email: true,
+      birthdate: true,
+      gender: true
+    },
+  });
+}

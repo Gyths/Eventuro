@@ -1,4 +1,4 @@
-import { createDefaultUserRepo } from '../repositories/defaultUser.repo.js';
+import { createDefaultUserRepo, listDefaultUserRepo } from '../repositories/defaultUser.repo.js';
 import bcrypt from 'bcrypt';
 
 export async function createDefaultUserSvc(input) {
@@ -32,4 +32,10 @@ export async function createDefaultUserSvc(input) {
       console.error(err);
       throw new Error('Error en el servidor');
     }
+}
+
+
+export async function listDefaultUserSvc() {
+  
+  return listDefaultUserRepo();
 }
