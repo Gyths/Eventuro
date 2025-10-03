@@ -38,3 +38,17 @@ export async function registrarUsuarioDedault(req, res) {
       res.status(500).json({ error: "Error en el servidor" });
     }
 }
+
+
+export async function mostrarUsuariosDedault(req, res) {
+    try {
+    const result = await pool.query(
+      'SELECT id, name, email, userType, created_at FROM users ORDER BY id ASC'
+    );
+    res.json({ usuarios: result.rows });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener usuarios' });
+  }
+
+}
