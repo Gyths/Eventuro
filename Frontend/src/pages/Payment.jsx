@@ -1,5 +1,5 @@
 import React from "react";
-import CardPaymentModal from "../components/payment/cardPaymentModal.jsx";
+import CardPaymentModal from "../components/payment/CardPaymentModal.jsx";
 import ArrowButton from "../components/ArrowButton.jsx";
 import EventInfoCard from "../components/payment/EvenInfoCard.jsx";
 import ETicketDescription from "../components/payment/ETicketDescription.jsx";
@@ -7,7 +7,6 @@ import TermsServicesCheckbox from "../components/payment/TermsServicesCheckbox.j
 import PaymentOptions from "../components/payment/PaymentOptions.jsx";
 import DiscountCode from "../components/payment/DiscountCode.jsx";
 import ShoppingCart from "../components/payment/ShoppingCart.jsx";
-
 import banksLogos from "../assets/credit-debit-card.svg";
 import yapeLogo from "../assets/yape.svg";
 import plinLogo from "../assets/plin.svg";
