@@ -1,21 +1,42 @@
+// src/components/create/Restrictions.jsx
 import React from "react";
 
 export default function Restrictions({ value, onChange }) {
+  // value: { general: bool, withAdult: bool, adultsOnly: bool }
+
+  const setExclusive = (key, checked) => {
+    if (checked) {
+      // activar uno y desactivar los demás
+      onChange?.({
+        general: key === "general",
+        withAdult: key === "withAdult",
+        adultsOnly: key === "adultsOnly",
+      });
+    } else {
+      // si desmarcan el activo, queda ninguno
+      onChange?.({
+        general: false,
+        withAdult: false,
+        adultsOnly: false,
+      });
+    }
+  };
+
   return (
     <div className="space-y-2">
       <Checkbox
-        checked={value.general}
-        onChange={(v) => onChange?.({ general: v })}
+        checked={!!value.general}
+        onChange={(v) => setExclusive("general", v)}
         label="Apto para público en general."
       />
       <Checkbox
-        checked={value.withAdult}
-        onChange={(v) => onChange?.({ withAdult: v })}
+        checked={!!value.withAdult}
+        onChange={(v) => setExclusive("withAdult", v)}
         label="Apto para menores de 18 años en compañía de un adulto."
       />
       <Checkbox
-        checked={value.adultsOnly}
-        onChange={(v) => onChange?.({ adultsOnly: v })}
+        checked={!!value.adultsOnly}
+        onChange={(v) => setExclusive("adultsOnly", v)}
         label="Apto solo para mayores de 18 años."
       />
     </div>

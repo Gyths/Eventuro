@@ -28,7 +28,7 @@ export default function TopBar({
   onLogout,
 }) {
   const { pathname } = useLocation();
-  const isCreateEvent = pathname.startsWith("/create_event");
+  const isCreateEvent = pathname.startsWith("/crearEvento");
   const [query, setQuery] = useState("");
   const [filters, setFilters] = useState({
     category: null,
