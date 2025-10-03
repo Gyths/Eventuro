@@ -29,6 +29,14 @@ export default function LocationSelector({ value = "", onChange }) {
           Aceptar
         </button>
       </div>
+      <div className="pt-1 text-right">
+        <button // se agregó boton limpiar
+          onClick={() => onChange?.("")}
+          className="text-xs text-gray-500 underline underline-offset-2"
+        >
+          Limpiar
+        </button>
+      </div>
     </div>
   );
 }

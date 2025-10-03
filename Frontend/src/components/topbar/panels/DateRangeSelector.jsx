@@ -1,8 +1,8 @@
 import { useState } from "react";
 
 export default function DateRangeSelector({ from, to, onChange }) {
-  const [localFrom, setLocalFrom] = useState(from ?? "");
-  const [localTo, setLocalTo] = useState(to ?? "");
+  const [localFrom, setLocalFrom] = useState(from ?? null);
+  const [localTo, setLocalTo] = useState(to ?? null);
 
   function quick(days) {
     const now = new Date();
@@ -62,6 +62,15 @@ export default function DateRangeSelector({ from, to, onChange }) {
           Aceptar
         </button>
       </div>
+      <div className="pt-1 text-right">
+        <button // se agregó boton limpiar
+          onClick={() => onChange?.({ from: null, to: null })}
+          className="text-xs text-gray-500 underline underline-offset-2"
+        >
+          Limpiar
+        </button>
+      </div>
     </div>
+    
   );
 }

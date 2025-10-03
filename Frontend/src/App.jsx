@@ -21,7 +21,10 @@ import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import Home from "./pages/Home.jsx";
 import { Navigate } from "react-router-dom";
-import { useAuth } from "./services/auth/AuthContext.jsx";
+import AuthCallback from "./pages/AuthCallback";
+import CrearEventoPaso1 from "./pages/CrearEventoPaso1";
+import CrearEventoPaso2 from "./pages/CrearEventoPaso2";
+import CrearEventoPaso3 from "./pages/CrearEventoPaso3";
 
 function App() {
   return (
@@ -32,11 +35,10 @@ function App() {
 
           <Route path="login" element={<Login />} />
           <Route path="registro" element={<Register />} />
-          <Route path="detalle-evento" element={<EventInf />} />
-          {/*<Route element={<ProtectedRoute />}>*/}
-          <Route path="pago" element={<Payment />} />
-          {/*</Route>*/}
-
+          <Route path="auth/callback" element={<AuthCallback />} />
+          <Route path="crearEventoPaso1" element={<CrearEventoPaso1 />} />
+          <Route path="crearEventoPaso2" element={<CrearEventoPaso2 />} />
+          <Route path="crearEventoPaso3" element={<CrearEventoPaso3 />} />
           <Route path="app/*" element={<Navigate to="/" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

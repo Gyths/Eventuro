@@ -153,6 +153,165 @@ exports.Prisma.OrganizerScalarFieldEnum = {
   idNumber: 'idNumber'
 };
 
+exports.Prisma.EventCategoryScalarFieldEnum = {
+  eventCategoryId: 'eventCategoryId',
+  initials: 'initials',
+  description: 'description',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.EventToCategoryScalarFieldEnum = {
+  eventId: 'eventId',
+  eventCategoryId: 'eventCategoryId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.VenueScalarFieldEnum = {
+  venueId: 'venueId',
+  eventId: 'eventId',
+  city: 'city',
+  address: 'address',
+  addressUrl: 'addressUrl',
+  reference: 'reference',
+  capacity: 'capacity',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.FeeScalarFieldEnum = {
+  feeId: 'feeId',
+  percentage: 'percentage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.EventScalarFieldEnum = {
+  eventId: 'eventId',
+  organizerId: 'organizerId',
+  feeId: 'feeId',
+  title: 'title',
+  status: 'status',
+  inPerson: 'inPerson',
+  description: 'description',
+  accessPolicy: 'accessPolicy',
+  accessPolicyDescription: 'accessPolicyDescription',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.EventDateScalarFieldEnum = {
+  eventDateId: 'eventDateId',
+  eventId: 'eventId',
+  startAt: 'startAt',
+  endAt: 'endAt'
+};
+
+exports.Prisma.EventDateZoneScalarFieldEnum = {
+  eventDateZoneId: 'eventDateZoneId',
+  eventDateId: 'eventDateId',
+  name: 'name',
+  kind: 'kind',
+  basePrice: 'basePrice',
+  capacity: 'capacity',
+  capacityRemaining: 'capacityRemaining',
+  seatMapId: 'seatMapId',
+  currency: 'currency',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SeatMapScalarFieldEnum = {
+  seatMapId: 'seatMapId',
+  rows: 'rows',
+  cols: 'cols',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SeatScalarFieldEnum = {
+  seatId: 'seatId',
+  seatMapId: 'seatMapId',
+  rowNumber: 'rowNumber',
+  colNumber: 'colNumber',
+  status: 'status',
+  holdUntil: 'holdUntil'
+};
+
+exports.Prisma.EventDateZoneAllocationScalarFieldEnum = {
+  eventDateZoneAllocationId: 'eventDateZoneAllocationId',
+  eventDateZoneId: 'eventDateZoneId',
+  audienceName: 'audienceName',
+  discountPercent: 'discountPercent',
+  allocatedQuantity: 'allocatedQuantity',
+  remainingQuantity: 'remainingQuantity',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.EventSalesPhaseScalarFieldEnum = {
+  eventSalesPhaseId: 'eventSalesPhaseId',
+  eventId: 'eventId',
+  name: 'name',
+  startAt: 'startAt',
+  endAt: 'endAt',
+  percentage: 'percentage',
+  active: 'active',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.OrderScalarFieldEnum = {
+  orderId: 'orderId',
+  buyerUserId: 'buyerUserId',
+  status: 'status',
+  currency: 'currency',
+  totalAmount: 'totalAmount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.OrderItemScalarFieldEnum = {
+  orderItemId: 'orderItemId',
+  orderId: 'orderId',
+  eventId: 'eventId',
+  eventDateId: 'eventDateId',
+  eventDateZoneId: 'eventDateZoneId',
+  eventDateZoneAllocationId: 'eventDateZoneAllocationId',
+  quantity: 'quantity',
+  seatId: 'seatId',
+  unitPrice: 'unitPrice',
+  discountAmount: 'discountAmount',
+  finalPrice: 'finalPrice'
+};
+
+exports.Prisma.TicketScalarFieldEnum = {
+  ticketId: 'ticketId',
+  ownerUserId: 'ownerUserId',
+  orderItemId: 'orderItemId',
+  eventId: 'eventId',
+  eventDateId: 'eventDateId',
+  eventDateZoneId: 'eventDateZoneId',
+  eventDateZoneAllocationId: 'eventDateZoneAllocationId',
+  seatId: 'seatId',
+  pricePaid: 'pricePaid',
+  currency: 'currency',
+  issuedAt: 'issuedAt',
+  status: 'status'
+};
+
+exports.Prisma.HoldScalarFieldEnum = {
+  holdId: 'holdId',
+  eventDateId: 'eventDateId',
+  eventDateZoneId: 'eventDateZoneId',
+  seatId: 'seatId',
+  quantity: 'quantity',
+  buyerUserId: 'buyerUserId',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -184,11 +343,69 @@ exports.ID_TYPE = exports.$Enums.ID_TYPE = {
   DNI: 'DNI'
 };
 
+exports.EVENT_STATUS = exports.$Enums.EVENT_STATUS = {
+  P: 'P',
+  A: 'A',
+  D: 'D'
+};
+
+exports.ACCESS_POLICY = exports.$Enums.ACCESS_POLICY = {
+  E: 'E',
+  T: 'T',
+  AO: 'AO'
+};
+
+exports.ZONE_KIND = exports.$Enums.ZONE_KIND = {
+  GENERAL: 'GENERAL',
+  SEATED: 'SEATED'
+};
+
+exports.CURRENCY = exports.$Enums.CURRENCY = {
+  PEN: 'PEN',
+  USD: 'USD'
+};
+
+exports.SEAT_STATUS = exports.$Enums.SEAT_STATUS = {
+  AVAILABLE: 'AVAILABLE',
+  HELD: 'HELD',
+  SOLD: 'SOLD'
+};
+
+exports.ORDER_STATUS = exports.$Enums.ORDER_STATUS = {
+  CREATED: 'CREATED',
+  PENDING_PAYMENT: 'PENDING_PAYMENT',
+  PAID: 'PAID',
+  CANCELLED: 'CANCELLED',
+  EXPIRED: 'EXPIRED'
+};
+
+exports.TICKET_STATUS = exports.$Enums.TICKET_STATUS = {
+  PAID: 'PAID',
+  CANCELLED: 'CANCELLED',
+  USED: 'USED',
+  EXPIRED: 'EXPIRED'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   PasswordUser: 'PasswordUser',
   OAuthUser: 'OAuthUser',
-  Organizer: 'Organizer'
+  Organizer: 'Organizer',
+  EventCategory: 'EventCategory',
+  EventToCategory: 'EventToCategory',
+  Venue: 'Venue',
+  Fee: 'Fee',
+  Event: 'Event',
+  EventDate: 'EventDate',
+  EventDateZone: 'EventDateZone',
+  SeatMap: 'SeatMap',
+  Seat: 'Seat',
+  EventDateZoneAllocation: 'EventDateZoneAllocation',
+  EventSalesPhase: 'EventSalesPhase',
+  Order: 'Order',
+  OrderItem: 'OrderItem',
+  Ticket: 'Ticket',
+  Hold: 'Hold'
 };
 
 /**
