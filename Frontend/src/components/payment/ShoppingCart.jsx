@@ -3,7 +3,9 @@ import { useState } from "react";
 export default function ShoppingCart({
   termsAccepted,
   optionSelected,
-  openModal,
+  openCardModal,
+  openYapeModal,
+  setTotal,
 }) {
   const tickets = [
     { tipo: "Entrada General", precio: 50 },
@@ -12,6 +14,7 @@ export default function ShoppingCart({
   ];
 
   const total = tickets.reduce((acc, t) => acc + t.precio, 0);
+  setTotal(total);
 
   const handleSubmit = () => {
     var valido = true;
@@ -28,7 +31,8 @@ export default function ShoppingCart({
       );
     }
     if (valido) {
-      openModal();
+      optionSelected == "credit-debit-card" && openCardModal();
+      optionSelected == "yape" && openYapeModal();
       console.log("Procesando compra con el método de pago:", optionSelected);
     }
   };
@@ -49,12 +53,12 @@ export default function ShoppingCart({
       <div className="flex flex-col">
         <hr className="my-4 border-gray-300 mx-2" />
         <div className="flex justify-between text-lg font-bold text-gray-900">
-          <span>Total</span>
+          <span>Pago</span>
           <span>S/. {total}</span>
         </div>
         <button
           onClick={handleSubmit}
-          className="mt-6 w-full bg-yellow-500 text-white py-3 rounded-lg hover:bg-purple-700 transition-transfor-all duration-500 ease-in-out hover:scale-101 cursor-pointer font-bold"
+          className="mt-6 w-full bg-purple-700 text-white py-3 rounded-lg hover:bg-yellow-500 transition-transfor-all duration-500 ease-in-out hover:scale-101 cursor-pointer font-bold"
         >
           Comprar
         </button>

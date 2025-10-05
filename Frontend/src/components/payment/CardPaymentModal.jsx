@@ -1,17 +1,17 @@
-import { Dialog } from "@radix-ui/themes";
-import React from "react";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import logo from "../../assets/logo.svg";
-import FormsInput from "../Input";
-import LimitableNumbericInput from "./LimitableNumbericInput";
 import Cards from "react-credit-cards-2";
 import "react-credit-cards-2/dist/es/styles-compiled.css";
+import React from "react";
 
-export default function CardPaymentModal({ isOpen, onClose, children }) {
+export default function CardPaymentModal({ isOpen, onClose }) {
   if (!isOpen) {
     console.log("Modal closed");
     return null;
   }
+
+  const inputField =
+    "flex p-1.5 bg-gray-50 border-b border-black outline-none focus:scale-101 transition-transform";
 
   const [state, setState] = React.useState({
     number: "",
@@ -21,10 +21,43 @@ export default function CardPaymentModal({ isOpen, onClose, children }) {
     focus: "",
   });
 
+  React.useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+
+    // Cleanup al desmontar
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [isOpen]);
+
   const handleInputChange = (evt) => {
     const { name, value } = evt.target;
 
-    setState((prev) => ({ ...prev, [name]: value }));
+    let newValue = value;
+
+    if (name === "number") {
+      newValue = newValue.replace(/\D/g, "");
+      newValue = newValue.slice(0, 16);
+      newValue = newValue.replace(/(\d{4})(?=\d)/g, "$1 ");
+    }
+
+    if (name === "expiry") {
+      newValue = newValue.replace(/\D/g, "");
+      newValue = newValue.slice(0, 4);
+      if (newValue.length > 2) {
+        newValue = newValue.slice(0, 2) + "/" + newValue.slice(2);
+      }
+    }
+
+    if (name === "cvc") {
+      newValue = newValue.replace(/\D/g, "").slice(0, 3);
+    }
+
+    setState((prev) => ({ ...prev, [name]: newValue }));
   };
 
   const handleInputFocus = (evt) => {
@@ -38,68 +71,94 @@ export default function CardPaymentModal({ isOpen, onClose, children }) {
           isOpen ? "visible bg-black/20" : "invisible"
         }`}
       >
-        <div className="flex flex-col bg-white w-1/2 h-max rounded-2xl">
+        <div className="flex flex-col bg-white w-auto h-max rounded-2xl ">
           <Header onClose={onClose} />
           <hr className="w-11/12 border-t-1 border-purple-900 mx-auto my-4"></hr>
-          <div className="flex flex-col gap-2">
-            {/*<Body />*/}
-            <Cards
-              number={state.number}
-              expiry={state.expiry}
-              cvc={state.cvc}
-              name={state.name}
-              focused={state.focus}
-            />
-            <form className="flex flex-col">
-              <FormsInput
-                type="number"
+          {/*<Body />*/}
+          <form className="flex flex-col gap-2 p-6 justify-center items-center">
+            <div className="flex flex-1 items-center justify-center w-1/3">
+              <Cards
+                number={state.number}
+                expiry={state.expiry}
+                cvc={state.cvc}
+                name={state.name}
+                focused={state.focus}
+              />
+            </div>
+            <div className="flex flex-col w-full gap-1.5 pt-4">
+              <label htmlFor="card-number">Número de tarjeta</label>
+              <input
+                id="card-number"
                 name="number"
-                labelText="Número de tarjeta"
                 placeholder="Card Number"
                 value={state.number}
+                pattern="^(\d{4} ){3}\d{4}$"
+                required
                 onChange={handleInputChange}
                 onFocus={handleInputFocus}
-              ></FormsInput>
-              <LimitableNumbericInput
-                type="number"
-                name="expiry"
-                label="Fecha de vencimiento"
-                placeholder="MM/YY"
-                value={state.expiry}
+                className={`${inputField}`}
+              ></input>
+              <div className="flex flex-row w-full gap-1.5">
+                <div className="flex flex-col w-full gap-1.5">
+                  <label htmlFor="expire-date">Expiración</label>
+                  <input
+                    id="expire-date"
+                    name="expiry"
+                    placeholder="MM/YY"
+                    value={state.expiry}
+                    pattern="^(0[1-9]|1[0-2])\/\d{2}$"
+                    required
+                    onChange={handleInputChange}
+                    onFocus={handleInputFocus}
+                    className={`${inputField}`}
+                  ></input>
+                </div>
+                <div className="flex flex-col w-full gap-1.5">
+                  <label htmlFor="cvc-code">Código de seguridad</label>
+                  <input
+                    id="cvc-code"
+                    name="cvc"
+                    placeholder="CVV"
+                    value={state.cvc}
+                    pattern="^\d{3}$"
+                    required
+                    onChange={handleInputChange}
+                    onFocus={handleInputFocus}
+                    className={`${inputField}`}
+                  ></input>
+                </div>
+              </div>
+              <label htmlFor="holder-name">Nombre del Titular</label>
+              <input
+                id="holder-name"
+                name="name"
+                placeholder="Como aparece en la tarjeta"
+                value={state.name}
+                required
                 onChange={handleInputChange}
                 onFocus={handleInputFocus}
-              ></LimitableNumbericInput>
-              <LimitableNumbericInput
-                type="number"
-                name="cvc"
-                placeholder="CVV"
-                label="Código CVV"
-                value={state.cvc}
-                onChange={handleInputChange}
-                onFocus={handleInputFocus}
-              ></LimitableNumbericInput>
-              <input />
-            </form>
-          </div>
-          <hr className="w-11/12 border-t-1 border-purple-900 mx-auto my-4"></hr>
-          <div className="flex flex-row pb-4">
-            <div className="flex flex-1 w-1/2 items-center justify-center">
-              <button
-                onClick={onClose}
-                className="flex w-50 h-12 border border-yellow-500/80 text-yellow-500/80 rounded-2xl items-center justify-center cursor-pointer hover:scale-103 transition-transform duration-300"
-              >
-                Cancelar
-              </button>
+                className={`${inputField}`}
+              ></input>
             </div>
-            <div className="flex flex-1 w-1/2 items-center justify-center">
-              <button
-                type="submit"
-                className="flex w-50 h-12 border bg-purple-600 text-white rounded-2xl items-center justify-center cursor-pointer hover:scale-103 transition-transform duration-300"
-              >
-                Aceptar
-              </button>
+            <div className="flex flex-row p-2 pt-4 gap-8">
+              <div className="flex flex-1 w-1/2 items-center justify-center">
+                <button
+                  onClick={onClose}
+                  className="flex w-50 h-12 border border-red-400/80 text-red-400/80 rounded-2xl items-center justify-center cursor-pointer hover:scale-101 transition-transform duration-300"
+                >
+                  Cancelar
+                </button>
+              </div>
+              <div className="flex flex-1 w-1/2 items-center justify-center">
+                <button
+                  type="submit"
+                  className="flex w-50 h-12 items-center justify-center cursor-pointer rounded-2xl font-bold bg-purple-600 text-white hover:bg-yellow-500 transition-transfor-all duration-500 ease-in-out hover:scale-105"
+                >
+                  Aceptar
+                </button>
+              </div>
             </div>
-          </div>
+          </form>
         </div>
       </div>
     </>
@@ -120,71 +179,5 @@ const Header = ({ onClose }) => {
         ></XMarkIcon>
       </div>
     </div>
-  );
-};
-
-const Body = () => {
-  return (
-    <>
-      <FormsInput
-        id="card-num"
-        type="number"
-        labelText={"Número de tarjeta"}
-        placeholder={"#### #### #### ####"}
-        maxLength={12}
-        isRequired={true}
-      />
-      <FormsInput
-        id="holder-name"
-        type="text"
-        labelText="Nombre Completo del titular"
-        placeholder="Como aparece en la tarjeta"
-        isRequired={true}
-      />
-
-      <div className="flex flex-row">
-        <div className="flex flex-row w-1/2">
-          <LimitableNumbericInput
-            id="expiration-month"
-            label="Mes"
-            placeholder="MM"
-            maxLength={2}
-            min={"1"}
-            max={"12"}
-          ></LimitableNumbericInput>
-          <LimitableNumbericInput
-            id="expiration-year"
-            label="Año"
-            placeholder="YY"
-            maxLength={2}
-            min={"1"}
-            max={"99"}
-          ></LimitableNumbericInput>
-        </div>
-        <LimitableNumbericInput
-          id="cvv-code"
-          label="Código (CVV)"
-          placeholder="###"
-          maxLength={3}
-          min={"100"}
-          max={"999"}
-        ></LimitableNumbericInput>
-      </div>
-      <FormsInput
-        id="payment-email"
-        type="email"
-        labelText={"Dirección de correo electrónico"}
-        placeholder={"ejemplo@correo.com"}
-        isRequired={true}
-      />
-
-      <FormsInput
-        id="cuotes-number"
-        type="dropdown"
-        labelText={"Número de cuotas"}
-        placeholder={"1"}
-        isRequired={true}
-      />
-    </>
   );
 };

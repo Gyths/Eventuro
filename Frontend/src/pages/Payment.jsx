@@ -1,5 +1,5 @@
 import React from "react";
-import CardPaymentModal from "../components/payment/CardPaymentModal.jsx";
+
 import ArrowButton from "../components/ArrowButton.jsx";
 import EventInfoCard from "../components/payment/EvenInfoCard.jsx";
 import ETicketDescription from "../components/payment/ETicketDescription.jsx";
@@ -7,6 +7,9 @@ import TermsServicesCheckbox from "../components/payment/TermsServicesCheckbox.j
 import PaymentOptions from "../components/payment/PaymentOptions.jsx";
 import DiscountCode from "../components/payment/DiscountCode.jsx";
 import ShoppingCart from "../components/payment/ShoppingCart.jsx";
+import CardPaymentModal from "../components/payment/cardPaymentModal.jsx";
+import YapePaymentModal from "../components/payment/YapePaymentModal.jsx";
+
 import banksLogos from "../assets/credit-debit-card.svg";
 import yapeLogo from "../assets/yape.svg";
 import plinLogo from "../assets/plin.svg";
@@ -14,9 +17,11 @@ import plinLogo from "../assets/plin.svg";
 export default function PaymentMethod(Event = null) {
   const titleText = "Elige tu método de pago";
 
+  const [total, setTotal] = React.useState(0);
   const [termsAccepted, setTermsAccepted] = React.useState(false);
   const [optionSelected, setOption] = React.useState("nada seleccionado");
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [isYapeModalOpen, setIsYapeModalOpen] = React.useState(false);
+  const [isCardModalOpen, setIsCardModalOpen] = React.useState(false);
 
   const handleTermsChange = (checked) => {
     setTermsAccepted(checked);
@@ -26,8 +31,12 @@ export default function PaymentMethod(Event = null) {
     setOption(selected);
   };
 
-  const openModal = () => {
-    setIsModalOpen(true);
+  const openCardModal = () => {
+    setIsCardModalOpen(true);
+  };
+
+  const openYapeModal = () => {
+    setIsYapeModalOpen(true);
   };
 
   return (
@@ -75,16 +84,24 @@ export default function PaymentMethod(Event = null) {
             <ShoppingCart
               termsAccepted={termsAccepted}
               optionSelected={optionSelected}
-              openModal={openModal}
+              openCardModal={openCardModal}
+              openYapeModal={openYapeModal}
+              setTotal={setTotal}
             />
           </div>
         </div>
-        <CardPaymentModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          children={null}
-        ></CardPaymentModal>
       </div>
+
+      <CardPaymentModal
+        isOpen={isCardModalOpen}
+        onClose={() => setIsCardModalOpen(false)}
+      ></CardPaymentModal>
+
+      <YapePaymentModal
+        isOpen={isYapeModalOpen}
+        onClose={() => setIsYapeModalOpen(false)}
+        total={total}
+      ></YapePaymentModal>
     </>
   );
 }
