@@ -15,7 +15,7 @@ import SuccesfulTransactionModal from "../components/payment/modals/SuccesfulTra
 import { useModal } from "../context/ModalContext";
 
 import banksLogos from "../assets/credit-debit-card.svg";
-import yapePlinLog from "../assets/yape-plin.svg";
+import yapePlinLogo from "../assets/yape-plin.svg";
 
 export default function PaymentMethod(Event = null) {
   const titleText = "Elige tu método de pago";
@@ -67,7 +67,7 @@ export default function PaymentMethod(Event = null) {
             <PaymentOptions
               id="yape-plin"
               title="Yape / Plin"
-              image={yapePlinLog}
+              image={yapePlinLogo}
               handleOptionChange={handleOptionChange}
             />
             <DiscountCode />

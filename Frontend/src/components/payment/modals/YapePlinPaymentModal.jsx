@@ -61,7 +61,6 @@ export default function YapePlinPaymentModal({ onClose, total, onSuccess }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     onSuccess();
-    onClose();
   };
 
   return (
