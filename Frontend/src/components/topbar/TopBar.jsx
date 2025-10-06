@@ -30,6 +30,7 @@ export default function TopBar({
 }) {
   const disabledPaths = ["/pago"];
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const isCreateEvent =
     pathname.startsWith("/crearEvento") || pathname.startsWith("/CrearEvento");
   const [query, setQuery] = useState("");
@@ -60,9 +61,9 @@ export default function TopBar({
           <img
             src={logo}
             alt="Eventuro"
-            className="h-8 w-auto"
+            className="h-8 w-auto cursor-pointer"
             onClick={() => {
-              disabledPaths.includes(location.pathname) && navigate("/home");
+              !disabledPaths.includes(location.pathname) && navigate("/home");
             }}
           />
         </div>
