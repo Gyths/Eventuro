@@ -3,9 +3,9 @@ import { createManyEventSalesPhasesRepo } from '../repositories/eventSalesPhase.
 const isNonEmptyString = (v) => typeof v === 'string' && v.trim().length > 0;
 
 export async function createManyEventSalesPhasesSvc(input) {
-    const list = Array.isArray(input) ? input : Array.isArray(input?.phases) ? input.phases : [input];
-    const phases = list.map( p => ({
-        eventId: p.eventId,
+    const eventId = BigInt(input.eventId);
+    const phases = input.phases.map( p => ({
+        eventId: eventId,
         name: p.name,
         startAt: p.startAt,
         endAt: p.endAt,

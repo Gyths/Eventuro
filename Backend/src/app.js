@@ -12,6 +12,7 @@ import eventCategory from './routes/eventCategory.routes.js';
 import event from './routes/event.routes.js';
 import venue from './routes/venue.routes.js'
 import eventSalesPhase from './routes/eventSalesPhase.routes.js'
+import eventToCategory from './routes/eventToCategory.routes.js'
 
 import defaultUserRoutes from './routes/defaultUser.routes.js'
 
@@ -42,6 +43,7 @@ app.use(route+'/event-category', eventCategory);
 app.use(route+'/event', event);
 app.use(route+'/venue', venue);
 app.use(route+'/event-sales-phase', eventSalesPhase);
+app.use(route+'/event-to-category', eventToCategory);
 
 //app.listen(4000, () => console.log('Servidor corriendo en http://localhost:4000')); // ya se encuentra en el archivo.server.js
 
