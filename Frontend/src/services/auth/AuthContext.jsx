@@ -12,9 +12,16 @@ export function AuthProvider({ children }) {
     const rawUser = localStorage.getItem("auth:user");
     const rawToken = localStorage.getItem("auth:token");
     if (rawUser && rawToken) {
-      setUser(JSON.parse(rawUser));
+    try {
+      const parsedUser = JSON.parse(rawUser);
+      setUser(parsedUser);
       setToken(rawToken);
+    } catch (e) {
+      console.error("Error parseando usuario guardado:", e);
+      localStorage.removeItem("auth:user");
+      localStorage.removeItem("auth:token");
     }
+  }
   }, []);
 
   function login({ token, user }) {
