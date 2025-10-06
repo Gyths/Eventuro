@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 import ArrowButton from "../components/ArrowButton.jsx";
 import EventInfoCard from "../components/payment/EvenInfoCard.jsx";
@@ -7,21 +8,27 @@ import TermsServicesCheckbox from "../components/payment/TermsServicesCheckbox.j
 import PaymentOptions from "../components/payment/PaymentOptions.jsx";
 import DiscountCode from "../components/payment/DiscountCode.jsx";
 import ShoppingCart from "../components/payment/ShoppingCart.jsx";
-import CardPaymentModal from "../components/payment/cardPaymentModal.jsx";
-import YapePaymentModal from "../components/payment/YapePaymentModal.jsx";
+
+import CardPaymentModal from "../components/payment/modals/CardPaymentModal.jsx";
+import YapePlinPaymentModal from "../components/payment/modals/YapePlinPaymentModal.jsx";
+import SuccesfulTransactionModal from "../components/payment/modals/SuccesfulTransactionModal.jsx";
+import { useModal } from "../context/ModalContext";
 
 import banksLogos from "../assets/credit-debit-card.svg";
-import yapeLogo from "../assets/yape.svg";
-import plinLogo from "../assets/plin.svg";
+import yapePlinLog from "../assets/yape-plin.svg";
 
 export default function PaymentMethod(Event = null) {
   const titleText = "Elige tu método de pago";
+  const navigate = useNavigate();
+  const ticketSelectionDest = "/seleccionTickets";
+  const homeDest = "/home";
+  const viewTicketDest = "/entradas";
 
   const [total, setTotal] = React.useState(0);
+  const { modal, setModal } = useModal();
+
   const [termsAccepted, setTermsAccepted] = React.useState(false);
   const [optionSelected, setOption] = React.useState("nada seleccionado");
-  const [isYapeModalOpen, setIsYapeModalOpen] = React.useState(false);
-  const [isCardModalOpen, setIsCardModalOpen] = React.useState(false);
 
   const handleTermsChange = (checked) => {
     setTermsAccepted(checked);
@@ -31,19 +38,11 @@ export default function PaymentMethod(Event = null) {
     setOption(selected);
   };
 
-  const openCardModal = () => {
-    setIsCardModalOpen(true);
-  };
-
-  const openYapeModal = () => {
-    setIsYapeModalOpen(true);
-  };
-
   return (
     <>
       <div className="flex flex-col bg-gray-100 min-h-screen px-10">
         <div className="flex flex-wrap items-center gap-4 px-4 py-5 md:px-8">
-          <ArrowButton destination="/detalle-evento" />
+          <ArrowButton destination={ticketSelectionDest} />
           <h1 className="font-bold text-2xl sm:text-3xl md:text-4xl">
             {titleText}
           </h1>
@@ -66,15 +65,9 @@ export default function PaymentMethod(Event = null) {
               handleOptionChange={handleOptionChange}
             />
             <PaymentOptions
-              id="yape"
-              title="Yape"
-              image={yapeLogo}
-              handleOptionChange={handleOptionChange}
-            />
-            <PaymentOptions
-              id="plin"
-              title="Plin"
-              image={plinLogo}
+              id="yape-plin"
+              title="Yape / Plin"
+              image={yapePlinLog}
               handleOptionChange={handleOptionChange}
             />
             <DiscountCode />
@@ -84,24 +77,41 @@ export default function PaymentMethod(Event = null) {
             <ShoppingCart
               termsAccepted={termsAccepted}
               optionSelected={optionSelected}
-              openCardModal={openCardModal}
-              openYapeModal={openYapeModal}
+              openModal={(value) => {
+                setModal(value);
+              }}
               setTotal={setTotal}
             />
           </div>
         </div>
       </div>
 
-      <CardPaymentModal
-        isOpen={isCardModalOpen}
-        onClose={() => setIsCardModalOpen(false)}
-      ></CardPaymentModal>
+      {modal === "credit-debit-card" && (
+        <CardPaymentModal
+          onClose={() => setModal(null)}
+          onSuccess={() => setModal("success")}
+        />
+      )}
 
-      <YapePaymentModal
-        isOpen={isYapeModalOpen}
-        onClose={() => setIsYapeModalOpen(false)}
-        total={total}
-      ></YapePaymentModal>
+      {modal === "yape-plin" && (
+        <YapePlinPaymentModal
+          onClose={() => setModal(null)}
+          total={total}
+          onSuccess={() => setModal("success")}
+        />
+      )}
+
+      {modal === "success" && (
+        <SuccesfulTransactionModal
+          total={total}
+          onReturnHome={() => {
+            navigate(homeDest);
+          }}
+          onViewTickets={() => {
+            navigate(viewTicketDest);
+          }}
+        />
+      )}
     </>
   );
 }

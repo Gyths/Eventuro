@@ -1,48 +1,30 @@
-import yapeLogo from "../../assets/yape-white-bg.svg";
-import payMeLogo from "../../assets/pay-me-logo.svg";
-import { XMarkIcon } from "@heroicons/react/24/solid";
+import yapePlinLogo from "../../../assets/yape-whitebg-plin.svg";
+import payMeLogo from "../../../assets/pay-me.svg";
 import React from "react";
 
 const inputField =
   "flex rounded-sm p-1.5 bg-gray-100 ring ring-gray-200 hover:ring-gray-300 focus:ring-gray-400 focus:outline-none transform-transition";
 
-export default function YapePaymentModal({ isOpen, onClose, total }) {
+export default function YapePlinPaymentModal({ onClose, total, onSuccess }) {
   const [code, setCode] = React.useState(["", "", "", "", "", ""]);
   const inputRefs = React.useRef([]);
   const [phone, setPhone] = React.useState("");
 
-  React.useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
-    }
-
-    // Cleanup al desmontar
-    return () => {
-      document.body.style.overflow = "auto";
-    };
-  }, [isOpen]);
-
+  //Formateador para el input de número de teléfono
   const handleChangePhoneNumber = (e) => {
-    // Eliminar todo lo que no sea número
     let value = e.target.value.replace(/\D/g, "");
 
-    // Si está vacío, limpiar el input
     if (value === "" || value === "5") {
       setPhone("");
       return;
     }
 
-    // Si empieza con 51, mantenerlo; si no, añadirlo
     if (!value.startsWith("51")) {
       value = "51" + value;
     }
 
-    // Limitar longitud (2 dígitos del país + 9 del número)
     value = value.slice(0, 11);
 
-    // Formatear: +51 123-456-789
     let formatted = "+";
     if (value.length > 0) formatted += value.slice(0, 2);
     if (value.length > 2) formatted += " " + value.slice(2, 5);
@@ -51,6 +33,8 @@ export default function YapePaymentModal({ isOpen, onClose, total }) {
 
     setPhone(formatted);
   };
+
+  //Formateador para los inputs del código de aprobación
   const handleChangeApprovalCode = (e, index) => {
     const value = e.target.value;
     if (!/^[0-9]?$/.test(value)) return;
@@ -73,21 +57,19 @@ export default function YapePaymentModal({ isOpen, onClose, total }) {
     }
   };
 
-  /*const handleSubmit = (e) => {
+  //Acciones a realizar cuando se suba el formulario
+  const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(code.join(""));
+    onSuccess();
+    onClose();
   };
-  if (!isOpen) {
-    console.log("Modal closed");
-    return null;
-  }*/
 
   return (
     <>
       <div
-        className={`p-6 fixed inset-0 flex justify-center items-center transition-colors ${
-          isOpen ? "visible bg-black/20" : "invisible"
-        }`}
+        className={
+          "fixed inset-0 flex justify-center items-center transition-colors bg-black/20"
+        }
       >
         <div className="flex flex-col rounded-xl bg-white p-4 max-w-96">
           <div className="flex flex-row">
@@ -100,17 +82,19 @@ export default function YapePaymentModal({ isOpen, onClose, total }) {
               </span>
             </div>
           </div>
-          <div className="flex flex-col p-4 justify-center items-center gap-2">
-            <img src={yapeLogo} alt="yape" className="flex size-28"></img>
+          <div className="flex flex-col justify-center items-center gap-2">
+            <img src={yapePlinLogo} alt="yape-plin" className="flex p-10"></img>
             <span className="font-black scale-90 text-center">
-              Paga usando el código de aprobación disponible en Yape:
+              Paga usando el código de aprobación disponible en Yape o Plin:
             </span>
           </div>
           <form className="flex flex-col p-0.5 gap-2">
             <div className="flex flex-col flex-1 w-full gap-2">
-              <label htmlFor="yape-number">Celular afiliado a Yape</label>
+              <label htmlFor="yape-plin-number">
+                Celular afiliado a Yape o Plin
+              </label>
               <input
-                id="yape-number"
+                id="yape-plin-number"
                 placeholder="+51 123-456-789"
                 className={`${inputField}`}
                 value={phone}
@@ -152,6 +136,7 @@ export default function YapePaymentModal({ isOpen, onClose, total }) {
             <div className="flex justify-center items-center">
               <button
                 type="submit"
+                onClick={handleSubmit}
                 className="flex flex-1 py-1 font-semibold rounded-xl justify-center text-center cursor-pointer bg-blue-400 text-white hover:bg-blue-400/80 transition-transform "
               >
                 Pagar

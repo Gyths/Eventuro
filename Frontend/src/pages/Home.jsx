@@ -3,6 +3,7 @@
 import { useOutletContext } from "react-router-dom";
 import BannerCarousel from "../components/BannerCarousel.jsx";
 import EventCard from "../components/EventCard.jsx";
+import { useNavigate } from "react-router-dom";
 
 const imagesDemo = [
   "/banners/banner1.jpg",
@@ -54,6 +55,8 @@ const eventosDemo = [
 ];
 
 export default function Home() {
+  const navigate = useNavigate();
+  const eventDetailsDest = "/seleccionTickets";
   const { filters } = useOutletContext(); //recibimos los filtros
 
   const filteredEvents = eventosDemo.filter((e) => {
@@ -89,7 +92,12 @@ export default function Home() {
         {filteredEvents.length > 0 ? (
           filteredEvents.map((e) => (
             <div key={e.id} className="col-span-1">
-              <EventCard evento={e} />
+              <EventCard
+                evento={e}
+                onClick={() => {
+                  navigate(eventDetailsDest);
+                }}
+              />
             </div>
           ))
         ) : (

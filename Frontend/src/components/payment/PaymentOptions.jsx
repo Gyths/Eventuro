@@ -26,8 +26,12 @@ export default function PaymentOption({
         />
         <span className="font-medium">{title}</span>
       </div>
-      <div className="h-10 w-10">
-        <img src={image} alt={title}></img>
+      <div className="flex h-10 w-10">
+        <img
+          src={image}
+          alt={title}
+          className="flex justify-center items-center"
+        ></img>
       </div>
     </label>
   );

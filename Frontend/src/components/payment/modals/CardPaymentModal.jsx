@@ -1,15 +1,10 @@
 import { XMarkIcon } from "@heroicons/react/24/solid";
-import logo from "../../assets/logo.svg";
+import logo from "../../../assets/logo.svg";
 import Cards from "react-credit-cards-2";
 import "react-credit-cards-2/dist/es/styles-compiled.css";
 import React from "react";
 
-export default function CardPaymentModal({ isOpen, onClose }) {
-  if (!isOpen) {
-    console.log("Modal closed");
-    return null;
-  }
-
+export default function CardPaymentModal({ onClose, onSuccess }) {
   const inputField =
     "flex p-1.5 bg-gray-50 border-b border-black outline-none focus:scale-101 transition-transform";
 
@@ -20,19 +15,6 @@ export default function CardPaymentModal({ isOpen, onClose }) {
     name: "",
     focus: "",
   });
-
-  React.useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
-    }
-
-    // Cleanup al desmontar
-    return () => {
-      document.body.style.overflow = "auto";
-    };
-  }, [isOpen]);
 
   const handleInputChange = (evt) => {
     const { name, value } = evt.target;
@@ -64,12 +46,16 @@ export default function CardPaymentModal({ isOpen, onClose }) {
     setState((prev) => ({ ...prev, focus: evt.target.name }));
   };
 
+  function handleSubmit() {
+    onSuccess();
+  }
+
   return (
     <>
       <div
-        className={`fixed inset-0 flex justify-center items-center transition-colors ${
-          isOpen ? "visible bg-black/20" : "invisible"
-        }`}
+        className={
+          "fixed inset-0 flex justify-center items-center transition-colors bg-black/20"
+        }
       >
         <div className="flex flex-col bg-white w-auto h-max rounded-2xl ">
           <Header onClose={onClose} />
@@ -144,7 +130,7 @@ export default function CardPaymentModal({ isOpen, onClose }) {
               <div className="flex flex-1 w-1/2 items-center justify-center">
                 <button
                   onClick={onClose}
-                  className="flex w-50 h-12 border border-red-400/80 text-red-400/80 rounded-2xl items-center justify-center cursor-pointer hover:scale-101 transition-transform duration-300"
+                  className="flex w-50 h-12 items-center justify-center cursor-pointer rounded-2xl border border-red-400/80 text-red-400/80 hover:scale-101 transition-transform duration-300"
                 >
                   Cancelar
                 </button>
@@ -152,7 +138,8 @@ export default function CardPaymentModal({ isOpen, onClose }) {
               <div className="flex flex-1 w-1/2 items-center justify-center">
                 <button
                   type="submit"
-                  className="flex w-50 h-12 items-center justify-center cursor-pointer rounded-2xl font-bold bg-purple-600 text-white hover:bg-yellow-500 transition-transfor-all duration-500 ease-in-out hover:scale-105"
+                  onClick={handleSubmit}
+                  className="flex w-50 h-12 items-center justify-center cursor-pointer rounded-2xl font-bold bg-purple-600 text-white hover:bg-yellow-500 transition-transfor-all duration-500 ease-in-out hover:scale-102"
                 >
                   Aceptar
                 </button>
@@ -171,7 +158,6 @@ const Header = ({ onClose }) => {
       <div className="flex items-center pl-6 pt-4">
         <img className="w-30 h-10 rounded-2xl" src={logo} alt="Logo"></img>
       </div>
-
       <div className="flex justify-end flex-1 pt-6 pr-8">
         <XMarkIcon
           className="flex size-6 cursor-pointer fill-gray-500 hover:fill-gray-700 hover:scale-105 transition-transform duration-300"
