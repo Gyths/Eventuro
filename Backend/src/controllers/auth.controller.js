@@ -24,7 +24,7 @@ export const login = async (req, res) => {
       res.json({ 
         token, 
         user: {
-          //userId: user.userId.toString(),
+          userId: user.userId.toString(),
           name: user.name,
           lastName: user.lastName,
           phone: user.phone,

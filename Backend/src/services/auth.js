@@ -38,6 +38,7 @@ export async function loginWithCredentials(email, password) {
 
   const isMatch = await bcrypt.compare(password, user.password.hashedPassword);
   console.log("Contra:", password)
+  console.log("Contra:", isMatch)
   if (!isMatch) throw new Error("Credenciales inválidas :)");
 
   const token = generateToken(user);
