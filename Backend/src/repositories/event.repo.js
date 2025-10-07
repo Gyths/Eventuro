@@ -207,6 +207,25 @@ export async function listEventRepo() {
             description: true,
             accessPolicy: true,
             accessPolicyDescription: true,
+
+            // relación con Venue
+            venue: {
+                select: {
+                city: true,
+                address: true,
+                addressUrl: true,
+                reference: true,
+                capacity: true,
+                },
+            },
+
+            // relación con EventDate (pueden ser muchos)
+            dates: {
+                select: {
+                startAt: true,
+                endAt: true,
+                },
+            },
         },
     });
 }
