@@ -94,6 +94,8 @@ export async function createOrderRepo(input) {
 
             // Validamos que el evento tenga una fase de venta activa y que el proceso de compra se realiza durante el rango de 
             // fechas de la fase activa
+
+            /*COMENTADO HASTA CORREGIR LA ZONA HORARIA EN EL SCHEMA.PRISMA
             const now = new Date();
             const activePhase = await tx.eventSalesPhase.findFirst({
                 where: {
@@ -113,6 +115,7 @@ export async function createOrderRepo(input) {
             if (!activePhase || (activePhase.endAt && now > activePhase.endAt)) {
                 throw new Error('La fase de venta ha terminado. No se pueden procesar compras.');
             }
+            */
 
             // VALIDACIÓN DE TIPO DE ZONA DEL EVENTO PARA SABER SI SE DEBEN COMPRAR ASIENTOS
             if (zone.kind === 'SEATED' && !item.seatId) {
@@ -213,12 +216,6 @@ export async function createOrderRepo(input) {
                 if (seatUpdate.count === 0) {
                     throw new Error('Colisión: el asiento fue tomado por otro usuario, reintente.');
                 }
-
-                // Forzar actualización de timestamp:
-                await tx.seat.update({
-                    where: { seatId },
-                    data: { updatedAt: new Date() }
-                });
             }
 
 
@@ -263,6 +260,7 @@ export async function createOrderRepo(input) {
                 }
             });
             if (zoneUpdate.count === 0) throw new Error('Colisión: la zona fue modificada, reintente.');
+            
             await tx.eventDateZone.update({
                 where: { eventDateZoneId },
                 data: { updatedAt: new Date() }
