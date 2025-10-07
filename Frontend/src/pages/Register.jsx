@@ -79,6 +79,9 @@ export default function Register() {
           }
         }}
         onLogin={() => navigate("/login")}
+        onRegisterWithGoogle={async () => {
+          window.location.href = "http://localhost:4000/auth/google";
+        }}
       />
     </div>
   );
