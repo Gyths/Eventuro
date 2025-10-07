@@ -207,6 +207,20 @@ export async function listEventRepo() {
             description: true,
             accessPolicy: true,
             accessPolicyDescription: true,
+            
+
+            // relación con categorías
+            categories: {
+                select: {
+                category: {
+                    select: {
+                    eventCategoryId: true,
+                    initials: true,
+                    description: true,
+                    }
+                }
+                }
+            },
 
             // relación con Venue
             venue: {
