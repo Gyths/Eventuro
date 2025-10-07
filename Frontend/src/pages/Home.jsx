@@ -12,6 +12,36 @@ const imagesDemo = [
   "/banners/banner3.jpg",
 ];
 
+// Intenta convertir una URL de Google Maps a texto legible
+function humanizeAddress(venue) {
+  if (!venue) return "Ubicación del evento";
+  const { city, address, addressUrl, reference } = venue;
+
+  let addr = address?.trim();
+  if (!addr && addressUrl) {
+    try {
+      const u = new URL(addressUrl);
+      // Preferimos el parámetro ?q= si existe
+      let q = u.searchParams.get("q");
+      // Si no, intentamos /place/<texto>/
+      if (!q && u.pathname.includes("/place/")) {
+        const seg = u.pathname.split("/place/")[1]?.split("/")[0];
+        if (seg) q = decodeURIComponent(seg);
+      }
+      if (q) {
+        // Reemplaza + por espacios en caso de estar codificado así
+        addr = decodeURIComponent(q.replace(/\+/g, " ")).trim();
+      }
+    } catch {
+      // Si la URL no es válida, ignoramos
+    }
+  }
+
+  // Si no logramos generar addr, usamos referencia
+  const rightPart = addr || reference || "";
+  return [city, rightPart].filter(Boolean).join(" — ") || "Ubicación del evento";
+}
+
 export default function Home() {
   const { filters } = useOutletContext();
   const [events, setEvents] = useState([]);
@@ -33,26 +63,41 @@ export default function Home() {
         if (!res.ok) throw new Error(payload?.error || `HTTP ${res.status}`);
         if (abort) return;
 
-        // 🔁 Mapea lo que venga del backend → estructura para la card
-        // Ajusta las propiedades si tu API devuelve otros nombres.
-        const mapped = (payload ?? []).map(ev => {
-          const firstDate = ev.dates?.[0];
+        const mapped = (payload ?? []).map((ev) => {
+          const firstDate = ev.dates?.[0] ?? null;
+
+          // **Clave para no “mover” el día**:
+          // Convertimos a YYYY-MM-DD (UTC) y ese string lo mandamos a la card.
+          const startDate =
+            firstDate?.startAt ? new Date(firstDate.startAt).toISOString().slice(0, 10) : null;
+          const endDate =
+            firstDate?.endAt ? new Date(firstDate.endAt).toISOString().slice(0, 10) : null;
+
+          // Hora en formato local HH:mm (si tu DB guarda hora)
+          const hour = firstDate?.startAt
+            ? new Date(firstDate.startAt).toLocaleTimeString("es-PE", {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+                 timeZone: "UTC", 
+              })
+            : "12:00";
+
+          const location = humanizeAddress(ev.venue);
+
           return {
-            id:       ev.eventId ?? ev.id ?? crypto.randomUUID(),
-            titulo:   ev.title ?? "Evento",
-            // si tu card necesita rango, guarda ambos
-            fechaInicio: firstDate?.startAt ?? ev.startAt ?? null,
-            fechaFin:    firstDate?.endAt ?? ev.endAt ?? null,
-            // si tu card usa un solo campo “fecha”, puedes decidir cuál mostrar:
-            fecha: firstDate?.startAt ?? ev.startAt ?? null,
-            lugar: ev.venue?.city ?? ev.city ?? "Ubicación del evento",
-            // si tu API trae categorías anidadas: ev.categories[].category.description
+            id: ev.eventId ?? crypto.randomUUID(),
+            titulo: ev.title ?? "Evento",
+            startDate,  // YYYY-MM-DD
+            endDate,    // YYYY-MM-DD
+            hour,
+            location,
+            imagen: ev.imageUrl ?? "/img/evento-placeholder.jpg",
             category:
               ev.categories?.[0]?.category?.description ??
               ev.categories?.[0]?.description ??
               ev.category ??
               "",
-            imagen: ev.imageUrl ?? "/img/evento-placeholder.jpg",
           };
         });
 
@@ -64,17 +109,23 @@ export default function Home() {
       }
     })();
 
-    return () => { abort = true; };
+    return () => {
+      abort = true;
+    };
   }, []);
 
-  // 🧠 Aplica filtros actuales del TopBar
+  // Filtros del TopBar
   const filteredEvents = useMemo(() => {
-    return events.filter(e => {
+    return events.filter((e) => {
       let ok = true;
       if (filters.category) ok = ok && e.category === filters.category;
-      if (filters.location) ok = ok && e.lugar.toLowerCase().includes(filters.location.toLowerCase());
-      if (filters.dateFrom) ok = ok && new Date(e.fechaInicio ?? e.fecha) >= new Date(filters.dateFrom);
-      if (filters.dateTo) ok = ok && new Date(e.fechaFin ?? e.fecha) <= new Date(filters.dateTo);
+      if (filters.location)
+        ok = ok && e.location.toLowerCase().includes(filters.location.toLowerCase());
+
+      // Comparaciones de fecha usando los strings YYYY-MM-DD (seguros)
+      if (filters.dateFrom) ok = ok && new Date(e.startDate ?? e.endDate ?? 0) >= new Date(filters.dateFrom);
+      if (filters.dateTo)   ok = ok && new Date(e.endDate ?? e.startDate ?? 0) <= new Date(filters.dateTo);
+
       return ok;
     });
   }, [events, filters]);
@@ -93,25 +144,21 @@ export default function Home() {
           />
         </div>
 
-        {loading && (
-          <p className="col-span-4 text-center text-gray-500">Cargando eventos…</p>
-        )}
-        {err && (
-          <p className="col-span-4 text-center text-red-600">Error: {err}</p>
-        )}
+        {loading && <p className="col-span-4 text-center text-gray-500">Cargando eventos…</p>}
+        {err && <p className="col-span-4 text-center text-red-600">Error: {err}</p>}
 
         {!loading && !err && (
           filteredEvents.length > 0 ? (
-            filteredEvents.map(e => (
+            filteredEvents.map((e) => (
               <div key={e.id} className="col-span-1">
-                    <EventCard
-                      image={e.imagen || "/img/evento-placeholder.jpg"}
-                      title={e.titulo ?? e.title ?? e.name ?? "Evento"}
-                      location={e.lugar ?? "Ubicación del evento"}
-                      startDate={e.fechaInicio ?? e.fecha ?? null}
-                      endDate={e.fechaFin ?? e.fecha ?? null}
-                      hour={e.hora ?? "16:00"}
-                    />
+                <EventCard
+                  image={e.imagen}
+                  title={e.titulo}
+                  location={e.location}
+                  startDate={e.startDate} // YYYY-MM-DD (sin “correr” día)
+                  endDate={e.endDate}
+                  hour={e.hour}
+                />
               </div>
             ))
           ) : (
