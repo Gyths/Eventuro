@@ -21,11 +21,12 @@ import { Prisma } from '../generated/prisma/index.js';
  *       unitPrice?: string|number (opcional; lo calculamos desde basePrice por seguridad)
  *     }, ...
  *   ],
- *   discounts?: [ /* opcional - no implementado en detalle */
+ *   discounts?: any[] // opcional - no implementado en detalle
+ */
 export async function createOrderRepo(input) {
 
     return prisma.$transaction(async (tx) => {
-        // buyerUserId ya convertido a BigInt en service/controller
+
         const buyerUserId = BigInt(input.buyerUserId);
 
         // 1) Crear orden base (moneda forzada a PEN)
@@ -43,30 +44,77 @@ export async function createOrderRepo(input) {
         const createdOrderItems = [];
         const createdTickets = [];
 
-        // 2) Recorremos items (cada item = allocation+zona o seat(s))
+        // 2) Recorremos items (cada item = allocation+zona con/sin seat(s))
         for (const item of input.items) {
-            // normalizar
+            // Validamos que el evento exista
             const eventId = BigInt(item.eventId);
+            const event = await tx.event.findUnique({
+                where: { eventId },
+                select: { eventId: true }
+            });
+            if (!event) {
+                throw new Error('El evento indicado no existe.');
+            }
+
+            // Validamos que el evento tenga la fecha indicada
             const eventDateId = BigInt(item.eventDateId);
+            const eventDate = await tx.eventDate.findUnique({
+                where: { eventDateId },
+                select: { eventId: true }
+            });
+            if (!eventDate) {
+                throw new Error('La fecha de evento no existe.');
+            }
+            if (BigInt(eventDate.eventId) !== eventId) {
+                throw new Error('La fecha seleccionada no pertenece al evento indicado.');
+            }
+
             const eventDateZoneId = BigInt(item.eventDateZoneId);
             const quantity = parseInt(item.quantity || 0);
-            if (!quantity || quantity <= 0) throw new Error('Quantity must be > 0');
+            if (!quantity || quantity <= 0) throw new Error('Quantity debe ser mayor a 0');
 
             // a) Obtener info de la zona y (opcional) allocation
             const zone = await tx.eventDateZone.findUnique({
                 where: { eventDateZoneId },
                 select: {
                     eventDateZoneId: true,
+                    eventDateId: true,
                     capacityRemaining: true,
                     basePrice: true,
                     currency: true,
-                    kind: true
+                    kind: true,
+                    seatMapId: true // para validar seatId
                 }
             });
 
             if (!zone) throw new Error('Zona no encontrada');
+            if (BigInt(zone.eventDateId) !== eventDateId) {
+                throw new Error('La zona seleccionada no pertenece a la fecha indicada.');
+            }
 
-            // NUEVO BLOQUE DE VALIDACIÓN DE TIPO DE ZONA DEL EVENTO PARA SABER SI SE DEBEN COMPRAR ASIENTOS
+            // Validamos que el evento tenga una fase de venta activa y que el proceso de compra se realiza durante el rango de 
+            // fechas de la fase activa
+            const now = new Date();
+            const activePhase = await tx.eventSalesPhase.findFirst({
+                where: {
+                    eventId,
+                    active: true,
+                    startAt: { lte: now }, //la fecha de inicio debe ser menor o igual a "ahora"
+                    OR: [
+                        { endAt: null }, //la fecha de fin puede ser null (sin fin)
+                        { endAt: { gte: now } } //o la fecha de fin debe ser mayor o igual a "ahora"
+                    ]
+                },
+                select: {
+                    eventSalesPhaseId: true,
+                    name: true
+                }
+            });
+            if (!activePhase || (activePhase.endAt && now > activePhase.endAt)) {
+                throw new Error('La fase de venta ha terminado. No se pueden procesar compras.');
+            }
+
+            // VALIDACIÓN DE TIPO DE ZONA DEL EVENTO PARA SABER SI SE DEBEN COMPRAR ASIENTOS
             if (zone.kind === 'SEATED' && !item.seatId) {
                 throw new Error(
                     `La zona seleccionada (${zone.eventDateZoneId}) es numerada, se debe especificar un asiento.`
@@ -79,12 +127,17 @@ export async function createOrderRepo(input) {
                 );
             }
 
-            // Forzar moneda PEN - si tu zone.currency no es PEN, abortar
+            // Forzar moneda PEN - si la zone.currency no es PEN, aborta la compra
             if (zone.currency !== 'PEN') {
                 throw new Error('Solo se permiten órdenes en soles peruanos (PEN).');
             }
 
-            // Si viene allocationId -> usamos allocation flow (tipos como ADULTOS, NIÑOS)
+            // Verificar capacityRemaining suficiente en la zona (comprobación temprana)
+            if ((zone.capacityRemaining ?? 0) < quantity) {
+                throw new Error('No hay suficiente capacidad en la zona seleccionada.');
+            }
+
+            // b) Si viene allocationId -> validamos que perteneza a la zona
             let allocation = null;
             if (item.eventDateZoneAllocationId) {
                 const allocationId = BigInt(item.eventDateZoneAllocationId);
@@ -92,6 +145,7 @@ export async function createOrderRepo(input) {
                     where: { eventDateZoneAllocationId: allocationId },
                     select: {
                         eventDateZoneAllocationId: true,
+                        eventDateZoneId: true,
                         remainingQuantity: true,
                         allocatedQuantity: true,
                         discountPercent: true,
@@ -100,28 +154,49 @@ export async function createOrderRepo(input) {
                 });
 
                 if (!allocation) throw new Error('Allocation no encontrada');
+
+                // Validar que la allocation pertenezca a la zona pedida
+                if (BigInt(allocation.eventDateZoneId) !== eventDateZoneId) {
+                    throw new Error('La allocation no pertenece a la zona seleccionada.');
+                }
+
+                // Comprobar cantidad en allocation (si remainingQuantity es null => lo tratamos como 0)
                 if ((allocation.remainingQuantity ?? 0) < quantity) {
                     throw new Error('No hay suficiente disponibilidad en la allocation seleccionada.');
                 }
             }
 
-            // Si viene seatId -> numerado, quantity normalmente será 1 por asiento,
+            // c) Si viene seatId -> numerado, quantity normalmente será 1 por asiento,
             // pero permitimos quantity >1 si client envía múltiples items.
+            let seat = null;
             if (item.seatId) {
                 // Verificamos que el asiento exista y esté disponible
                 const seatId = BigInt(item.seatId);
-                const seat = await tx.seat.findUnique({
+                seat = await tx.seat.findUnique({
                     where: { seatId },
                     select: { status: true, seatId: true, seatMapId: true }
                 });
                 if (!seat) throw new Error('Asiento no encontrado');
                 if (seat.status !== 'AVAILABLE') throw new Error('Asiento no disponible');
-                // Para asientos numerados no tocamos allocation.remainingQuantity (a menos que designes allocations por asiento)
+
+                // Validar que el asiento pertenezca al seatMap de la zona
+                if (seat.seatMapId === null || zone.seatMapId === null) {
+                    throw new Error('Error de configuración: seatMap faltante en asiento o zona.');
+                }
+                if (BigInt(seat.seatMapId) !== BigInt(zone.seatMapId)) {
+                    throw new Error('El asiento no pertenece a la zona seleccionada.');
+                }
             }
 
-            // b) Control de concurrencia mediante OCC (optimistic concurrency control):
+            // d) Control de concurrencia mediante OCC (optimistic concurrency control):
+            // Orden de operaciones:
+            //  1) Si seat -> intentar marcar asiento (updateMany) para validar ocupación atómica
+            //  2) Si allocation -> updateMany sobre allocation.remainingQuantity (OCC)
+            //  3) updateMany sobre zone.capacityRemaining (OCC)
+            //
+            // Todo dentro de la transacción tx: si alguno falla se hace rollback.
 
-            // Control de concurrencia SOLO para asientos numerados
+            // 1)Control de concurrencia SOLO para asientos numerados
             if (item.seatId) {
                 const seatId = BigInt(item.seatId);
 
@@ -131,25 +206,31 @@ export async function createOrderRepo(input) {
                         status: 'AVAILABLE' // solo actualiza si sigue disponible
                     },
                     data: {
-                        status: 'SOLD' // o 'HELD', según tu flujo
+                        status: 'SOLD' // o 'HELD', según el flujo (falta analizar)
                     }
                 });
 
                 if (seatUpdate.count === 0) {
                     throw new Error('Colisión: el asiento fue tomado por otro usuario, reintente.');
                 }
+
+                // Forzar actualización de timestamp:
+                await tx.seat.update({
+                    where: { seatId },
+                    data: { updatedAt: new Date() }
+                });
             }
 
 
-            //Para zonas y allocations:
-            // - En caso exista allocation -> updateMany on allocation.remainingQuantity
+            // 2 y 3) Para zonas y allocations:
+            // En caso exista allocation -> updateMany on allocation.remainingQuantity
             // aqui updateMany solo debería afectar 1 fila y eso es en caso de que la cantidad restante
             // se mantenga igual (no haya sido modificada por otra transacción)
             if (allocation) {
                 const allocUpdate = await tx.eventDateZoneAllocation.updateMany({
                     where: {
                         eventDateZoneAllocationId: BigInt(allocation.eventDateZoneAllocationId),
-                        remainingQuantity: allocation.remainingQuantity //<-este es el control de concurrencia
+                        remainingQuantity: allocation.remainingQuantity //este es el control de concurrencia
                     },
                     data: {
                         remainingQuantity: (allocation.remainingQuantity ?? 0) - quantity
@@ -161,9 +242,15 @@ export async function createOrderRepo(input) {
                     // otra transaccion cambió allocation y se lanza error para evitar overselling
                     throw new Error('Colisión: allocation fue modificada, reintente.');
                 }
+
+                // Forzar actualización de timestamp
+                await tx.eventDateZoneAllocation.update({
+                    where: { eventDateZoneAllocationId: BigInt(allocation.eventDateZoneAllocationId) },
+                    data: { updatedAt: new Date() }
+                });
             }
 
-            // - Actualizar la zona total capacityRemaining (OCC)
+            // Actualizar la zona total capacityRemaining (OCC)
             // Aqui se usa la misma lógica que antes pero manejando la capacidad total solamente guiandote
             // de la zona
             const zoneUpdate = await tx.eventDateZone.updateMany({
@@ -176,15 +263,19 @@ export async function createOrderRepo(input) {
                 }
             });
             if (zoneUpdate.count === 0) throw new Error('Colisión: la zona fue modificada, reintente.');
+            await tx.eventDateZone.update({
+                where: { eventDateZoneId },
+                data: { updatedAt: new Date() }
+            });
 
-            // c) calcular precios (usar basePrice de zone y descuento de allocation)
+            // e) calcular precios (usar basePrice de zone y descuento de allocation)
             const unitPrice = Number(zone.basePrice);
             let discountPercent = allocation ? Number(allocation.discountPercent || 0) : 0;
             const subtotal = unitPrice * quantity;
             const finalPrice = subtotal * (1 - discountPercent / 100);
             const discountAmount = subtotal - finalPrice;
 
-            // d) crear orderItem
+            // f) crear orderItem
             const createdItem = await tx.orderItem.create({
                 data: {
                     orderId: order.orderId,
@@ -201,13 +292,15 @@ export async function createOrderRepo(input) {
                 }
             });
 
+            //Total de la orden
             totalAmount += finalPrice;
             createdOrderItems.push(createdItem);
 
-            // e) crear ticket(s)
-            // - Si seatId presente -> crear 1 ticket por item (seat específico)
-            // - Si no seatId pero quantity > 0 -> crear quantity tickets sin seat asignado
+            // g) crear ticket(s)
+            // Si seatId presente: crear 1 ticket por item (seat específico)
+            // Si no seatId pero quantity > 0: crear quantity tickets sin seat asignado
             if (item.seatId) {
+                //un ticket por asiento
                 const ticket = await tx.ticket.create({
                     data: {
                         orderItemId: createdItem.orderItemId,
@@ -229,7 +322,8 @@ export async function createOrderRepo(input) {
                     data: { status: 'SOLD' }
                 });
             } else {
-                // crear N tickets sin seat
+                // crear N tickets sin seat (repartimos precio)
+                const perTicket = Number((finalPrice / quantity).toFixed(2));
                 for (let i = 0; i < quantity; i++) {
                     const ticket = await tx.ticket.create({
                         data: {
@@ -240,23 +334,25 @@ export async function createOrderRepo(input) {
                             eventDateZoneAllocationId: allocation ? BigInt(allocation.eventDateZoneAllocationId) : undefined,
                             // seatId null
                             ownerUserId: buyerUserId,
-                            pricePaid: new Prisma.Decimal((finalPrice / quantity).toFixed(2)), // repartir el total entre tickets
+                            pricePaid: new Prisma.Decimal(perTicket),
                             currency: 'PEN'
                         }
                     });
                     createdTickets.push(ticket);
                 }
             }
-        } // end for items
 
-        // 3) Actualizar total de la orden
+        }
+
+        // Actualizar total de la orden
         await tx.order.update({
             where: { orderId: order.orderId },
-            data: { totalAmount }
+            data: {
+                totalAmount: new Prisma.Decimal(totalAmount),
+                updatedAt: new Date(),
+                status: 'PAID' //Marcar status PENDING_PAYMENT o PAID
+            }
         });
-
-        // 4) (Opcional) marcar status PENDING_PAYMENT o PAID según integración con pasarela
-        // por ahora dejamos CREATED
 
         return {
             orderId: Number(order.orderId),
