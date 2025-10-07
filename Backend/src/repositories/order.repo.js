@@ -107,20 +107,25 @@ export async function createOrderRepo(input) {
 
             // b) Control de concurrencia mediante OCC (optimistic concurrency control):
 
-            // Control de concurrencia para asientos numerados
-            const seatUpdate = await tx.seat.updateMany({
-                where: {
-                    seatId,
-                    status: 'AVAILABLE' // solo actualiza si sigue disponible
-                },
-                data: {
-                    status: 'SOLD' // o 'HELD', según tu flujo
-                }
-            });
+            // Control de concurrencia SOLO para asientos numerados
+            if (item.seatId) {
+                const seatId = BigInt(item.seatId);
 
-            if (seatUpdate.count === 0) {
-                throw new Error('Colisión: el asiento fue tomado por otro usuario, reintente.');
+                const seatUpdate = await tx.seat.updateMany({
+                    where: {
+                        seatId,
+                        status: 'AVAILABLE' // solo actualiza si sigue disponible
+                    },
+                    data: {
+                        status: 'SOLD' // o 'HELD', según tu flujo
+                    }
+                });
+
+                if (seatUpdate.count === 0) {
+                    throw new Error('Colisión: el asiento fue tomado por otro usuario, reintente.');
+                }
             }
+
 
             //Para zonas y allocations:
             // - En caso exista allocation -> updateMany on allocation.remainingQuantity
@@ -197,7 +202,8 @@ export async function createOrderRepo(input) {
                         eventDateZoneId,
                         eventDateZoneAllocationId: allocation ? BigInt(allocation.eventDateZoneAllocationId) : undefined,
                         seatId: BigInt(item.seatId),
-                        pricePaid: finalPrice, // si quantity>1 y seatId presente, tasarlo acorde
+                        ownerUserId: buyerUserId,
+                        pricePaid: new Prisma.Decimal(finalPrice), // si quantity>1 y seatId presente, tasarlo acorde
                         currency: 'PEN'
                     }
                 });
@@ -219,6 +225,7 @@ export async function createOrderRepo(input) {
                             eventDateZoneId,
                             eventDateZoneAllocationId: allocation ? BigInt(allocation.eventDateZoneAllocationId) : undefined,
                             // seatId null
+                            ownerUserId: buyerUserId,
                             pricePaid: new Prisma.Decimal((finalPrice / quantity).toFixed(2)), // repartir el total entre tickets
                             currency: 'PEN'
                         }
