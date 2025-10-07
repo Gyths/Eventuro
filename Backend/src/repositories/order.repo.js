@@ -105,25 +105,48 @@ export async function createOrderRepo(input) {
                 // Para asientos numerados no tocamos allocation.remainingQuantity (a menos que designes allocations por asiento)
             }
 
-            // b) Control de concurrencia:
-            // - Si allocation -> updateMany on allocation.remainingQuantity
+            // b) Control de concurrencia mediante OCC (optimistic concurrency control):
+
+            // Control de concurrencia para asientos numerados
+            const seatUpdate = await tx.seat.updateMany({
+                where: {
+                    seatId,
+                    status: 'AVAILABLE' // solo actualiza si sigue disponible
+                },
+                data: {
+                    status: 'SOLD' // o 'HELD', según tu flujo
+                }
+            });
+
+            if (seatUpdate.count === 0) {
+                throw new Error('Colisión: el asiento fue tomado por otro usuario, reintente.');
+            }
+
+            //Para zonas y allocations:
+            // - En caso exista allocation -> updateMany on allocation.remainingQuantity
+            // aqui updateMany solo debería afectar 1 fila y eso es en caso de que la cantidad restante
+            // se mantenga igual (no haya sido modificada por otra transacción)
             if (allocation) {
                 const allocUpdate = await tx.eventDateZoneAllocation.updateMany({
                     where: {
                         eventDateZoneAllocationId: BigInt(allocation.eventDateZoneAllocationId),
-                        remainingQuantity: allocation.remainingQuantity
+                        remainingQuantity: allocation.remainingQuantity //<-este es el control de concurrencia
                     },
                     data: {
                         remainingQuantity: (allocation.remainingQuantity ?? 0) - quantity
                     }
                 });
+                //si otro usuario modificó allocation, es decir, la capacidad restante diferente a la que se
+                // tenía en ese momento de la transaccion del usuario actual, count será 0, ya que no se modificó ninguna fila
                 if (allocUpdate.count === 0) {
-                    // otra transaccion cambió allocation
+                    // otra transaccion cambió allocation y se lanza error para evitar overselling
                     throw new Error('Colisión: allocation fue modificada, reintente.');
                 }
             }
 
             // - Actualizar la zona total capacityRemaining (OCC)
+            // Aqui se usa la misma lógica que antes pero manejando la capacidad total solamente guiandote
+            // de la zona
             const zoneUpdate = await tx.eventDateZone.updateMany({
                 where: {
                     eventDateZoneId,
