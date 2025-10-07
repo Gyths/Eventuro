@@ -59,11 +59,25 @@ export async function createOrderRepo(input) {
                     eventDateZoneId: true,
                     capacityRemaining: true,
                     basePrice: true,
-                    currency: true
+                    currency: true,
+                    kind: true
                 }
             });
 
             if (!zone) throw new Error('Zona no encontrada');
+
+            // NUEVO BLOQUE DE VALIDACIÓN DE TIPO DE ZONA DEL EVENTO PARA SABER SI SE DEBEN COMPRAR ASIENTOS
+            if (zone.kind === 'SEATED' && !item.seatId) {
+                throw new Error(
+                    `La zona seleccionada (${zone.eventDateZoneId}) es numerada, se debe especificar un asiento.`
+                );
+            }
+
+            if (zone.kind === 'GENERAL' && item.seatId) {
+                throw new Error(
+                    `La zona seleccionada (${zone.eventDateZoneId}) es general (sin asientos), no debe incluir uno.`
+                );
+            }
 
             // Forzar moneda PEN - si tu zone.currency no es PEN, abortar
             if (zone.currency !== 'PEN') {
