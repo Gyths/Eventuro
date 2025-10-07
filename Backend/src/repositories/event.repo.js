@@ -40,6 +40,7 @@ export async function createEventRepo(input) {
             venueId = v.venueId;
         }
 
+        let categories = [];
         if (Array.isArray(input.eventCategories) && input.eventCategories.length > 0) {
             for (const eventToCategoryId of input.eventCategories) {
                 categories.push({
