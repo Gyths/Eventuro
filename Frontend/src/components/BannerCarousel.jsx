@@ -1,23 +1,17 @@
+// src/components/BannerCarousel.jsx
 import { useEffect, useRef, useState } from "react";
 
-/**
- * props:
- * - images: string[] (urls)
- * - interval: ms para autoplay (por defecto 5000)
- * - className: clases extra del contenedor
- * - heightClass: alto responsive (por defecto "h-64 md:h-80 lg:h-96")
- */
 export default function BannerCarousel({
   images = [],
   interval = 5000,
   className = "",
   heightClass = "h-64 md:h-80 lg:h-96",
+  showArrows = true,          // ← NUEVO
 }) {
   const [idx, setIdx] = useState(0);
   const timer = useRef(null);
   const touch = useRef({ x: 0, y: 0 });
 
-  // Autoplay
   useEffect(() => {
     if (images.length <= 1) return;
     start();
@@ -35,12 +29,10 @@ export default function BannerCarousel({
     if (timer.current) clearTimeout(timer.current);
   }
 
-  // Navegación
   const go = (i) => setIdx(((i % images.length) + images.length) % images.length);
   const prev = () => go(idx - 1);
   const next = () => go(idx + 1);
 
-  // Keyboard
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === "ArrowLeft") prev();
@@ -51,7 +43,6 @@ export default function BannerCarousel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idx, images.length]);
 
-  // Touch (swipe)
   const onTouchStart = (e) => {
     const t = e.touches[0];
     touch.current = { x: t.clientX, y: t.clientY };
@@ -79,7 +70,6 @@ export default function BannerCarousel({
       onTouchEnd={onTouchEnd}
       aria-roledescription="carousel"
     >
-      {/* Slides */}
       <div
         className="flex h-full w-full transition-transform duration-500 will-change-transform"
         style={{ transform: `translateX(-${idx * 100}%)` }}
@@ -87,29 +77,32 @@ export default function BannerCarousel({
         {images.map((src, i) => (
           <div className="relative h-full w-full shrink-0" key={i} aria-hidden={i !== idx}>
             <img src={src} alt={`Banner ${i + 1}`} className="h-full w-full object-cover" />
-            {/* gradiente opcional para contraste */}
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-black/10 to-transparent" />
           </div>
         ))}
       </div>
 
-      {/* Flechas (opcionales) */}
-      <button
-        onClick={prev}
-        className="absolute left-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/30 px-3 py-2 text-white backdrop-blur hover:bg-black/45"
-        aria-label="Anterior"
-      >
-        ‹
-      </button>
-      <button
-        onClick={next}
-        className="absolute right-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/30 px-3 py-2 text-white backdrop-blur hover:bg-black/45"
-        aria-label="Siguiente"
-      >
-        ›
-      </button>
+      {/* Flechas (solo si showArrows) */}
+      {showArrows && (
+        <>
+          <button
+            onClick={prev}
+            className="absolute left-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/30 px-3 py-2 text-white backdrop-blur hover:bg-black/45"
+            aria-label="Anterior"
+          >
+            ‹
+          </button>
+          <button
+            onClick={next}
+            className="absolute right-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/30 px-3 py-2 text-white backdrop-blur hover:bg-black/45"
+            aria-label="Siguiente"
+          >
+            ›
+          </button>
+        </>
+      )}
 
-      {/* Dots centrados */}
+      {/* Dots (para navegar) */}
       <div className="pointer-events-none absolute bottom-3 left-1/2 z-10 -translate-x-1/2">
         <div className="flex items-center gap-2 rounded-full bg-black/20 px-3 py-1 backdrop-blur">
           {images.map((_, i) => (

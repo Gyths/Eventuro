@@ -13,7 +13,7 @@ router.get('/google/callback',
 router.get('/auth/failure', failure);
 router.get('/logout', logout);
 
-router.get('/login', login);
+router.post('/login', login);
 //router.post("/temp-register", tempRegister);
 
 export default router;
