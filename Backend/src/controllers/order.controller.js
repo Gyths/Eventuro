@@ -1,14 +1,22 @@
 import { createOrderSvc } from '../services/order.service.js'
+import { toJSONSafe } from '../utils/serialize.js';
 
 export async function createOrderCtrl(req, res) {
     try {
-        const result = await createOrderSvc(req.body);
-        res.status(201).json({
-            message: 'Orden creada exitosamente.',
-            data: result
-        });
+        const sessionUserId = req.user?.userId;
+        if (!sessionUserId && !req.body.buyerUserId) {
+            return res.status(401).json({ error: 'Usuario no autenticado.' });
+        }
+
+        const payload = {
+            ...req.body,
+            buyerUserId: sessionUserId ? BigInt(sessionUserId) : BigInt(req.body.buyerUserId)
+        };
+
+        const order = await createOrderSvc(payload);
+
+        return res.status(201).json(toJSONSafe(order));
     } catch (err) {
-        console.error(err);
-        res.status(400).json({ error: err.message });
+        return res.status(400).json({ error: err.message });
     }
 }

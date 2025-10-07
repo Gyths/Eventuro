@@ -1,17 +1,22 @@
-import { createOrderRepo } from '../repositories/order.repo.js'
+import { createOrderRepo } from '../repositories/order.repo.js';
 
-export async function createOrderSvc(input) {
-    if (!input.buyerUserId || !Array.isArray(input.items) || input.items.length === 0) {
-        throw new Error('Datos de orden inválidos.');
-    }
+export async function createOrderSvc(input, ctx = {}) {
+  // Validaciones básicas
+  if (!input || !Array.isArray(input.items) || input.items.length === 0) {
+    throw new Error('La orden debe contener al menos un item.');
+  }
 
-    // Valida que todas las monedas sean PEN
-    input.items.forEach(i => {
-        if (i.currency && i.currency !== 'PEN') {
-            throw new Error('Solo se permiten órdenes en soles peruanos (PEN).');
-        }
-    });
+  // Forzar moneda en payload (opcionales)
+  if (input.currency && input.currency !== 'PEN') {
+    throw new Error('Solo se permiten órdenes en PEN.');
+  }
 
-    // Aquí podrías aplicar lógica de códigos de descuento globales si existen.
-    return await createOrderRepo(input);
+  // Convertir/normalizar buyerUserId si lo manda el cliente (en tu app preferir usar req.user)
+  //if (!input.buyerUserId) {
+    // si no viene, deberia haberse colocado desde el controller usando req.user
+    //throw new Error('buyerUserId requerido.');
+  //}
+
+  // normalizar numeric/string -> BigInt en repo (repo ya lo hace)
+  return await createOrderRepo(input, ctx);
 }
