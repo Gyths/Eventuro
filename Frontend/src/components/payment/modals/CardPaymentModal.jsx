@@ -1,7 +1,7 @@
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import logo from "../../../assets/logo.svg";
-import Cards from "react-credit-cards-2";
-import "react-credit-cards-2/dist/es/styles-compiled.css";
+import Cards from "react-credit-cards-3";
+import "react-credit-cards-3/dist/es/styles-compiled.css";
 import React from "react";
 
 export default function CardPaymentModal({ onClose, onSuccess }) {
@@ -46,8 +46,16 @@ export default function CardPaymentModal({ onClose, onSuccess }) {
     setState((prev) => ({ ...prev, focus: evt.target.name }));
   };
 
-  function handleSubmit() {
-    onSuccess();
+  function handleSubmit(e) {
+    e.preventDefault();
+
+    const form = e.target;
+
+    if (form.checkValidity()) {
+      onSuccess();
+    } else {
+      form.reportValidity();
+    }
   }
 
   return (
@@ -61,7 +69,10 @@ export default function CardPaymentModal({ onClose, onSuccess }) {
           <Header onClose={onClose} />
           <hr className="w-11/12 border-t-1 border-purple-900 mx-auto my-4"></hr>
           {/*<Body />*/}
-          <form className="flex flex-col gap-2 p-6 justify-center items-center">
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-col gap-2 p-6 justify-center items-center"
+          >
             <div className="flex flex-1 items-center justify-center w-1/3">
               <Cards
                 number={state.number}
@@ -138,7 +149,6 @@ export default function CardPaymentModal({ onClose, onSuccess }) {
               <div className="flex flex-1 w-1/2 items-center justify-center">
                 <button
                   type="submit"
-                  onClick={handleSubmit}
                   className="flex w-50 h-12 items-center justify-center cursor-pointer rounded-2xl font-bold bg-purple-600 text-white hover:bg-yellow-500 transition-transfor-all duration-500 ease-in-out hover:scale-102"
                 >
                   Aceptar

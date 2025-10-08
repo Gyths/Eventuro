@@ -1,4 +1,5 @@
 import React from "react";
+import { TERMS_AND_CONDITIONS_TEXT } from "./texts";
 
 export default function TermsServicesCheckbox({ handleTermsChange = null }) {
   const [isChecked, setIsChecked] = React.useState(true);
@@ -16,10 +17,7 @@ export default function TermsServicesCheckbox({ handleTermsChange = null }) {
         onChange={handleCheckboxChange}
       />
       <label htmlFor="terms-check-box" className="text-sm">
-        He leído y acepto los {" (*) "}
-        <span className="font-semibold">Términos y Condiciones</span> y la
-        {" (*) "}
-        <span className="font-semibold">Política de Privacidad</span>
+        <span className="font-semibold">{TERMS_AND_CONDITIONS_TEXT.text}</span>
       </label>
     </div>
   );
