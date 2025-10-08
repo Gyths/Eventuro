@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import FilterPill from "./FilterPill";
 import Linker from "./Linker";
 import CategorySelector from "./panels/CategorySelector";
@@ -15,7 +16,6 @@ import { useLocation } from "react-router-dom";
  * - onLogin(), onRegister(), onProfile(), onMyTickets(), onClaims(), onLogout()
  */
 
-
 export default function TopBar({
   isLoggedIn = false,
   onSearch,
@@ -28,8 +28,11 @@ export default function TopBar({
   onClaims,
   onLogout,
 }) {
+  const disabledPaths = ["/pago"];
   const { pathname } = useLocation();
-  const isCreateEvent = pathname.startsWith("/crearEvento") || pathname.startsWith("/CrearEvento");
+  const navigate = useNavigate();
+  const isCreateEvent =
+    pathname.startsWith("/crearEvento") || pathname.startsWith("/CrearEvento");
   const [query, setQuery] = useState("");
   /*const [filters, setFilters] = useState({ //evitaamos duplicar estaado
     category: null,
@@ -52,80 +55,99 @@ export default function TopBar({
           "linear-gradient(90deg, #2A0243 0%, #6408A2 60%, #2A0243 100%)",
       }}
     >
-    <div className="flex w-full items-center justify-between px-6 py-3">
-  
+      <div className="flex w-full items-center justify-between px-6 py-3">
         {/* Left: Logo */}
         <div className="flex items-center gap-2">
-            <img src={logo} alt="Eventuro" className="h-8 w-auto" />
+          <img
+            src={logo}
+            alt="Eventuro"
+            className="h-8 w-auto cursor-pointer"
+            onClick={() => {
+              !disabledPaths.includes(location.pathname) && navigate("/home");
+            }}
+          />
         </div>
         {/* Center: Search + Filters */}
         {!isCreateEvent ? (
           <div className="flex flex-1 items-center gap-4 px-6">
-              {/* Search */}
-              <div className="flex-1">
+            {/* Search */}
+            <div className="flex-1">
               <input
-                  type="text"
-                  value={query}
-                  onChange={(e) => {
+                type="text"
+                value={query}
+                onChange={(e) => {
                   setQuery(e.target.value);
                   onSearch?.(e.target.value);
-                  }}
-                  placeholder="Search..."
-                  className="w-full rounded-full border border-white/20 bg-white/95 px-4 py-2 text-sm outline-none placeholder:text-gray-500 focus:ring-2 focus:ring-violet-400"
+                }}
+                placeholder="Search..."
+                className="w-full rounded-full border border-white/20 bg-white/95 px-4 py-2 text-sm outline-none placeholder:text-gray-500 focus:ring-2 focus:ring-violet-400"
               />
-              </div>
+            </div>
 
-              {/* Filters */}
-              <div className="hidden items-center gap-2 md:flex">
+            {/* Filters */}
+            <div className="hidden items-center gap-2 md:flex">
               <FilterPill label="Categoria" icon="category">
-                  <CategorySelector
+                <CategorySelector
                   value={filters.category}
                   onChange={(category) => updateFilters({ category })}
-                  />
+                />
               </FilterPill>
               <FilterPill label="Fecha" icon="date">
-                  <DateRangeSelector
+                <DateRangeSelector
                   from={filters.dateFrom}
                   to={filters.dateTo}
                   onChange={({ from, to }) =>
-                      updateFilters({ dateFrom: from, dateTo: to })
+                    updateFilters({ dateFrom: from, dateTo: to })
                   }
-                  />
+                />
               </FilterPill>
               <FilterPill label="Ubicación" icon="location">
-                  <LocationSelector
+                <LocationSelector
                   value={filters.location}
                   onChange={(location) => updateFilters({ location })}
-                  />
+                />
               </FilterPill>
-              </div>
+            </div>
           </div>
-        ): (
+        ) : (
           <div className="flex flex-1 items-center gap-4 px-6">
-              {/* Search */}
-              <div className="flex-1">
+            {/* Search */}
+            <div className="flex-1">
               <input
-                  type="text"
-                  value={query}
-                  onChange={(e) => {
+                type="text"
+                value={query}
+                onChange={(e) => {
                   setQuery(e.target.value);
                   onSearch?.(e.target.value);
-                  }}
-                  placeholder="Search..."
-                  className="w-full rounded-full border border-white/20 bg-white/95 px-4 py-2 text-sm outline-none placeholder:text-gray-500 focus:ring-2 focus:ring-violet-400"
+                }}
+                placeholder="Search..."
+                className="w-full rounded-full border border-white/20 bg-white/95 px-4 py-2 text-sm outline-none placeholder:text-gray-500 focus:ring-2 focus:ring-violet-400"
               />
-              </div>
+            </div>
 
-              {/* Filters */}
-              <div className="hidden items-center gap-2 md:flex">
-                <Linker label="Reportes" icon="chart-bar" to="/reports" activeMatch="/reports" />
-                <Linker label="Mis Eventos" icon="calendar-days" to="/my-events" activeMatch="/my-events" />
-                <Linker label="Crear Evento" icon="plus-circle" to="/create_event" activeMatch="/create_event" />
-              </div>
+            {/* Filters */}
+            <div className="hidden items-center gap-2 md:flex">
+              <Linker
+                label="Reportes"
+                icon="chart-bar"
+                to="/reports"
+                activeMatch="/reports"
+              />
+              <Linker
+                label="Mis Eventos"
+                icon="calendar-days"
+                to="/my-events"
+                activeMatch="/my-events"
+              />
+              <Linker
+                label="Crear Evento"
+                icon="plus-circle"
+                to="/create_event"
+                activeMatch="/create_event"
+              />
+            </div>
           </div>
         )}
-        
-        
 
         {/* Right: User */}
         {isCreateEvent ? (
@@ -137,18 +159,18 @@ export default function TopBar({
               onLogout={onLogout}
             />
           </div>
-        ):(
+        ) : (
           <div>
-              {isLoggedIn ? (
+            {isLoggedIn ? (
               <UserMenu
-                  onProfile={onProfile}
-                  onMyTickets={onMyTickets}
-                  onClaims={onClaims}
-                  onLogout={onLogout}
+                onProfile={onProfile}
+                onMyTickets={onMyTickets}
+                onClaims={onClaims}
+                onLogout={onLogout}
               />
-              ) : (
+            ) : (
               <AuthButtons onLogin={onLogin} onRegister={onRegister} />
-              )}
+            )}
           </div>
         )}
       </div>
