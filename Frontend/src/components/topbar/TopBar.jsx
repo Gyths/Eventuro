@@ -8,6 +8,7 @@ import LocationSelector from "./panels/LocationSelector";
 import logo from "../../assets/logoB.svg";
 import { UserIcon } from "@heroicons/react/24/outline";
 import { useLocation } from "react-router-dom";
+import TimerTopBar from "./TimerTopBar";
 
 /**
  * Props:
@@ -28,9 +29,11 @@ export default function TopBar({
   onClaims,
   onLogout,
 }) {
-  const disabledPaths = ["/pago"];
+  const paymentPageRoute = "/pago";
+  const disabledPaths = [paymentPageRoute];
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const variant = pathname === paymentPageRoute ? "paymentPage" : "default";
   const isCreateEvent =
     pathname.startsWith("/crearEvento") || pathname.startsWith("/CrearEvento");
   const [query, setQuery] = useState("");
@@ -45,6 +48,35 @@ export default function TopBar({
     const next = { ...filters, ...patch };
     /*setFilters(next);*/ //evitamos setear doblemente
     onFiltersChange?.(next);
+  }
+
+  if (variant === "paymentPage") {
+    return (
+      <header
+        className="fixed inset-x-0 top-0 z-50 w-full shadow-[0_2px_18px_rgba(0,0,0,0.12)]"
+        style={{
+          background:
+            "linear-gradient(90deg, #2A0243 0%, #6408A2 60%, #2A0243 100%)",
+        }}
+      >
+        <div className="flex w-full items-center justify-between px-6 py-3">
+          {/* Logo */}
+          <div className="flex items-center gap-2">
+            <img
+              src={logo}
+              alt="Eventuro"
+              className="h-8 w-auto cursor-pointer"
+              onClick={() => {
+                !disabledPaths.includes(location.pathname) && navigate("/home");
+              }}
+            />
+          </div>
+
+          {/* Contador */}
+          <TimerTopBar></TimerTopBar>
+        </div>
+      </header>
+    );
   }
 
   return (

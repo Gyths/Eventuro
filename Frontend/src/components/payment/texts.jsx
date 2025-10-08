@@ -28,8 +28,3 @@ export const PAYMENT_OPTION_DESCRIPTIONS = {
       "Ingresa un número asociado a una cuenta de Yape o Plin e ingresa el código de verificación que se encuentra en tu aplicativo para realizar tu compra",
   },
 };
-
-export const SUCCESS_MESSAGES = {
-  purchaseCompleted:
-    "Tu pago se procesó correctamente. Te enviamos un correo con tus entradas.",
-};
