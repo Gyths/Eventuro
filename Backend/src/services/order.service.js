@@ -1,4 +1,5 @@
 import { createOrderRepo } from '../repositories/order.repo.js';
+import { cancelOrderRepo } from '../repositories/order.repo.js';
 
 export async function createOrderSvc(input, ctx = {}) {
 
@@ -10,11 +11,18 @@ export async function createOrderSvc(input, ctx = {}) {
     throw new Error('Solo se permiten órdenes en PEN.');
   }
 
-  // Convertir buyerUserId si lo manda el cliente (en tu app preferir usar req.user)
-  //if (!input.buyerUserId) {
-    // si no viene, deberia haberse colocado desde el controller usando req.user
-    //throw new Error('buyerUserId requerido.');
-  //}
+  if (!input.buyerUserId) {
+    throw new Error('buyerUserId requerido.');
+  }
 
   return await createOrderRepo(input, ctx);
+}
+
+
+export async function cancelOrderSvc(orderId) {
+
+  if (!orderId) {
+    throw new Error('orderId requerido.');
+  }
+  return await cancelOrderRepo(orderId);
 }
