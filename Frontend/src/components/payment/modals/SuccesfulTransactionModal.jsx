@@ -6,7 +6,7 @@ import {
 } from "@heroicons/react/24/outline";
 
 export default function CompraExitosaModal({
-  monto,
+  total,
   transaccionId = "A1B2C3",
   nombreEvento = "Evento",
   fechaEvento = "Fecha del evento",
@@ -31,12 +31,12 @@ export default function CompraExitosaModal({
 
         {/* Detalle de la compra */}
         <div className="bg-gray-100 rounded-lg text-left p-4">
-          <div className="flex justify-between mb-1">
+          <div className="flex justify-between mb-1 gap-6">
             <span className="font-medium text-gray-700">Monto</span>
-            <span className="font-semibold">S/ {monto}</span>
+            <span className="font-semibold">S/ {total}</span>
           </div>
 
-          <div className="flex justify-between mb-3 border-b border-gray-400 pb-2">
+          <div className="flex justify-between mb-3 border-b border-gray-400 pb-2 gap-6">
             <span className="font-medium text-gray-700">N° de Transacción</span>
             <span className="font-semibold">#{transaccionId}</span>
           </div>

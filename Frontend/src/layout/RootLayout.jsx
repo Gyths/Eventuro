@@ -40,7 +40,7 @@ export default function RootLayout() {
       )}
 
       {/* Si ocultas la TopBar, no pongas padding superior */}
-      <main className={hideTop ? "" : "pt-[72px]"}>
+      <main className={hideTop ? "" : "pt-14"}>
         {/* carga de filtros */}
         <Outlet context={{ filters }} />
       </main>

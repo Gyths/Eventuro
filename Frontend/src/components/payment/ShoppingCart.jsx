@@ -2,7 +2,7 @@ import React from "react";
 
 export default function ShoppingCart({
   termsAccepted,
-  optionSelected,
+  selectedOption,
   openModal,
   setTotal,
 }) {
@@ -22,29 +22,32 @@ export default function ShoppingCart({
     var valido = true;
     if (!termsAccepted) {
       valido = false;
-      console.log(
+      alert(
         "Debes aceptar los términos y condiciones para continuar con la compra."
       );
     }
-    if (optionSelected === "nada seleccionado") {
+    if (selectedOption === "nada seleccionado") {
       valido = false;
-      console.log(
+      alert(
         "Debes seleccionar un método de pago para continuar con la compra."
       );
     }
     if (valido) {
-      openModal(optionSelected);
-      console.log("Procesando compra con el método de pago:", optionSelected);
+      openModal(selectedOption);
+      console.log("Procesando compra con el método de pago:", selectedOption);
     }
   };
 
   return (
-    <div className="flex flex-col w-3/5 h-full bg-white rounded-xl shadow-lg px-11 py-7">
+    <div className="flex flex-col w-auto h-full bg-white rounded-xl shadow-lg px-11 py-7">
       <h2 className="text-2xl font-bold text-gray-800">Compras</h2>
       <hr className="my-4 border-gray-300 mx-2" />
       <div className="space-y-3">
         {tickets.map((ticket, index) => (
-          <div key={index} className="flex justify-between text-gray-700">
+          <div
+            key={index}
+            className="flex justify-between text-gray-700 gap-52"
+          >
             <span>{ticket.tipo}</span>
             <span className="font-semibold">S/. {ticket.precio}</span>
           </div>

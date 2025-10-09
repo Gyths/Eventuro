@@ -58,11 +58,17 @@ export default function YapePlinPaymentModal({ onClose, total, onSuccess }) {
   };
 
   //Acciones a realizar cuando se suba el formulario
-  const handleSubmit = (e) => {
+  function handleSubmit(e) {
     e.preventDefault();
-    onSuccess();
-  };
 
+    const form = e.target;
+
+    if (form.checkValidity()) {
+      onSuccess();
+    } else {
+      form.reportValidity();
+    }
+  }
   return (
     <>
       <div
@@ -87,7 +93,7 @@ export default function YapePlinPaymentModal({ onClose, total, onSuccess }) {
               Paga usando el código de aprobación disponible en Yape o Plin:
             </span>
           </div>
-          <form className="flex flex-col p-0.5 gap-2">
+          <form onSubmit={handleSubmit} className="flex flex-col p-0.5 gap-2">
             <div className="flex flex-col flex-1 w-full gap-2">
               <label htmlFor="yape-plin-number">
                 Celular afiliado a Yape o Plin
@@ -135,7 +141,6 @@ export default function YapePlinPaymentModal({ onClose, total, onSuccess }) {
             <div className="flex justify-center items-center">
               <button
                 type="submit"
-                onClick={handleSubmit}
                 className="flex flex-1 py-1 font-semibold rounded-xl justify-center text-center cursor-pointer bg-blue-400 text-white hover:bg-blue-400/80 transition-transform "
               >
                 Pagar
