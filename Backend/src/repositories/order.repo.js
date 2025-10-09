@@ -307,10 +307,31 @@ export async function createOrderRepo(input) {
                 }
             });
 
+            // Obtener valores actualizados después de actualizar la zona/allocation ===
+            const updatedZone = await tx.eventDateZone.findUnique({
+                where: { eventDateZoneId },
+                select: { capacityRemaining: true }
+            });
+
+            let updatedAllocation = null;
+            if (allocation) {
+                updatedAllocation = await tx.eventDateZoneAllocation.findUnique({
+                    where: { eventDateZoneAllocationId: allocation.eventDateZoneAllocationId },
+                    select: { remainingQuantity: true }
+                });
+            }
+
+            // Guardamos los valores de entradas restantes junto con el ítem
+            createdOrderItems.push({
+                orderItemId: Number(createdItem.orderItemId),
+                remaining: {
+                    zoneRemaining: updatedZone ? updatedZone.capacityRemaining : null,
+                    allocationRemaining: updatedAllocation ? updatedAllocation.remainingQuantity : null
+                }
+            });
 
             //Total de la orden
             totalAmount += finalPrice;
-            createdOrderItems.push(createdItem);
         }
 
         // Actualizar total y estado de la orden
@@ -327,7 +348,7 @@ export async function createOrderRepo(input) {
         return {
             orderId: Number(order.orderId),
             totalAmount,
-            items: createdOrderItems.map(i => ({ orderItemId: Number(i.orderItemId) }))
+            items: createdOrderItems
         };
     });
 }

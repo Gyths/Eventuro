@@ -15,10 +15,8 @@ export async function createTicketRepo(input) {
 
         if (!order) throw new Error('Orden no encontrada.');
 
-        //La orden debe actualizarse a PAID durante la confirmación del pago en la pasarela de pagos
-        //para poder saber si generarle sus tickets
-        if (order.status !== 'PAID') {
-            throw new Error('Solo se pueden confirmar órdenes pagadas.');
+        if (order.status !== 'PENDING_PAYMENT') {
+            throw new Error('Solo se pueden confirmar órdenes pendientes de pago.');
         }
 
         const createdTickets = [];
@@ -45,21 +43,18 @@ export async function createTicketRepo(input) {
                 // Esto no debería pasar ya que se supone que el asiento fue validado en la orden
                 if (!seat) throw new Error('Asiento no encontrado al confirmar ticket.');
 
-                //El asiento debe actualizarse a SOLD durante la confirmación del pago en la pasarela de pagos
-                //para poder saber si generarle sus tickets
-                if (seat.status !== 'SOLD') {
-                    throw new Error('El asiento no ha sido vendido, no puede emitirse el ticket.');
+                if (seat.status !== 'HELD') {
+                    throw new Error('El asiento no ha sido reservado, no puede emitirse el ticket.');
                 }
 
-                // Actualizar asiento a SOLD (falta analizar si se hará aquí o en la pasarela de pagos)
-                /*await tx.seat.update({
+                // Actualizar asiento a SOLD
+                await tx.seat.update({
                     where: { seatId },
                     data: {
-                        //status: 'SOLD',
+                        status: 'SOLD',
                         holdUntil: null,//se libera la fecha del hold
-                        updatedAt: new Date()
                     }
-                });*/
+                });
 
                 // Crear ticket
                 const ticket = await tx.ticket.create({
@@ -78,7 +73,7 @@ export async function createTicketRepo(input) {
 
                 createdTickets.push(ticket);
 
-                // Eliminar cualquier hold asociado al asiento (Falta discutirlo)
+                //Eliminar cualquier hold asociado al asiento (Falta discutirlo)
                 /*await tx.hold.deleteMany({
                     where: { seatId: item.seatId }
                 });*/
@@ -111,13 +106,13 @@ export async function createTicketRepo(input) {
             }
         }
 
-        // Actualizar la orden a estado PAID (falta analizar si se hará aquí o en la pasarela de pagos)
-        /*await tx.order.update({
+        // Actualizar la orden a estado PAID 
+        await tx.order.update({
             where: { orderId },
             data: {
                 status: 'PAID'
             }
-        });*/
+        });
 
         return {
             orderId: Number(orderId),
