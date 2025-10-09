@@ -42,14 +42,14 @@ export default function PaymentMethod(Event = null) {
   return (
     <>
       <div className="flex flex-col bg-gray-100 min-h-screen px-10">
-        <div className="flex flex-warp items-center gap-4 px-4 py-5 md:px-8">
+        <div className="flex flex-wrap items-center gap-4 px-4 py-5 md:px-8">
           <ArrowButton destination={ticketSelectionDest} />
           <h1 className="font-bold text-2xl sm:text-3xl md:text-4xl">
             {titleText}
           </h1>
 
           <div className="flex-1 flex justify-end pr-10">
-            <EventInfoCard Event={Event} />
+            <EventInfoCard />
           </div>
         </div>
 

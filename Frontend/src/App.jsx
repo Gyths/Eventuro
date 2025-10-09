@@ -41,9 +41,9 @@ function App() {
           <Route path="crearEventoPaso3" element={<CrearEventoPaso3 />} />
           <Route path="seleccionTickets" element={<TicketSelection />} />
           {/*<Route> se comenta para evitar que la pagina dentro de ella esté restringida a una sesión autenticada*/}
-          {/*<Route element={<ProtectedRoute />}>*/}
-          <Route path="pago" element={<PaymentMethod />} />
-          {/*</Route>*/}
+          <Route element={<ProtectedRoute />}>
+            <Route path="pago" element={<PaymentMethod />} />
+          </Route>
           <Route path="app/*" element={<Navigate to="/" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
