@@ -40,6 +40,7 @@ export async function createEventRepo(input) {
             venueId = v.venueId;
         }
 
+        const categories = [];
         if (Array.isArray(input.eventCategories) && input.eventCategories.length > 0) {
             for (const eventToCategoryId of input.eventCategories) {
                 categories.push({
@@ -206,6 +207,25 @@ export async function listEventRepo() {
             description: true,
             accessPolicy: true,
             accessPolicyDescription: true,
+
+            // relación con Venue
+            venue: {
+                select: {
+                city: true,
+                address: true,
+                addressUrl: true,
+                reference: true,
+                capacity: true,
+                },
+            },
+
+            // relación con EventDate (pueden ser muchos)
+            dates: {
+                select: {
+                startAt: true,
+                endAt: true,
+                },
+            },
         },
     });
 }

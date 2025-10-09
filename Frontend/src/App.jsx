@@ -15,6 +15,8 @@ import HomePublic from "./pages/HomePublic";
 import HomePrivate from "./pages/HomePrivate";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import PaymentMethod from "./pages/PaymentMethod";
+import TicketSelection from "./pages/TicketSelection.jsx";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import Home from "./pages/Home.jsx";
@@ -37,6 +39,11 @@ function App() {
           <Route path="crearEventoPaso1" element={<CrearEventoPaso1 />} />
           <Route path="crearEventoPaso2" element={<CrearEventoPaso2 />} />
           <Route path="crearEventoPaso3" element={<CrearEventoPaso3 />} />
+          <Route path="seleccionTickets" element={<TicketSelection />} />
+          {/*<Route> se comenta para evitar que la pagina dentro de ella esté restringida a una sesión autenticada*/}
+          {/*<Route element={<ProtectedRoute />}>*/}
+          <Route path="pago" element={<PaymentMethod />} />
+          {/*</Route>*/}
           <Route path="app/*" element={<Navigate to="/" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

@@ -1,17 +1,6 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { EyeIcon, EyeSlashIcon, UserPlusIcon } from "@heroicons/react/24/outline";
 import logo from "../assets/logo.svg";
-
-/** País -> Departamentos (ejemplo; cámbialos por tu fuente real) */
-const MAPA_DEPTOS = {
-  Perú: ["Lima", "Cusco", "Arequipa", "La Libertad", "Piura"],
-  Chile: ["Santiago", "Valparaíso", "Biobío", "Antofagasta"],
-  Colombia: ["Bogotá D.C.", "Antioquia", "Valle del Cauca", "Cundinamarca"],
-  México: ["CDMX", "Jalisco", "Nuevo León", "Puebla"],
-  Argentina: ["Buenos Aires", "Córdoba", "Mendoza", "Santa Fe"],
-};
-
-const GENEROS = ["Femenino", "Masculino", "No binario", "Prefiero no decir"];
 
 export default function RegistroCard({
   onSubmit,                 // async (payload) => void
@@ -25,17 +14,12 @@ export default function RegistroCard({
     email: "",
     password: "",
     confirm: "",
-    pais: "",
-    departamento: "",
-    genero: "",
+    phone: "",
+    birthdate: "",  // "YYYY-MM-DD"
+    genero: "",     // "Masculino" | "Femenino"
   });
   const [show, setShow] = useState(false);
   const [errors, setErrors] = useState({});
-
-  const departamentosDisponibles = useMemo(
-    () => (form.pais ? MAPA_DEPTOS[form.pais] ?? [] : []),
-    [form.pais]
-  );
 
   const inputBase =
     "w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm outline-none focus:border-violet-500";
@@ -44,16 +28,13 @@ export default function RegistroCard({
 
   function onChange(e) {
     const { name, value } = e.target;
-    setForm((f) => ({
-      ...f,
-      [name]: value,
-      ...(name === "pais" ? { departamento: "" } : null), // reset depto si cambia país
-    }));
+    setForm((f) => ({ ...f, [name]: value }));
   }
 
   function validate() {
     const e = {};
     const soloLetras = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+    const soloDigitos = /^[0-9+\s-]{6,}$/; // admite +, espacios y guiones, mínimo 6
 
     if (!form.nombres.trim()) e.nombres = "Ingresa tus nombres";
     else if (!soloLetras.test(form.nombres)) e.nombres = "Solo letras y espacios";
@@ -66,8 +47,14 @@ export default function RegistroCard({
     if (form.password.length < 6) e.password = "Mínimo 6 caracteres";
     if (form.password !== form.confirm) e.confirm = "Las contraseñas no coinciden";
 
-    if (!form.pais) e.pais = "Selecciona un país";
-    if (!form.departamento) e.departamento = "Selecciona un departamento";
+    if (!form.phone.trim()) e.phone = "Ingresa tu teléfono";
+    else if (!soloDigitos.test(form.phone.trim()))
+      e.phone = "Teléfono inválido";
+
+    if (!form.birthdate) e.birthdate = "Selecciona tu cumpleaños";
+    else if (isNaN(new Date(form.birthdate).getTime()))
+      e.birthdate = "Fecha inválida";
+
     if (!form.genero) e.genero = "Selecciona un género";
 
     setErrors(e);
@@ -77,14 +64,21 @@ export default function RegistroCard({
   async function handleSubmit(ev) {
     ev.preventDefault();
     if (!validate()) return;
+
+    // mapear “Masculino/Femenino” -> “M/F” (enum de la BD)
+    const genderEnum = form.genero === "Masculino" ? "M" : "F";
+
+    // convertir a DateTime ISO
+    const birthdateIso = new Date(form.birthdate).toISOString();
+
     await onSubmit?.({
-      nombres: form.nombres.trim(),
-      apellidos: form.apellidos.trim(),
+      name: form.nombres.trim(),
+      lastName: form.apellidos.trim(),
       email: form.email.trim(),
       password: form.password,
-      pais: form.pais,
-      departamento: form.departamento,
-      genero: form.genero,
+      phone: form.phone.trim(),
+      birthdate: birthdateIso,
+      gender: genderEnum,
     });
   }
 
@@ -133,10 +127,37 @@ export default function RegistroCard({
             type="email"
             value={form.email}
             onChange={onChange}
-            className={`${inputBase} bg-indigo-50`} // si quieres el pill azulado como tu captura
+            className={`${inputBase} bg-indigo-50`}
             placeholder="tucorreo@ejemplo.com"
           />
           {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email}</p>}
+        </label>
+
+        {/* Teléfono */}
+        <label className="block">
+          <span className="mb-1 block text-sm text-gray-600">Teléfono</span>
+          <input
+            name="phone"
+            type="tel"
+            value={form.phone}
+            onChange={onChange}
+            className={inputBase}
+            placeholder="+51 999 999 999"
+          />
+          {errors.phone && <p className="mt-1 text-xs text-red-600">{errors.phone}</p>}
+        </label>
+
+        {/* Cumpleaños */}
+        <label className="block">
+          <span className="mb-1 block text-sm text-gray-600">Cumpleaños</span>
+          <input
+            name="birthdate"
+            type="date"
+            value={form.birthdate}
+            onChange={onChange}
+            className={inputBase}
+          />
+          {errors.birthdate && <p className="mt-1 text-xs text-red-600">{errors.birthdate}</p>}
         </label>
 
         {/* Contraseña */}
@@ -176,59 +197,8 @@ export default function RegistroCard({
             placeholder="Repite la contraseña"
             autoComplete="new-password"
           />
-        {errors.confirm && <p className="mt-1 text-xs text-red-600">{errors.confirm}</p>}
+          {errors.confirm && <p className="mt-1 text-xs text-red-600">{errors.confirm}</p>}
         </label>
-
-        {/* País y Departamento */}
-        <div className="grid grid-cols-2 gap-3">
-          <label className="block relative">
-            <span className="mb-1 block text-sm text-gray-600">País</span>
-            <select
-              name="pais"
-              value={form.pais}
-              onChange={onChange}
-              className={selectBase}
-            >
-              <option value="">Selecciona un país</option>
-              {Object.keys(MAPA_DEPTOS).map((p) => (
-                <option key={p} value={p}>{p}</option>
-              ))}
-            </select>
-            {/* caret */}
-            <svg
-              className="pointer-events-none absolute right-2 bottom-2.5 h-4 w-4 text-gray-700"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path d="M5.25 7.5l4.5 4.5 4.5-4.5" />
-            </svg>
-            {errors.pais && <p className="mt-1 text-xs text-red-600">{errors.pais}</p>}
-          </label>
-
-          <label className="block relative">
-            <span className="mb-1 block text-sm text-gray-600">Departamento</span>
-            <select
-              name="departamento"
-              value={form.departamento}
-              onChange={onChange}
-              className={selectBase}
-              disabled={!form.pais}
-            >
-              <option value="">{form.pais ? "Selecciona un departamento" : "Selecciona un país primero"}</option>
-              {departamentosDisponibles.map((d) => (
-                <option key={d} value={d}>{d}</option>
-              ))}
-            </select>
-            <svg
-              className="pointer-events-none absolute right-2 bottom-2.5 h-4 w-4 text-gray-700"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path d="M5.25 7.5l4.5 4.5 4.5-4.5" />
-            </svg>
-            {errors.departamento && <p className="mt-1 text-xs text-red-600">{errors.departamento}</p>}
-          </label>
-        </div>
 
         {/* Género */}
         <label className="block relative">
@@ -240,9 +210,8 @@ export default function RegistroCard({
             className={selectBase}
           >
             <option value="">Selecciona una opción</option>
-            {GENEROS.map((g) => (
-              <option key={g} value={g}>{g}</option>
-            ))}
+            <option value="Masculino">Masculino</option>
+            <option value="Femenino">Femenino</option>
           </select>
           <svg
             className="pointer-events-none absolute right-2 bottom-2.5 h-4 w-4 text-gray-700"
