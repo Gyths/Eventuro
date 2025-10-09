@@ -1,6 +1,7 @@
 import { prisma } from '../utils/prisma.js';
 import { Prisma } from '../generated/prisma/index.js';
 
+//Módulo para crear una orden de compra
 export async function createOrderRepo(input) {
 
     return prisma.$transaction(async (tx) => {
@@ -67,7 +68,7 @@ export async function createOrderRepo(input) {
                     basePrice: true,
                     currency: true,
                     kind: true,
-                    seatMapId: true 
+                    seatMapId: true
                 }
             });
 
@@ -181,7 +182,7 @@ export async function createOrderRepo(input) {
                 }
             }
 
-
+            const holdExpiration = new Date(Date.now() + 5 * 60 * 1000); // 5 minutos
             // CONTROL DE CONCURRENCIA OCC (optimistic concurrency control):
             // Todo dentro de la transacción tx: si alguno falla se hace rollback.
 
@@ -195,13 +196,36 @@ export async function createOrderRepo(input) {
                         status: 'AVAILABLE' // solo actualiza si sigue disponible
                     },
                     data: {
-                        status: 'SOLD' // o 'HELD', según el flujo (falta analizar)
+                        status: 'HELD', // se reserva el asiento (luego se actualiza a SOLD al emitir el ticket)
+                        holdUntil: holdExpiration
                     }
                 });
 
                 if (seatUpdate.count === 0) {
                     throw new Error('Colisión: el asiento fue tomado por otro usuario, reintente.');
                 }
+
+                // Crear registro en Hold
+                await tx.hold.create({
+                    data: {
+                        eventDateId,
+                        eventDateZoneId,
+                        seatId,
+                        buyerUserId,
+                        expiresAt: holdExpiration
+                    }
+                });
+            } else {
+                // Crear hold por cantidad sin seatId (zonas generales)
+                await tx.hold.create({
+                    data: {
+                        eventDateId,
+                        eventDateZoneId,
+                        quantity,
+                        buyerUserId,
+                        expiresAt: holdExpiration
+                    }
+                });
             }
 
 
@@ -210,7 +234,7 @@ export async function createOrderRepo(input) {
                 const allocUpdate = await tx.eventDateZoneAllocation.updateMany({
                     where: {
                         eventDateZoneAllocationId: BigInt(allocation.eventDateZoneAllocationId),
-                        remainingQuantity: allocation.remainingQuantity 
+                        remainingQuantity: allocation.remainingQuantity
                     },
                     data: {
                         remainingQuantity: (allocation.remainingQuantity ?? 0) - quantity
@@ -280,6 +304,7 @@ export async function createOrderRepo(input) {
             totalAmount += finalPrice;
             createdOrderItems.push(createdItem);
 
+            /*
             // Creación de ticket(s)
             // Si seatId presente: se crea 1 ticket por item (asiento)
             // Si no hay seatId pero quantity > 0: se crea "quantity" tickets sin asiento asignado
@@ -318,17 +343,16 @@ export async function createOrderRepo(input) {
                     createdTickets.push(ticket);
                 }
             }
-
+            */
         }
 
-
-        // Actualizar total de la orden
+        // Actualizar total y estado de la orden
         await tx.order.update({
             where: { orderId: order.orderId },
             data: {
                 totalAmount: new Prisma.Decimal(totalAmount),
                 updatedAt: new Date(),
-                status: 'PAID' //Falta definir el flujo de estados
+                status: 'PENDING_PAYMENT'
             }
         });
 
@@ -336,8 +360,99 @@ export async function createOrderRepo(input) {
         return {
             orderId: Number(order.orderId),
             totalAmount,
-            items: createdOrderItems.map(i => ({ orderItemId: BigInt(i.orderItemId) })),
-            tickets: createdTickets.map(t => ({ ticketId: BigInt(t.ticketId) }))
+            items: createdOrderItems.map(i => ({ orderItemId: Number(i.orderItemId) }))
+            //tickets: createdTickets.map(t => ({ ticketId: Number(t.ticketId) }))
         };
+    });
+}
+
+//Módulo para actualizar estados en caso de que un usuario cancele una orden
+//y a su vez, borrar las reservas (holds) y liberar asientos o capacidad reservada
+export async function cancelOrderRepo(orderId) {
+    return prisma.$transaction(async (tx) => {
+
+        const order = await tx.order.findUnique({
+            where: { orderId },
+            include: {
+                items: true
+            }
+        });
+
+        if (!order) throw new Error('Orden no encontrada.');
+
+        if (order.status !== 'CREATED' && order.status !== 'PENDING_PAYMENT') {
+            throw new Error('Solo pueden cancelarse órdenes pendientes o recién creadas.');
+        }
+
+        // Revertir los efectos de la reserva
+        for (const item of order.items) {
+            const {
+                seatId,
+                quantity,
+                eventDateZoneId,
+                eventDateZoneAllocationId
+            } = item;
+
+            // Liberar asiento si lo había
+            if (seatId) {
+                await tx.seat.updateMany({
+                    where: {
+                        seatId,
+                        status: 'HELD'
+                    },
+                    data: {
+                        status: 'AVAILABLE',
+                        holdUntil: null,
+                        updatedAt: new Date()
+                    }
+                });
+
+                await tx.hold.deleteMany({
+                    where: { seatId: item.seatId }
+                });
+                
+            } else {
+                // Restaurar capacidad de zona
+                await tx.eventDateZone.update({
+                    where: { eventDateZoneId },
+                    data: {
+                        capacityRemaining: (zone.capacityRemaining ?? 0) + quantity,
+                        updatedAt: new Date()
+                    }
+                });
+
+                // Restaurar allocation si aplica
+                if (eventDateZoneAllocationId) {
+                    await tx.eventDateZoneAllocation.update({
+                        where: { eventDateZoneAllocationId },
+                        data: {
+                            remainingQuantity: (alloc.remainingQuantity ?? 0) + quantity,
+                            updatedAt: new Date()
+                        }
+                    });
+                }
+
+                // Borrar hold
+                await tx.hold.deleteMany({
+                    where: {
+                        eventDateZoneId: item.eventDateZoneId,
+                        buyerUserId: order.buyerUserId
+                    }
+                });
+            }
+
+
+        }
+
+        // Finalmente, actualizar la orden
+        await tx.order.update({
+            where: { orderId },
+            data: {
+                status: 'CANCELLED',
+                updatedAt: new Date()
+            }
+        });
+
+        return { orderId: Number(orderId), status: 'CANCELLED' };
     });
 }
