@@ -47,19 +47,19 @@ export async function createTicketRepo(input) {
 
                 //El asiento debe actualizarse a SOLD durante la confirmación del pago en la pasarela de pagos
                 //para poder saber si generarle sus tickets
-                if (seat.status !== 'HELD') {
+                if (seat.status !== 'SOLD') {
                     throw new Error('El asiento no ha sido vendido, no puede emitirse el ticket.');
                 }
 
-                // Actualizar asiento a SOLD
-                await tx.seat.update({
+                // Actualizar asiento a SOLD (falta analizar si se hará aquí o en la pasarela de pagos)
+                /*await tx.seat.update({
                     where: { seatId },
                     data: {
                         //status: 'SOLD',
                         holdUntil: null,//se libera la fecha del hold
                         updatedAt: new Date()
                     }
-                });
+                });*/
 
                 // Crear ticket
                 const ticket = await tx.ticket.create({
@@ -111,14 +111,13 @@ export async function createTicketRepo(input) {
             }
         }
 
-        // Actualizar la orden a estado PAID
-        await tx.order.update({
+        // Actualizar la orden a estado PAID (falta analizar si se hará aquí o en la pasarela de pagos)
+        /*await tx.order.update({
             where: { orderId },
             data: {
-                //status: 'PAID',
-                updatedAt: new Date()
+                status: 'PAID'
             }
-        });
+        });*/
 
         return {
             orderId: Number(orderId),
@@ -164,8 +163,7 @@ export async function updateTicketRepo(ticketId, payload, organizerUserId) {
     const updatedTicket = await tx.ticket.update({
       where: { ticketId },
       data: {
-        ...payload,
-        updatedAt: new Date()
+        ...payload
       }
     });
 

@@ -164,6 +164,13 @@ export async function createOrderRepo(input) {
             // general
             let seat = null;
             if (item.seatId) {
+
+                // Validar que quantity sea exactamente 1
+                if (quantity !== 1) {
+                    throw new Error(
+                        `No puedes reservar el asiento (seatId ${item.seatId} para dos o más personas).`
+                    );
+                }
                 // Verificar que el asiento exista y esté disponible
                 const seatId = BigInt(item.seatId);
                 seat = await tx.seat.findUnique({
@@ -202,7 +209,7 @@ export async function createOrderRepo(input) {
                 });
 
                 if (seatUpdate.count === 0) {
-                    throw new Error('Colisión: el asiento fue tomado por otro usuario, reintente.');
+                    throw new Error('Colisión: el asiento fue reservado por otro usuario, reintente.');
                 }
 
                 // Crear registro en Hold
@@ -211,6 +218,7 @@ export async function createOrderRepo(input) {
                         eventDateId,
                         eventDateZoneId,
                         seatId,
+                        quantity: 1,
                         buyerUserId,
                         expiresAt: holdExpiration
                     }
@@ -303,47 +311,6 @@ export async function createOrderRepo(input) {
             //Total de la orden
             totalAmount += finalPrice;
             createdOrderItems.push(createdItem);
-
-            /*
-            // Creación de ticket(s)
-            // Si seatId presente: se crea 1 ticket por item (asiento)
-            // Si no hay seatId pero quantity > 0: se crea "quantity" tickets sin asiento asignado
-            if (item.seatId) {
-                const ticket = await tx.ticket.create({
-                    data: {
-                        orderItemId: createdItem.orderItemId,
-                        eventId,
-                        eventDateId,
-                        eventDateZoneId,
-                        eventDateZoneAllocationId: allocation ? BigInt(allocation.eventDateZoneAllocationId) : undefined,
-                        seatId: BigInt(item.seatId),
-                        ownerUserId: buyerUserId,
-                        pricePaid: new Prisma.Decimal(finalPrice),
-                        currency: 'PEN'
-                    }
-                });
-                createdTickets.push(ticket);
-
-            } else {
-                const perTicket = Number((finalPrice / quantity).toFixed(2));
-                for (let i = 0; i < quantity; i++) {
-                    const ticket = await tx.ticket.create({
-                        data: {
-                            orderItemId: createdItem.orderItemId,
-                            eventId,
-                            eventDateId,
-                            eventDateZoneId,
-                            eventDateZoneAllocationId: allocation ? BigInt(allocation.eventDateZoneAllocationId) : undefined,
-                            // seatId null
-                            ownerUserId: buyerUserId,
-                            pricePaid: new Prisma.Decimal(perTicket),
-                            currency: 'PEN'
-                        }
-                    });
-                    createdTickets.push(ticket);
-                }
-            }
-            */
         }
 
         // Actualizar total y estado de la orden
@@ -361,7 +328,6 @@ export async function createOrderRepo(input) {
             orderId: Number(order.orderId),
             totalAmount,
             items: createdOrderItems.map(i => ({ orderItemId: Number(i.orderItemId) }))
-            //tickets: createdTickets.map(t => ({ ticketId: Number(t.ticketId) }))
         };
     });
 }
@@ -410,7 +376,7 @@ export async function cancelOrderRepo(orderId) {
                 await tx.hold.deleteMany({
                     where: { seatId: item.seatId }
                 });
-                
+
             } else {
                 // Restaurar capacidad de zona
                 await tx.eventDateZone.update({

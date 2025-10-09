@@ -6,6 +6,6 @@ import { updateTicketCtrl } from '../controllers/ticket.controller.js';
 const router = express.Router();
 
 router.post('/', createTicketCtrl);
-router.put('/:id/update', updateTicketCtrl);
+router.put('/:ticketId/update', updateTicketCtrl);
 
 export default router;
