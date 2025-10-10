@@ -1,22 +1,14 @@
 import React from "react";
+import useOrder from "../../services/Order/OrderContext";
 
 export default function ShoppingCart({
   termsAccepted,
   selectedOption,
   openModal,
-  setTotal,
 }) {
-  const tickets = [
-    { tipo: "Entrada General", precio: 50 },
-    { tipo: "VIP", precio: 120 },
-    { tipo: "Estudiante", precio: 30 },
-  ];
+  const tickets = [];
 
-  const total = tickets.reduce((acc, t) => acc + t.precio, 0);
-
-  React.useEffect(() => {
-    setTotal(total);
-  }, [total, setTotal]);
+  const { order } = useOrder();
 
   const handleSubmit = () => {
     var valido = true;
@@ -39,9 +31,9 @@ export default function ShoppingCart({
   };
 
   return (
-    <div className="flex flex-col w-auto h-full bg-white rounded-xl shadow-lg px-11 py-7">
+    <div className="flex flex-col w-auto h-auto bg-white rounded-xl shadow-lg px-11 py-7">
       <h2 className="text-2xl font-bold text-gray-800">Compras</h2>
-      <hr className="my-4 border-gray-300 mx-2" />
+      <hr className="my-4 border-gray-300 mx-2 min-w-60" />
       <div className="space-y-3">
         {tickets.map((ticket, index) => (
           <div
@@ -58,7 +50,7 @@ export default function ShoppingCart({
         <hr className="my-4 border-gray-300 mx-2" />
         <div className="flex justify-between text-lg font-bold text-gray-900">
           <span>Pago</span>
-          <span>S/. {total}</span>
+          <span>S/. {order.totalAmount}</span>
         </div>
         <button
           onClick={handleSubmit}

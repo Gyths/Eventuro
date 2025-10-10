@@ -1,7 +1,9 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import useEvent from "../services/Event/EventContext";
 
 export default function EventCard({
+  id,
   image,
   title = "Evento",
   location = "Ubicación del evento",
@@ -21,6 +23,7 @@ export default function EventCard({
   const month = s
     .toLocaleString("es", { month: "short", timeZone: "UTC" })
     .toUpperCase();
+  const { setEvent } = useEvent();
 
   // Si quieres mostrar hora del inicio, tómala en UTC también:
   const timeStr = new Intl.DateTimeFormat("es-PE", {
@@ -32,6 +35,7 @@ export default function EventCard({
 
   function onClick() {
     const event = {
+      id,
       image,
       title,
       location,
@@ -39,7 +43,8 @@ export default function EventCard({
       eDate: sDay + month + year,
       hour: `${hh}:${mm}`,
     };
-    sessionStorage.setItem("eventoSeleccionado", JSON.stringify(event));
+    setEvent(event);
+    console.log(event);
     navigate(ticketSelectionPage);
   }
 

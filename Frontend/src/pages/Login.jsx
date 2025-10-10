@@ -31,6 +31,8 @@ export default function Login() {
             }
 
             const data = await response.json();
+            localStorage.setItem("sessionToken", data.token);
+            localStorage.setItem("userData", JSON.stringify(data.user));
             // Suponiendo que tu backend devuelve { token, user }
             login({ token: data.token, user: data.user });
 

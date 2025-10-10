@@ -1,11 +1,19 @@
 import yapePlinLogo from "../../../assets/yape-whitebg-plin.svg";
 import payMeLogo from "../../../assets/pay-me.svg";
 import React from "react";
+import { EventuroApi } from "../../../api";
+import useOrder from "../../../services/Order/OrderContext";
+import { useAuth } from "../../../services/auth/AuthContext";
 
 const inputField =
   "flex rounded-sm p-1.5 bg-gray-100 ring ring-gray-200 hover:ring-gray-300 focus:ring-gray-400 focus:outline-none transform-transition";
 
-export default function YapePlinPaymentModal({ onClose, total, onSuccess }) {
+export default function YapePlinPaymentModal({ onClose, onSuccess, onFail }) {
+  const ticketEnpoint = "/tickets";
+  const apiMethod = "POST";
+
+  const { order } = useOrder();
+  const { user } = useAuth();
   const [code, setCode] = React.useState(["", "", "", "", "", ""]);
   const inputRefs = React.useRef([]);
   const [phone, setPhone] = React.useState("");
@@ -58,17 +66,34 @@ export default function YapePlinPaymentModal({ onClose, total, onSuccess }) {
   };
 
   //Acciones a realizar cuando se suba el formulario
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
     const form = e.target;
+    !form.reportValidity();
 
-    if (form.checkValidity()) {
-      onSuccess();
-    } else {
-      form.reportValidity();
+    const ticketData = {
+      orderId: order.orderId,
+      buyerUserId: parseInt(user.userId),
+    };
+    console.log(ticketData);
+    try {
+      const response = await EventuroApi({
+        endpoint: ticketEnpoint,
+        method: apiMethod,
+        data: ticketData,
+        saveLocalStorage: true,
+        storageName: "ticketData",
+      });
+    } catch (err) {
+      onFail();
+      console.error("Error al crear al realizar la compra:", err);
+      throw err;
     }
+
+    onSuccess();
   }
+
   return (
     <>
       <div
@@ -136,7 +161,7 @@ export default function YapePlinPaymentModal({ onClose, total, onSuccess }) {
             <hr className="mt-1/4 border-gray-800/30 border-1"></hr>
             <div className="flex justify-between text-lg font-black text-gray-900 p-2">
               <span>Pago total</span>
-              <span>S/. {total}</span>
+              <span>S/. {order?.totalAmount}</span>
             </div>
             <div className="flex justify-center items-center">
               <button

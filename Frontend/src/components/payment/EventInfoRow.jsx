@@ -1,27 +1,26 @@
 import { MapPinIcon } from "@heroicons/react/24/solid";
 import { CalendarDaysIcon } from "@heroicons/react/24/solid";
 import { ClockIcon } from "@heroicons/react/24/solid";
+import useEvent from "../../services/Event/EventContext";
 
 export default function EventInfoRow({ Event }) {
-  const event =
-    location.state?.evento ||
-    JSON.parse(sessionStorage.getItem("eventoSeleccionado"));
+  const { event } = useEvent();
 
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-start gap-3 text-gray-600 text-sm">
       <div className="flex items-center gap-1">
         <MapPinIcon className="h-5 w-5 text-purple-800" />
-        <span>{event.location}</span>
+        <span>{event?.location}</span>
       </div>
 
       <div className="flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-1">
           <CalendarDaysIcon className="h-5 w-5 text-purple-800" />
-          <span>{event.sDate}</span>
+          <span>{event?.sDate}</span>
         </div>
         <div className="flex items-center gap-1">
           <ClockIcon className="h-5 w-5 text-purple-800" />
-          <span>{event.hour}</span>
+          <span>{event?.hour}</span>
         </div>
       </div>
     </div>

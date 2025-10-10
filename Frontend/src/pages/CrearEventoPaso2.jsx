@@ -12,7 +12,7 @@ export default function CrearEventoPaso2() {
       <UbicacionEvento/>
       <CrearTicketTarjeta />
       <div className="flex justify-center">
-          <BotonCTA variant="pink" onClick={()=>navigate("/CrearEventoPaso3")}>Siguiente</BotonCTA>
+          <BotonCTA variant="pink" onClick={()=>navigate("/crear/paso3")}>Siguiente</BotonCTA>
       </div>
     </div>
   );
