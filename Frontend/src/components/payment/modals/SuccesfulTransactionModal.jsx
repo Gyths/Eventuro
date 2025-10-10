@@ -2,18 +2,22 @@ import {
   CheckCircleIcon,
   StarIcon,
   CalendarDaysIcon,
-  XMarkIcon,
 } from "@heroicons/react/24/outline";
+
+import useOrder from "../../../services/Order/OrderContext";
+import useEvent from "../../../services/Event/EventContext";
+import { useAuth } from "../../../services/auth/AuthContext";
 
 export default function CompraExitosaModal({
   total,
-  transaccionId = "A1B2C3",
-  nombreEvento = "Evento",
-  fechaEvento = "Fecha del evento",
+  transaccionId = "0000",
   correo = "ejemplo@correo.com",
   onReturnHome,
   onViewTickets,
 }) {
+  const { order } = useOrder();
+  const { event } = useEvent();
+  const { user } = useAuth();
   return (
     <div
       className={
@@ -33,7 +37,7 @@ export default function CompraExitosaModal({
         <div className="bg-gray-100 rounded-lg text-left p-4">
           <div className="flex justify-between mb-1 gap-6">
             <span className="font-medium text-gray-700">Monto</span>
-            <span className="font-semibold">S/ {total}</span>
+            <span className="font-semibold">S/ {order.totalAmount}</span>
           </div>
 
           <div className="flex justify-between mb-3 border-b border-gray-400 pb-2 gap-6">
@@ -44,21 +48,21 @@ export default function CompraExitosaModal({
           <div className="flex flex-row items-center gap-2">
             <StarIcon className="flex size-9"></StarIcon>
             <span className="flex flex-1 justify-end font-medium">
-              {nombreEvento}
+              {event?.title}
             </span>
           </div>
 
           <div className="flex flex-row items-center gap-2">
             <CalendarDaysIcon className="flex size-8"></CalendarDaysIcon>
             <span className="flex flex-1 justify-end font-medium">
-              {fechaEvento}
+              {event?.sDate}
             </span>
           </div>
         </div>
 
         <p className="text-gray-600 text-sm mb-6">
           Te enviamos un correo a{" "}
-          <span className="font-semibold">{correo}</span>
+          <span className="font-semibold">{user?.email}</span>
         </p>
 
         {/* Botones */}

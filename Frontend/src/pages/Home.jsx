@@ -69,7 +69,7 @@ export default function Home() {
 
         const mapped = (payload ?? []).map((ev) => {
           const firstDate = ev.dates?.[0] ?? null;
-
+          console.log(ev);
           // **Clave para no “mover” el día**:
           // Convertimos a YYYY-MM-DD (UTC) y ese string lo mandamos a la card.
           const startDate = firstDate?.startAt

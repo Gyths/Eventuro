@@ -13,6 +13,7 @@ import ShoppingCart from "../components/payment/ShoppingCart.jsx";
 import CardPaymentModal from "../components/payment/modals/CardPaymentModal.jsx";
 import YapePlinPaymentModal from "../components/payment/modals/YapePlinPaymentModal.jsx";
 import SuccesfulTransactionModal from "../components/payment/modals/SuccesfulTransactionModal.jsx";
+import FailedTransactionModal from "../components/payment/modals/FailedTransactionModal.jsx";
 import { useModal } from "../context/ModalContext";
 
 import banksLogos from "../assets/credit-debit-card.svg";
@@ -25,8 +26,7 @@ export default function PaymentMethod() {
   const homeDest = "/home";
   const viewTicketDest = "/entradas";
 
-  const [total, setTotal] = React.useState(0);
-  const { modal, setModal } = useModal();
+  const { modal, setModal } = useModal(null);
 
   const [termsAccepted, setTermsAccepted] = React.useState(false);
   const [selectedOption, setOption] = React.useState("nada seleccionado");
@@ -81,7 +81,6 @@ export default function PaymentMethod() {
               openModal={(value) => {
                 setModal(value);
               }}
-              setTotal={setTotal}
             />
           </div>
         </div>
@@ -98,6 +97,7 @@ export default function PaymentMethod() {
             <CardPaymentModal
               onClose={() => setModal(null)}
               onSuccess={() => setModal("success")}
+              onFail={() => setModal("fail")}
             ></CardPaymentModal>
           </motion.div>
         )}
@@ -113,8 +113,8 @@ export default function PaymentMethod() {
           >
             <YapePlinPaymentModal
               onClose={() => setModal(null)}
-              total={total}
               onSuccess={() => setModal("success")}
+              onFail={() => setModal("fail")}
             />
           </motion.div>
         )}
@@ -129,7 +129,6 @@ export default function PaymentMethod() {
             transition={{ duration: 0.25, ease: "easeOut" }}
           >
             <SuccesfulTransactionModal
-              total={total}
               onReturnHome={() => {
                 navigate(homeDest);
               }}
@@ -137,6 +136,19 @@ export default function PaymentMethod() {
                 navigate(viewTicketDest);
               }}
             />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence initial={false}>
+        {modal === "fail" && (
+          <motion.div
+            className="fixed inset-0 flex items-center justify-center backdrop-blur-xs"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+          >
+            <FailedTransactionModal />
           </motion.div>
         )}
       </AnimatePresence>
