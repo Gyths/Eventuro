@@ -121,6 +121,7 @@ export default function CrearEventoCards() {
     tier: { enabled: false, qty: "", period: "diariamente" }, // toggle
   });
 
+  //###### GENERADOR DEL JSON PARA POST A LA BD ##########
   const generateAndPostJson = () => {
     //Extraer fechas
     const eventDates = dates.flatMap(date => 
@@ -130,7 +131,7 @@ export default function CrearEventoCards() {
       }))
     );
 
-    // 2. Mapear los tickets (items) a la estructura 'zones
+    // 2. Mapeo de tickes a zones, los allocations son dummy, hay que reestructurar la tarjeta de creacion para que lo soporte
     const dummyAllocations = [
       { "audienceName": "General Discount", "discountPercent": 5, "allocatedQuantity": 100 }
     ];
@@ -141,7 +142,7 @@ export default function CrearEventoCards() {
       basePrice: Number(item.price),
       capacity: Number(item.quantity),
       currency: tickets.currency,
-      // Los siguientes campos son placeholders ya que no están en el estado del componente
+      // Placeholders, no estamos trabajando en asientos numerados aun
       cols: 0, 
       rows: 0,
       allocations: dummyAllocations, 
