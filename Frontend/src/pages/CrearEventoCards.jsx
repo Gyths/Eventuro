@@ -180,7 +180,7 @@ export default function CrearEventoCards() {
         capacity: Number(location.capacity),
       },
       // Categorías
-      eventCategories: form.category, // Ordenar por pildoras las categorias
+      eventCategories: form.category ? [Number(form.category)] : [], // Ordenar por pildoras las categorias
 
       //Fases de venta (No implementado, Falta la tarjeta) descomentar cuando se implemente
       //salePhases: dummySalePhases,
