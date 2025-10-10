@@ -55,7 +55,7 @@ export default function CrearTicketLine({
                 placeholder="0"
                 value={item.quantity}
                 onChange={(v) => {
-                  if (v.length <= 7) handleChange(idx, "quantity", sanitizeInt(v));
+                  if (v.length <= 7) handleChange(idx, "quantity", v);
                 }}
               />
             </FormField>
@@ -66,7 +66,7 @@ export default function CrearTicketLine({
                   placeholder="0.00"
                   value={item.price}
                   onChange={(v) => {
-                    if (v.length <= 7) handleChange(idx, "price", sanitizeMoney(v));
+                    if (v.length <= 7) handleChange(idx, "price", v);
                   }}
                 />
                 <div className="w-[96px] flex justify-end">
