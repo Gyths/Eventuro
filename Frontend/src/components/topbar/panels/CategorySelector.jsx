@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 
-const BASE_URL = "http://localhost:4000";
+import {BASE_URL} from "../../../config.js"
 
 export default function CategorySelector({ value, onChange }) {
   const [cats, setCats] = useState([]);
