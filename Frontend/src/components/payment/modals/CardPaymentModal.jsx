@@ -1,13 +1,24 @@
-import { XMarkIcon } from "@heroicons/react/24/solid";
+import React from "react";
+import useOrder from "../../../services/Order/OrderContext";
+import { useAuth } from "../../../services/auth/AuthContext";
+
 import logo from "../../../assets/logo.svg";
+import { XMarkIcon } from "@heroicons/react/24/solid";
+
 import Cards from "react-credit-cards-3";
 import "react-credit-cards-3/dist/es/styles-compiled.css";
-import React from "react";
 
-export default function CardPaymentModal({ onClose, onSuccess }) {
+import { EventuroApi } from "../../../api";
+
+export default function CardPaymentModal({ onClose, onSuccess, onFail }) {
   const inputField =
     "flex p-1.5 bg-gray-50 border-b border-black outline-none focus:scale-101 transition-transform";
 
+  const { order } = useOrder();
+  const { user } = useAuth();
+
+  const ticketEnpoint = "/tickets";
+  const apiMethod = "POST";
   const [state, setState] = React.useState({
     number: "",
     expiry: "",
@@ -46,16 +57,33 @@ export default function CardPaymentModal({ onClose, onSuccess }) {
     setState((prev) => ({ ...prev, focus: evt.target.name }));
   };
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
     const form = e.target;
+    !form.reportValidity();
 
-    if (form.checkValidity()) {
-      onSuccess();
-    } else {
-      form.reportValidity();
+    const ticketData = {
+      orderId: order.orderId,
+      buyerUserId: user.userId,
+    };
+    console.log(ticketData);
+
+    try {
+      const response = await EventuroApi({
+        endpoint: ticketEnpoint,
+        method: apiMethod,
+        data: ticketData,
+        saveLocalStorage: true,
+        storageName: "ticketData",
+      });
+    } catch (err) {
+      onFail();
+      console.error("Error al crear al realizar la compra:", err);
+      throw err;
     }
+
+    onSuccess();
   }
 
   return (
@@ -140,6 +168,7 @@ export default function CardPaymentModal({ onClose, onSuccess }) {
             <div className="flex flex-row p-2 pt-4 gap-8">
               <div className="flex flex-1 w-1/2 items-center justify-center">
                 <button
+                  type="button"
                   onClick={onClose}
                   className="flex w-50 h-12 items-center justify-center cursor-pointer rounded-2xl border border-red-400/80 text-red-400/80 hover:scale-101 transition-transform duration-300"
                 >
