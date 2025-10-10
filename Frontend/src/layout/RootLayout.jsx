@@ -1,5 +1,5 @@
 // src/layout/RootLayout.jsx
-import { Outlet, useNavigate, useLocation } from "react-router-dom"; 
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 import TopBar from "../components/topbar/TopBar";
 import { useAuth } from "../services/auth/AuthContext";
@@ -7,7 +7,7 @@ import { useAuth } from "../services/auth/AuthContext";
 export default function RootLayout() {
   const { isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
-  const { pathname } = useLocation();                              
+  const { pathname } = useLocation();
 
   const hideTop = pathname === "/login" || pathname === "/registro";
 
@@ -34,13 +34,13 @@ export default function RootLayout() {
             navigate("/", { replace: true });
           }}
           //recibe cambios desde TopBar
-           filters={filters}              // pasa el estado actual
-           onFiltersChange={setFilters}   // pasa el setter
+          filters={filters} // pasa el estado actual
+          onFiltersChange={setFilters} // pasa el setter
         />
       )}
 
-       {/* Si ocultas la TopBar, no pongas padding superior */}
-      <main className={hideTop ? "" : "pt-[72px]"}>
+      {/* Si ocultas la TopBar, no pongas padding superior */}
+      <main className={hideTop ? "" : "pt-14"}>
         {/* carga de filtros */}
         <Outlet context={{ filters }} />
       </main>
