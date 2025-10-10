@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 
 import ArrowButton from "../components/ArrowButton.jsx";
 import EventInfoCard from "../components/payment/EvenInfoCard.jsx";
