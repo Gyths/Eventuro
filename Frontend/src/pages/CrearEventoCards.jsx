@@ -149,8 +149,8 @@ export default function CrearEventoCards() {
     ];
 
     const eventZones = tickets.items.map((item) => ({
-      name: item.name || "Ticket Zone", // Asumo que el ítem tiene un campo 'name'
-      kind: item.type === 'SEATED' ? "SEATED" : "GENERAL",
+      name: item.type || "Ticket Zone", // Nombre de la zona/tipo
+      kind: "GENERAL",
       basePrice: Number(item.price),
       capacity: Number(item.quantity),
       currency: tickets.currency,
