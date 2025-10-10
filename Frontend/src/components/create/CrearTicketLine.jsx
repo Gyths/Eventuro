@@ -44,7 +44,9 @@ export default function CrearTicketLine({
               <TextInput
                 placeholder="Ej. VIP"
                 value={item.type}
-                onChange={(v) => handleChange(idx, "type", v)}
+                onChange={(v) => {
+                  if (v.length <= 100) handleChange(idx, "type", v);
+                }}
               />
             </FormField>
 
@@ -52,7 +54,9 @@ export default function CrearTicketLine({
               <TextInput
                 placeholder="0"
                 value={item.quantity}
-                onChange={(v) => handleChange(idx, "quantity", v)}
+                onChange={(v) => {
+                  if (v.length <= 7) handleChange(idx, "quantity", sanitizeInt(v));
+                }}
               />
             </FormField>
 
@@ -61,7 +65,9 @@ export default function CrearTicketLine({
                 <TextInput
                   placeholder="0.00"
                   value={item.price}
-                  onChange={(v) => handleChange(idx, "price", v)}
+                  onChange={(v) => {
+                    if (v.length <= 7) handleChange(idx, "price", sanitizeMoney(v));
+                  }}
                 />
                 <div className="w-[96px] flex justify-end">
                   <BotonEliminar onClick={() => handleDelete(idx)} />
