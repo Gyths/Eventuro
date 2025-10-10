@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import RegistroCard from "../components/RegistroCard";
 import { useAuth } from "../services/auth/AuthContext.jsx";
 
-const BASE_URL = "http://localhost:4000";
-
+import { BASE_URL } from "../config.js";
 export default function Register() {
   const navigate = useNavigate();
   const { login } = useAuth(); // <-- para guardar { token, user } tras auto-login

@@ -4,7 +4,7 @@ import { useOutletContext } from "react-router-dom";
 import BannerCarousel from "../components/BannerCarousel.jsx";
 import EventCard from "../components/EventCard.jsx";
 
-const BASE_URL = "http://localhost:4000";
+import { BASE_URL } from "../config.js";
 
 const imagesDemo = [
   "/banners/banner1.jpg",

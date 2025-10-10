@@ -26,6 +26,7 @@ import CrearEventoCards from "./pages/CrearEventoCards.jsx";
 function App() {
   return (
     <>
+    
       <Routes>
         <Route element={<RootLayout />}>
           <Route index element={<Home />} />

@@ -1,7 +1,7 @@
 import { useNavigate, Link } from "react-router-dom";
 import LoginCard from "../components/LoginCard";
 import { useAuth } from "../services/auth/AuthContext.jsx";
-
+import { BASE_URL } from "../config.js";
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ export default function Login() {
       <LoginCard
         onSubmit={async ({ email, password }) => {
           try {
-            const response = await fetch("http://localhost:4000/login", {
+            const response = await fetch(`${BASE_URL}/login`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
