@@ -1,52 +1,54 @@
-// src/auth/AuthContext.jsx
-import { createContext, useContext, useEffect, useState } from "react";
+// services/auth/AuthContext.jsx
+import {
+  createContext,
+  useContext,
+  useMemo,
+  useLayoutEffect,
+  useState,
+} from "react";
 
-const AuthContext = createContext(null);
+const AuthCtx = createContext();
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
+  // Lee sesión de forma sincrónica para evitar FOUC
+  const [session, setSession] = useState(() => {
+    const raw = localStorage.getItem("session");
+    return raw ? JSON.parse(raw) : { token: null, user: null };
+  });
+  const [ready, setReady] = useState(false);
 
-  // hidratar desde localStorage
-  useEffect(() => {
-    const rawUser = localStorage.getItem("auth:user");
-    const rawToken = localStorage.getItem("auth:token");
-    if (rawUser && rawToken) {
-      setUser(JSON.parse(rawUser));
-      setToken(rawToken);
-    }
+  useLayoutEffect(() => {
+    // Si validas con backend, hazlo aquí; si no, basta marcar ready.
+    setReady(true);
   }, []);
 
-  function login({ token, user }) {
-    setUser(user);
-    setToken(token);
-    localStorage.setItem("auth:user", JSON.stringify(user));
-    localStorage.setItem("auth:token", token);
-  }
+  const login = ({ token, user }) => {
+    const s = { token, user };
+    localStorage.setItem("session", JSON.stringify(s));
+    setSession(s);
+  };
 
-  function register({ token, user }) {
-    setUser(user);
-    setToken(token);
-    localStorage.setItem("auth:user", JSON.stringify(user));
-    localStorage.setItem("auth:token", token);
-  }
+  const logout = () => {
+    localStorage.removeItem("session");
+    setSession({ token: null, user: null });
+  };
 
-  function logout() {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem("auth:user");
-    localStorage.removeItem("auth:token");
-  }
-
-  return (
-    <AuthContext.Provider
-      value={{ user, token, isAuthenticated: !!user, login, register, logout }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo(
+    () => ({
+      user: session.user,
+      token: session.token,
+      isAuthenticated: !!session.token,
+      ready,
+      login,
+      logout,
+    }),
+    [session, ready]
   );
+
+  // Importante: no renders de la app hasta que esté listo
+  if (!ready) return null; // o un Splash minimal
+
+  return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 }
 
-export function useAuth() {
-  return useContext(AuthContext);
-}
+export const useAuth = () => useContext(AuthCtx);

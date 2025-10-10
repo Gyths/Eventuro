@@ -176,7 +176,7 @@ model Venue {
   updatedAt DateTime @updatedAt
 }
 
-//tarifa
+//Tarifa
 model Fee {
   feeId      BigInt  @id @default(autoincrement()) @db.BigInt
   percentage Decimal @db.Decimal(10, 2)

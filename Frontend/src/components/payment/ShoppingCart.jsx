@@ -1,45 +1,45 @@
-import { useState } from "react";
+import React from "react";
+import useOrder from "../../services/Order/OrderContext";
 
 export default function ShoppingCart({
   termsAccepted,
-  optionSelected,
+  selectedOption,
   openModal,
 }) {
-  const tickets = [
-    { tipo: "Entrada General", precio: 50 },
-    { tipo: "VIP", precio: 120 },
-    { tipo: "Estudiante", precio: 30 },
-  ];
+  const tickets = [];
 
-  const total = tickets.reduce((acc, t) => acc + t.precio, 0);
+  const { order } = useOrder();
 
   const handleSubmit = () => {
     var valido = true;
     if (!termsAccepted) {
       valido = false;
-      console.log(
+      alert(
         "Debes aceptar los términos y condiciones para continuar con la compra."
       );
     }
-    if (optionSelected === "nada seleccionado") {
+    if (selectedOption === "nada seleccionado") {
       valido = false;
-      console.log(
+      alert(
         "Debes seleccionar un método de pago para continuar con la compra."
       );
     }
     if (valido) {
-      openModal();
-      console.log("Procesando compra con el método de pago:", optionSelected);
+      openModal(selectedOption);
+      console.log("Procesando compra con el método de pago:", selectedOption);
     }
   };
 
   return (
-    <div className="flex flex-col w-3/5 h-full bg-white rounded-xl shadow-lg px-11 py-7">
+    <div className="flex flex-col w-auto h-auto bg-white rounded-xl shadow-lg px-11 py-7">
       <h2 className="text-2xl font-bold text-gray-800">Compras</h2>
-      <hr className="my-4 border-gray-300 mx-2" />
+      <hr className="my-4 border-gray-300 mx-2 min-w-60" />
       <div className="space-y-3">
         {tickets.map((ticket, index) => (
-          <div key={index} className="flex justify-between text-gray-700">
+          <div
+            key={index}
+            className="flex justify-between text-gray-700 gap-52"
+          >
             <span>{ticket.tipo}</span>
             <span className="font-semibold">S/. {ticket.precio}</span>
           </div>
@@ -49,12 +49,12 @@ export default function ShoppingCart({
       <div className="flex flex-col">
         <hr className="my-4 border-gray-300 mx-2" />
         <div className="flex justify-between text-lg font-bold text-gray-900">
-          <span>Total</span>
-          <span>S/. {total}</span>
+          <span>Pago</span>
+          <span>S/. {order.totalAmount}</span>
         </div>
         <button
           onClick={handleSubmit}
-          className="mt-6 w-full bg-yellow-500 text-white py-3 rounded-lg hover:bg-purple-700 transition-transfor-all duration-500 ease-in-out hover:scale-101 cursor-pointer font-bold"
+          className="mt-6 w-full font-bold py-3 rounded-lg cursor-pointer bg-purple-700 text-white  hover:bg-yellow-500 transition-transfor-all duration-300 ease-in-out hover:scale-101"
         >
           Comprar
         </button>
