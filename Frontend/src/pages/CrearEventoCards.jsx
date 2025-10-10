@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import StepBadge from "../components/create/StepBadge";
 import EventBasicsForm from "../components/create/EventBasicsForm";
@@ -41,6 +41,7 @@ function WizardCard({ title, subtitle, badge, children }) {
     </div>
   );
 }
+
 
 function StepProgress({ steps, current }) {
   const pct = useMemo(
@@ -95,14 +96,25 @@ export default function CrearEventoCards() {
     "Resumen",
   ];
   const [current, setCurrent] = useState(0);
+  const cardRefs = useRef([]);
+
+  const scrollToCurrentCardTop = () => {
+    const el = cardRefs.current[current];
+    if (el && typeof el.scrollIntoView === "function") {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      // Fallback: scroll a tope de página
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+
 
   // Paso 1
   const { form, updateForm, updateRestrictions, imagePreview } = useEventForm();
   const [dates, setDates] = useState([]); // [{id, date: Date|ISO, schedules:[{id,start,end}]}]
   const handlePrev = () => setCurrent((c) => Math.max(0, c - 1));
-  const handleNext = () => setCurrent((c) => Math.min(steps.length - 1, c + 1));
   const isActive = (i) => current === i;
-
   // Paso 2 — Ubicación (estado en el padre)
   const [location, setLocation] = useState({
     city: "",
@@ -121,23 +133,222 @@ export default function CrearEventoCards() {
     tier: { enabled: false, qty: "", period: "diariamente" }, // toggle
   });
 
+  //###### GENERADOR DEL JSON PARA POST A LA BD ##########
+  const generateAndPostJson = () => {
+    //Extraer fechas falta agregar horas
+    const eventDates = dates.flatMap(date => 
+      date.schedules.map(schedule => ({
+        startAt: new Date(date.date).toISOString(),
+        endAt: new Date(date.date).toISOString(),
+      }))
+    );
+
+    // 2. Mapeo de tickes a zones, los allocations son dummy, hay que reestructurar la tarjeta de creacion para que lo soporte
+    const dummyAllocations = [
+      { "audienceName": "General Discount", "discountPercent": 5, "allocatedQuantity": 100 }
+    ];
+
+    const eventZones = tickets.items.map((item) => ({
+      name: item.type || "Ticket Zone", // Nombre de la zona/tipo
+      kind: "GENERAL",
+      basePrice: Number(item.price),
+      capacity: Number(item.quantity),
+      currency: tickets.currency,
+      // Placeholders, no estamos trabajando en asientos numerados aun
+      cols: 0, 
+      rows: 0,
+      allocations: dummyAllocations, 
+    }));
+
+    // 3. Construir el objeto JSON final
+    const finalJson = {
+      // Campos básicos
+      organizerId: 1, // Hardcoded, debe venir del contexto de usuario
+      title: form.name,
+      inPerson: true, // Aun no implementado
+      description: form.description,
+      // Asumiendo que 'form' contiene estos campos
+      accessPolicy: "E", 
+      accessPolicyDescription: form.extraInfo, 
+
+      // Ubicación (venue)
+      venue: {
+        city: location.city,
+        address: location.address,
+        addressUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Extraer la url del mapa (google maps)
+        reference: location.reference,
+        capacity: Number(location.capacity),
+      },
+      // Categorías
+      eventCategories: form.category, // Ordenar por pildoras las categorias
+
+      //Fases de venta (No implementado, Falta la tarjeta) descomentar cuando se implemente
+      //salePhases: dummySalePhases,
+
+      // Fechas y horarios
+      dates: eventDates,
+
+      // Zonas/Tickets
+      zones: eventZones,
+    };
+
+    //Prueba desde la consola del navegador del JSON
+    console.log("JSON generado para POST a la BD:", finalJson);
+    //LLamada a la api para POST, Va a fallar por las fechas
+  };
+
   // Paso 4 — Política de devoluciones (estado en el padre)
   const [returnsPolicy, setReturnsPolicy] = useState({ text: "", file: null });
+  const [errors, setErrors] = useState({});
+
+  //Validaciones
+  const validateStep = (stepIndex) => {
+    const newErrors = {};
+
+    if (stepIndex === 0) {
+      const name = (form.name ?? "").trim(); // <-- usar form.name
+      if (!name) {
+        newErrors.name = "El nombre del evento es obligatorio.";
+      } else if (name.length > 30) {
+        newErrors.name = "El nombre no puede tener más de 30 caracteres.";
+      } else if (name.length < 5) {
+        newErrors.name = "El nombre es muy corto.";
+      }
+      const description = (form.description ?? "").trim();
+      if (!description) {
+        newErrors.description = "La descripción es obligatoria.";
+      } else if (description.length > 300) {
+        newErrors.description =
+          "La descripción no puede tener más de 300 caracteres.";
+      }
+      if (!form.imageFile)
+        newErrors.image = "Debes subir una imagen para el evento.";
+
+      if (!form.category) newErrors.category = "Selecciona una categoría.";
+
+      // Ajusta a cómo subes la imagen en tu hook: imageFile / image / imagePreview
+      if (!form.imageFile && !imagePreview) {
+        newErrors.image = "Debes subir una imagen para el evento.";
+      }
+
+      const restrictionsCount = Array.isArray(form.restrictions)
+        ? form.restrictions.length
+        : Object.values(form.restrictions || {}).filter(Boolean).length;
+
+      if (restrictionsCount === 0) {
+        newErrors.restrictions = "Selecciona al menos una restricción.";
+      }
+      if (dates.length === 0) {
+        newErrors.dates = "Agrega al menos una fecha para el evento.";
+      } else {
+        const isHHMM = (t) => /^\d{2}:\d{2}$/.test(t);
+
+        // Recorre cada fecha
+        const invalidDate = dates.some((d) => {
+          const scheds = Array.isArray(d.schedules) ? d.schedules : [];
+          if (scheds.length === 0) return true;
+
+          return scheds.some((s) => {
+            const startOk = isHHMM(s.start || "");
+            const endOk = isHHMM(s.end || "");
+            return !startOk || !endOk;
+          });
+        });
+
+        if (invalidDate) {
+          newErrors.dates = "Cada fecha debe tener al menos un horario válido.";
+        }
+      }
+    }
+
+    if (stepIndex === 1) {
+      if (!location.city) {
+        newErrors.city = "La ciudad es obligatoria.";
+      }
+      if (!location.address || location.address.trim() === "") {
+        newErrors.address = "La dirección es obligatoria.";
+      } else if (location.address.length < 5) {
+        newErrors.address = "La dirección es muy corta.";
+      } else if (location.address.length > 150) {
+        newErrors.address =
+          "La dirección no puede tener más de 150 caracteres.";
+      }
+      if (
+        Number(location.capacity) > 200000 ||
+        Number(location.capacity) <= 0
+      ) {
+        newErrors.capacity =
+          "La capacidad debe ser un número válido (entre 0 y 200,000).";
+      }
+      if (!tickets.items || tickets.items.length === 0) {
+        newErrors.tickets = "Debe crear al menos un tipo de entrada.";
+      } else if (
+        tickets.items.some((t) => !t.type || !t.price || !t.quantity)
+      ) {
+        newErrors.tickets = "Completa todos los campos de cada entrada.";
+      } else if (
+        tickets.items.some((t) => isNaN(t.quantity) || t.quantity == 0)
+      ) {
+        newErrors.tickets = "Cantidad de entradas inválida.";
+      }
+
+      if (tickets?.tier?.enabled) {
+        const tierQty = Number(tickets.tier.qty || 0);
+
+        // Calcular cantidad total de todas las entradas
+        const totalTickets = (tickets.items || []).reduce((sum, it) => {
+          const q = Number(it.quantity || 0);
+          return sum + (isNaN(q) ? 0 : q);
+        }, 0);
+
+        if (!Number.isInteger(tierQty) || tierQty <= 0) {
+          newErrors.tierQty =
+            "La cantidad habilitada para la venta escalonada debe ser un número entero mayor que 0.";
+        } else if (tierQty > totalTickets) {
+          newErrors.tierQty = `La cantidad habilitada para la venta escalonada (${tierQty}) debe ser menor que la cantidad total (${totalTickets}).`;
+        }
+      }
+    }
+
+    if (stepIndex === 2) {
+      const txt = (returnsPolicy?.text ?? "").trim();
+      if (!txt && !returnsPolicy?.file) {
+        newErrors.returnsPolicy =
+          "Debe escribir o subir una política de devoluciones.";
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleNext = () => {
+    const ok = validateStep(current);
+    if (ok) {
+      setCurrent((c) => Math.min(steps.length - 1, c + 1));
+    } else {
+      scrollToCurrentCardTop();
+    }
+  };
 
   return (
     <section className="mx-auto max-w-screen-2xl px-6 lg:px-10 py-4 space-y-6">
       <StepProgress steps={steps} current={current} />
 
-      {/* PASO 1 (siempre montado, solo oculto/visible) */}
-      <div
-        className={isActive(0) ? "block" : "hidden"}
-        aria-hidden={!isActive(0)}
-      >
+      {/* PASO 1 */}
+      <div ref={el => (cardRefs.current[0] = el)} className={isActive(0) ? "block" : "hidden"} aria-hidden={!isActive(0)}>
         <WizardCard
           title="Detalles del Evento"
           subtitle="Nombre, categoría, descripción, imagen y restricciones"
           badge={<StepBadge number={1} />}
         >
+          {Object.keys(errors).length > 0 && (
+            <div className="mb-4 rounded-lg bg-red-100 text-red-800 p-3 text-sm">
+              {Object.values(errors).map((err, i) => (
+                <div key={i}>• {err}</div>
+              ))}
+            </div>
+          )}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-y-6 gap-x-10">
             <div className="lg:col-span-7">
               <EventBasicsForm form={form} onChange={updateForm} />
@@ -159,16 +370,20 @@ export default function CrearEventoCards() {
         </WizardCard>
       </div>
 
-      {/* PASO 2 (siempre montado) */}
-      <div
-        className={isActive(1) ? "block" : "hidden"}
-        aria-hidden={!isActive(1)}
-      >
+      {/* PASO 2 */}
+      <div ref={el => (cardRefs.current[1] = el)} className={isActive(1) ? "block" : "hidden"} aria-hidden={!isActive(1)}>
         <WizardCard
           title="Ubicación y Tickets"
           subtitle="Configura la sede del evento y los tipos de entrada"
           badge={<StepBadge number={2} />}
         >
+          {Object.keys(errors).length > 0 && (
+            <div className="mb-4 rounded-lg bg-red-100 text-red-800 p-3 text-sm">
+              {Object.values(errors).map((err, i) => (
+                <div key={i}>• {err}</div>
+              ))}
+            </div>
+          )}
           <div className="flex flex-col gap-6 p-2 sm:p-0">
             <UbicacionEvent
               value={location}
@@ -182,29 +397,27 @@ export default function CrearEventoCards() {
       </div>
 
       {/* ======== PASO 3 ======== */}
-      <div
-        className={isActive(2) ? "block" : "hidden"}
-        aria-hidden={!isActive(2)}
-      >
+      <div ref={el => (cardRefs.current[2] = el)} className={isActive(2) ? "block" : "hidden"} aria-hidden={!isActive(2)}>
         <WizardCard
           title="Política de devoluciones Y Códigos de descuento"
           subtitle="Define tus reglas de reembolso y promociones"
           badge={<StepBadge number={3} />}
         >
+          {Object.keys(errors).length > 0 && (
+            <div className="mb-4 rounded-lg bg-red-100 text-red-800 p-3 text-sm">
+              {Object.values(errors).map((err, i) => (
+                <div key={i}>• {err}</div>
+              ))}
+            </div>
+          )}
           <div className="space-y-8">
             <DiscountCodesSection />
-            <ReturnsPolicy
-              value={returnsPolicy}
-              onChange={setReturnsPolicy}
-            />
+            <ReturnsPolicy value={returnsPolicy} onChange={setReturnsPolicy} />
           </div>
         </WizardCard>
       </div>
 
-      <div
-        className={isActive(3) ? "block" : "hidden"}
-        aria-hidden={!isActive(3)}
-      >
+      <div ref={el => (cardRefs.current[3] = el)} className={isActive(3) ? "block" : "hidden"} aria-hidden={!isActive(3)}>
         <WizardCard
           title="Resumen del evento"
           subtitle="Revisa antes de publicar"
@@ -219,12 +432,11 @@ export default function CrearEventoCards() {
             location={location}
           />
           <div className="mt-6 flex justify-center">
-            <BotonCTA variant="pink">Publicar Evento</BotonCTA>
+            <BotonCTA variant="pink" onClick={generateAndPostJson}>Publicar Evento</BotonCTA>
           </div>
         </WizardCard>
       </div>
 
-      {/* Controles globales */}
       <div className="sticky bottom-3 z-10">
         <div className="rounded-2xl bg-white/80 backdrop-blur border border-gray-200 p-3 sm:p-4 shadow-lg">
           <WizardControls

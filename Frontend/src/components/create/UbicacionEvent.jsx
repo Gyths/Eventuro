@@ -7,16 +7,30 @@ export default function UbicacionEvent({ value, onChange }) {
   // si el padre pasa value → controlado; sino, local
   const controlled = !!value;
   const [local, setLocal] = useState(
-    value ?? { city: "", address: "", reference: "", howToFind: "", capacity: "" }
+    value ?? {
+      city: "",
+      address: "",
+      reference: "",
+      howToFind: "",
+      capacity: "",
+    }
   );
 
   // sync cuando el padre cambie
-  useEffect(() => { if (controlled) setLocal(value); }, [controlled, value]);
+  useEffect(() => {
+    if (controlled) setLocal(value);
+  }, [controlled, value]);
 
   const update = (patch) => {
     const next = { ...local, ...patch };
     if (!controlled) setLocal(next);
-    onChange?.(patch); // el padre mergea
+    onChange?.(patch); 
+  };
+  const normalizeIntNoLeadingZeros = (v) => {
+    let s = String(v ?? "");
+    s = s.replace(/\D/g, "");          
+    const noLeading = s.replace(/^0+/, "");
+    return noLeading === "" && s !== "" ? "0" : noLeading;
   };
 
   return (
@@ -31,28 +45,45 @@ export default function UbicacionEvent({ value, onChange }) {
               onChange={(v) => update({ city: v })}
               options={[
                 { value: "", label: "Elije una Ciudad para el evento", disabled: true },
-                { value: "cusco", label: "Cusco" },
-                { value: "lima", label: "Lima" },
-                { value: "arequipa", label: "Arequipa" },
+                { value: "Cusco", label: "Cusco" },
+                { value: "Lima", label: "Lima" },
+                { value: "Arequipa", label: "Arequipa" },
               ]}
               placeholder="Elije una Ciudad para el evento"
             />
           </FormField>
 
-          <FormField label="Dirección" hint="Ej. Av. Principal 123, Piso 4">
-            <TextInput value={local.address} onChange={(v) => update({ address: v })} placeholder="Ingresa la dirección exacta" />
+          <FormField label="Dirección*" hint="Ej. Av. Principal 123, Piso 4">
+            <TextInput
+              value={local.address}
+              onChange={(v) => update({ address: v })}
+              placeholder="Ingresa la dirección exacta"
+            />
           </FormField>
 
           <FormField label="Referencia" hint="Ej. Frente a la gasolinera del centro">
-            <TextInput value={local.reference} onChange={(v) => update({ reference: v })} placeholder="Punto de referencia" />
+            <TextInput
+              value={local.reference}
+              onChange={(v) => update({ reference: v })}
+              placeholder="Punto de referencia"
+            />
           </FormField>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <FormField label="¿Cómo encontrarnos?" hint="Ej. Stand N° 325">
-              <TextInput value={local.howToFind} onChange={(v) => update({ howToFind: v })} placeholder="Detalle dentro del recinto" />
+              <TextInput
+                value={local.howToFind}
+                onChange={(v) => update({ howToFind: v })}
+                placeholder="Detalle dentro del recinto"
+            />
             </FormField>
-            <FormField label="Aforo" hint="Capacidad máxima del local">
-              <TextInput value={local.capacity} onChange={(v) => update({ capacity: v })} placeholder="Ej. 500" />
+
+            <FormField label="Aforo*" hint="Ej. 500">
+              <TextInput
+                value={local.capacity}
+                onChange={(v) => update({ capacity: normalizeIntNoLeadingZeros(v) })}
+                placeholder="Capacidad máxima del local"
+              />
             </FormField>
           </div>
         </div>
