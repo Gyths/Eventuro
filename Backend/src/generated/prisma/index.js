@@ -391,7 +391,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\USER\\Documents\\Universidad\\Ingeniería de Software\\Proyecto\\Eventuro\\Backend\\src\\generated\\prisma",
+      "value": "E:\\Ingenieria de software\\Eventuro\\Eventuro\\Backend\\src\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -405,7 +405,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\USER\\Documents\\Universidad\\Ingeniería de Software\\Proyecto\\Eventuro\\Backend\\src\\prisma\\schema.prisma",
+    "sourceFilePath": "E:\\Ingenieria de software\\Eventuro\\Eventuro\\Backend\\src\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -419,6 +419,7 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
+  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
