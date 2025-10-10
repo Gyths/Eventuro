@@ -193,10 +193,7 @@ export default function CrearEventoCards() {
         >
           <div className="space-y-8">
             <DiscountCodesSection />
-            <ReturnsPolicy
-              value={returnsPolicy}
-              onChange={setReturnsPolicy}
-            />
+            <ReturnsPolicy value={returnsPolicy} onChange={setReturnsPolicy} />
           </div>
         </WizardCard>
       </div>
