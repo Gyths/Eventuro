@@ -8,5 +8,5 @@ src/generated/prisma
 
 /src/generated/prisma
 
-/src/prisma/migrations/*
-!/src/prisma/migrations/*.*
+#/src/prisma/migrations/*
+#!/src/prisma/migrations/*.*
