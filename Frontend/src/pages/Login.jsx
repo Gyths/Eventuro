@@ -2,6 +2,7 @@ import { useNavigate, Link } from "react-router-dom";
 import LoginCard from "../components/LoginCard";
 import { useAuth } from "../services/auth/AuthContext.jsx";
 import { BASE_URL } from "../config.js";
+
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -44,7 +45,7 @@ export default function Login() {
         onForgotPassword={() => alert("TODO: recuperar contraseña")}
         onRegister={() => navigate("/registro")}
         onLoginWithGoogle={async () => {
-          window.location.href = "http://localhost:4000/auth/google";
+          window.location.href = `${BASE_URL}4000/auth/google`;
         }}
       />
     </div>
