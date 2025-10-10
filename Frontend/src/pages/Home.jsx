@@ -39,7 +39,9 @@ function humanizeAddress(venue) {
 
   // Si no logramos generar addr, usamos referencia
   const rightPart = addr || reference || "";
-  return [city, rightPart].filter(Boolean).join(" — ") || "Ubicación del evento";
+  return (
+    [city, rightPart].filter(Boolean).join(" — ") || "Ubicación del evento"
+  );
 }
 
 export default function Home() {
@@ -57,7 +59,9 @@ export default function Home() {
         setErr(null);
 
         const res = await fetch(`${BASE_URL}/eventuro/api/event/list`);
-        const isJson = res.headers.get("content-type")?.includes("application/json");
+        const isJson = res.headers
+          .get("content-type")
+          ?.includes("application/json");
         const payload = isJson ? await res.json().catch(() => null) : null;
 
         if (!res.ok) throw new Error(payload?.error || `HTTP ${res.status}`);
@@ -68,10 +72,12 @@ export default function Home() {
 
           // **Clave para no “mover” el día**:
           // Convertimos a YYYY-MM-DD (UTC) y ese string lo mandamos a la card.
-          const startDate =
-            firstDate?.startAt ? new Date(firstDate.startAt).toISOString().slice(0, 10) : null;
-          const endDate =
-            firstDate?.endAt ? new Date(firstDate.endAt).toISOString().slice(0, 10) : null;
+          const startDate = firstDate?.startAt
+            ? new Date(firstDate.startAt).toISOString().slice(0, 10)
+            : null;
+          const endDate = firstDate?.endAt
+            ? new Date(firstDate.endAt).toISOString().slice(0, 10)
+            : null;
 
           // Hora en formato local HH:mm (si tu DB guarda hora)
           const hour = firstDate?.startAt
@@ -79,7 +85,7 @@ export default function Home() {
                 hour: "2-digit",
                 minute: "2-digit",
                 hour12: false,
-                 timeZone: "UTC", 
+                timeZone: "UTC",
               })
             : "12:00";
 
@@ -88,8 +94,8 @@ export default function Home() {
           return {
             id: ev.eventId ?? crypto.randomUUID(),
             titulo: ev.title ?? "Evento",
-            startDate,  // YYYY-MM-DD
-            endDate,    // YYYY-MM-DD
+            startDate, // YYYY-MM-DD
+            endDate, // YYYY-MM-DD
             hour,
             location,
             imagen: ev.imageUrl ?? "/img/evento-placeholder.jpg",
@@ -120,11 +126,19 @@ export default function Home() {
       let ok = true;
       if (filters.category) ok = ok && e.category === filters.category;
       if (filters.location)
-        ok = ok && e.location.toLowerCase().includes(filters.location.toLowerCase());
+        ok =
+          ok &&
+          e.location.toLowerCase().includes(filters.location.toLowerCase());
 
       // Comparaciones de fecha usando los strings YYYY-MM-DD (seguros)
-      if (filters.dateFrom) ok = ok && new Date(e.startDate ?? e.endDate ?? 0) >= new Date(filters.dateFrom);
-      if (filters.dateTo)   ok = ok && new Date(e.endDate ?? e.startDate ?? 0) <= new Date(filters.dateTo);
+      if (filters.dateFrom)
+        ok =
+          ok &&
+          new Date(e.startDate ?? e.endDate ?? 0) >= new Date(filters.dateFrom);
+      if (filters.dateTo)
+        ok =
+          ok &&
+          new Date(e.endDate ?? e.startDate ?? 0) <= new Date(filters.dateTo);
 
       return ok;
     });
@@ -144,14 +158,22 @@ export default function Home() {
           />
         </div>
 
-        {loading && <p className="col-span-4 text-center text-gray-500">Cargando eventos…</p>}
-        {err && <p className="col-span-4 text-center text-red-600">Error: {err}</p>}
+        {loading && (
+          <p className="col-span-4 text-center text-gray-500">
+            Cargando eventos…
+          </p>
+        )}
+        {err && (
+          <p className="col-span-4 text-center text-red-600">Error: {err}</p>
+        )}
 
-        {!loading && !err && (
-          filteredEvents.length > 0 ? (
+        {!loading &&
+          !err &&
+          (filteredEvents.length > 0 ? (
             filteredEvents.map((e) => (
               <div key={e.id} className="col-span-1">
                 <EventCard
+                  id={e.id}
                   image={e.imagen}
                   title={e.titulo}
                   location={e.location}
@@ -165,8 +187,7 @@ export default function Home() {
             <p className="col-span-4 text-center text-gray-500">
               No hay eventos que coincidan con los filtros seleccionados.
             </p>
-          )
-        )}
+          ))}
       </div>
     </section>
   );

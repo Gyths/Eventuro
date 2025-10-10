@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function EventCard({
+  id,
   image,
   title = "Evento",
   location = "Ubicación del evento",
@@ -32,6 +33,7 @@ export default function EventCard({
 
   function onClick() {
     const event = {
+      id,
       image,
       title,
       location,
@@ -39,7 +41,7 @@ export default function EventCard({
       eDate: sDay + month + year,
       hour: `${hh}:${mm}`,
     };
-    sessionStorage.setItem("eventoSeleccionado", JSON.stringify(event));
+    localStorage.setItem("eventoSeleccionado", JSON.stringify(event));
     navigate(ticketSelectionPage);
   }
 

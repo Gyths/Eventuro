@@ -18,7 +18,7 @@ import { useModal } from "../context/ModalContext";
 import banksLogos from "../assets/credit-debit-card.svg";
 import yapePlinLogo from "../assets/yape-plin.svg";
 
-export default function PaymentMethod(Event = null) {
+export default function PaymentMethod() {
   const titleText = "Elige tu método de pago";
   const navigate = useNavigate();
   const ticketSelectionDest = "/seleccionTickets";
