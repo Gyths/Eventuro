@@ -123,11 +123,11 @@ export default function CrearEventoCards() {
 
   //###### GENERADOR DEL JSON PARA POST A LA BD ##########
   const generateAndPostJson = () => {
-    //Extraer fechas
+    //Extraer fechas falta agregar horas
     const eventDates = dates.flatMap(date => 
       date.schedules.map(schedule => ({
-        startAt: schedule.start,
-        endAt: schedule.end,
+        startAt: new Date(date.date).toISOString(),
+        endAt: new Date(date.date).toISOString(),
       }))
     );
 
@@ -182,7 +182,7 @@ export default function CrearEventoCards() {
 
     //Prueba desde la consola del navegador del JSON
     console.log("JSON generado para POST a la BD:", finalJson);
-    //LLamada a la api para POST, Va a fallar por las fechas si no estan en ISO
+    //LLamada a la api para POST, Va a fallar por las fechas
   };
 
   // Paso 4 — Política de devoluciones (estado en el padre)
