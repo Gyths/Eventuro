@@ -1,25 +1,28 @@
-import React, { useEffect, useState } from "react";
+import React, { useRef, useState } from "react";
 
 export default function ReturnsPolicy({ value, onChange }) {
   const maxMB = 5;
+  const controlled = value != null;
 
-  // controlado si llega `value`, si no funciona local
-  const controlled = !!value;
-  const [text, setText] = useState(value?.text ?? "");
-  const [file, setFile] = useState(value?.file ?? null);
+  // refs
+  const fileInputRef = useRef(null);
 
-  // sync desde el padre si cambia
-  useEffect(() => {
-    if (controlled) {
-      setText(value?.text ?? "");
-      setFile(value?.file ?? null);
-    }
-  }, [controlled, value]);
+  // Estado solo si NO es controlado
+  const [textLocal, setTextLocal] = useState(value?.text ?? "");
+  const [fileLocal, setFileLocal] = useState(value?.file ?? null);
 
-  // notificar al padre ante cambios
-  useEffect(() => {
-    onChange?.({ text, file });
-  }, [text, file, onChange]);
+  // Getters/Setters unificados según modo
+  const text = controlled ? (value?.text ?? "") : textLocal;
+  const setText = (t) => {
+    if (controlled) onChange?.({ ...(value ?? {}), text: t });
+    else setTextLocal(t);
+  };
+
+  const file = controlled ? (value?.file ?? null) : fileLocal;
+  const setFile = (f) => {
+    if (controlled) onChange?.({ ...(value ?? {}), file: f });
+    else setFileLocal(f);
+  };
 
   const copyToClipboard = async () => {
     try {
@@ -31,10 +34,14 @@ export default function ReturnsPolicy({ value, onChange }) {
 
   const tooBig = file && file.size > maxMB * 1024 * 1024;
 
+  const handleFileChange = (e) => {
+    const f = e.target.files?.[0] ?? null;
+    setFile(f);
+  };
+
   const handleClearFile = () => {
     setFile(null);
-    const input = document.getElementById("policy-file-input");
-    if (input) input.value = "";
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   return (
@@ -65,10 +72,11 @@ export default function ReturnsPolicy({ value, onChange }) {
         <div className="mt-1 flex items-center gap-3">
           <div className="flex items-center gap-2 flex-1">
             <input
+              ref={fileInputRef}
               id="policy-file-input"
               type="file"
               accept=".pdf,.doc,.docx,.txt"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              onChange={handleFileChange}
               className="block w-full text-sm text-gray-700 file:mr-4 file:rounded-full file:border-0 file:bg-gray-100 file:px-4 file:py-2 file:text-sm file:font-medium file:text-gray-700 hover:file:bg-gray-200"
             />
             {file && (

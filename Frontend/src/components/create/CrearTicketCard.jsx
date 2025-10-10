@@ -52,8 +52,7 @@ export default function CrearTicketCard({ value, onChange }) {
               value={state.currency}
               onChange={(v) => set({ ...state, currency: v })}
               options={[
-                { value: "PEN", label: "Soles (PEN)" },
-                { value: "USD", label: "Dólares (USD)" },
+                { value: "PEN", label: "Soles (PEN)" }
               ]}
               placeholder="Selecciona moneda"
             />
