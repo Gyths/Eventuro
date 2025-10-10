@@ -121,6 +121,68 @@ export default function CrearEventoCards() {
     tier: { enabled: false, qty: "", period: "diariamente" }, // toggle
   });
 
+  const generateAndPostJson = () => {
+    //Extraer fechas
+    const eventDates = dates.flatMap(date => 
+      date.schedules.map(schedule => ({
+        startAt: schedule.start,
+        endAt: schedule.end,
+      }))
+    );
+
+    // 2. Mapear los tickets (items) a la estructura 'zones
+    const dummyAllocations = [
+      { "audienceName": "General Discount", "discountPercent": 5, "allocatedQuantity": 100 }
+    ];
+
+    const eventZones = tickets.items.map((item) => ({
+      name: item.name || "Ticket Zone", // Asumo que el ítem tiene un campo 'name'
+      kind: item.type === 'SEATED' ? "SEATED" : "GENERAL",
+      basePrice: Number(item.price),
+      capacity: Number(item.quantity),
+      currency: tickets.currency,
+      // Los siguientes campos son placeholders ya que no están en el estado del componente
+      cols: 0, 
+      rows: 0,
+      allocations: dummyAllocations, 
+    }));
+
+    // 3. Construir el objeto JSON final
+    const finalJson = {
+      // Campos básicos
+      organizerId: 1, // Hardcoded, debe venir del contexto de usuario
+      title: form.name,
+      inPerson: true, // Aun no implementado
+      description: form.description,
+      // Asumiendo que 'form' contiene estos campos
+      accessPolicy: "E", 
+      accessPolicyDescription: form.extraInfo, 
+
+      // Ubicación (venue)
+      venue: {
+        city: location.city,
+        address: location.address,
+        addressUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Extraer la url del mapa (google maps)
+        reference: location.reference,
+        capacity: Number(location.capacity),
+      },
+      // Categorías
+      eventCategories: form.category, // Ordenar por pildoras las categorias
+
+      //Fases de venta (No implementado, Falta la tarjeta) descomentar cuando se implemente
+      //salePhases: dummySalePhases,
+
+      // Fechas y horarios
+      dates: eventDates,
+
+      // Zonas/Tickets
+      zones: eventZones,
+    };
+
+    console.log("JSON generado para POST a la BD:", finalJson);
+    //LLamada a la api para POST
+  };
+
   // Paso 4 — Política de devoluciones (estado en el padre)
   const [returnsPolicy, setReturnsPolicy] = useState({ text: "", file: null });
 
@@ -219,7 +281,7 @@ export default function CrearEventoCards() {
             location={location}
           />
           <div className="mt-6 flex justify-center">
-            <BotonCTA variant="pink">Publicar Evento</BotonCTA>
+            <BotonCTA variant="pink" onClick={generateAndPostJson}>Publicar Evento</BotonCTA>
           </div>
         </WizardCard>
       </div>
