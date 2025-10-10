@@ -7,19 +7,39 @@ export default function CrearTicketLine({
   items,
   setItems,
   currency = "PEN",
-  sanitizeInt = (v) => v,
-  sanitizeMoney = (v) => v,
 }) {
   const handleChange = (idx, field, value) => {
-    setItems(items.map((it, i) => (i === idx ? { ...it, [field]: value } : it)));
+    let newValue = value;
+
+    // Normaliza cantidad (solo enteros, sin ceros iniciales)
+    if (field === "quantity") {
+      newValue = value.replace(/\D/g, ""); // solo dígitos
+      newValue = newValue.replace(/^0+/, ""); // sin ceros al inicio
+      if (newValue === "" && value !== "") newValue = "0";
+    }
+
+    // Normaliza precio (permite punto decimal)
+    if (field === "price") {
+      newValue = value
+        .replace(/[^0-9.]/g, "") // solo números y punto
+        .replace(/(\..*)\./g, "$1"); // solo un punto decimal
+      newValue = newValue.replace(/^0+/, ""); // sin ceros al inicio
+      if (newValue === "" && value !== "") newValue = "0";
+    }
+
+    setItems(items.map((it, i) => (i === idx ? { ...it, [field]: newValue } : it)));
   };
+
   const handleDelete = (idx) => setItems(items.filter((_, i) => i !== idx));
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5">
       <div className="space-y-5">
         {items.map((item, idx) => (
-          <div key={idx} className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-b border-gray-100 pb-4 last:border-b-0">
+          <div
+            key={idx}
+            className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-b border-gray-100 pb-4 last:border-b-0"
+          >
             <FormField label="Tipo de entrada*" hint="Ej. VIP, General, Premium">
               <TextInput
                 placeholder="Ej. VIP"
