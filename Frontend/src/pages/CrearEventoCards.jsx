@@ -180,8 +180,9 @@ export default function CrearEventoCards() {
       zones: eventZones,
     };
 
+    //Prueba desde la consola del navegador del JSON
     console.log("JSON generado para POST a la BD:", finalJson);
-    //LLamada a la api para POST
+    //LLamada a la api para POST, Va a fallar por las fechas si no estan en ISO
   };
 
   // Paso 4 — Política de devoluciones (estado en el padre)
