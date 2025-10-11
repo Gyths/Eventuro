@@ -4,7 +4,7 @@ import TextInput from "./TextInput";
 import SelectInput from "./SelectInput";
 import TextArea from "./TextArea";
 
-const BASE_URL = "http://localhost:4000";
+import {BASE_URL} from "../../config.js"
 
 export default function EventBasicsForm({ form, onChange }) {
   const [categories, setCategories] = useState([]);
