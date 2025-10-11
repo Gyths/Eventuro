@@ -1,4 +1,6 @@
-const BASE_URL = "http://localhost:4000/eventuro/api";
+import { BASE_URL } from "./config.js";
+
+const BASE_URL1 = `${BASE_URL}/eventuro/api`;
 
 export const EventuroApi = async ({
   endpoint,
@@ -17,7 +19,7 @@ export const EventuroApi = async ({
       options.body = JSON.stringify(data);
     }
 
-    const response = await fetch(BASE_URL + endpoint, options);
+    const response = await fetch(BASE_URL1 + endpoint, options);
 
     if (!response.ok) {
       const errorText = await response.text();

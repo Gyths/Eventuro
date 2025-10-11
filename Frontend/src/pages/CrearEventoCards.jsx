@@ -22,6 +22,8 @@ import ResumenEvento from "../components/create/ResumenEvento";
 import BotonCTA from "../components/BotonCTA";
 import { DiscountCodeCard } from "../components/create/DiscountCodeCard";
 import DiscountCodesSection from "../components/create/DiscountCodesSection";
+import { BASE_URL } from "../config.js";
+
 
 function WizardCard({ title, subtitle, badge, children }) {
   return (
@@ -180,7 +182,7 @@ export default function CrearEventoCards() {
         capacity: Number(location.capacity),
       },
       // Categorías
-      eventCategories: form.category, // Ordenar por pildoras las categorias
+      eventCategories: form.category ? [Number(form.category)] : [], // Ordenar por pildoras las categorias
 
       //Fases de venta (No implementado, Falta la tarjeta) descomentar cuando se implemente
       //salePhases: dummySalePhases,
@@ -195,6 +197,11 @@ export default function CrearEventoCards() {
     //Prueba desde la consola del navegador del JSON
     console.log("JSON generado para POST a la BD:", finalJson);
     //LLamada a la api para POST, Va a fallar por las fechas
+    fetch(`${BASE_URL}/eventuro/api/event/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(finalJson)
+    })
   };
 
   // Paso 4 — Política de devoluciones (estado en el padre)

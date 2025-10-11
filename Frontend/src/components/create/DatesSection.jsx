@@ -1,4 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
+import { v4 as uuidv4 } from "uuid";
+
 import { PlusIcon } from "@heroicons/react/24/outline";
 import DateCard from "./DateCard";
 import AddDateModal from "./AddDateModal";
@@ -50,14 +52,14 @@ export default function DatesSection({ value, onChange }) {
       const next = [...current];
       for (const d of pickedDates) {
         const idx = next.findIndex((x) => sameDay(x.date, d));
-        const schedsWithIds = (schedules ?? []).map((s) => ({ id: crypto.randomUUID(), ...s }));
+        const schedsWithIds = (schedules ?? []).map((s) => ({ id: uuidv4(), ...s }));
         if (idx >= 0) {
           next[idx] = {
             ...next[idx],
             schedules: [...(next[idx].schedules ?? []), ...schedsWithIds],
           };
         } else {
-          next.push({ id: crypto.randomUUID(), date: toDate(d), schedules: schedsWithIds });
+          next.push({ id: uuidv4(), date: toDate(d), schedules: schedsWithIds });
         }
       }
       next.sort((a, b) => toDate(a.date) - toDate(b.date));
@@ -87,7 +89,7 @@ export default function DatesSection({ value, onChange }) {
     setDates((ds) =>
       ds.map((d) =>
         d.id === dateId
-          ? { ...d, schedules: [...(d.schedules ?? []), { id: crypto.randomUUID(), start: "", end: "" }] }
+          ? { ...d, schedules: [...(d.schedules ?? []), { id: uuidv4(), start: "", end: "" }] }
           : d
       )
     );

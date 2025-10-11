@@ -1,6 +1,7 @@
 import { useNavigate, Link } from "react-router-dom";
 import LoginCard from "../components/LoginCard";
 import { useAuth } from "../services/auth/AuthContext.jsx";
+import { BASE_URL } from "../config.js";
 
 export default function Login() {
   const { login } = useAuth();
@@ -18,7 +19,7 @@ export default function Login() {
       <LoginCard
         onSubmit={async ({ email, password }) => {
           try {
-            const response = await fetch("http://localhost:4000/login", {
+            const response = await fetch(`${BASE_URL}/login`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -44,7 +45,7 @@ export default function Login() {
         onForgotPassword={() => alert("TODO: recuperar contraseña")}
         onRegister={() => navigate("/registro")}
         onLoginWithGoogle={async () => {
-          window.location.href = "http://localhost:4000/auth/google";
+          window.location.href = `${BASE_URL}/auth/google`;
         }}
       />
     </div>
