@@ -87,7 +87,7 @@ export default function DatesSection({ value, onChange }) {
     setDates((ds) =>
       ds.map((d) =>
         d.id === dateId
-          ? { ...d, schedules: [...(d.schedules ?? []), { id: crypto.randomUUID(), start: "", end: "" }] }
+          ? { ...d, schedules: [...(d.schedules ?? []), { id: uuidv4(), start: "", end: "" }] }
           : d
       )
     );
