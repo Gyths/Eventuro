@@ -1,14 +1,5 @@
-import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import FilterPill from "./items/FilterPill";
-import Linker from "./items/Linker";
-import CategorySelector from "./items/CategorySelector";
-import DateRangeSelector from "./items/DateRangeSelector";
-import LocationSelector from "./items/LocationSelector";
 import logo from "../../assets/logoB.svg";
-import { UserIcon } from "@heroicons/react/24/outline";
-import { useLocation } from "react-router-dom";
-import TimerTopBar from "./items/TimerTopBar";
 
 /**
  * Props:
@@ -17,31 +8,11 @@ import TimerTopBar from "./items/TimerTopBar";
  * - onLogin(), onRegister(), onProfile(), onMyTickets(), onClaims(), onLogout()
  */
 
-export default function TopBarRefactor({
-  validation,
-  routes,
-  onFunctions,
-  topBarConfig,
-  children,
-  /*isLoggedIn = false,
-  onSearch,
-  filters,
-  onFiltersChange,
-  onLogin,
-  onRegister,
-  onProfile,
-  onMyTickets,
-  onClaims,
-  onLogout,*/
-}) {
+export default function TopBarRefactor({ children }) {
   const paymentPageRoute = "/pago";
   const disabledPaths = [paymentPageRoute];
-  const { pathname } = useLocation();
   const navigate = useNavigate();
-  const variant = pathname === paymentPageRoute ? "paymentPage" : "default";
-  const isCreateEvent =
-    pathname.startsWith("/crearEvento") || pathname.startsWith("/CrearEvento");
-  const [query, setQuery] = useState("");
+
   /*const [filters, setFilters] = useState({ //evitaamos duplicar estaado
     category: null,
     dateFrom: null,

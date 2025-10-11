@@ -1,8 +1,19 @@
 import React from "react";
 import searchBar from "../items/SearchBar";
+import useAuth from "../../../services/auth/AuthContext";
+import UserMenu from "../items/UserMenu";
+import AuthButtons from "../items/AuthButtons";
 
-export default function userLayout() {
+export default function UserVariant() {
+  const [filters, setFilters] = React.useState({
+    category: null,
+    dateFrom: null,
+    dateTo: null,
+    location: "",
+  });
+
   function updateFilters(patch) {
+    const { session } = useAuth();
     const next = { ...filters, ...patch };
     /*setFilters(next);*/ //evitamos setear doblemente
     onFiltersChange?.(next);
@@ -34,6 +45,7 @@ export default function userLayout() {
           />
         </FilterPill>
       </div>
+      <div>{session != null ? <UserMenu /> : <AuthButtons />}</div>
     </div>
   );
 }

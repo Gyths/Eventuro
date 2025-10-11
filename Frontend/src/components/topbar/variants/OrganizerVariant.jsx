@@ -1,11 +1,8 @@
 import React from "react";
 import searchBar from "../items/SearchBar";
 import Linker from "../items/Linker";
-import useAuth from "../../../services/auth/AuthContext";
 
-export default function organizatorLayout() {
-  const { session } = useAuth();
-
+export default function OrganizerVariant() {
   return (
     <div className="flex flex-1 items-center gap-4 px-6">
       <searchBar></searchBar>
@@ -30,16 +27,7 @@ export default function organizatorLayout() {
         />
       </div>
       <div>
-        {session != null ? (
-          <UserMenu
-            onProfile={onProfile}
-            onMyTickets={onMyTickets}
-            onClaims={onClaims}
-            onLogout={onLogout}
-          />
-        ) : (
-          <AuthButtons onLogin={onLogin} onRegister={onRegister} />
-        )}
+        <UserMenu />
       </div>
     </div>
   );

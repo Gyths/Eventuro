@@ -6,7 +6,6 @@ import BotonEliminar from "./components/BotonEliminar";
 import LoginCard from "./components/LoginCard";
 import RegistroCard from "./components/RegistroCard";
 import EventCard from "./components/EventCard";
-import TopBar from "./components/topbar/TopBar";
 import BannerCarousel from "./components/BannerCarousel";
 
 import { Routes, Route } from "react-router-dom";

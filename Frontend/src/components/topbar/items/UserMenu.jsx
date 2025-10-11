@@ -5,8 +5,8 @@ import { useAuth } from "../../../services/auth/AuthContext";
 export default function UserMenu() {
   const profileRoute = "/";
   const myTicketsRoute = "/";
-  const Route = "/";
-  const loginRoute = "/";
+  const claimsRoute = "/";
+  const loginRoute = "/login";
 
   const navigate = useNavigate();
 
