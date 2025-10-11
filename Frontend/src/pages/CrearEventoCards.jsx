@@ -197,7 +197,7 @@ export default function CrearEventoCards() {
     //Prueba desde la consola del navegador del JSON
     console.log("JSON generado para POST a la BD:", finalJson);
     //LLamada a la api para POST, Va a fallar por las fechas
-    fetch(`${BASE_URL}/event/`, {
+    fetch(`${BASE_URL}/eventuro/api/event/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(finalJson)
