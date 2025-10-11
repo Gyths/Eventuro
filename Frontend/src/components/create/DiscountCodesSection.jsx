@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { v4 as uuidv4 } from "uuid";
+
 import { DiscountCodeCard } from "./DiscountCodeCard";
 export default function DiscountCodesSection() {
   const [codes, setCodes] = useState([
