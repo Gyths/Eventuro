@@ -22,13 +22,11 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import Home from "./pages/Home.jsx";
 import { Navigate } from "react-router-dom";
 import AuthCallback from "./pages/AuthCallback";
-import CrearEventoPaso1 from "./pages/CrearEventoPaso1";
-import CrearEventoPaso2 from "./pages/CrearEventoPaso2";
-import CrearEventoPaso3 from "./pages/CrearEventoPaso3";
 import CrearEventoCards from "./pages/CrearEventoCards.jsx";
 function App() {
   return (
     <>
+    
       <Routes>
         <Route element={<RootLayout />}>
           <Route index element={<Home />} />
@@ -37,9 +35,6 @@ function App() {
           <Route path="registro" element={<Register />} />
           <Route path="auth/callback" element={<AuthCallback />} />
           <Route path="/crearEvento" element={<CrearEventoCards />} />
-          <Route path="/CrearEventoPaso1" element={<CrearEventoPaso1 />} />
-          <Route path="/CrearEventoPaso2" element={<CrearEventoPaso2 />} />
-          <Route path="/CrearEventoPaso3" element={<CrearEventoPaso3 />} />
           <Route path="seleccionTickets" element={<TicketSelection />} />
           {/*<Route> se comenta para evitar que la pagina dentro de ella esté restringida a una sesión autenticada*/}
           <Route element={<ProtectedRoute />}>

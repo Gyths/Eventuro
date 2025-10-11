@@ -22,6 +22,8 @@ import ResumenEvento from "../components/create/ResumenEvento";
 import BotonCTA from "../components/BotonCTA";
 import { DiscountCodeCard } from "../components/create/DiscountCodeCard";
 import DiscountCodesSection from "../components/create/DiscountCodesSection";
+import { BASE_URL } from "../config.js";
+
 
 function WizardCard({ title, subtitle, badge, children }) {
   return (
@@ -132,6 +134,75 @@ export default function CrearEventoCards() {
     maxPerUser: "10",
     tier: { enabled: false, qty: "", period: "diariamente" }, // toggle
   });
+
+  //###### GENERADOR DEL JSON PARA POST A LA BD ##########
+  const generateAndPostJson = () => {
+    //Extraer fechas falta agregar horas
+    const eventDates = dates.flatMap(date => 
+      date.schedules.map(schedule => ({
+        startAt: new Date(date.date).toISOString(),
+        endAt: new Date(date.date).toISOString(),
+      }))
+    );
+
+    // 2. Mapeo de tickes a zones, los allocations son dummy, hay que reestructurar la tarjeta de creacion para que lo soporte
+    const dummyAllocations = [
+      { "audienceName": "General Discount", "discountPercent": 5, "allocatedQuantity": 100 }
+    ];
+
+    const eventZones = tickets.items.map((item) => ({
+      name: item.type || "Ticket Zone", // Nombre de la zona/tipo
+      kind: "GENERAL",
+      basePrice: Number(item.price),
+      capacity: Number(item.quantity),
+      currency: tickets.currency,
+      // Placeholders, no estamos trabajando en asientos numerados aun
+      cols: 0, 
+      rows: 0,
+      allocations: dummyAllocations, 
+    }));
+
+    // 3. Construir el objeto JSON final
+    const finalJson = {
+      // Campos básicos
+      organizerId: 1, // Hardcoded, debe venir del contexto de usuario
+      title: form.name,
+      inPerson: true, // Aun no implementado
+      description: form.description,
+      // Asumiendo que 'form' contiene estos campos
+      accessPolicy: "E", 
+      accessPolicyDescription: form.extraInfo, 
+
+      // Ubicación (venue)
+      venue: {
+        city: location.city,
+        address: location.address,
+        addressUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Extraer la url del mapa (google maps)
+        reference: location.reference,
+        capacity: Number(location.capacity),
+      },
+      // Categorías
+      eventCategories: form.category ? [Number(form.category)] : [], // Ordenar por pildoras las categorias
+
+      //Fases de venta (No implementado, Falta la tarjeta) descomentar cuando se implemente
+      //salePhases: dummySalePhases,
+
+      // Fechas y horarios
+      dates: eventDates,
+
+      // Zonas/Tickets
+      zones: eventZones,
+    };
+
+    //Prueba desde la consola del navegador del JSON
+    console.log("JSON generado para POST a la BD:", finalJson);
+    //LLamada a la api para POST, Va a fallar por las fechas
+    fetch(`${BASE_URL}/eventuro/api/event/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(finalJson)
+    })
+  };
 
   // Paso 4 — Política de devoluciones (estado en el padre)
   const [returnsPolicy, setReturnsPolicy] = useState({ text: "", file: null });
@@ -368,7 +439,7 @@ export default function CrearEventoCards() {
             location={location}
           />
           <div className="mt-6 flex justify-center">
-            <BotonCTA variant="pink">Publicar Evento</BotonCTA>
+            <BotonCTA variant="pink" onClick={generateAndPostJson}>Publicar Evento</BotonCTA>
           </div>
         </WizardCard>
       </div>

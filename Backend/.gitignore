@@ -2,5 +2,11 @@ node_modules
 # Keep environment variables out of version control
 .env
 
-/src/prisma/migrations/*
-!/src/prisma/migrations/*.*
+# No quitar ignorar
+
+src/generated/prisma
+
+/src/generated/prisma
+
+#/src/prisma/migrations/*
+#!/src/prisma/migrations/*.*
