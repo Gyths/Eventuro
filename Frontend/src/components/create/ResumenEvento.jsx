@@ -133,7 +133,7 @@ export default function ResumenEvento({ basics, imagePreview, dates = [], locati
           </div>
 
           <div className="mt-3">
-            +{" "}
+            {" "}
             {(tickets?.items || []).length === 0 ? (
               <div className="text-sm text-gray-500">Sin tipos de entrada.</div>
             ) : (
@@ -160,7 +160,7 @@ export default function ResumenEvento({ basics, imagePreview, dates = [], locati
             )}
           </div>
         </section>
-        {/* Política de devoluciones */}{/* Política de devoluciones */}
+        {/* Política de devoluciones */}
         <section className="rounded-2xl border border-gray-200 bg-white p-5">
             <h4 className="text-base font-semibold text-gray-800 mb-3">Política de devoluciones</h4>
             <div className="text-sm text-gray-800 whitespace-pre-wrap">
