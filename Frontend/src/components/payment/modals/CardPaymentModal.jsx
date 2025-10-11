@@ -1,4 +1,6 @@
 import React from "react";
+import BaseModal from "./BaseModal";
+
 import useOrder from "../../../services/Order/OrderContext";
 import { useAuth } from "../../../services/auth/AuthContext";
 
@@ -88,15 +90,10 @@ export default function CardPaymentModal({ onClose, onSuccess, onFail }) {
 
   return (
     <>
-      <div
-        className={
-          "fixed inset-0 flex justify-center items-center transition-colors bg-black/20"
-        }
-      >
+      <BaseModal>
         <div className="flex flex-col bg-white w-auto h-max rounded-2xl ">
           <Header onClose={onClose} />
           <hr className="w-11/12 border-t-1 border-purple-900 mx-auto my-4"></hr>
-          {/*<Body />*/}
           <form
             onSubmit={handleSubmit}
             className="flex flex-col gap-2 p-6 justify-center items-center"
@@ -186,7 +183,7 @@ export default function CardPaymentModal({ onClose, onSuccess, onFail }) {
             </div>
           </form>
         </div>
-      </div>
+      </BaseModal>
     </>
   );
 }

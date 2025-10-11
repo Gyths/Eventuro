@@ -4,6 +4,7 @@ import React from "react";
 import { EventuroApi } from "../../../api";
 import useOrder from "../../../services/Order/OrderContext";
 import { useAuth } from "../../../services/auth/AuthContext";
+import BaseModal from "./BaseModal";
 
 const inputField =
   "flex rounded-sm p-1.5 bg-gray-100 ring ring-gray-200 hover:ring-gray-300 focus:ring-gray-400 focus:outline-none transform-transition";
@@ -96,12 +97,9 @@ export default function YapePlinPaymentModal({ onClose, onSuccess, onFail }) {
 
   return (
     <>
-      <div
-        className={
-          "fixed inset-0 flex justify-center items-center transition-colors bg-black/20"
-        }
-      >
+      <BaseModal>
         <div className="flex flex-col rounded-xl bg-white p-4 max-w-96">
+          {/* Parte superior, botón salir */}
           <div className="flex flex-row">
             <div className="flex justify-end flex-1">
               <span
@@ -112,6 +110,7 @@ export default function YapePlinPaymentModal({ onClose, onSuccess, onFail }) {
               </span>
             </div>
           </div>
+          {/* Imágenes y mensaje explicativo */}
           <div className="flex flex-col justify-center items-center gap-2">
             <img src={yapePlinLogo} alt="yape-plin" className="flex p-10"></img>
             <span className="font-black scale-90 text-center">
@@ -133,6 +132,7 @@ export default function YapePlinPaymentModal({ onClose, onSuccess, onFail }) {
                 required
               ></input>
             </div>
+            {/* Input para el código de aprobación */}
             <label htmlFor="approval-code" className="text-start">
               Código de aprobación
             </label>
@@ -158,11 +158,13 @@ export default function YapePlinPaymentModal({ onClose, onSuccess, onFail }) {
                 className="flex flex-1 w-20 justify-center items-center"
               />
             </div>
+            {/* Monto total a pagar */}
             <hr className="mt-1/4 border-gray-800/30 border-1"></hr>
             <div className="flex justify-between text-lg font-black text-gray-900 p-2">
               <span>Pago total</span>
               <span>S/. {order?.totalAmount}</span>
             </div>
+            {/* Botón de pagar */}
             <div className="flex justify-center items-center">
               <button
                 type="submit"
@@ -173,7 +175,7 @@ export default function YapePlinPaymentModal({ onClose, onSuccess, onFail }) {
             </div>
           </form>
         </div>
-      </div>
+      </BaseModal>
     </>
   );
 }

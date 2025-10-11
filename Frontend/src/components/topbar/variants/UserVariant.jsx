@@ -1,8 +1,12 @@
 import React from "react";
-import searchBar from "../items/SearchBar";
-import useAuth from "../../../services/auth/AuthContext";
+import SearchBar from "../items/SearchBar";
+import { useAuth } from "../../../services/auth/AuthContext";
 import UserMenu from "../items/UserMenu";
 import AuthButtons from "../items/AuthButtons";
+import FilterPill from "../items/FilterPill";
+import CategorySelector from "../items/CategorySelector";
+import DateRangeSelector from "../items/DateRangeSelector";
+import LocationSelector from "../items/LocationSelector";
 
 export default function UserVariant() {
   const [filters, setFilters] = React.useState({
@@ -11,9 +15,8 @@ export default function UserVariant() {
     dateTo: null,
     location: "",
   });
-
+  const { isAuthenticated } = useAuth();
   function updateFilters(patch) {
-    const { session } = useAuth();
     const next = { ...filters, ...patch };
     /*setFilters(next);*/ //evitamos setear doblemente
     onFiltersChange?.(next);
@@ -21,7 +24,7 @@ export default function UserVariant() {
 
   return (
     <div className="flex flex-1 items-center gap-4 px-6">
-      <searchBar></searchBar>
+      <SearchBar></SearchBar>
       <div className="hidden items-center gap-2 md:flex">
         <FilterPill label="Categoria" icon="category">
           <CategorySelector
@@ -45,7 +48,7 @@ export default function UserVariant() {
           />
         </FilterPill>
       </div>
-      <div>{session != null ? <UserMenu /> : <AuthButtons />}</div>
+      <div>{isAuthenticated ? <UserMenu /> : <AuthButtons />}</div>
     </div>
   );
 }

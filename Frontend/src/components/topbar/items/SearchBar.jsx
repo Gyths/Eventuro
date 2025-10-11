@@ -1,7 +1,7 @@
 import React from "react";
 
-function SearchBar() {
-  const [query, setQuery] = useState("");
+export default function SearchBar() {
+  const [query, setQuery] = React.useState("");
   return (
     <div className="flex-1">
       <input
@@ -17,5 +17,3 @@ function SearchBar() {
     </div>
   );
 }
-
-export default searchBar;

@@ -6,7 +6,7 @@ export default function AuthButtons() {
   return (
     <div className="flex items-center gap-2">
       <button
-        onClick={() => navigate("/register")}
+        onClick={() => navigate("/registro")}
         className="rounded-full border border-amber-400/70 bg-transparent px-4 py-1.5 text-sm font-semibold text-amber-300 hover:bg-amber-400/10"
       >
         Registrarse

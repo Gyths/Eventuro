@@ -1,14 +1,14 @@
 // src/layout/RootLayout.jsx
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { useState } from "react";
-import TopBar_Refactor from "../components/topbar/TopBar_Refactor";
-import UserVariant from "./variants/UserVariant";
-import OrganizerVariant from "./variants/OrganizerVariant";
-import PaymentVariant from "./variants/PaymentVariant";
+import { useState, useEffect } from "react";
+import TopBar from "../components/topbar/TopBar";
+import UserVariant from "../components/topbar/variants/UserVariant";
+import OrganizerVariant from "../components/topbar/variants/OrganizerVariant";
+import PaymentVariant from "../components/topbar/variants/PaymentVariant";
 import { useAuth } from "../services/auth/AuthContext";
 
 export default function RootLayout() {
-  const { isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
@@ -22,25 +22,23 @@ export default function RootLayout() {
 
   const [variant, setVariant] = useState("client");
 
+  //useEffect que decide que tipo de topbar utilizar
   useEffect(() => {
-    if (!isAuthenticated) {
-      setVariant("client");
-      return;
-    }
-
+    //Si esto no funciona, modificar para adpatar a la lógica de gestión de tipos de usuario
     switch (user?.userType) {
-      case "O": // Organizador
+      case "O":
         setVariant("organizer");
         break;
-      default: // Cliente
+      default:
         setVariant("client");
         break;
     }
 
-    // También puedes forzar un layout por ruta si lo prefieres
-    if (pathname.startsWith("/pago")) {
-      setLayoutType("payment");
-    }
+    //Borrar esto cuando haya lógica para usuario administrador
+    pathname === "/crearEvento" && setVariant("organizer");
+
+    //No borrar esto
+    pathname === "/pago" && setVariant("payment");
   }, [user, pathname, isAuthenticated]);
 
   let layout_type = new Map();
@@ -48,10 +46,9 @@ export default function RootLayout() {
   layout_type.set("organizer", <OrganizerVariant></OrganizerVariant>);
   layout_type.set("payment", <PaymentVariant></PaymentVariant>);
 
-  let type;
   return (
     <>
-      {!hideTop && <TopBar_Refactor>layout_type.get(type)</TopBar_Refactor>}
+      {!hideTop && <TopBar>{layout_type.get(variant)}</TopBar>}
 
       {/* Si ocultas la TopBar, no pongas padding superior */}
       <main className={hideTop ? "" : "pt-14"}>
