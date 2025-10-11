@@ -3,7 +3,7 @@ import { DiscountCodeCard } from "./DiscountCodeCard";
 export default function DiscountCodesSection() {
   const [codes, setCodes] = useState([
     {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       code: "EVNTR2025",
       available: 250,
       from: "11/09/2025",
@@ -21,7 +21,7 @@ export default function DiscountCodesSection() {
     setCodes((c) => [
       ...c,
       {
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         code: draft.code.trim(),
         available: Number(draft.available || 0),
         from: draft.from,

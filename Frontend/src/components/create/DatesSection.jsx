@@ -50,14 +50,14 @@ export default function DatesSection({ value, onChange }) {
       const next = [...current];
       for (const d of pickedDates) {
         const idx = next.findIndex((x) => sameDay(x.date, d));
-        const schedsWithIds = (schedules ?? []).map((s) => ({ id: crypto.randomUUID(), ...s }));
+        const schedsWithIds = (schedules ?? []).map((s) => ({ id: uuidv4(), ...s }));
         if (idx >= 0) {
           next[idx] = {
             ...next[idx],
             schedules: [...(next[idx].schedules ?? []), ...schedsWithIds],
           };
         } else {
-          next.push({ id: crypto.randomUUID(), date: toDate(d), schedules: schedsWithIds });
+          next.push({ id: uuidv4(), date: toDate(d), schedules: schedsWithIds });
         }
       }
       next.sort((a, b) => toDate(a.date) - toDate(b.date));

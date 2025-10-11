@@ -97,12 +97,12 @@ export default function AddDateModal({
 
   // Builder de horarios (solo para mode="add")
   const [builder, setBuilder] = useState([
-    { id: crypto.randomUUID(), h1:"12", m1:"30", a1:"PM", h2:"01", m2:"30", a2:"PM" },
+    { id: uuidv4(), h1:"12", m1:"30", a1:"PM", h2:"01", m2:"30", a2:"PM" },
   ]);
   const handleClose = () => {
     // limpiar estado temporal para no “persistir” selección ni horarios al reabrir
     setSelected(new Set());
-    setBuilder([{ id: crypto.randomUUID(), h1:"12", m1:"30", a1:"PM", h2:"01", m2:"30", a2:"PM" }]);
+    setBuilder([{ id: uuidv4(), h1:"12", m1:"30", a1:"PM", h2:"01", m2:"30", a2:"PM" }]);
     onClose?.();
   };
 
@@ -121,7 +121,7 @@ export default function AddDateModal({
     });
   };
 
-  const addRow = ()=> setBuilder(b=>[...b, { id: crypto.randomUUID(), h1:"09", m1:"00", a1:"AM", h2:"10", m2:"00", a2:"AM" }]);
+  const addRow = ()=> setBuilder(b=>[...b, { id: uuidv4(), h1:"09", m1:"00", a1:"AM", h2:"10", m2:"00", a2:"AM" }]);
   const delRow = (id)=> setBuilder(b=> b.length>1 ? b.filter(x=>x.id!==id) : b);
 
   const canConfirm =
@@ -142,7 +142,7 @@ export default function AddDateModal({
     onConfirm?.({ dates, schedules });
     // reset y cerrar
     setSelected(new Set());
-    setBuilder([{ id: crypto.randomUUID(), h1:"12", m1:"30", a1:"PM", h2:"01", m2:"30", a2:"PM" }]);
+    setBuilder([{ id: uuidv4(), h1:"12", m1:"30", a1:"PM", h2:"01", m2:"30", a2:"PM" }]);
     onClose?.();
   };
 
