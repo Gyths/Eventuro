@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import BannerCarousel from "../components/BannerCarousel.jsx";
 import EventCard from "../components/EventCard.jsx";
+import { v4 as uuidv4 } from "uuid";
 
 import { BASE_URL } from "../config.js";
 
@@ -93,7 +94,7 @@ export default function Home() {
           const location = humanizeAddress(ev.venue);
 
           return {
-            id: ev.eventId ?? crypto.randomUUID(),
+            id: ev.eventId ?? uuidv4(),
             titulo: ev.title ?? "Evento",
             description: ev.description,
             startDate, // YYYY-MM-DD
