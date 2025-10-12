@@ -157,6 +157,7 @@ export default function CrearEventoCards() {
       capacity: Number(item.quantity),
       currency: tickets.currency,
       // Placeholders, no estamos trabajando en asientos numerados aun
+      //MgTest
       cols: 0, 
       rows: 0,
       allocations: dummyAllocations, 
