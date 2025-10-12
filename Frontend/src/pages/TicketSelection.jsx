@@ -26,6 +26,7 @@ export default function TicketSelection() {
   const { event } = useEvent();
   const { setOrder } = useOrder();
   //Crea una orden de compra
+
   async function onClick(testNum) {
     !isAuthenticated && navigate(loginPage);
 

@@ -250,12 +250,25 @@ export async function listAvailableTicketsRepo(input) {
   return prisma.event.findUnique({
     where: { eventId: BigInt(input.eventId) },
     select: {
+      //Solo se devuelve el id del evento, el resto de campos se obtiene de listEventRepo
       eventId: true,
+      //Relación EventDate
+      salesPhases: {
+        select: {
+          eventSalesPhaseId: true,
+          name: true,
+          startAt: true,
+          endAt: true,
+          percentage: true,
+          active: false,
+        },
+      },
       dates: {
         select: {
           eventDateId: true,
           startAt: true,
           endAt: true,
+          //Relación EventZoneDate
           zoneDates: {
             select: {
               eventDateZoneId: true,
@@ -266,6 +279,7 @@ export async function listAvailableTicketsRepo(input) {
               capacityRemaining: true,
               seatMapId: true,
               currency: true,
+              //Relación EventZoneDateAllocated
               allocations: {
                 select: {
                   eventDateZoneAllocationId: true,
@@ -275,11 +289,13 @@ export async function listAvailableTicketsRepo(input) {
                   remainingQuantity: true,
                 },
               },
+              //SeatMaps relacionados al evento
               seatMap: {
                 select: {
                   seatMapId: true,
                   rows: true,
                   cols: true,
+                  //Asientos relacionados a cada seatMap
                   occupiedSeats: {
                     select: {
                       seatId: true,
