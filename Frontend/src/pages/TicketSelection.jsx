@@ -18,6 +18,7 @@ export default function TicketSelection() {
   const navigate = useNavigate();
   const homeRoute = "/home";
   const orderEnpoint = "/orders";
+  const availabilityEndpoint = "/event/availability";
   const apiMethod = "POST";
   const paymentPage = "/pago";
   const loginPage = "/login";
@@ -25,8 +26,8 @@ export default function TicketSelection() {
   const { isAuthenticated, user } = useAuth();
   const { event } = useEvent();
   const { setOrder } = useOrder();
-  //Crea una orden de compra
 
+  //Crea una orden de compra
   async function onClick(testNum) {
     !isAuthenticated && navigate(loginPage);
 
@@ -36,17 +37,16 @@ export default function TicketSelection() {
     orderData.items = select_test(testNum, event.id);
     console.log(orderData);
 
+    //Comunicación la api para crear la orden de compra
     try {
       const response = await EventuroApi({
         endpoint: orderEnpoint,
         method: apiMethod,
         data: orderData,
-        saveLocalStorage: true,
-        storageName: "orderData",
       });
       setOrder(response);
     } catch (err) {
-      console.error("Error al crear la orden:", err);
+      console.error("Error al consultar disponbilidad:", err);
       throw err;
     }
 
@@ -54,11 +54,33 @@ export default function TicketSelection() {
   }
 
   const [scrolled, setScrolled] = React.useState(false);
+  const [availability, setAvailability] = React.useState(null);
 
-  //Controla cuando el estilo del background debe cambiar
   React.useEffect(() => {
+    //Llamada a la api del back para consultar disponibilidad de un evento
+    const toFetchAvailability = {};
+    toFetchAvailability.eventId = event.id;
+
+    const fetchAvailability = async () => {
+      try {
+        const response = await EventuroApi({
+          endpoint: availabilityEndpoint,
+          method: apiMethod,
+          data: toFetchAvailability,
+        });
+        setAvailability(availability);
+      } catch (err) {
+        console.error("Error al crear la orden:", err);
+        throw err;
+      }
+    };
+
+    fetchAvailability();
+    console.log(availability);
+
+    //Lógica para manejar la apariencia del bg
     const handleScroll = () => {
-      //El treshold se situa en 1/4 del tamaño de la pantalla del usuario
+      //El threshold se situa en 1/4 del tamaño de la pantalla del usuario
       const threshold = window.innerHeight * 0.25;
       //Se settea scrolled en base a la distancia escroleada comparada con el treshold
       setScrolled(window.scrollY > threshold);

@@ -252,7 +252,7 @@ export async function listAvailableTicketsRepo(input) {
     select: {
       //Solo se devuelve el id del evento, el resto de campos se obtiene de listEventRepo
       eventId: true,
-      //Relación EventDate
+      //Relación son SalesPhases
       salesPhases: {
         select: {
           eventSalesPhaseId: true,
@@ -263,6 +263,7 @@ export async function listAvailableTicketsRepo(input) {
           active: false,
         },
       },
+      //Relación EventDate
       dates: {
         select: {
           eventDateId: true,
