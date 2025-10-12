@@ -18,6 +18,8 @@ import ticket from "./routes/ticket.routes.js";
 
 import defaultUserRoutes from "./routes/defaultUser.routes.js";
 
+import { frontInstance } from "./config/env.js";
+
 const app = express();
 const route = "/eventuro/api";
 app.use(express.json());
@@ -27,7 +29,7 @@ app.use(upload.none());
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: `http://${frontInstance}:5173`,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true, // Permite el intercambio de cookies de sesión
   })
