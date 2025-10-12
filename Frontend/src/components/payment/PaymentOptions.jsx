@@ -1,5 +1,5 @@
 import React from "react";
-import { PAYMENT_OPTION_DESCRIPTIONS } from "./texts";
+import { PAYMENT_OPTION_TEXTS } from "./texts";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function PaymentOption({
@@ -10,7 +10,7 @@ export default function PaymentOption({
 }) {
   const isSelected = selectedOption === id;
 
-  const paymentOptionInfo = PAYMENT_OPTION_DESCRIPTIONS[id];
+  const paymentOptionInfo = PAYMENT_OPTION_TEXTS[id];
   const title = paymentOptionInfo.title;
   const description = paymentOptionInfo.description;
 

@@ -2,13 +2,7 @@ import { BASE_URL } from "./config.js";
 
 const BASE_URL1 = `${BASE_URL}/eventuro/api`;
 
-export const EventuroApi = async ({
-  endpoint,
-  method,
-  data = null,
-  saveLocalStorage = false,
-  storageName = "",
-}) => {
+export const EventuroApi = async ({ endpoint, method, data = null }) => {
   try {
     const options = {
       method,

@@ -10,13 +10,14 @@ export const ETICKETS_DESCRIPTION = {
     "Cada ticket cuenta con un sistema de control y seguridad que valida su autenticidad en el acceso. En caso de generarse duplicados, solo se permitirá el ingreso a la primera persona registrada, bloqueando cualquier intento de ingreso posterior con la misma entrada.",
 };
 
-//Texto para el checkbox de términos y condiciones, utilizado en /src/payment/TermsServicesCheckbox.jsx
-export const TERMS_AND_CONDITIONS_TEXT = {
-  text: "He leído y acepto los Términos y Condiciones y la Política de Privacidad.",
+//Texto y mensaje de alerta para el checkbox de términos y condiciones, utilizado en /src/payment/TermsServicesCheckbox.jsx
+export const TERMS_AND_CONDITIONS_TEXTS = {
+  des: "He leído y acepto los Términos y Condiciones y la Política de Privacidad.",
+  alert: "Debes aceptar los términos y condiciones para continuar",
 };
 
-//Descripciones de los métodos de pago, utilizado en /src/payment/PaymentOptions.jsx
-export const PAYMENT_OPTION_DESCRIPTIONS = {
+//Descripciones y mensaje de alerta de los métodos de pago, utilizado en /src/payment/PaymentOptions.jsx y /src/pages/PaymentMethod.jsx
+export const PAYMENT_OPTION_TEXTS = {
   "credit-debit-card": {
     title: "Tarjeta de Crédito / Débito",
     description:
@@ -27,4 +28,5 @@ export const PAYMENT_OPTION_DESCRIPTIONS = {
     description:
       "Ingresa un número asociado a una cuenta de Yape o Plin e ingresa el código de verificación que se encuentra en tu aplicativo para realizar tu compra",
   },
+  alert: "Debes seleccionar una opción para realizar el pago",
 };
