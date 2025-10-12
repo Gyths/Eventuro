@@ -7,6 +7,13 @@ import useEvent from "../services/Event/EventContext";
 import useOrder from "../services/Order/OrderContext";
 import ArrowButton from "../components/ArrowButton";
 
+import {
+  ChatBubbleBottomCenterTextIcon,
+  MapPinIcon,
+  ClockIcon,
+  UserIcon,
+} from "@heroicons/react/24/solid";
+
 export default function TicketSelection() {
   const navigate = useNavigate();
   const homeRoute = "/home";
@@ -17,9 +24,7 @@ export default function TicketSelection() {
 
   const { isAuthenticated, user } = useAuth();
   const { event } = useEvent();
-  console.log(event);
   const { setOrder } = useOrder();
-
   //Crea una orden de compra
   async function onClick(testNum) {
     !isAuthenticated && navigate(loginPage);
@@ -83,26 +88,51 @@ export default function TicketSelection() {
       <div className="flex flex-col z-10 justify-center min-h-screen text-center gap-20">
         <div className="flex relative flex-wrap justify-between items-center gap-4 px-4 py-5 md:px-8">
           {/* Imagen */}
-          <div className="flex justify-start p-6 py-20 max-w-1/3">
-            <img
-              src={event.image}
-              className="flex flex-1 size-full bg-none shadow-2xl"
-            />
+          <div className="flex justify-start p-6 py-20 max-w-9/12">
+            <img src={event.image} className="flex size-full" />
           </div>
           {/* Card de Información y entradas*/}
           <div className="flex flex-1 flex-col justify-end rounded-lg bg-white max-w-3/5 h-auto shadow-2xl p-8">
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col">
               <div className="flex flex-row justify-start items-center gap-2">
                 <ArrowButton onClick={() => navigate(homeRoute)}></ArrowButton>
                 <div className="flex flex-wrap flex-row">
                   <h1 className="flex font-bold text-3xl">{event?.title}</h1>
-                  <div id="date-selector"></div>
                 </div>
               </div>
-
-              <p className="flex pl-16">{event?.description}</p>
+              <div className="flex flex-row gap-2 pl-20">
+                {event?.categories?.map((category, index) => (
+                  <div
+                    key={index}
+                    className="flex rounded-4xl bg-purple-700 text-white items-center justify-center p-1 px-2.5"
+                  >
+                    {category.category.description}
+                  </div>
+                ))}
+              </div>
+              <div className="flex flex-col gap-4 pl-16 pt-10 ">
+                <div className="flex flex-1 flex-row justify-start items-center text-center gap-4">
+                  <ChatBubbleBottomCenterTextIcon className="flex size-5 justify-center"></ChatBubbleBottomCenterTextIcon>
+                  <p className="flex text-center">{event?.description}</p>
+                </div>
+                <div className="flex flex-1 flex-row justify-start items-center text-center gap-4">
+                  <UserIcon className="flex size-5 justify-center"></UserIcon>
+                  <p className="flex text-center">
+                    {event?.accessPolicyDescription}
+                  </p>
+                </div>
+                <div className="flex flex-1 flex-row justify-start items-center text-center gap-4">
+                  <MapPinIcon className="flex size-5 justify-center"></MapPinIcon>
+                  <p className="flex text-center">{event?.location}</p>
+                </div>
+                <div className="flex flex-1 flex-row justify-start items-center text-center  gap-4">
+                  <ClockIcon className="flex size-5 justify-center"></ClockIcon>
+                </div>
+              </div>
             </div>
-            <div className="flex flex-1 h-100">TODO: Selección de tickets</div>
+            <div className="flex h-100 gap-4 pl-16 pt-10">
+              TODO: Selección de tickets
+            </div>
             <div className="flex flex-row class justify-end items-end">
               <button
                 onClick={() => onClick(event.id)}
@@ -114,7 +144,7 @@ export default function TicketSelection() {
           </div>
         </div>
         <div className="flex relative flex-1 flex-col fill-white bg-white p-6">
-          <span className="flex flex-1 font-bold text-4xl p-6">
+          <span className="flex font-bold text-4xl p-6">
             Información adicional
           </span>
           <div className="flex flex-row px-6">

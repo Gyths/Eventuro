@@ -102,12 +102,10 @@ export default function Home() {
             hour,
             location,
             locationUrl: ev.venue.addressUrl,
-            image: placeholder,
-            category:
-              ev.categories?.[0]?.category?.description ??
-              ev.categories?.[0]?.description ??
-              ev.category ??
-              "",
+            image: ev.image ?? placeholder,
+            categories: ev.categories,
+            accessPolicy: ev.accessPolicy,
+            accessPolicyDescription: ev.accessPolicyDescription,
           };
         });
 
@@ -186,6 +184,9 @@ export default function Home() {
                   startDate={e.startDate} // YYYY-MM-DD (sin “correr” día)
                   endDate={e.endDate}
                   hour={e.hour}
+                  categories={e.categories}
+                  accessPolicy={e.accessPolicy}
+                  accessPolicyDescription={e.accessPolicyDescription}
                 />
               </div>
             ))

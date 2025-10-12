@@ -12,7 +12,10 @@ export default function EventCard({
   startDate,
   endDate,
   hour, // puedes ignorar este prop y calcular desde startDate
+  categories,
   className = "",
+  accessPolicy,
+  accessPolicyDescription,
 }) {
   const s = startDate ? new Date(startDate) : new Date();
   const e = endDate ? new Date(endDate) : new Date(s.getTime() + 2 * 86400000);
@@ -46,9 +49,11 @@ export default function EventCard({
       sDate: sDay + "-" + month + "-" + year,
       eDate: sDay + month + year,
       hour: `${hh}:${mm}`,
+      categories: categories,
+      accessPolicy: accessPolicy,
+      accessPolicyDescription: accessPolicyDescription,
     };
     setEvent(event);
-    console.log(event);
     navigate(ticketSelectionPage);
   }
 
