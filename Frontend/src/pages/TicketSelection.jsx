@@ -105,7 +105,7 @@ export default function TicketSelection() {
             <div className="flex flex-1 h-100">TODO: Selección de tickets</div>
             <div className="flex flex-row class justify-end items-end">
               <button
-                onClick={() => onClick(1)}
+                onClick={() => onClick(event.id)}
                 className="rounded-2xl h-8 w-24 p-2 cursor-pointer flex justify-center items-center text-white bg-purple-600 hover:bg-yellow-500 hover:shadow-lg hover:scale-105 transition-transform duration-200"
               >
                 Continuar
@@ -113,10 +113,28 @@ export default function TicketSelection() {
             </div>
           </div>
         </div>
-        <div className="flex flex-1 relative fill-white bg-white p-6">
-          <span className="flex flex-1 font-bold text-4xl">
+        <div className="flex relative flex-1 flex-col fill-white bg-white p-6">
+          <span className="flex flex-1 font-bold text-4xl p-6">
             Información adicional
           </span>
+          <div className="flex flex-row px-6">
+            <div className="flex flex-col gap-6">
+              <h2 className="font-bold text-2xl text-start">
+                Ubicación en mapa :D
+              </h2>
+              <div className="flex size-auto border-2">
+                <iframe
+                  className="flex relative max-h-96 max-w-96  size-dvh"
+                  src={`https://www.google.com/maps?q=${encodeURIComponent(
+                    event.location
+                  )}&output=embed`}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -8,6 +8,7 @@ export default function EventCard({
   title = "Evento",
   description = "",
   location = "Ubicación del evento",
+  locationUrl = "",
   startDate,
   endDate,
   hour, // puedes ignorar este prop y calcular desde startDate
@@ -41,6 +42,7 @@ export default function EventCard({
       title,
       description,
       location,
+      locationUrl,
       sDate: sDay + "-" + month + "-" + year,
       eDate: sDay + month + year,
       hour: `${hh}:${mm}`,

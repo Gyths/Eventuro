@@ -101,6 +101,7 @@ export default function Home() {
             endDate, // YYYY-MM-DD
             hour,
             location,
+            locationUrl: ev.venue.addressUrl,
             image: placeholder,
             category:
               ev.categories?.[0]?.category?.description ??
@@ -181,6 +182,7 @@ export default function Home() {
                   title={e.titulo}
                   description={e.description}
                   location={e.location}
+                  locationUrl={e.locationUrl}
                   startDate={e.startDate} // YYYY-MM-DD (sin “correr” día)
                   endDate={e.endDate}
                   hour={e.hour}
