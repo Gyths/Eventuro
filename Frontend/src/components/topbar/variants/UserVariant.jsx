@@ -8,18 +8,13 @@ import CategorySelector from "../items/CategorySelector";
 import DateRangeSelector from "../items/DateRangeSelector";
 import LocationSelector from "../items/LocationSelector";
 
-export default function UserVariant() {
-  const [filters, setFilters] = React.useState({
-    category: null,
-    dateFrom: null,
-    dateTo: null,
-    location: "",
-  });
+export default function UserVariant({ filters, setFilters }) {
   const { isAuthenticated } = useAuth();
+
   function updateFilters(patch) {
     const next = { ...filters, ...patch };
     /*setFilters(next);*/ //evitamos setear doblemente
-    onFiltersChange?.(next);
+    setFilters?.(next);
   }
 
   return (

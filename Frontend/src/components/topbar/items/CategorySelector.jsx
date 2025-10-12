@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 
-import {BASE_URL} from "../../../config.js"
+import { BASE_URL } from "../../../config.js";
 
 export default function CategorySelector({ value, onChange }) {
   const [cats, setCats] = useState([]);
@@ -16,7 +16,9 @@ export default function CategorySelector({ value, onChange }) {
         setErr(null);
 
         const res = await fetch(`${BASE_URL}/eventuro/api/event-category/`);
-        const isJson = res.headers.get("content-type")?.includes("application/json");
+        const isJson = res.headers
+          .get("content-type")
+          ?.includes("application/json");
         const payload = isJson ? await res.json().catch(() => null) : null;
 
         if (!res.ok) throw new Error(payload?.error || `HTTP ${res.status}`);
@@ -50,11 +52,15 @@ export default function CategorySelector({ value, onChange }) {
   const handlePick = (desc) => {
     // toggle: si eliges la misma, limpia
     onChange?.(value === desc ? null : desc);
+    console.log(desc);
   };
 
   const hasCats = cats.length > 0;
   const sortedCats = useMemo(
-    () => [...cats].sort((a, b) => a.description.localeCompare(b.description, "es")),
+    () =>
+      [...cats].sort((a, b) =>
+        a.description.localeCompare(b.description, "es")
+      ),
     [cats]
   );
 
@@ -63,9 +69,7 @@ export default function CategorySelector({ value, onChange }) {
       <p className="px-1 text-sm font-medium text-gray-700">Categorías</p>
 
       {/* estados */}
-      {loading && (
-        <div className="px-1 text-sm text-gray-500">Cargando…</div>
-      )}
+      {loading && <div className="px-1 text-sm text-gray-500">Cargando…</div>}
       {err && !loading && (
         <div className="px-1 text-sm text-red-600">Error: {err}</div>
       )}
@@ -86,7 +90,11 @@ export default function CategorySelector({ value, onChange }) {
                         ? "bg-violet-600 text-white"
                         : "bg-gray-50 text-gray-800 hover:bg-gray-100"
                     }`}
-                    title={c.initials ? `${c.description} (${c.initials})` : c.description}
+                    title={
+                      c.initials
+                        ? `${c.description} (${c.initials})`
+                        : c.description
+                    }
                   >
                     {c.description}
                   </button>

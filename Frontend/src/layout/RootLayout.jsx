@@ -22,6 +22,14 @@ export default function RootLayout() {
 
   const [variant, setVariant] = useState("client");
 
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "smooth", // o "auto" si prefieres sin animación
+    });
+  }, [pathname]);
+
   //useEffect que decide que tipo de topbar utilizar
   useEffect(() => {
     //Si esto no funciona, modificar para adpatar a la lógica de gestión de tipos de usuario
@@ -42,7 +50,10 @@ export default function RootLayout() {
   }, [user, pathname, isAuthenticated]);
 
   let layout_type = new Map();
-  layout_type.set("client", <UserVariant></UserVariant>);
+  layout_type.set(
+    "client",
+    <UserVariant filters={filters} setFilters={setFilters}></UserVariant>
+  );
   layout_type.set("organizer", <OrganizerVariant></OrganizerVariant>);
   layout_type.set("payment", <PaymentVariant></PaymentVariant>);
 

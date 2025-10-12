@@ -1,30 +1,31 @@
 import React from "react";
+import { useAuth } from "../services/auth/AuthContext";
 import { EventuroApi } from "../api";
 import { useNavigate } from "react-router-dom";
 import { select_test } from "../components/payment/tests";
 import useEvent from "../services/Event/EventContext";
 import useOrder from "../services/Order/OrderContext";
+import ArrowButton from "../components/ArrowButton";
 
 export default function TicketSelection() {
   const navigate = useNavigate();
+  const homeRoute = "/home";
   const orderEnpoint = "/orders";
   const apiMethod = "POST";
   const paymentPage = "/pago";
   const loginPage = "/login";
 
+  const { isAuthenticated, user } = useAuth();
   const { event } = useEvent();
+  console.log(event);
   const { setOrder } = useOrder();
 
+  //Crea una orden de compra
   async function onClick(testNum) {
-    const session = JSON.parse(localStorage.getItem("session"));
-
-    if (session === null) navigate(loginPage);
-
-    console.log(testNum);
-    console.log(select_test(testNum, event.id));
+    !isAuthenticated && navigate(loginPage);
 
     const orderData = {};
-    orderData.buyerUserId = session.user.userId;
+    orderData.buyerUserId = user.userId;
     orderData.currency = "PEN";
     orderData.items = select_test(testNum, event.id);
     console.log(orderData);
@@ -46,30 +47,77 @@ export default function TicketSelection() {
     navigate(paymentPage);
   }
 
+  const [scrolled, setScrolled] = React.useState(false);
+
+  //Controla cuando el estilo del background debe cambiar
+  React.useEffect(() => {
+    const handleScroll = () => {
+      //El treshold se situa en 1/4 del tamaño de la pantalla del usuario
+      const threshold = window.innerHeight * 0.25;
+      //Se settea scrolled en base a la distancia escroleada comparada con el treshold
+      setScrolled(window.scrollY > threshold);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <div className="flex flex-col justify-center items-center gap-2 bg-gray-100 min-h-screen">
-      <span>
-        Pantalla donde se muestra el detalle de los eventos y permite
-        seleccionar la cantidad de tickets a comprar. Se implementará en el 2do
-        sprint
-      </span>
-      <div className="flex flex-col bg-white rounded-lg shadow-2xl justify-center items-center px-6 py-4 gap-4">
-        <div className="flex flex-row  justify-between flex-1 gap-20">
-          <span> Caso de prueba 1: </span>
-          <button
-            onClick={() => onClick(1)}
-            className="flex rounded-2xl h-7 w-20 p-2 cursor-pointer justify-center items-center text-white bg-purple-600 hover:bg-yellow-500 hover:shadow-lg hover:scale-105"
-          >
-            Continuar
-          </button>
+    <div className="relative min-h-screen overflow-x-hidden">
+      {/* Imagen de fondo */}
+      <div className="fixed inset-0 h-screen w-full overflow-hidden">
+        <img
+          src={event?.image}
+          alt="Fondo del evento"
+          className={`w-full h-full object-contain transition-all duration-700 ease-in-out
+        ${
+          scrolled
+            ? "blur-2xl brightness-75 scale-105"
+            : "blur-0 brightness-100 scale-100"
+        }`}
+        />
+      </div>
+
+      {/* Contenido */}
+      <div className="flex h-screen"></div>
+      <div className="flex flex-col z-10 justify-center min-h-screen text-center gap-20">
+        <div className="flex relative flex-wrap justify-between items-center gap-4 px-4 py-5 md:px-8">
+          {/* Imagen */}
+          <div className="flex justify-start p-6 py-20 max-w-1/3">
+            <img
+              src={event.image}
+              className="flex flex-1 size-full bg-none shadow-2xl"
+            />
+          </div>
+          {/* Card de Información y entradas*/}
+          <div className="flex flex-1 flex-col justify-end rounded-lg bg-white max-w-3/5 h-auto shadow-2xl p-8">
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-row justify-start items-center gap-2">
+                <ArrowButton onClick={() => navigate(homeRoute)}></ArrowButton>
+                <div className="flex flex-wrap flex-row">
+                  <h1 className="flex font-bold text-3xl">{event?.title}</h1>
+                  <div id="date-selector"></div>
+                </div>
+              </div>
+
+              <p className="flex pl-16">{event?.description}</p>
+            </div>
+            <div className="flex flex-1 h-100">TODO: Selección de tickets</div>
+            <div className="flex flex-row class justify-end items-end">
+              <button
+                onClick={() => onClick(1)}
+                className="rounded-2xl h-8 w-24 p-2 cursor-pointer flex justify-center items-center text-white bg-purple-600 hover:bg-yellow-500 hover:shadow-lg hover:scale-105 transition-transform duration-200"
+              >
+                Continuar
+              </button>
+            </div>
+          </div>
         </div>
-        <hr className=" w-full"></hr>
-        <button
-          className="flex rounded-2xl h-7 w-20 cursor-pointer justify-center items-center border text-yellow-400 bg-white border-yellow-400 hover:shadow-lg hover:scale-105"
-          onClick={() => navigate("/home")}
-        >
-          Regresar
-        </button>
+        <div className="flex flex-1 relative fill-white bg-white p-6">
+          <span className="flex flex-1 font-bold text-4xl">
+            Información adicional
+          </span>
+        </div>
       </div>
     </div>
   );

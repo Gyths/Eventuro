@@ -8,7 +8,7 @@ import logo from "../../assets/logoB.svg";
  * - onLogin(), onRegister(), onProfile(), onMyTickets(), onClaims(), onLogout()
  */
 
-export default function TopBarRefactor({ children }) {
+export default function TopBar({ children }) {
   const paymentPageRoute = "/pago";
   const disabledPaths = [paymentPageRoute];
   const navigate = useNavigate();

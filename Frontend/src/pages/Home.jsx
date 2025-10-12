@@ -1,4 +1,5 @@
 // src/pages/Home.jsx
+import placeholder from "../assets/image-placeholder.svg";
 import { useEffect, useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import BannerCarousel from "../components/BannerCarousel.jsx";
@@ -94,11 +95,12 @@ export default function Home() {
           return {
             id: ev.eventId ?? crypto.randomUUID(),
             titulo: ev.title ?? "Evento",
+            description: ev.description,
             startDate, // YYYY-MM-DD
             endDate, // YYYY-MM-DD
             hour,
             location,
-            imagen: ev.imageUrl ?? "/img/evento-placeholder.jpg",
+            image: placeholder,
             category:
               ev.categories?.[0]?.category?.description ??
               ev.categories?.[0]?.description ??
@@ -174,8 +176,9 @@ export default function Home() {
               <div key={e.id} className="col-span-1">
                 <EventCard
                   id={e.id}
-                  image={e.imagen}
+                  image={e.image}
                   title={e.titulo}
+                  description={e.description}
                   location={e.location}
                   startDate={e.startDate} // YYYY-MM-DD (sin “correr” día)
                   endDate={e.endDate}

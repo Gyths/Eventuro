@@ -6,6 +6,7 @@ export default function EventCard({
   id,
   image,
   title = "Evento",
+  description = "",
   location = "Ubicación del evento",
   startDate,
   endDate,
@@ -38,8 +39,9 @@ export default function EventCard({
       id,
       image,
       title,
+      description,
       location,
-      sDate: sDay + "-" + month.toLowerCase() + "-" + year,
+      sDate: sDay + "-" + month + "-" + year,
       eDate: sDay + month + year,
       hour: `${hh}:${mm}`,
     };

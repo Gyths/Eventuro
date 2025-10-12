@@ -1,9 +1,6 @@
 import { ChevronLeftIcon } from "@heroicons/react/24/solid";
-import { useNavigate } from "react-router-dom";
 
 export default function ArrowButton({ onClick }) {
-  const navigate = useNavigate();
-
   return (
     <button
       onClick={onClick}
