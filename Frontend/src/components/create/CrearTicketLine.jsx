@@ -94,6 +94,19 @@ export default function CrearTicketLine({ zones, onChange, currency = "PEN" }) {
       }
       return zone;
     });
+    
+    if (field === "presaleQuantity") {
+      const zoneToValidate = newZones[zoneIndex];
+      const newSubtype = zoneToValidate.subtypes[subtypeIndex]; 
+      
+      const newPresaleQty = Number(newSubtype.presaleQuantity);
+      const totalQty = Number(newSubtype.quantity);
+
+      // Si la cantidad de preventa es mayor a la cantidad de tickets bloquea el cambio
+      if (newPresaleQty > totalQty) {
+        return; // Bloquea la salida
+      }
+    }
     updateZones(newZones);
   };
 
