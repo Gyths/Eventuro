@@ -7,9 +7,7 @@ import DatesSection from "../components/create/DatesSection";
 import useEventForm from "../hooks/useEventForm";
 
 // Paso 2
-import UbicacionEvento from "../components/UbicacionEvento";
 import CrearTicketCard from "../components/create/CrearTicketCard";
-import CrearTicketLine from "../components/create/CrearTicketLine";
 import UbicacionEvent from "../components/create/UbicacionEvent";
 
 //Paso 3
@@ -43,7 +41,6 @@ function WizardCard({ title, subtitle, badge, children }) {
     </div>
   );
 }
-
 
 function StepProgress({ steps, current }) {
   const pct = useMemo(
@@ -110,8 +107,6 @@ export default function CrearEventoCards() {
     }
   };
 
-
-
   // Paso 1
   const { form, updateForm, updateRestrictions, imagePreview } = useEventForm();
   const [dates, setDates] = useState([]); // [{id, date: Date|ISO, schedules:[{id,start,end}]}]
@@ -129,7 +124,12 @@ export default function CrearEventoCards() {
   // Paso 3 — Tickets (estado en el padre)
   const [tickets, setTickets] = useState({
     currency: "PEN",
-    items: [{ type: "", quantity: "", price: "" }],
+    zones: [ // Changed from 'items' to 'zones'
+        { 
+          zoneName: "", 
+          subtypes: [{ type: "", quantity: "", price: "" }] 
+        }
+      ],
     endSaleWhen: "termino", // "termino" | "inicio" | "2dias"
     maxPerUser: "10",
     tier: { enabled: false, qty: "", period: "diariamente" }, // toggle
@@ -145,23 +145,34 @@ export default function CrearEventoCards() {
       }))
     );
 
-    // 2. Mapeo de tickes a zones, los allocations son dummy, hay que reestructurar la tarjeta de creacion para que lo soporte
-    const dummyAllocations = [
-      { "audienceName": "General Discount", "discountPercent": 5, "allocatedQuantity": 100 }
-    ];
+    // 2. Mapeo de zonas y subtipos a la estructura de la API
+       const eventZones = tickets.zones.map((zone) => {
+       // Mapeo de los subtipos (líneas de ticket) a las "allocations"
+       const allocations = (zone.subtypes || []).map(subtype => ({
+        // name: Nombre del tipo de entrada (Ej: "Adulto") 
+        audienceName: subtype.type || "Entrada General", 
+ 
+        // Placeholder hasta actualizar el ednpoint
+        discountPercent: Number(subtype.price) || 0, // Usando precio como "discountPercent"
+        allocatedQuantity: Number(subtype.quantity) || 0, // Usando cantidad como "allocatedQuantity"
+      }));
 
-    const eventZones = tickets.items.map((item) => ({
-      name: item.type || "Ticket Zone", // Nombre de la zona/tipo
-      kind: "GENERAL",
-      basePrice: Number(item.price),
-      capacity: Number(item.quantity),
-      currency: tickets.currency,
-      // Placeholders, no estamos trabajando en asientos numerados aun
-      //MgTest
-      cols: 0, 
-      rows: 0,
-      allocations: dummyAllocations, 
-    }));
+      return {
+        name: zone.zoneName || "Zona sin nombre", 
+        kind: "GENERAL",
+        currency: tickets.currency,
+
+        //0 - los precios se encuntran en cada tipo
+        basePrice: 0,
+        capacity: 0, 
+
+        // Placeholders
+        cols: 0, 
+        rows: 0, 
+        // Las configuraciones de ticket por subtipo van en 'allocations'
+       allocations: allocations, 
+      };
+    });
 
     // 3. Construir el objeto JSON final
     const finalJson = {
@@ -232,7 +243,7 @@ export default function CrearEventoCards() {
       if (!form.imageFile)
         newErrors.image = "Debes subir una imagen para el evento.";
 
-      if (!form.category) newErrors.category = "Selecciona una categoría.";
+      //if (!form.category) newErrors.category = "Selecciona una categoría.";
 
       // Ajusta a cómo subes la imagen en tu hook: imageFile / image / imagePreview
       if (!form.imageFile && !imagePreview) {
@@ -288,30 +299,39 @@ export default function CrearEventoCards() {
         newErrors.capacity =
           "La capacidad debe ser un número válido (entre 0 y 200,000).";
       }
-      if (!tickets.items || tickets.items.length === 0) {
-        newErrors.tickets = "Debe crear al menos un tipo de entrada.";
+      const allSubtypes = tickets.zones.flatMap(zone => zone.subtypes || []);
+
+      if (!tickets.zones || tickets.zones.length === 0) {
+        newErrors.tickets = "Debe crear al menos una zona de entrada.";
+      } else if (tickets.zones.some(z => !z.zoneName || z.zoneName.trim() === "")) {
+        newErrors.tickets = "Completa el nombre de todas las zonas.";
+      } else if (allSubtypes.length === 0) {
+        newErrors.tickets = "Debe crear al menos un tipo de entrada en una zona.";
       } else if (
-        tickets.items.some((t) => !t.type || !t.price || !t.quantity)
+        allSubtypes.some((t) => !t.type || t.type.trim() === "" || !t.price || !t.quantity)
       ) {
-        newErrors.tickets = "Completa todos los campos de cada entrada.";
+        newErrors.tickets = "Completa todos los campos (Tipo, Precio, Cantidad) de cada entrada."; 
       } else if (
-        tickets.items.some((t) => isNaN(t.quantity) || t.quantity == 0)
+        allSubtypes.some((t) => isNaN(Number(t.quantity)) || Number(t.quantity) <= 0)
       ) {
-        newErrors.tickets = "Cantidad de entradas inválida.";
+        newErrors.tickets = "Cantidad de entradas inválida (debe ser un número mayor que 0).";
       }
 
       if (tickets?.tier?.enabled) {
         const tierQty = Number(tickets.tier.qty || 0);
 
-        // Calcular cantidad total de todas las entradas
-        const totalTickets = (tickets.items || []).reduce((sum, it) => {
-          const q = Number(it.quantity || 0);
-          return sum + (isNaN(q) ? 0 : q);
-        }, 0);
+        // Calcular cantidad total de todas las entradas (ahora desde zones.subtypes)
+        const totalTickets = (tickets.zones || [])
+          .flatMap(zone => zone.subtypes || [])
+          .reduce((sum, subtype) => {
+            const q = Number(subtype.quantity || 0);
+            return sum + (isNaN(q) ? 0 : q);
+          }, 0);
+
 
         if (!Number.isInteger(tierQty) || tierQty <= 0) {
           newErrors.tierQty =
-            "La cantidad habilitada para la venta escalonada debe ser un número entero mayor que 0.";
+            "La cantidad habilitada para la venta escalonada debe ser un número mayor que 0.";
         } else if (tierQty > totalTickets) {
           newErrors.tierQty = `La cantidad habilitada para la venta escalonada (${tierQty}) debe ser menor que la cantidad total (${totalTickets}).`;
         }
