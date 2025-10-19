@@ -1,8 +1,10 @@
 // src/pages/Home.jsx
+import placeholder from "../assets/image-placeholder.svg";
 import { useEffect, useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import BannerCarousel from "../components/BannerCarousel.jsx";
 import EventCard from "../components/EventCard.jsx";
+import { v4 as uuidv4 } from "uuid";
 
 import { BASE_URL } from "../config.js";
 
@@ -92,18 +94,18 @@ export default function Home() {
           const location = humanizeAddress(ev.venue);
 
           return {
-            id: ev.eventId ?? crypto.randomUUID(),
+            id: ev.eventId ?? uuidv4(),
             titulo: ev.title ?? "Evento",
+            description: ev.description,
             startDate, // YYYY-MM-DD
             endDate, // YYYY-MM-DD
             hour,
             location,
-            imagen: ev.imageUrl ?? "/img/evento-placeholder.jpg",
-            category:
-              ev.categories?.[0]?.category?.description ??
-              ev.categories?.[0]?.description ??
-              ev.category ??
-              "",
+            locationUrl: ev.venue.addressUrl,
+            image: ev.image ?? placeholder,
+            categories: ev.categories,
+            accessPolicy: ev.accessPolicy,
+            accessPolicyDescription: ev.accessPolicyDescription,
           };
         });
 
@@ -124,7 +126,15 @@ export default function Home() {
   const filteredEvents = useMemo(() => {
     return events.filter((e) => {
       let ok = true;
-      if (filters.category) ok = ok && e.category === filters.category;
+      if (filters.category)
+      ok =
+        ok &&
+        e.categories?.some(
+          (c) =>
+            c.category?.description?.toLowerCase() ===
+            filters.category.toLowerCase()
+        );
+
       if (filters.location)
         ok =
           ok &&
@@ -174,12 +184,17 @@ export default function Home() {
               <div key={e.id} className="col-span-1">
                 <EventCard
                   id={e.id}
-                  image={e.imagen}
+                  image={e.image}
                   title={e.titulo}
+                  description={e.description}
                   location={e.location}
+                  locationUrl={e.locationUrl}
                   startDate={e.startDate} // YYYY-MM-DD (sin “correr” día)
                   endDate={e.endDate}
                   hour={e.hour}
+                  categories={e.categories}
+                  accessPolicy={e.accessPolicy}
+                  accessPolicyDescription={e.accessPolicyDescription}
                 />
               </div>
             ))
