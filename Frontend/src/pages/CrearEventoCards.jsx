@@ -243,7 +243,7 @@ export default function CrearEventoCards() {
       if (!form.imageFile)
         newErrors.image = "Debes subir una imagen para el evento.";
 
-      //if (!form.category) newErrors.category = "Selecciona una categoría.";
+      if (!form.category) newErrors.category = "Selecciona una categoría.";
 
       // Ajusta a cómo subes la imagen en tu hook: imageFile / image / imagePreview
       if (!form.imageFile && !imagePreview) {
