@@ -1,5 +1,4 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../services/auth/AuthContext";
 import { select_test } from "../components/payment/tests";
@@ -24,7 +23,6 @@ import {
 } from "@heroicons/react/24/solid";
 
 export default function TicketSelection() {
-  const navigate = useNavigate();
   const homeRoute = "/home";
   const orderEnpoint = "/orders";
   const availabilityEndpoint = "/event/availability";
@@ -43,32 +41,6 @@ export default function TicketSelection() {
   const [modal, setModal] = React.useState("");
 
   const [selectedData, setSelectedData] = React.useState();
-
-  //Crea una orden de compra
-  async function onClick(testNum) {
-    !isAuthenticated && navigate(loginPage);
-
-    const orderData = {};
-    orderData.buyerUserId = user.userId;
-    orderData.currency = "PEN";
-    orderData.items = select_test(testNum, event.id);
-    console.log(orderData);
-
-    //Comunicación la api para crear la orden de compra
-    try {
-      const response = await EventuroApi({
-        endpoint: orderEnpoint,
-        method: apiMethod,
-        data: orderData,
-      });
-      setOrder(response);
-    } catch (err) {
-      console.error("Error al consultar disponbilidad:", err);
-      throw err;
-    }
-
-    navigate(paymentPage);
-  }
 
   React.useEffect(() => {
     //Llamada a la api del back para consultar disponibilidad de un evento

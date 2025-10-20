@@ -1,5 +1,6 @@
 import React from "react";
 import BaseModal from "../BaseModal";
+import { useNavigate } from "react-router-dom";
 
 import useEvent from "../../services/Event/EventContext";
 import useOrder from "../../services/Order/OrderContext";
@@ -15,79 +16,95 @@ import { number } from "framer-motion";
 
 export default function SelectAllocationModal({ selectedData, onReturn }) {
   const paymentPage = "/pago";
+  const orderEndpoint = "/orders";
+  const apiMethod = "POST";
+
+  const navigate = useNavigate();
 
   const { event } = useEvent();
   const { user } = useAuth();
   const { setOrder } = useOrder();
 
-  console.log(selectedData);
+  //console.log(selectedData);
 
-  const basePrice = parseInt(selectedData.zoneDates.basePrice);
-  const kind = selectedData.zoneDates.kind;
-  const currency = selectedData.zoneDates.currency;
-
-  const [values, setValues] = React.useState(Array(100).fill(0));
+  //Funciones para el manejo de entradas sin allocation
+  const [generalQuantities, setGeneralQuantities] = React.useState(
+    Array(100).fill(0)
+  );
   const [subtotal, setSubtotal] = React.useState(0);
   const currencies = { PEN: "S/." };
 
-  const handleSubtraction = (i) => {
-    const newValues = values.map((value, index) => {
+  const handleGeneralSubtraction = (i) => {
+    const newValues = generalQuantities.map((value, index) => {
       return (index === i) & (value > 0) ? value - 1 : value;
     });
-    setValues(newValues);
+    setGeneralQuantities(newValues);
   };
 
-  const handleSum = (i) => {
-    const newValues = values.map((value, index) => {
+  const handleGeneralSum = (i) => {
+    const newValues = generalQuantities.map((value, index) => {
       return (index === i) &
-        (value <
-          parseInt(selectedData.eventZone.allocations[i].remainingQuantity))
+        (value < parseInt(selectedData.zoneDates[i].capacityRemaining))
         ? value + 1
         : value;
     });
-    setValues(newValues);
+    setGeneralQuantities(newValues);
   };
 
+  React.useEffect(() => {
+    if (selectedData) {
+      let newSubtotal = 0;
+      for (let i = 0; i < selectedData.zoneDates.length; i++) {
+        console.log(generalQuantities[i]);
+        console.log(selectedData.zoneDates[i].basePrice);
+        newSubtotal +=
+          parseInt(generalQuantities[i]) *
+          parseInt(selectedData.zoneDates[i].basePrice);
+      }
+      setSubtotal(newSubtotal);
+    }
+  }, [generalQuantities]);
+
+  //Funciones para el manejo de entradas con allocation
+
+  const handleAllocationsClick = (i) => {};
+
+  //Función para manejar enviar la orden a la bd
   const onContinue = async () => {
-    console.log(values.every((value) => !value));
+    //Se establece la información de la orden
     const orderData = {};
     orderData.buyerUserId = user.userId;
     orderData.currency = "PEN";
     orderData.items = [];
-    values.forEach((value) => {
+    generalQuantities.forEach((value, index) => {
       value > 0 &&
         orderData.items.push({
           eventId: event.eventId,
           eventDateId: selectedData.eventDateId,
-          eventDateZoneId: selectedData.eventZone.eventDateZoneId,
+          eventDateZoneId: selectedData.zoneDates[index].eventDateZoneId,
           quantity: value,
         });
     });
 
     console.log(orderData);
 
-    /* try {
+    //Se envía la orden
+    try {
       const response = await EventuroApi({
-        endpoint: orderEnpoint,
+        endpoint: orderEndpoint,
         method: apiMethod,
         data: orderData,
       });
+      console.log(response);
       setOrder(response);
     } catch (err) {
       console.error("Error al consultar disponbilidad:", err);
       throw err;
-    } */
-
-    //navigate(paymentPage);
-  };
-
-  React.useEffect(() => {
-    if (selectedData) {
-      let newSubtotal = 0;
-
-      setSubtotal(newSubtotal);
     }
-  }, [values]);
+
+    //Cambio de página
+    navigate(paymentPage);
+  };
 
   return (
     <BaseModal>
@@ -107,43 +124,39 @@ export default function SelectAllocationModal({ selectedData, onReturn }) {
             {/* Sección donde se muestran las entradas */}
             <div className="flex flex-col w-full py-7 px-7">
               <span className="inline-block border-b border-gray-200">
-                {selectedData?.eventZone?.name}
+                {selectedData?.formattedStartDate +
+                  " " +
+                  selectedData?.formattedStartHour +
+                  " - " +
+                  selectedData?.formattedEndHour}
               </span>
-              {selectedData && kind === "GENERAL" ? (
-                <div
-                  key={allocation.eventDateZoneAllocationId}
-                  className="flex flex-row justify-between gap-4 py-2 px-3"
-                >
-                  <span>{allocation.audienceName}</span>
-
-                  <span>
-                    {currencies[currency] +
-                      " " +
-                      basePrice *
-                        (1 - parseInt(allocation.discountPercent) / 100)}
-                  </span>
-
-                  {kind && kind === "SEATED" ? (
-                    "Con asientos"
-                  ) : (
-                    <div className="flex flex-row gap-3 items-center">
-                      <MinusIcon
-                        onClick={() => handleSubtraction(index)}
-                        className="relative select-none size-3.5 bg-gray-100 rounded-lg cursor-pointer"
-                      ></MinusIcon>
-                      <span className="relative font-semibold">
-                        {values[index]}
-                      </span>
-                      <PlusIcon
-                        onClick={() => handleSum(index)}
-                        className="relative select-none size-3.5 bg-gray-100 rounded-lg cursor-pointer"
-                      ></PlusIcon>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                ""
-              )}
+              {selectedData &&
+                selectedData.zoneDates.map((zone, index) => (
+                  <div className="flex flex-row justify-between items-center py-3">
+                    <span>{zone.name}</span>
+                    <span>{currencies.PEN + zone.basePrice}</span>
+                    {zone.kind != "GENERAL" ? (
+                      <button
+                        onClick={() => handleAllocationsClick(index)}
+                        className="bg-yellow-400 text-white px-2 rounded-md cursor-pointer hover:bg-yellow-500 hover:scale-105 transition-transform"
+                      >
+                        Elegir
+                      </button>
+                    ) : (
+                      <div className="flex flex-row gap-4 items-center">
+                        <MinusIcon
+                          onClick={() => handleGeneralSubtraction(index)}
+                          className="select-none size-3 cursor-pointer rounded-xl bg-gray-300"
+                        ></MinusIcon>
+                        <span>{generalQuantities[index]}</span>
+                        <PlusIcon
+                          onClick={() => handleGeneralSum(index)}
+                          className="select-none size-3 cursor-pointer rounded-xl bg-gray-300"
+                        ></PlusIcon>
+                      </div>
+                    )}
+                  </div>
+                ))}
             </div>
           </div>
           {/* Sección de información del evento */}
@@ -153,7 +166,7 @@ export default function SelectAllocationModal({ selectedData, onReturn }) {
           <div className="flex flex-row gap-4">
             <span className="inline-block font-semibold">Subtotal: </span>
             <span className="inline-block font-semibold">
-              {currencies[currency] + subtotal}
+              {currencies.PEN + " " + subtotal}
             </span>
           </div>
           <button
