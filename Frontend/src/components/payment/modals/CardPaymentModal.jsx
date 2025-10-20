@@ -1,5 +1,5 @@
 import React from "react";
-import BaseModal from "./BaseModal";
+import BaseModal from "../../BaseModal";
 
 import useOrder from "../../../services/Order/OrderContext";
 import { useAuth } from "../../../services/auth/AuthContext";

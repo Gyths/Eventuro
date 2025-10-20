@@ -9,8 +9,11 @@ import {
 } from "@headlessui/react";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/24/solid";
 
-export default function EventZoneDropdownList({ selectedSchedule }) {
-  const [selectedZone, setSelectedZone] = useState(null);
+export default function EventZoneDropdownList({
+  selectedSchedule,
+  selectedZone,
+  setSelectedZone,
+}) {
   const zones = selectedSchedule?.zoneDates ?? [];
 
   return (

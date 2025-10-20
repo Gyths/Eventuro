@@ -40,7 +40,7 @@ export default function EventCard({
 
   function onClick() {
     const event = {
-      id,
+      eventId: id,
       image,
       title,
       description,

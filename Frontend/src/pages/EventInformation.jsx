@@ -1,12 +1,17 @@
 import React from "react";
-import { useAuth } from "../services/auth/AuthContext";
-import { EventuroApi } from "../api";
 import { useNavigate } from "react-router-dom";
+
+import { useAuth } from "../services/auth/AuthContext";
 import { select_test } from "../components/payment/tests";
 import useEvent from "../services/Event/EventContext";
 import useOrder from "../services/Order/OrderContext";
+import { EventuroApi } from "../api";
+
 import ArrowButton from "../components/ArrowButton";
+import { AnimatePresence, motion } from "framer-motion";
+
 import SelectDateModal from "../components/selection/SelectDateModal";
+import SelectTicketModal from "../components/selection/SelectTicketModal";
 
 import {
   ChatBubbleBottomCenterTextIcon,
@@ -35,7 +40,9 @@ export default function TicketSelection() {
   //State para el manejo del scroll
   const [scrolled, setScrolled] = React.useState(false);
   //State para manejar modales
-  const [modal, setModal] = React.useState(false);
+  const [modal, setModal] = React.useState("");
+
+  const [selectedData, setSelectedData] = React.useState();
 
   //Crea una orden de compra
   async function onClick(testNum) {
@@ -70,7 +77,7 @@ export default function TicketSelection() {
         const response = await EventuroApi({
           endpoint: availabilityEndpoint,
           method: apiMethod,
-          data: { eventId: event.id },
+          data: { eventId: event.eventId },
         });
 
         const formatted = response.dates.map((dateInfo) => ({
@@ -108,7 +115,7 @@ export default function TicketSelection() {
         }));
 
         setDates(formatted);
-        //console.log(formatted);
+        console.log(formatted);
       } catch (err) {
         console.error("Error al consultar la disponibilidad:", err);
         throw err;
@@ -123,13 +130,18 @@ export default function TicketSelection() {
     const handleScroll = () => {
       //El threshold se situa en 1/4 del tamaño de la pantalla del usuario
       const threshold = window.innerHeight * 0.25;
-      //Se settea scrolled en base a la distancia escroleada comparada con el threshold
+      //Se settea scrolled en base a la distancia escrolleada comparada con el threshold
       setScrolled(window.scrollY > threshold);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleContinue = (selectedData) => {
+    setSelectedData(selectedData);
+    setModal("allocations");
+  };
 
   return (
     <>
@@ -157,7 +169,7 @@ export default function TicketSelection() {
               <img src={event.image} className="w-full h-full object-cover" />
             </div>
             {/* Card de Información y entradas*/}
-            <div className="flex flex-col justify-end rounded-lg xl:rounded-none xl:rounded-r-lg bg-white h-auto shadow-2xl pt-6 pb-12 pr-32 pl-10">
+            <div className="flex flex-col justify-end rounded-lg xl:rounded-none xl:rounded-r-lg bg-white h-auto shadow-2xl pt-6 pb-12 pr-24 pl-10">
               <div className="flex flex-row justify-start items-center gap-2">
                 <ArrowButton onClick={() => navigate(homeRoute)}></ArrowButton>
                 {/* Título */}
@@ -194,13 +206,14 @@ export default function TicketSelection() {
                   <MapPinIcon className="flex size-5 justify-center"></MapPinIcon>
                   <p className="flex text-center">{event?.location}</p>
                 </div>
-                <button
-                  onClick={() => setModal("dates")}
-                  className="flex rounded-lg bg-purple-600 text-white px-6"
-                >
-                  {" "}
-                  Seleccionar Fechas
-                </button>
+                <div className="flex flex-row justify-end">
+                  <button
+                    onClick={() => setModal("dates")}
+                    className="self-start inline-flex w-auto items-center cursor-pointer justify-center rounded-lg bg-purple-600 text-white px-6 py-1 hover:scale-101 hover:bg-yellow-500 transition-all transition-transform duration-300"
+                  >
+                    Comprar entradas
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -231,13 +244,27 @@ export default function TicketSelection() {
         </div>
       </div>
       {modal === "dates" && (
-        <SelectDateModal
-          dates={dates}
-          onClose={() => setModal(null)}
-        ></SelectDateModal>
+        <AnimatePresence>
+          <SelectDateModal
+            dates={dates}
+            onClose={() => setModal(null)}
+            onContinue={handleContinue}
+          />
+        </AnimatePresence>
       )}
 
-      {/* Barra inferior 
+      {modal === "allocations" && (
+        <AnimatePresence>
+          <SelectTicketModal
+            selectedData={selectedData}
+            onReturn={() => setModal("dates")}
+          />
+        </AnimatePresence>
+      )}
+
+      {/* Comentado por si se usa posteriormente (no creo pero porsiaca)
+
+       Barra inferior 
       <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 shadow-md p-4 flex items-center justify-between z-50">
         <div className="text-lg font-semibold text-gray-800">
           Subtotal:{" "}

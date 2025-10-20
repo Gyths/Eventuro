@@ -3,16 +3,22 @@ import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
 import EventZoneDropdownList from "./EventZoneDropdownList";
 import Calendar from "./Calendar";
 import { XMarkIcon } from "@heroicons/react/24/solid";
+import BaseModal from "../BaseModal";
 
-export default function SelectDateModal({ dates, onClose }) {
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [selectedSchedule, setSelectedEvent] = useState(null);
+export default function SelectDateModal({ dates, onClose, onContinue }) {
+  //State para manejar las elecciones del usuario
+  const [selectedDate, setSelectedDate] = React.useState(null);
+  const [selectedSchedule, setSelectedSchedule] = React.useState(null);
+  selectedDate && console.log("Fecha seleccionada: ");
+  selectedDate && console.log(selectedDate);
+  selectedDate && console.log("Horario seleccionada: ");
+  selectedDate && console.log(selectedSchedule);
 
   const parsedDates = useMemo(
     () =>
       dates?.map((d) => ({
         ...d,
-        dateObj: new Date(d.startAt), // Se guarda la conversión aquí
+        dateObj: new Date(d.startAt),
       })) ?? [],
     [dates]
   );
@@ -76,7 +82,9 @@ export default function SelectDateModal({ dates, onClose }) {
   };
 
   const handleSelectDate = (day) => {
+    setSelectedSchedule(null);
     setSelectedDate(new Date(year, month, day));
+    selectedDate && console.log(selectedDate);
   };
 
   const handleSelectSchedule = (horario, dateObj) => {
@@ -88,20 +96,19 @@ export default function SelectDateModal({ dates, onClose }) {
     );
 
     if (foundEvent) {
-      setSelectedEvent(foundEvent);
+      setSelectedSchedule(foundEvent);
     }
   };
 
-  useEffect(() => {
-    console.time("Render completo");
-    return () => {
-      console.timeEnd("Render completo");
-    };
-  });
+  const handleContinue = () => {
+    if (!selectedSchedule) return;
+
+    onContinue(selectedSchedule);
+  };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4">
-      <div className="flex flex-col md:flex-row items-stretch w-full max-w-4xl bg-white overflow-hidden shadow-2xl rounded-md">
+    <BaseModal>
+      <div className="flex flex-col md:flex-row items-stretch w-full max-w-4xl bg-white shadow-2xl rounded-md">
         <div className="flex flex-col flex-[3] border-r border-gray-200">
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-3  text-gray-900">
@@ -142,6 +149,14 @@ export default function SelectDateModal({ dates, onClose }) {
           </div>
 
           <div className="flex flex-col flex-1 justify-between">
+            <div className="relative inline-box font-semibold pl-3.5 py-2 border-b border-gray-200">
+              {selectedDate &&
+                selectedDate.toLocaleDateString("es-PE", {
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                })}
+            </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
               {selectedDate &&
                 parsedDates
@@ -168,16 +183,23 @@ export default function SelectDateModal({ dates, onClose }) {
                   })}
             </div>
 
-            <div className="flex flex-col gap-4 p-4 border-t border-gray-100">
-              <EventZoneDropdownList selectedSchedule={selectedSchedule} />
-
-              <button className="bg-purple-600 w-full text-white rounded-lg py-1.5 hover:bg-purple-700 transition cursor-pointer">
+            <div className="flex flex-col gap-4 p-4 px-6 border-t border-gray-300">
+              {/* <EventZoneDropdownList
+                selectedSchedule={selectedSchedule}
+                selectedZone={selectedZone}
+                setSelectedZone={setSelectedZone}
+              /> */}
+              <button
+                disabled={!selectedSchedule}
+                onClick={handleContinue}
+                className="disabled:bg-purple-800  bg-purple-600 w-full text-white rounded-lg py-1.5 hover:bg-purple-700 transition enabled:cursor-pointer"
+              >
                 Continuar
               </button>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </BaseModal>
   );
 }

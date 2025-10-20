@@ -273,6 +273,7 @@ export async function listAvailableTicketsRepo(input) {
           zoneDates: {
             select: {
               eventDateZoneId: true,
+              eventDateId: true,
               name: true,
               kind: true,
               basePrice: true,
@@ -284,6 +285,7 @@ export async function listAvailableTicketsRepo(input) {
               allocations: {
                 select: {
                   eventDateZoneAllocationId: true,
+                  eventDateZoneId: true,
                   audienceName: true,
                   discountPercent: true,
                   allocatedQuantity: true,

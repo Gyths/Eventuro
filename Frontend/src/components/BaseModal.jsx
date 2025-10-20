@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 
-function BaseModal({ children }) {
+export default function BaseModal({ children }) {
   return (
     <motion.div
       className="fixed inset-0 flex items-center justify-center"
@@ -20,5 +20,3 @@ function BaseModal({ children }) {
     </motion.div>
   );
 }
-
-export default BaseModal;
