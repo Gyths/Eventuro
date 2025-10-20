@@ -22,7 +22,6 @@ import { DiscountCodeCard } from "../components/create/DiscountCodeCard";
 import DiscountCodesSection from "../components/create/DiscountCodesSection";
 import { BASE_URL } from "../config.js";
 
-
 function WizardCard({ title, subtitle, badge, children }) {
   return (
     <div className="relative rounded-[28px] bg-gray-100 p-6 sm:p-7 lg:p-10 shadow-[0_10px_30px_rgba(0,0,0,0.08)]">
@@ -114,6 +113,7 @@ export default function CrearEventoCards() {
   const isActive = (i) => current === i;
   // Paso 2 — Ubicación (estado en el padre)
   const [location, setLocation] = useState({
+    inPerson: null,
     city: "",
     address: "",
     reference: "",
@@ -124,12 +124,13 @@ export default function CrearEventoCards() {
   // Paso 3 — Tickets (estado en el padre)
   const [tickets, setTickets] = useState({
     currency: "PEN",
-    zones: [ // Changed from 'items' to 'zones'
-        { 
-          zoneName: "", 
-          subtypes: [{ type: "", quantity: "", price: "" }] 
-        }
-      ],
+    zones: [
+      // Changed from 'items' to 'zones'
+      {
+        zoneName: "",
+        subtypes: [{ type: "", quantity: "", price: "" }],
+      },
+    ],
     endSaleWhen: "termino", // "termino" | "inicio" | "2dias"
     maxPerUser: "10",
     tier: { enabled: false, qty: "", period: "diariamente" }, // toggle
@@ -138,39 +139,39 @@ export default function CrearEventoCards() {
   //###### GENERADOR DEL JSON PARA POST A LA BD ##########
   const generateAndPostJson = () => {
     //Extraer fechas falta agregar horas
-    const eventDates = dates.flatMap(date => 
-      date.schedules.map(schedule => ({
+    const eventDates = dates.flatMap((date) =>
+      date.schedules.map((schedule) => ({
         startAt: new Date(date.date).toISOString(),
         endAt: new Date(date.date).toISOString(),
       }))
     );
 
     // 2. Mapeo de zonas y subtipos a la estructura de la API
-       const eventZones = tickets.zones.map((zone) => {
-       // Mapeo de los subtipos (líneas de ticket) a las "allocations"
-       const allocations = (zone.subtypes || []).map(subtype => ({
-        // name: Nombre del tipo de entrada (Ej: "Adulto") 
-        audienceName: subtype.type || "Entrada General", 
- 
+    const eventZones = tickets.zones.map((zone) => {
+      // Mapeo de los subtipos (líneas de ticket) a las "allocations"
+      const allocations = (zone.subtypes || []).map((subtype) => ({
+        // name: Nombre del tipo de entrada (Ej: "Adulto")
+        audienceName: subtype.type || "Entrada General",
+
         // Placeholder hasta actualizar el ednpoint
         discountPercent: Number(subtype.price) || 0, // Usando precio como "discountPercent"
         allocatedQuantity: Number(subtype.quantity) || 0, // Usando cantidad como "allocatedQuantity"
       }));
 
       return {
-        name: zone.zoneName || "Zona sin nombre", 
+        name: zone.zoneName || "Zona sin nombre",
         kind: "GENERAL",
         currency: tickets.currency,
 
         //0 - los precios se encuntran en cada tipo
         basePrice: 0,
-        capacity: 0, 
+        capacity: 0,
 
         // Placeholders
-        cols: 0, 
-        rows: 0, 
+        cols: 0,
+        rows: 0,
         // Las configuraciones de ticket por subtipo van en 'allocations'
-       allocations: allocations, 
+        allocations: allocations,
       };
     });
 
@@ -182,8 +183,8 @@ export default function CrearEventoCards() {
       inPerson: true, // Aun no implementado
       description: form.description,
       // Asumiendo que 'form' contiene estos campos
-      accessPolicy: "E", 
-      accessPolicyDescription: form.extraInfo, 
+      accessPolicy: "E",
+      accessPolicyDescription: form.extraInfo,
 
       // Ubicación (venue)
       venue: {
@@ -210,10 +211,10 @@ export default function CrearEventoCards() {
     console.log("JSON generado para POST a la BD:", finalJson);
     //LLamada a la api para POST, Va a fallar por las fechas
     fetch(`${BASE_URL}/eventuro/api/event/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(finalJson)
-    })
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(finalJson),
+    });
   };
 
   // Paso 4 — Política de devoluciones (estado en el padre)
@@ -281,40 +282,54 @@ export default function CrearEventoCards() {
     }
 
     if (stepIndex === 1) {
-      if (!location.city) {
-        newErrors.city = "La ciudad es obligatoria.";
+      const isVirtual = location.inPerson === false;
+
+      if (!isVirtual) {
+        if (!location.city) {
+          newErrors.city = "La ciudad es obligatoria.";
+        }
+        if (!location.address || location.address.trim() === "") {
+          newErrors.address = "La dirección es obligatoria.";
+        } else if (location.address.length < 5) {
+          newErrors.address = "La dirección es muy corta.";
+        } else if (location.address.length > 150) {
+          newErrors.address =
+            "La dirección no puede tener más de 150 caracteres.";
+        }
+        if (
+          Number(location.capacity) > 200000 ||
+          Number(location.capacity) <= 0
+        ) {
+          newErrors.capacity =
+            "La capacidad debe ser un número válido (entre 0 y 200,000).";
+        }
       }
-      if (!location.address || location.address.trim() === "") {
-        newErrors.address = "La dirección es obligatoria.";
-      } else if (location.address.length < 5) {
-        newErrors.address = "La dirección es muy corta.";
-      } else if (location.address.length > 150) {
-        newErrors.address =
-          "La dirección no puede tener más de 150 caracteres.";
-      }
-      if (
-        Number(location.capacity) > 200000 ||
-        Number(location.capacity) <= 0
-      ) {
-        newErrors.capacity =
-          "La capacidad debe ser un número válido (entre 0 y 200,000).";
-      }
-      const allSubtypes = tickets.zones.flatMap(zone => zone.subtypes || []);
+
+      const allSubtypes = tickets.zones.flatMap((zone) => zone.subtypes || []);
 
       if (!tickets.zones || tickets.zones.length === 0) {
         newErrors.tickets = "Debe crear al menos una zona de entrada.";
-      } else if (tickets.zones.some(z => !z.zoneName || z.zoneName.trim() === "")) {
+      } else if (
+        tickets.zones.some((z) => !z.zoneName || z.zoneName.trim() === "")
+      ) {
         newErrors.tickets = "Completa el nombre de todas las zonas.";
       } else if (allSubtypes.length === 0) {
-        newErrors.tickets = "Debe crear al menos un tipo de entrada en una zona.";
+        newErrors.tickets =
+          "Debe crear al menos un tipo de entrada en una zona.";
       } else if (
-        allSubtypes.some((t) => !t.type || t.type.trim() === "" || !t.price || !t.quantity)
+        allSubtypes.some(
+          (t) => !t.type || t.type.trim() === "" || !t.price || !t.quantity
+        )
       ) {
-        newErrors.tickets = "Completa todos los campos (Tipo, Precio, Cantidad) de cada entrada."; 
+        newErrors.tickets =
+          "Completa todos los campos (Tipo, Precio, Cantidad) de cada entrada.";
       } else if (
-        allSubtypes.some((t) => isNaN(Number(t.quantity)) || Number(t.quantity) <= 0)
+        allSubtypes.some(
+          (t) => isNaN(Number(t.quantity)) || Number(t.quantity) <= 0
+        )
       ) {
-        newErrors.tickets = "Cantidad de entradas inválida (debe ser un número mayor que 0).";
+        newErrors.tickets =
+          "Cantidad de entradas inválida (debe ser un número mayor que 0).";
       }
 
       if (tickets?.tier?.enabled) {
@@ -322,12 +337,11 @@ export default function CrearEventoCards() {
 
         // Calcular cantidad total de todas las entradas (ahora desde zones.subtypes)
         const totalTickets = (tickets.zones || [])
-          .flatMap(zone => zone.subtypes || [])
+          .flatMap((zone) => zone.subtypes || [])
           .reduce((sum, subtype) => {
             const q = Number(subtype.quantity || 0);
             return sum + (isNaN(q) ? 0 : q);
           }, 0);
-
 
         if (!Number.isInteger(tierQty) || tierQty <= 0) {
           newErrors.tierQty =
@@ -364,7 +378,11 @@ export default function CrearEventoCards() {
       <StepProgress steps={steps} current={current} />
 
       {/* PASO 1 */}
-      <div ref={el => (cardRefs.current[0] = el)} className={isActive(0) ? "block" : "hidden"} aria-hidden={!isActive(0)}>
+      <div
+        ref={(el) => (cardRefs.current[0] = el)}
+        className={isActive(0) ? "block" : "hidden"}
+        aria-hidden={!isActive(0)}
+      >
         <WizardCard
           title="Detalles del Evento"
           subtitle="Nombre, categoría, descripción, imagen y restricciones"
@@ -399,7 +417,11 @@ export default function CrearEventoCards() {
       </div>
 
       {/* PASO 2 */}
-      <div ref={el => (cardRefs.current[1] = el)} className={isActive(1) ? "block" : "hidden"} aria-hidden={!isActive(1)}>
+      <div
+        ref={(el) => (cardRefs.current[1] = el)}
+        className={isActive(1) ? "block" : "hidden"}
+        aria-hidden={!isActive(1)}
+      >
         <WizardCard
           title="Ubicación y Tickets"
           subtitle="Configura la sede del evento y los tipos de entrada"
@@ -425,7 +447,11 @@ export default function CrearEventoCards() {
       </div>
 
       {/* ======== PASO 3 ======== */}
-      <div ref={el => (cardRefs.current[2] = el)} className={isActive(2) ? "block" : "hidden"} aria-hidden={!isActive(2)}>
+      <div
+        ref={(el) => (cardRefs.current[2] = el)}
+        className={isActive(2) ? "block" : "hidden"}
+        aria-hidden={!isActive(2)}
+      >
         <WizardCard
           title="Política de devoluciones Y Códigos de descuento"
           subtitle="Define tus reglas de reembolso y promociones"
@@ -445,7 +471,11 @@ export default function CrearEventoCards() {
         </WizardCard>
       </div>
 
-      <div ref={el => (cardRefs.current[3] = el)} className={isActive(3) ? "block" : "hidden"} aria-hidden={!isActive(3)}>
+      <div
+        ref={(el) => (cardRefs.current[3] = el)}
+        className={isActive(3) ? "block" : "hidden"}
+        aria-hidden={!isActive(3)}
+      >
         <WizardCard
           title="Resumen del evento"
           subtitle="Revisa antes de publicar"
@@ -460,7 +490,9 @@ export default function CrearEventoCards() {
             location={location}
           />
           <div className="mt-6 flex justify-center">
-            <BotonCTA variant="pink" onClick={generateAndPostJson}>Publicar Evento</BotonCTA>
+            <BotonCTA variant="pink" onClick={generateAndPostJson}>
+              Publicar Evento
+            </BotonCTA>
           </div>
         </WizardCard>
       </div>
