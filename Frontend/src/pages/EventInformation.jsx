@@ -11,6 +11,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import SelectDateModal from "../components/selection/SelectDateModal";
 import SelectTicketModal from "../components/selection/SelectTicketModal";
+import SeatNumberSelectionModal from "../components/selection/SeatNumberSelectionModal";
 
 import {
   ChatBubbleBottomCenterTextIcon,
@@ -112,7 +113,7 @@ export default function TicketSelection() {
 
   const handleContinue = (selectedData) => {
     setSelectedData(selectedData);
-    setModal("allocations");
+    setModal("tickets");
   };
 
   return (
@@ -225,9 +226,11 @@ export default function TicketSelection() {
         </AnimatePresence>
       )}
 
-      {modal === "allocations" && (
+      {(modal === "tickets" || modal === "seats") && (
         <AnimatePresence>
           <SelectTicketModal
+            modal={modal}
+            setModal={setModal}
             selectedData={selectedData}
             onReturn={() => setModal("dates")}
           />

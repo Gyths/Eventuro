@@ -7,6 +7,9 @@ import useOrder from "../../services/Order/OrderContext";
 import { useAuth } from "../../services/auth/AuthContext";
 import { EventuroApi } from "../../api";
 
+import SeatNumberSelectionModal from "./SeatNumberSelectionModal";
+
+import { AnimatePresence } from "framer-motion";
 import {
   ChevronLeftIcon,
   PlusIcon,
@@ -14,7 +17,12 @@ import {
 } from "@heroicons/react/24/solid";
 import { number } from "framer-motion";
 
-export default function SelectAllocationModal({ selectedData, onReturn }) {
+export default function SelectAllocationModal({
+  modal,
+  setModal,
+  selectedData,
+  onReturn,
+}) {
   const paymentPage = "/pago";
   const orderEndpoint = "/orders";
   const apiMethod = "POST";
@@ -28,27 +36,39 @@ export default function SelectAllocationModal({ selectedData, onReturn }) {
   console.log(selectedData);
 
   //Funciones para el manejo de entradas generales
-  const [generalQuantities, setGeneralQuantities] = React.useState(
-    Array(100).fill(0)
-  );
+  const [noAllocationGeneralQuantities, setNoAllocationGeneralQuantities] =
+    React.useState(Array(100).fill(0));
+  const [noAllocationSeatedQuantities, setNoAllocationSeatedQuantities] =
+    React.useState([]);
+  const [allocatedGeneralQuantities, setAllocatedGeneralQuantities] =
+    React.useState([]);
+  const [allocatedSeatedQuantities, setAllocatedSeatedQuantities] =
+    React.useState([]);
   const [subtotal, setSubtotal] = React.useState(0);
+  const [seatMap, setSeatMap] = React.useState(null);
   const currencies = { PEN: "S/." };
 
-  const handleGeneralSubtraction = ({ zoneIndex }) => {
-    const newValues = generalQuantities.map((value, index) => {
-      return (index === i) & (value > 0) ? value - 1 : value;
+  const handleNoAllocationGeneralSubtraction = (zoneIndex) => {
+    const newValues = noAllocationGeneralQuantities.map((value, index) => {
+      return (index === zoneIndex) & (value > 0) ? value - 1 : value;
     });
-    setGeneralQuantities(newValues);
+    setNoAllocationGeneralQuantities(newValues);
   };
 
-  const handleGeneralSum = ({ zoneIndex }) => {
-    const newValues = generalQuantities.map((value, index) => {
-      return (index === i) &
-        (value < parseInt(selectedData.zoneDates[i].capacityRemaining))
+  const handleNoAllocationGeneralSum = (zoneIndex) => {
+    console.log(zoneIndex);
+    const newValues = noAllocationGeneralQuantities.map((value, index) => {
+      return (index === zoneIndex) &
+        (value < parseInt(selectedData.zoneDates[zoneIndex].capacityRemaining))
         ? value + 1
         : value;
     });
-    setGeneralQuantities(newValues);
+    setNoAllocationGeneralQuantities(newValues);
+  };
+
+  const handleNoAllocatedGeneral = (i) => {
+    setSeatMap(selectedData.zoneDates[i].seatMap);
+    setModal("seats");
   };
 
   const handleAllocationSubtraction = ({ zoneIndex, allocationIndex }) => {};
@@ -58,15 +78,15 @@ export default function SelectAllocationModal({ selectedData, onReturn }) {
     if (selectedData) {
       let newSubtotal = 0;
       for (let i = 0; i < selectedData.zoneDates.length; i++) {
-        console.log(generalQuantities[i]);
+        console.log(noAllocationGeneralQuantities[i]);
         console.log(selectedData.zoneDates[i].basePrice);
         newSubtotal +=
-          parseInt(generalQuantities[i]) *
+          parseInt(noAllocationGeneralQuantities[i]) *
           parseInt(selectedData.zoneDates[i].basePrice);
       }
       setSubtotal(newSubtotal);
     }
-  }, [generalQuantities]);
+  }, [noAllocationGeneralQuantities]);
 
   //Funciones para el manejo de entradas con sitio
 
@@ -79,7 +99,7 @@ export default function SelectAllocationModal({ selectedData, onReturn }) {
     orderData.buyerUserId = user.userId;
     orderData.currency = "PEN";
     orderData.items = [];
-    generalQuantities.forEach((value, index) => {
+    noAllocationGeneralQuantities.forEach((value, index) => {
       value > 0 &&
         orderData.items.push({
           eventId: event.eventId,
@@ -110,77 +130,39 @@ export default function SelectAllocationModal({ selectedData, onReturn }) {
   };
 
   return (
-    <BaseModal>
-      <div className="flex flex-col items-stretch w-full max-w-4xl bg-white shadow-2xs rounded-md">
-        <div className="flex flex-row items-stretch">
-          <div className="flex flex-[4] flex-col">
-            {/* Header del modal */}
-            <div className="flex flex-row justify-start gap-4 items-center py-4 px-4 border-b border-b-gray-300">
-              <ChevronLeftIcon
-                onClick={onReturn}
-                className="fill-purple-700 shadow-2xl size-8 cursor-pointer hover:scale-105"
-              ></ChevronLeftIcon>
-              <span className="inline-block font-semibold text-3xl">
-                Selecciona tus entradas
-              </span>
-            </div>
-            {/* Sección donde se muestran las entradas */}
-            <div className="flex flex-col w-full py-7 px-7">
-              <span className="inline-block border-b border-gray-200">
-                {selectedData?.formattedStartDate +
-                  " " +
-                  selectedData?.formattedStartHour +
-                  " - " +
-                  selectedData?.formattedEndHour}
-              </span>
-              {selectedData &&
-                selectedData.zoneDates.map((zone, index) => (
-                  <div key={index}>
-                    <div className="flex flex-row justify-between items-center py-3">
-                      <span>{zone.name}</span>
-                      {/* Zonas */}
-                      {zone.allocations.length === 0 && (
-                        <>
-                          <span>{currencies.PEN + zone.basePrice}</span>
-                          {zone.kind != "SEATED" ? (
-                            <div
-                              key={index}
-                              className="flex flex-row gap-4 items-center"
-                            >
-                              <MinusIcon
-                                onClick={() => handleGeneralSubtraction(index)}
-                                className="select-none size-3 cursor-pointer rounded-xl bg-gray-300"
-                              ></MinusIcon>
-                              <span>{generalQuantities[index]}</span>
-                              <PlusIcon
-                                onClick={() => handleGeneralSum(index)}
-                                className="select-none size-3 cursor-pointer rounded-xl bg-gray-300"
-                              ></PlusIcon>
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() => handleAllocationsClick(index)}
-                              className="bg-yellow-400 text-white px-2 rounded-md cursor-pointer hover:bg-yellow-500 hover:scale-105 transition-transform"
-                            >
-                              Elegir
-                            </button>
-                          )}
-                        </>
-                      )}
-                    </div>
-                    {/* Allocations */}
-                    {zone.allocations.length > 0 &&
-                      zone.allocations.map((allocation, index_a) => (
-                        <div key={index_a} className="flex flex-col">
-                          <div className="flex bg-gray-100 justify-between py-2.5 pl-3.5 pr-2">
-                            <span>{allocation.audienceName}</span>
-                            <span>
-                              {currencies.PEN +
-                                " " +
-                                parseInt(zone.basePrice) *
-                                  (1 -
-                                    parseInt(allocation.discountPercent) / 100)}
-                            </span>
+    <>
+      <BaseModal>
+        <div className="flex flex-col items-stretch w-full max-w-4xl bg-white shadow-2xs rounded-md">
+          <div className="flex flex-row items-stretch">
+            <div className="flex flex-[4] flex-col">
+              {/* Header del modal */}
+              <div className="flex flex-row justify-start gap-4 items-center py-4 px-4 border-b border-b-gray-300">
+                <ChevronLeftIcon
+                  onClick={onReturn}
+                  className="fill-purple-700 shadow-2xl size-8 cursor-pointer hover:scale-105"
+                ></ChevronLeftIcon>
+                <span className="inline-block font-semibold text-3xl">
+                  Selecciona tus entradas
+                </span>
+              </div>
+              {/* Sección donde se muestran las entradas */}
+              <div className="flex flex-col w-full py-7 px-7">
+                <span className="inline-block border-b border-gray-200">
+                  {selectedData?.formattedStartDate +
+                    " " +
+                    selectedData?.formattedStartHour +
+                    " - " +
+                    selectedData?.formattedEndHour}
+                </span>
+                {selectedData &&
+                  selectedData.zoneDates.map((zone, index) => (
+                    <div key={index}>
+                      <div className="flex flex-row justify-between items-center py-3">
+                        <span>{zone.name}</span>
+                        {/* Zonas */}
+                        {zone.allocations.length === 0 && (
+                          <>
+                            <span>{currencies.PEN + zone.basePrice}</span>
                             {zone.kind != "SEATED" ? (
                               <div
                                 key={index}
@@ -188,49 +170,112 @@ export default function SelectAllocationModal({ selectedData, onReturn }) {
                               >
                                 <MinusIcon
                                   onClick={() =>
-                                    handleGeneralSubtraction(index_a)
+                                    handleNoAllocationGeneralSubtraction(index)
                                   }
                                   className="select-none size-3 cursor-pointer rounded-xl bg-gray-300"
                                 ></MinusIcon>
-                                <span>{generalQuantities[index_a]}</span>
+                                <span>
+                                  {noAllocationGeneralQuantities[index]}
+                                </span>
                                 <PlusIcon
-                                  onClick={() => handleGeneralSum(index_a)}
+                                  onClick={() =>
+                                    handleNoAllocationGeneralSum(index)
+                                  }
                                   className="select-none size-3 cursor-pointer rounded-xl bg-gray-300"
                                 ></PlusIcon>
                               </div>
                             ) : (
                               <button
-                                onClick={() => handleAllocationsClick(index_a)}
+                                onClick={() => handleNoAllocatedGeneral(index)}
                                 className="bg-yellow-400 text-white px-2 rounded-md cursor-pointer hover:bg-yellow-500 hover:scale-105 transition-transform"
                               >
                                 Elegir
                               </button>
                             )}
+                          </>
+                        )}
+                      </div>
+                      {/* Allocations */}
+                      {zone.allocations.length > 0 &&
+                        zone.allocations.map((allocation, index_a) => (
+                          <div key={index_a} className="flex flex-col">
+                            <div className="flex bg-gray-100 justify-between py-2.5 pl-3.5 pr-2">
+                              <span>{allocation.audienceName}</span>
+                              <span>
+                                {currencies.PEN +
+                                  " " +
+                                  parseInt(zone.basePrice) *
+                                    (1 -
+                                      parseInt(allocation.discountPercent) /
+                                        100)}
+                              </span>
+                              {zone.kind != "SEATED" ? (
+                                <div
+                                  key={index}
+                                  className="flex flex-row gap-4 items-center"
+                                >
+                                  <MinusIcon
+                                    onClick={() =>
+                                      handleNoAllocationGeneralSubtraction(
+                                        index_a
+                                      )
+                                    }
+                                    className="select-none size-3 cursor-pointer rounded-xl bg-gray-300"
+                                  ></MinusIcon>
+                                  <span>
+                                    {noAllocationGeneralQuantities[index_a]}
+                                  </span>
+                                  <PlusIcon
+                                    onClick={() =>
+                                      handleNoAllocationGeneralSum(index_a)
+                                    }
+                                    className="select-none size-3 cursor-pointer rounded-xl bg-gray-300"
+                                  ></PlusIcon>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() =>
+                                    handleAllocationsClick(index_a)
+                                  }
+                                  className="bg-yellow-400 text-white px-2 rounded-md cursor-pointer hover:bg-yellow-500 hover:scale-105 transition-transform"
+                                >
+                                  Elegir
+                                </button>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
-                  </div>
-                ))}
+                        ))}
+                    </div>
+                  ))}
+              </div>
             </div>
+            {/* Sección de información del evento */}
+            <div className="flex-[2] border-l border-l-gray-100"></div>
           </div>
-          {/* Sección de información del evento */}
-          <div className="flex-[2] border-l border-l-gray-100"></div>
-        </div>
-        <div className="flex flex-row justify-between gap-4 px-5 py-1.5 border-t border-gray-100 items-center">
-          <div className="flex flex-row gap-4">
-            <span className="inline-block font-semibold">Subtotal: </span>
-            <span className="inline-block font-semibold">
-              {currencies.PEN + " " + subtotal}
-            </span>
+          <div className="flex flex-row justify-between gap-4 px-5 py-1.5 border-t border-gray-100 items-center">
+            <div className="flex flex-row gap-4">
+              <span className="inline-block font-semibold">Subtotal: </span>
+              <span className="inline-block font-semibold">
+                {currencies.PEN + " " + subtotal}
+              </span>
+            </div>
+            <button
+              onClick={onContinue}
+              className="inline-block bg-purple-600 rounded-lg text-white px-2.5 py-1 cursor-pointer"
+            >
+              Continuar
+            </button>
           </div>
-          <button
-            onClick={onContinue}
-            className="inline-block bg-purple-600 rounded-lg text-white px-2.5 py-1 cursor-pointer"
-          >
-            Continuar
-          </button>
         </div>
-      </div>
-    </BaseModal>
+      </BaseModal>
+      {modal === "seats" && (
+        <AnimatePresence>
+          <SeatNumberSelectionModal
+            seatMap={seatMap}
+            setNoAllocationSeatedQuantities={setNoAllocationSeatedQuantities}
+          />
+        </AnimatePresence>
+      )}
+    </>
   );
 }
