@@ -1,5 +1,5 @@
 import React from "react";
-
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../services/auth/AuthContext";
 import { select_test } from "../components/payment/tests";
 import useEvent from "../services/Event/EventContext";
@@ -29,7 +29,7 @@ export default function TicketSelection() {
   const apiMethod = "POST";
   const paymentPage = "/pago";
   const loginPage = "/login";
-
+  const navigate = useNavigate();
   //Manejo de objetos de negocio
   const { isAuthenticated, user } = useAuth();
   const { event } = useEvent();

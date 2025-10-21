@@ -25,23 +25,23 @@ export default function SelectAllocationModal({ selectedData, onReturn }) {
   const { user } = useAuth();
   const { setOrder } = useOrder();
 
-  //console.log(selectedData);
+  console.log(selectedData);
 
-  //Funciones para el manejo de entradas sin allocation
+  //Funciones para el manejo de entradas generales
   const [generalQuantities, setGeneralQuantities] = React.useState(
     Array(100).fill(0)
   );
   const [subtotal, setSubtotal] = React.useState(0);
   const currencies = { PEN: "S/." };
 
-  const handleGeneralSubtraction = (i) => {
+  const handleGeneralSubtraction = ({ zoneIndex }) => {
     const newValues = generalQuantities.map((value, index) => {
       return (index === i) & (value > 0) ? value - 1 : value;
     });
     setGeneralQuantities(newValues);
   };
 
-  const handleGeneralSum = (i) => {
+  const handleGeneralSum = ({ zoneIndex }) => {
     const newValues = generalQuantities.map((value, index) => {
       return (index === i) &
         (value < parseInt(selectedData.zoneDates[i].capacityRemaining))
@@ -50,6 +50,9 @@ export default function SelectAllocationModal({ selectedData, onReturn }) {
     });
     setGeneralQuantities(newValues);
   };
+
+  const handleAllocationSubtraction = ({ zoneIndex, allocationIndex }) => {};
+  const handleAllocationSum = ({ zoneIndex, allocationIndex }) => {};
 
   React.useEffect(() => {
     if (selectedData) {
@@ -65,9 +68,9 @@ export default function SelectAllocationModal({ selectedData, onReturn }) {
     }
   }, [generalQuantities]);
 
-  //Funciones para el manejo de entradas con allocation
+  //Funciones para el manejo de entradas con sitio
 
-  const handleAllocationsClick = (i) => {};
+  const handleAllocationsClick = ({ zoneIndex, allocationIndex }) => {};
 
   //Función para manejar enviar la orden a la bd
   const onContinue = async () => {
@@ -132,29 +135,80 @@ export default function SelectAllocationModal({ selectedData, onReturn }) {
               </span>
               {selectedData &&
                 selectedData.zoneDates.map((zone, index) => (
-                  <div className="flex flex-row justify-between items-center py-3">
-                    <span>{zone.name}</span>
-                    <span>{currencies.PEN + zone.basePrice}</span>
-                    {zone.kind != "GENERAL" ? (
-                      <button
-                        onClick={() => handleAllocationsClick(index)}
-                        className="bg-yellow-400 text-white px-2 rounded-md cursor-pointer hover:bg-yellow-500 hover:scale-105 transition-transform"
-                      >
-                        Elegir
-                      </button>
-                    ) : (
-                      <div className="flex flex-row gap-4 items-center">
-                        <MinusIcon
-                          onClick={() => handleGeneralSubtraction(index)}
-                          className="select-none size-3 cursor-pointer rounded-xl bg-gray-300"
-                        ></MinusIcon>
-                        <span>{generalQuantities[index]}</span>
-                        <PlusIcon
-                          onClick={() => handleGeneralSum(index)}
-                          className="select-none size-3 cursor-pointer rounded-xl bg-gray-300"
-                        ></PlusIcon>
-                      </div>
-                    )}
+                  <div key={index}>
+                    <div className="flex flex-row justify-between items-center py-3">
+                      <span>{zone.name}</span>
+                      {/* Zonas */}
+                      {zone.allocations.length === 0 && (
+                        <>
+                          <span>{currencies.PEN + zone.basePrice}</span>
+                          {zone.kind != "SEATED" ? (
+                            <div
+                              key={index}
+                              className="flex flex-row gap-4 items-center"
+                            >
+                              <MinusIcon
+                                onClick={() => handleGeneralSubtraction(index)}
+                                className="select-none size-3 cursor-pointer rounded-xl bg-gray-300"
+                              ></MinusIcon>
+                              <span>{generalQuantities[index]}</span>
+                              <PlusIcon
+                                onClick={() => handleGeneralSum(index)}
+                                className="select-none size-3 cursor-pointer rounded-xl bg-gray-300"
+                              ></PlusIcon>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => handleAllocationsClick(index)}
+                              className="bg-yellow-400 text-white px-2 rounded-md cursor-pointer hover:bg-yellow-500 hover:scale-105 transition-transform"
+                            >
+                              Elegir
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                    {/* Allocations */}
+                    {zone.allocations.length > 0 &&
+                      zone.allocations.map((allocation, index_a) => (
+                        <div key={index_a} className="flex flex-col">
+                          <div className="flex bg-gray-100 justify-between py-2.5 pl-3.5 pr-2">
+                            <span>{allocation.audienceName}</span>
+                            <span>
+                              {currencies.PEN +
+                                " " +
+                                parseInt(zone.basePrice) *
+                                  (1 -
+                                    parseInt(allocation.discountPercent) / 100)}
+                            </span>
+                            {zone.kind != "SEATED" ? (
+                              <div
+                                key={index}
+                                className="flex flex-row gap-4 items-center"
+                              >
+                                <MinusIcon
+                                  onClick={() =>
+                                    handleGeneralSubtraction(index_a)
+                                  }
+                                  className="select-none size-3 cursor-pointer rounded-xl bg-gray-300"
+                                ></MinusIcon>
+                                <span>{generalQuantities[index_a]}</span>
+                                <PlusIcon
+                                  onClick={() => handleGeneralSum(index_a)}
+                                  className="select-none size-3 cursor-pointer rounded-xl bg-gray-300"
+                                ></PlusIcon>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => handleAllocationsClick(index_a)}
+                                className="bg-yellow-400 text-white px-2 rounded-md cursor-pointer hover:bg-yellow-500 hover:scale-105 transition-transform"
+                              >
+                                Elegir
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
                   </div>
                 ))}
             </div>
