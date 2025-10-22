@@ -22,27 +22,34 @@ import Home from "./pages/Home.jsx";
 import { Navigate } from "react-router-dom";
 import AuthCallback from "./pages/AuthCallback";
 import CrearEventoCards from "./pages/CrearEventoCards.jsx";
+import MisTickets from "./pages/MisTickets";
+import OrganizerRoute from "./routes/OrganizerRoute";
 function App() {
   return (
-    <>
-      <Routes>
-        <Route element={<RootLayout />}>
-          <Route index element={<Home />} />
+    <Routes>
+      <Route path="auth/callback" element={<AuthCallback />} />
 
-          <Route path="login" element={<Login />} />
-          <Route path="registro" element={<Register />} />
-          <Route path="auth/callback" element={<AuthCallback />} />
+      <Route element={<RootLayout />}>
+        <Route index element={<Home />} />
+
+        <Route path="login" element={<Login />} />
+        <Route path="registro" element={<Register />} />
+        <Route element={<OrganizerRoute requireApproved={true} />}>
           <Route path="/crearEvento" element={<CrearEventoCards />} />
-          <Route path="seleccionTickets" element={<TicketSelection />} />
-          {/*<Route> se comenta para evitar que la pagina dentro de ella esté restringida a una sesión autenticada*/}
-          <Route element={<ProtectedRoute />}>
-            <Route path="pago" element={<PaymentMethod />} />
-          </Route>
-          <Route path="app/*" element={<Navigate to="/" replace />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
-      </Routes>
-    </>
+        <Route path="seleccionTickets" element={<TicketSelection />} />
+
+
+        <Route path="/misTickets" element={<MisTickets />} />
+
+        <Route element={<ProtectedRoute />}>
+          <Route path="pago" element={<PaymentMethod />} />
+        </Route>
+
+        <Route path="app/*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
+    </Routes>
   );
 }
 

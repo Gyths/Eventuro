@@ -8,7 +8,7 @@ export default function UserMenu() {
   const profileRoute = "/";
   const myTicketsRoute = "/";
   const claimsRoute = "/";
-  const loginRoute = "/login";
+  const loginRoute = "/";
 
   const navigate = useNavigate();
 
@@ -42,7 +42,7 @@ export default function UserMenu() {
           />
           <MenuItem
             text="Mis tickets"
-            onClick={() => navigate(myTicketsRoute)}
+            onClick={() => navigate("/misTickets")}
           />
           <MenuItem text="Reclamos" onClick={() => navigate(claimsRoute)} />
           <div className="my-1 h-px bg-gray-100" />
