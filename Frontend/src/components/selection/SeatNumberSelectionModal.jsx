@@ -8,8 +8,8 @@ export default function SeatNumberSelectionModal({
   seatMap,
   zoneIndex,
   allocationIndex = null,
-  noAllocationSeatedQuantities = [],
-  setNoAllocationSeatedQuantities,
+  notAllocatedSeatedQuantities = [],
+  setNotAllocatedSeatedQuantities,
 }) {
   //console.log(seatMap);
   const [selectedSeats, setSelectedSeats] = React.useState([]);
@@ -25,14 +25,14 @@ export default function SeatNumberSelectionModal({
   };
 
   const handleAccept = () => {
-    console.log(noAllocationSeatedQuantities);
-    const newQuantities = noAllocationSeatedQuantities.map(
+    console.log(notAllocatedSeatedQuantities);
+    const newQuantities = notAllocatedSeatedQuantities.map(
       (quantitie, index) => {
         return index === zoneIndex ? selectedSeats : quantitie;
       }
     );
     console.log(newQuantities);
-    setNoAllocationSeatedQuantities(newQuantities);
+    setNotAllocatedSeatedQuantities(newQuantities);
     setModal("tickets");
   };
 
@@ -46,10 +46,10 @@ export default function SeatNumberSelectionModal({
 
   React.useEffect(() => {
     if (
-      Array.isArray(noAllocationSeatedQuantities) &&
-      Array.isArray(noAllocationSeatedQuantities[zoneIndex])
+      Array.isArray(notAllocatedSeatedQuantities) &&
+      Array.isArray(notAllocatedSeatedQuantities[zoneIndex])
     ) {
-      setSelectedSeats(noAllocationSeatedQuantities[zoneIndex]);
+      setSelectedSeats(notAllocatedSeatedQuantities[zoneIndex]);
     }
   }, []);
 
