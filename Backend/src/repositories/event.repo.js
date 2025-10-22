@@ -300,6 +300,9 @@ export async function listAvailableTicketsRepo(input) {
                   cols: true,
                   //Asientos relacionados a cada seatMap
                   occupiedSeats: {
+                    orderBy: {
+                      seatId: "asc",
+                    },
                     select: {
                       seatId: true,
                       rowNumber: true,
