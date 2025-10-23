@@ -15,7 +15,7 @@ import HomePrivate from "./pages/HomePrivate";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import PaymentMethod from "./pages/PaymentMethod";
-import EventInformation from "./pages/EventInformation.jsx";
+
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import Home from "./pages/Home.jsx";
@@ -25,6 +25,8 @@ import CrearEventoCards from "./pages/CrearEventoCards.jsx";
 import MisTickets from "./pages/MisTickets";
 import OrganizerRoute from "./routes/OrganizerRoute";
 import MyCalendar from './pages/MyCalendar.jsx';
+import TicketSelection from "./pages/EventInformation.jsx";
+
 function App() {
   return (
     <Routes>
@@ -37,7 +39,7 @@ function App() {
         <Route path="registro" element={<Register />} />
         <Route element={<OrganizerRoute requireApproved={true} />}>
           <Route path="/crearEvento" element={<CrearEventoCards />} />
-          <Route path="seleccionTickets" element={<EventInformation />} />
+
           {/*<Route> se comenta para evitar que la pagina dentro de ella esté restringida a una sesión autenticada*/}
           <Route element={<ProtectedRoute />}>
             <Route path="pago" element={<PaymentMethod />} />

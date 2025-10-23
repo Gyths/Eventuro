@@ -82,7 +82,7 @@ export default function TicketSelection() {
             }
           ),
         }));
-        response.status != "A" && navigate(homeRoute);
+        //response.status != "A" && navigate(homeRoute);
         response.dates = formatted;
         response.image = response.image ?? placeholder;
         setEvent(response);

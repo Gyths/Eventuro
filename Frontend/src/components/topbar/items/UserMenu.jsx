@@ -11,7 +11,7 @@ export default function UserMenu() {
   const myTicketsRoute = "/misTickets";      // estandariza a kebab-case si puedes
   const claimsRoute = "/reclamos";
   const calendarRoute = "/miCalendario";     
-  const loginRoute = "/login";
+  const loginRoute = "/";
 
   const navigate = useNavigate();
   const { logout } = useAuth();
