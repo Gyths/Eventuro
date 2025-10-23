@@ -126,7 +126,15 @@ export default function Home() {
   const filteredEvents = useMemo(() => {
     return events.filter((e) => {
       let ok = true;
-      if (filters.category) ok = ok && e.category === filters.category;
+      if (filters.category)
+      ok =
+        ok &&
+        e.categories?.some(
+          (c) =>
+            c.category?.description?.toLowerCase() ===
+            filters.category.toLowerCase()
+        );
+
       if (filters.location)
         ok =
           ok &&

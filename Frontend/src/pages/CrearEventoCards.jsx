@@ -7,9 +7,7 @@ import DatesSection from "../components/create/DatesSection";
 import useEventForm from "../hooks/useEventForm";
 
 // Paso 2
-import UbicacionEvento from "../components/UbicacionEvento";
 import CrearTicketCard from "../components/create/CrearTicketCard";
-import CrearTicketLine from "../components/create/CrearTicketLine";
 import UbicacionEvent from "../components/create/UbicacionEvent";
 
 //Paso 3
@@ -22,8 +20,8 @@ import ResumenEvento from "../components/create/ResumenEvento";
 import BotonCTA from "../components/BotonCTA";
 import { DiscountCodeCard } from "../components/create/DiscountCodeCard";
 import DiscountCodesSection from "../components/create/DiscountCodesSection";
+import Swal from "sweetalert2";
 import { BASE_URL } from "../config.js";
-
 
 function WizardCard({ title, subtitle, badge, children }) {
   return (
@@ -43,7 +41,6 @@ function WizardCard({ title, subtitle, badge, children }) {
     </div>
   );
 }
-
 
 function StepProgress({ steps, current }) {
   const pct = useMemo(
@@ -69,6 +66,7 @@ function StepProgress({ steps, current }) {
 function WizardControls({ current, total, onPrev, onNext }) {
   return (
     <div className="flex items-center justify-between gap-3">
+      {/* Botón Anterior */}
       <button
         type="button"
         onClick={onPrev}
@@ -78,13 +76,16 @@ function WizardControls({ current, total, onPrev, onNext }) {
         Anterior
       </button>
 
-      <button
-        type="button"
-        onClick={onNext}
-        className="rounded-full border border-pink-300 bg-pink-500/90 text-white px-5 py-2 text-sm shadow hover:bg-pink-500"
-      >
-        {current === total - 1 ? "Finalizar" : "Siguiente"}
-      </button>
+      {/* Botón Siguiente (solo si no es el último paso) */}
+      {current < total - 1 && (
+        <button
+          type="button"
+          onClick={onNext}
+          className="rounded-full border border-pink-300 bg-pink-500/90 text-white px-5 py-2 text-sm shadow hover:bg-pink-500"
+        >
+          Siguiente
+        </button>
+      )}
     </div>
   );
 }
@@ -110,8 +111,6 @@ export default function CrearEventoCards() {
     }
   };
 
-
-
   // Paso 1
   const { form, updateForm, updateRestrictions, imagePreview } = useEventForm();
   const [dates, setDates] = useState([]); // [{id, date: Date|ISO, schedules:[{id,start,end}]}]
@@ -129,80 +128,256 @@ export default function CrearEventoCards() {
   // Paso 3 — Tickets (estado en el padre)
   const [tickets, setTickets] = useState({
     currency: "PEN",
-    items: [{ type: "", quantity: "", price: "" }],
+    zones: [
+      // Changed from 'items' to 'zones'
+      {
+        zoneName: "",
+        subtypes: [{ type: "", quantity: "", price: "" }],
+      },
+    ],
     endSaleWhen: "termino", // "termino" | "inicio" | "2dias"
     maxPerUser: "10",
     tier: { enabled: false, qty: "", period: "diariamente" }, // toggle
   });
 
+  const resetWizard = () => {
+    // Ir al paso 1
+    setCurrent(0);
+
+    // Limpiar fechas
+    setDates([]);
+
+    // Limpiar ubicación
+    setLocation({
+      city: "",
+      address: "",
+      reference: "",
+      howToFind: "",
+      capacity: "",
+    });
+
+    // Limpiar tickets
+    setTickets({
+      currency: "PEN",
+      zones: [
+        { zoneName: "", subtypes: [{ type: "", quantity: "", price: "" }] },
+      ],
+      endSaleWhen: "termino",
+      maxPerUser: "10",
+      tier: { enabled: false, qty: "", period: "diariamente" },
+    });
+
+    // Limpiar política de devoluciones
+    setReturnsPolicy({ text: "", file: null });
+
+    // Limpiar errores
+    setErrors({});
+
+    // Limpiar básicos del formulario (usa tu hook)
+    updateForm({
+      name: "",
+      description: "",
+      categories: [],
+      extraInfo: "",
+      imageFile: null,
+      restrictions: [],
+    });
+    updateRestrictions([]); // según tu hook; si usa objeto, pásale {}.
+  };
+
   //###### GENERADOR DEL JSON PARA POST A LA BD ##########
-  const generateAndPostJson = () => {
-    //Extraer fechas falta agregar horas
-    const eventDates = dates.flatMap(date => 
-      date.schedules.map(schedule => ({
-        startAt: new Date(date.date).toISOString(),
-        endAt: new Date(date.date).toISOString(),
-      }))
-    );
+  const generateAndPostJson = async () => {
+    try {
+      setPosting(true);
 
-    // 2. Mapeo de tickes a zones, los allocations son dummy, hay que reestructurar la tarjeta de creacion para que lo soporte
-    const dummyAllocations = [
-      { "audienceName": "General Discount", "discountPercent": 5, "allocatedQuantity": 100 }
-    ];
+      // ====== construir el JSON (tu mismo código adaptado) ======
+      const toYMD = (d) => {
+        if (!d) return "";
+        if (typeof d === "string") return d.slice(0, 10);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${y}-${m}-${day}`;
+      };
 
-    const eventZones = tickets.items.map((item) => ({
-      name: item.type || "Ticket Zone", // Nombre de la zona/tipo
-      kind: "GENERAL",
-      basePrice: Number(item.price),
-      capacity: Number(item.quantity),
-      currency: tickets.currency,
-      // Placeholders, no estamos trabajando en asientos numerados aun
-      //MgTest
-      cols: 0, 
-      rows: 0,
-      allocations: dummyAllocations, 
-    }));
+      const to24h = (raw) => {
+        if (!raw) return "00:00";
+        const s = String(raw).trim();
+        const m24 = s.match(/^(\d{2}):(\d{2})$/);
+        if (m24) return `${m24[1]}:${m24[2]}`;
+        const m12 = s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+        if (m12) {
+          let hh = parseInt(m12[1], 10);
+          const mm = m12[2];
+          const ap = m12[3].toUpperCase();
+          if (ap === "AM") {
+            if (hh === 12) hh = 0;
+          } else {
+            if (hh !== 12) hh += 12;
+          }
+          return `${String(hh).padStart(2, "0")}:${mm}`;
+        }
+        return "00:00";
+      };
 
-    // 3. Construir el objeto JSON final
-    const finalJson = {
-      // Campos básicos
-      organizerId: 1, // Hardcoded, debe venir del contexto de usuario
-      title: form.name,
-      inPerson: true, // Aun no implementado
-      description: form.description,
-      // Asumiendo que 'form' contiene estos campos
-      accessPolicy: "E", 
-      accessPolicyDescription: form.extraInfo, 
+      const toMin = (hhmm) => {
+        const [h, m] = hhmm.split(":").map(Number);
+        return h * 60 + m;
+      };
 
-      // Ubicación (venue)
-      venue: {
-        city: location.city,
-        address: location.address,
-        addressUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Extraer la url del mapa (google maps)
-        reference: location.reference,
-        capacity: Number(location.capacity),
-      },
-      // Categorías
-      eventCategories: form.category ? [Number(form.category)] : [], // Ordenar por pildoras las categorias
+      const addDaysYMD = (ymd, days = 1) => {
+        const [y, m, d] = ymd.split("-").map(Number);
+        const dt = new Date(Date.UTC(y, m - 1, d));
+        dt.setUTCDate(dt.getUTCDate() + days);
+        const yy = dt.getUTCFullYear();
+        const mm = String(dt.getUTCMonth() + 1).padStart(2, "0");
+        const dd = String(dt.getUTCDate()).padStart(2, "0");
+        return `${yy}-${mm}-${dd}`;
+      };
 
-      //Fases de venta (No implementado, Falta la tarjeta) descomentar cuando se implemente
-      //salePhases: dummySalePhases,
+      // suma/resta minutos a "HH:mm" devolviendo {hhmm, dayShift}
+      const shiftHHMM = (hhmm, deltaMin) => {
+        const [h, m] = hhmm.split(":").map(Number);
+        let total = h * 60 + m + deltaMin;
+        let dayShift = 0;
+        while (total < 0) {
+          total += 1440;
+          dayShift -= 1;
+        }
+        while (total >= 1440) {
+          total -= 1440;
+          dayShift += 1;
+        }
+        const hh = String(Math.floor(total / 60)).padStart(2, "0");
+        const mm = String(total % 60).padStart(2, "0");
+        return { hhmm: `${hh}:${mm}`, dayShift };
+      };
 
-      // Fechas y horarios
-      dates: eventDates,
+      // ---- CONSTRUCCIÓN (pre-compensación de -05:00 y rollover local) ----
+      const LIMA_OFFSET_MIN = 5 * 60; // America/Lima = UTC-05:00
 
-      // Zonas/Tickets
-      zones: eventZones,
-    };
+      const eventDates = dates.flatMap((date) =>
+        (date.schedules || []).map((s) => {
+          // 1) Hora local (según usuario)
+          const ymdLocal = toYMD(date.date);
+          const startLocal = to24h(s.start);
+          const endLocal = to24h(s.end);
 
-    //Prueba desde la consola del navegador del JSON
-    console.log("JSON generado para POST a la BD:", finalJson);
-    //LLamada a la api para POST, Va a fallar por las fechas
-    fetch(`${BASE_URL}/eventuro/api/event/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(finalJson)
-    })
+          // 2) Rollover local: si start >= end, end es día siguiente (local)
+          const endYMDLocal =
+            toMin(endLocal) <= toMin(startLocal)
+              ? addDaysYMD(ymdLocal, 1)
+              : ymdLocal;
+
+          // 3) PRE-COMPENSAR: restamos 5h a ambas horas y ajustamos día si cruza medianoche
+          const sShift = shiftHHMM(startLocal, -LIMA_OFFSET_MIN); // -300 min
+          const eShift = shiftHHMM(endLocal, -LIMA_OFFSET_MIN);
+
+          const ymdStartShift =
+            sShift.dayShift !== 0
+              ? addDaysYMD(ymdLocal, sShift.dayShift)
+              : ymdLocal;
+          const ymdEndShift =
+            eShift.dayShift !== 0
+              ? addDaysYMD(endYMDLocal, eShift.dayShift)
+              : endYMDLocal;
+
+          // 4) Enviamos con offset -05:00; el backend al convertir a UTC “deshará” nuestra pre-compensación
+          return {
+            startAt: `${ymdStartShift}T${sShift.hhmm}:00-05:00`,
+            endAt: `${ymdEndShift}T${eShift.hhmm}:00-05:00`,
+          };
+        })
+      );
+
+      const eventZones = (tickets.zones || []).map((zone) => {
+        const allocations = (zone.subtypes || []).map((subtype) => ({
+          audienceName: subtype.type || "Entrada General",
+          discountPercent: Number(subtype.price) || 0,
+          allocatedQuantity: Number(subtype.quantity) || 0,
+        }));
+        return {
+          name: zone.zoneName || "Zona sin nombre",
+          kind: "GENERAL",
+          currency: tickets.currency,
+          basePrice: 0,
+          capacity: 0,
+          cols: 0,
+          rows: 0,
+          allocations,
+        };
+      });
+
+      const finalJson = {
+        organizerId: 1,
+        title: form.name,
+        inPerson: true,
+        description: form.description,
+        accessPolicy: "E",
+        accessPolicyDescription: form.extraInfo,
+        venue: {
+          city: location.city,
+          address: location.address,
+          addressUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          reference: location.reference,
+          capacity: Number(location.capacity),
+        },
+        eventCategories: form.category ? [Number(form.category)] : [],
+        dates: eventDates,
+        zones: eventZones,
+      };
+
+      const res = await fetch(`${BASE_URL}/eventuro/api/event/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(finalJson),
+      });
+
+      const raw = await res.text();
+      let payload = null;
+      try {
+        payload = raw ? JSON.parse(raw) : null;
+      } catch {
+        payload = raw;
+      }
+
+      if (res.ok) {
+        await Swal.fire({
+          icon: "success",
+          title: "¡Evento publicado!",
+          text: "Tu evento se creó correctamente.",
+          confirmButtonText: "Aceptar",
+        });
+        // Al cerrar el modal de éxito, reseteamos el formulario/wizard:
+        resetWizard();
+        return;
+      }
+
+      const backendMessage =
+        (payload && (payload.message || payload.error)) ||
+        (Array.isArray(payload?.errors) ? payload.errors.join("\n") : null) ||
+        (typeof payload === "string" ? payload : null) ||
+        `Código HTTP: ${res.status}`;
+
+      await Swal.fire({
+        icon: "error",
+        title: "Error al publicar",
+        text: backendMessage,
+        confirmButtonText: "Entendido",
+      });
+    } catch (err) {
+      await Swal.fire({
+        icon: "error",
+        title: "Error inesperado",
+        text: err?.message || String(err),
+        confirmButtonText: "Cerrar",
+      });
+    } finally {
+      setPosting(false);
+    }
   };
 
   // Paso 4 — Política de devoluciones (estado en el padre)
@@ -232,7 +407,12 @@ export default function CrearEventoCards() {
       if (!form.imageFile)
         newErrors.image = "Debes subir una imagen para el evento.";
 
-      if (!form.category) newErrors.category = "Selecciona una categoría.";
+      const selectedCats = Array.isArray(form.categories)
+        ? form.categories
+        : [];
+      if (selectedCats.length === 0) {
+        newErrors.category = "Selecciona al menos una categoría.";
+      }
 
       // Ajusta a cómo subes la imagen en tu hook: imageFile / image / imagePreview
       if (!form.imageFile && !imagePreview) {
@@ -288,30 +468,47 @@ export default function CrearEventoCards() {
         newErrors.capacity =
           "La capacidad debe ser un número válido (entre 0 y 200,000).";
       }
-      if (!tickets.items || tickets.items.length === 0) {
-        newErrors.tickets = "Debe crear al menos un tipo de entrada.";
+      const allSubtypes = tickets.zones.flatMap((zone) => zone.subtypes || []);
+
+      if (!tickets.zones || tickets.zones.length === 0) {
+        newErrors.tickets = "Debe crear al menos una zona de entrada.";
       } else if (
-        tickets.items.some((t) => !t.type || !t.price || !t.quantity)
+        tickets.zones.some((z) => !z.zoneName || z.zoneName.trim() === "")
       ) {
-        newErrors.tickets = "Completa todos los campos de cada entrada.";
+        newErrors.tickets = "Completa el nombre de todas las zonas.";
+      } else if (allSubtypes.length === 0) {
+        newErrors.tickets =
+          "Debe crear al menos un tipo de entrada en una zona.";
       } else if (
-        tickets.items.some((t) => isNaN(t.quantity) || t.quantity == 0)
+        allSubtypes.some(
+          (t) => !t.type || t.type.trim() === "" || !t.price || !t.quantity
+        )
       ) {
-        newErrors.tickets = "Cantidad de entradas inválida.";
+        newErrors.tickets =
+          "Completa todos los campos (Tipo, Precio, Cantidad) de cada entrada.";
+      } else if (
+        allSubtypes.some(
+          (t) => isNaN(Number(t.quantity)) || Number(t.quantity) <= 0
+        )
+      ) {
+        newErrors.tickets =
+          "Cantidad de entradas inválida (debe ser un número mayor que 0).";
       }
 
       if (tickets?.tier?.enabled) {
         const tierQty = Number(tickets.tier.qty || 0);
 
-        // Calcular cantidad total de todas las entradas
-        const totalTickets = (tickets.items || []).reduce((sum, it) => {
-          const q = Number(it.quantity || 0);
-          return sum + (isNaN(q) ? 0 : q);
-        }, 0);
+        // Calcular cantidad total de todas las entradas (ahora desde zones.subtypes)
+        const totalTickets = (tickets.zones || [])
+          .flatMap((zone) => zone.subtypes || [])
+          .reduce((sum, subtype) => {
+            const q = Number(subtype.quantity || 0);
+            return sum + (isNaN(q) ? 0 : q);
+          }, 0);
 
         if (!Number.isInteger(tierQty) || tierQty <= 0) {
           newErrors.tierQty =
-            "La cantidad habilitada para la venta escalonada debe ser un número entero mayor que 0.";
+            "La cantidad habilitada para la venta escalonada debe ser un número mayor que 0.";
         } else if (tierQty > totalTickets) {
           newErrors.tierQty = `La cantidad habilitada para la venta escalonada (${tierQty}) debe ser menor que la cantidad total (${totalTickets}).`;
         }
@@ -339,12 +536,18 @@ export default function CrearEventoCards() {
     }
   };
 
+  const [posting, setPosting] = useState(false);
+
   return (
     <section className="mx-auto max-w-screen-2xl px-6 lg:px-10 py-4 space-y-6">
       <StepProgress steps={steps} current={current} />
 
       {/* PASO 1 */}
-      <div ref={el => (cardRefs.current[0] = el)} className={isActive(0) ? "block" : "hidden"} aria-hidden={!isActive(0)}>
+      <div
+        ref={(el) => (cardRefs.current[0] = el)}
+        className={isActive(0) ? "block" : "hidden"}
+        aria-hidden={!isActive(0)}
+      >
         <WizardCard
           title="Detalles del Evento"
           subtitle="Nombre, categoría, descripción, imagen y restricciones"
@@ -379,7 +582,11 @@ export default function CrearEventoCards() {
       </div>
 
       {/* PASO 2 */}
-      <div ref={el => (cardRefs.current[1] = el)} className={isActive(1) ? "block" : "hidden"} aria-hidden={!isActive(1)}>
+      <div
+        ref={(el) => (cardRefs.current[1] = el)}
+        className={isActive(1) ? "block" : "hidden"}
+        aria-hidden={!isActive(1)}
+      >
         <WizardCard
           title="Ubicación y Tickets"
           subtitle="Configura la sede del evento y los tipos de entrada"
@@ -405,7 +612,11 @@ export default function CrearEventoCards() {
       </div>
 
       {/* ======== PASO 3 ======== */}
-      <div ref={el => (cardRefs.current[2] = el)} className={isActive(2) ? "block" : "hidden"} aria-hidden={!isActive(2)}>
+      <div
+        ref={(el) => (cardRefs.current[2] = el)}
+        className={isActive(2) ? "block" : "hidden"}
+        aria-hidden={!isActive(2)}
+      >
         <WizardCard
           title="Política de devoluciones Y Códigos de descuento"
           subtitle="Define tus reglas de reembolso y promociones"
@@ -425,7 +636,11 @@ export default function CrearEventoCards() {
         </WizardCard>
       </div>
 
-      <div ref={el => (cardRefs.current[3] = el)} className={isActive(3) ? "block" : "hidden"} aria-hidden={!isActive(3)}>
+      <div
+        ref={(el) => (cardRefs.current[3] = el)}
+        className={isActive(3) ? "block" : "hidden"}
+        aria-hidden={!isActive(3)}
+      >
         <WizardCard
           title="Resumen del evento"
           subtitle="Revisa antes de publicar"
@@ -440,7 +655,13 @@ export default function CrearEventoCards() {
             location={location}
           />
           <div className="mt-6 flex justify-center">
-            <BotonCTA variant="pink" onClick={generateAndPostJson}>Publicar Evento</BotonCTA>
+            <BotonCTA
+              variant="pink"
+              onClick={generateAndPostJson}
+              disabled={posting}
+            >
+              {posting ? "Publicando..." : "Publicar Evento"}
+            </BotonCTA>
           </div>
         </WizardCard>
       </div>
