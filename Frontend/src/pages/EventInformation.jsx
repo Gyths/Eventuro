@@ -148,16 +148,18 @@ export default function TicketSelection() {
         <div className="flex flex-col z-10 justify-center min-h-screen text-center gap-20">
           <div className="flex relative flex-wrap justify-center gap-10 xl:gap-0 items-center px-4 py-5 md:px-8">
             {/* Imagen */}
-            <div className="flex w-96 aspect-[3/5] overflow-hidden rounded-xl">
+            <div className="flex h-[85vh] aspect-[3/5] overflow-hidden rounded-xl">
               <img src={event?.image} className="w-full h-full object-cover" />
             </div>
             {/* Card de Información y entradas*/}
             <div className="flex flex-col justify-end rounded-lg xl:rounded-none xl:rounded-r-lg bg-white h-auto shadow-2xl pt-6 pb-12 pr-24 pl-10">
-              <div className="flex flex-row justify-start items-center gap-2">
+              <div className="flex flex-row justify-start items-center lg gap-2">
                 <ArrowButton onClick={() => navigate(homeRoute)}></ArrowButton>
                 {/* Título */}
-                <div className="flex flex-wrap flex-row">
-                  <h1 className="flex font-bold text-3xl">{event?.title}</h1>
+                <div className="inline-flex text-start flex-wrap flex-row">
+                  <h1 className="inline-flex font-bold text-3xl">
+                    {event?.title}
+                  </h1>
                 </div>
               </div>
               <div className="flex flex-row gap-2 pl-20">
@@ -223,7 +225,7 @@ export default function TicketSelection() {
                     className="flex relative max-h-96 max-w-96  size-dvh"
                     src={
                       "https://www.google.com/maps?q=" +
-                      event?.venue?.address +
+                      encodeURIComponent(event?.venue?.address) +
                       "&output=embed"
                     }
                     allowFullScreen

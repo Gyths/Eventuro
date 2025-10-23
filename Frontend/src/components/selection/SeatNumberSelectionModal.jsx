@@ -1,7 +1,8 @@
 import React from "react";
 import BaseModal from "../BaseModal";
 
-import { XMarkIcon } from "@heroicons/react/24/solid";
+import { XMarkIcon, PlusCircleIcon } from "@heroicons/react/24/solid";
+import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/outline";
 
 export default function SeatNumberSelectionModal({
   setModal,
@@ -112,9 +113,32 @@ export default function SeatNumberSelectionModal({
     }
   }, []);
 
+  const seatCounts = React.useMemo(() => {
+    if (!seatMap || !seatMap.occupiedSeats)
+      return { available: 0, occupied: 0, selectedOther: 0 };
+
+    let available = 0;
+    let occupied = 0;
+    let selectedOther = 0;
+
+    seatMap.occupiedSeats.forEach((seat) => {
+      if (seat.status !== "AVAILABLE") {
+        occupied++;
+      } else if (seat.seatId in allocatedSelectedSeats) {
+        if (allocatedSelectedSeats[seat.seatId] !== allocationIndex) {
+          selectedOther++;
+        }
+      } else {
+        available++;
+      }
+    });
+
+    return { available, occupied, selectedOther };
+  }, [seatMap, allocatedSelectedSeats, allocationIndex]);
+
   return (
     <BaseModal>
-      <div className="flex flex-col min-w-3/5 max-h-2/3 bg-white rounded py-3 px-7">
+      <div className="flex flex-col min-w-[65vw] min-h-[65vh] max-h-2/3 bg-white rounded-xl py-3 px-7">
         <div className="flex flex-row justify-between border-b border-gray-300 py-2">
           <span className="inline-block font-semibold text-3xl">
             Seleccione sus asientos
@@ -128,16 +152,39 @@ export default function SeatNumberSelectionModal({
         <span className=" py-3">
           *Esta no es una distribución real de asientos.
         </span>
-        <span>
-          Seleccionados (
-          {allocationIndex === null
-            ? selectedSeats.length
-            : Object.values(allocatedSelectedSeats).filter(
-                (value) => value === allocationIndex
-              ).length}
-          )
-        </span>
-        <div className="grid grid-cols-10 gap-2 overflow-auto py-4 px-5">
+
+        <div className="flex flex-row gap-2 items-center ">
+          <CheckCircleIcon className="size-5 text-green-800/50" />
+          <span className="pb-0.5">Disponible: {seatCounts.available}</span>
+        </div>
+
+        <div className="flex flex-row gap-2 items-center ">
+          <XCircleIcon className="size-5 text-red-700/80" />
+          <span className="pb-0.5">Ocupado: {seatCounts.occupied}</span>
+        </div>
+
+        <div className="flex flex-row gap-2 items-center ">
+          <PlusCircleIcon className="size-5 fill-yellow-400" />
+          <span className="flex items-center">
+            Seleccionados:{" "}
+            {allocationIndex === null
+              ? selectedSeats.length
+              : Object.values(allocatedSelectedSeats).filter(
+                  (value) => value === allocationIndex
+                ).length}
+          </span>
+        </div>
+
+        {allocationIndex != null && (
+          <div className="flex flex-row gap-2 items-center ">
+            <PlusCircleIcon className="size-5 fill-orange-500/70" />
+            <span className="pb-0.5">
+              Seleccionado para otro tipo de entrada: {seatCounts.selectedOther}
+            </span>
+          </div>
+        )}
+
+        <div className="grid grid-cols-10 gap-2 overflow-auto py-4 px-5 bg-gray-50 rounded-xl">
           {seatMap &&
             seatMap.occupiedSeats.map((seat) => (
               <div
@@ -155,8 +202,8 @@ export default function SeatNumberSelectionModal({
                       allocatedSelectedSeats[seat.seatId] != allocationIndex
                     ? "bg-orange-500/70 text-white cursor-pointer hover:scale-115"
                     : seat.status === "AVAILABLE"
-                    ? "border border-green-800/50 hover:bg-gray-300 cursor-pointer hover:scale-115"
-                    : "border border-red-700/80 bg-gray-100"
+                    ? "border border-green-800/50 hover:bg-gray-300 cursor-pointer hover:scale-115 bg-white"
+                    : "border border-red-700/80 bg-gray-100 "
                 }`}
               >
                 {(parseInt(seat.rowNumber) - 1) * parseInt(seatMap.cols) +

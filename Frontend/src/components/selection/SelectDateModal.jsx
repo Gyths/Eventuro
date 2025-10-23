@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
-import EventZoneDropdownList from "./EventZoneDropdownList";
 import Calendar from "./Calendar";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import BaseModal from "../BaseModal";
@@ -108,7 +107,7 @@ export default function SelectDateModal({ dates, onClose, onContinue }) {
 
   return (
     <BaseModal>
-      <div className="flex flex-col md:flex-row items-stretch w-full max-w-4xl bg-white shadow-2xl rounded-md">
+      <div className="flex flex-col md:flex-row items-stretch h-[55vh] w-[45vw] bg-white shadow-2xl rounded-md">
         <div className="flex flex-col flex-[3] border-r border-gray-200">
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-3  text-gray-900">
@@ -184,11 +183,6 @@ export default function SelectDateModal({ dates, onClose, onContinue }) {
             </div>
 
             <div className="flex flex-col gap-4 p-4 px-6 border-t border-gray-300">
-              {/* <EventZoneDropdownList
-                selectedSchedule={selectedSchedule}
-                selectedZone={selectedZone}
-                setSelectedZone={setSelectedZone}
-              /> */}
               <button
                 disabled={!selectedSchedule}
                 onClick={handleContinue}

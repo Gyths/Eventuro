@@ -14,8 +14,9 @@ import {
   ChevronLeftIcon,
   PlusIcon,
   MinusIcon,
+  ClockIcon,
+  CalendarIcon,
 } from "@heroicons/react/24/solid";
-import { number } from "framer-motion";
 
 export default function SelectAllocationModal({
   modal,
@@ -301,11 +302,11 @@ export default function SelectAllocationModal({
   return (
     <>
       <BaseModal>
-        <div className="flex flex-col items-stretch w-full max-w-4xl bg-white shadow-2xs rounded-md">
-          <div className="flex flex-row items-stretch">
-            <div className="flex flex-[4] flex-col">
+        <div className="flex flex-col rounded-xl justify-between w-full max-w-6xl h-[65vh] bg-white shadow-2xs ">
+          <div className="flex flex-row h-[60vh]">
+            <div className="flex flex-[4] items-stretch h-full flex-col border-r border-gray-300/60">
               {/* Header del modal */}
-              <div className="flex flex-row justify-start gap-4 items-center py-4 px-4 border-b border-b-gray-300">
+              <div className="flex flex-row justify-start gap-4 items-center py-4 px-4 border-b border-b-gray-300 bg-gray-200">
                 <ChevronLeftIcon
                   onClick={onReturn}
                   className="fill-purple-700 shadow-2xl size-8 cursor-pointer hover:scale-105"
@@ -315,18 +316,11 @@ export default function SelectAllocationModal({
                 </span>
               </div>
               {/* Sección donde se muestran las entradas */}
-              <div className="flex flex-col w-full py-7 px-7">
-                <span className="inline-block border-b border-gray-200">
-                  {selectedData?.formattedStartDate +
-                    " " +
-                    selectedData?.formattedStartHour +
-                    " - " +
-                    selectedData?.formattedEndHour}
-                </span>
+              <div className="flex flex-col h-full w-full py-7 px-7 gap-2.5">
                 {selectedData &&
                   selectedData.zoneDates.map((zone, zoneIndex) => (
-                    <div key={zoneIndex}>
-                      <div className="flex flex-row justify-between items-center py-3">
+                    <div key={zoneIndex} className="gap-none">
+                      <div className="flex flex-row justify-between items-center py-3 border border-gray-400 shadow-2xs rounded-lg px-5">
                         <span>{zone.name}</span>
                         {/* Zonas */}
                         {zone.allocations.length === 0 && (
@@ -374,85 +368,118 @@ export default function SelectAllocationModal({
                         )}
                       </div>
                       {/* Allocations */}
-                      {zone.allocations.length > 0 &&
-                        zone.allocations.map((allocation, allocationIndex) => (
-                          <div key={allocationIndex} className="flex flex-col">
-                            <div className="flex bg-gray-100 justify-between py-2.5 pl-3.5 pr-2">
-                              <span>{allocation.audienceName}</span>
-                              <span>
-                                {currencies.PEN +
-                                  " " +
-                                  parseInt(zone.basePrice) *
-                                    (1 -
-                                      parseInt(allocation.discountPercent) /
-                                        100)}
-                              </span>
-                              {zone.kind != "SEATED" ? (
+                      <div className="px-2">
+                        <div className="rounded-b-2xl border-b border-x border-gray-300 bg-gray-100">
+                          {zone.allocations.length > 0 &&
+                            zone.allocations.map(
+                              (allocation, allocationIndex) => (
                                 <div
                                   key={allocationIndex}
-                                  className="flex flex-row gap-4 items-center"
+                                  className="flex flex-col rounded-2xl  bg-gray-100"
                                 >
-                                  <MinusIcon
-                                    onClick={() =>
-                                      handleAllocatedGeneralSubtraction(
-                                        zoneIndex,
-                                        allocationIndex
-                                      )
-                                    }
-                                    className="select-none size-3 cursor-pointer rounded-xl bg-gray-300"
-                                  ></MinusIcon>
-                                  <span>
-                                    {
-                                      allocatedGeneralQuantities[zoneIndex][
-                                        allocationIndex
-                                      ]
-                                    }
-                                  </span>
-                                  <PlusIcon
-                                    onClick={() =>
-                                      handleAllocatedGeneralSum(
-                                        zoneIndex,
-                                        allocationIndex
-                                      )
-                                    }
-                                    className="select-none size-3 cursor-pointer rounded-xl bg-gray-300"
-                                  ></PlusIcon>
+                                  <div className="flex bg-gray-100 justify-between py-2.5 pl-3.5 pr-2 rounded-2xl">
+                                    <span>{allocation.audienceName}</span>
+                                    <span>
+                                      {currencies.PEN +
+                                        " " +
+                                        parseInt(zone.basePrice) *
+                                          (1 -
+                                            parseInt(
+                                              allocation.discountPercent
+                                            ) /
+                                              100)}
+                                    </span>
+                                    {zone.kind != "SEATED" ? (
+                                      <div
+                                        key={allocationIndex}
+                                        className="flex flex-row gap-4 items-center"
+                                      >
+                                        <MinusIcon
+                                          onClick={() =>
+                                            handleAllocatedGeneralSubtraction(
+                                              zoneIndex,
+                                              allocationIndex
+                                            )
+                                          }
+                                          className="select-none size-3 cursor-pointer rounded-xl bg-gray-300"
+                                        ></MinusIcon>
+                                        <span>
+                                          {
+                                            allocatedGeneralQuantities[
+                                              zoneIndex
+                                            ][allocationIndex]
+                                          }
+                                        </span>
+                                        <PlusIcon
+                                          onClick={() =>
+                                            handleAllocatedGeneralSum(
+                                              zoneIndex,
+                                              allocationIndex
+                                            )
+                                          }
+                                          className="select-none size-3 cursor-pointer rounded-xl bg-gray-300"
+                                        ></PlusIcon>
+                                      </div>
+                                    ) : (
+                                      <div className="flex flex-row gap-3">
+                                        <button
+                                          onClick={() =>
+                                            handleAllocatedSeated(
+                                              zoneIndex,
+                                              allocationIndex
+                                            )
+                                          }
+                                          className="bg-yellow-400 text-white px-2 rounded-md cursor-pointer hover:bg-yellow-500 hover:scale-105 transition-transform"
+                                        >
+                                          Elegir
+                                        </button>
+                                        (
+                                        {
+                                          Object.values(
+                                            allocatedSeatedQuantities[zoneIndex]
+                                          ).filter(
+                                            (value) => value === allocationIndex
+                                          ).length
+                                        }
+                                        )
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
-                              ) : (
-                                <div className="flex flex-row gap-3">
-                                  <button
-                                    onClick={() =>
-                                      handleAllocatedSeated(
-                                        zoneIndex,
-                                        allocationIndex
-                                      )
-                                    }
-                                    className="bg-yellow-400 text-white px-2 rounded-md cursor-pointer hover:bg-yellow-500 hover:scale-105 transition-transform"
-                                  >
-                                    Elegir
-                                  </button>
-                                  (
-                                  {
-                                    Object.values(
-                                      allocatedSeatedQuantities[zoneIndex]
-                                    ).filter(
-                                      (value) => value === allocationIndex
-                                    ).length
-                                  }
-                                  )
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        ))}
+                              )
+                            )}
+                        </div>
+                      </div>
                     </div>
                   ))}
               </div>
             </div>
             {/* Sección de información del evento */}
-            <div className="flex-[2] border-l border-l-gray-100"></div>
+            <div className="flex-[2]">
+              <div className="flex flex-col py-6 px-6 gap-3 justify-start">
+                <img src={event?.image} className="rounded-lg"></img>
+                <span className="inline-block text-start font-semibold text-2xl">
+                  {event?.title}
+                </span>
+                <div className="flex flex-row gap-2 justify-start items-center">
+                  <CalendarIcon className="size-5"></CalendarIcon>
+                  <span className="inline-block">
+                    {selectedData?.formattedStartDate}
+                  </span>
+                </div>
+                <div className="flex flex-row gap-2 justify-start items-center">
+                  <ClockIcon className="size-5"></ClockIcon>
+                  <span className="inline-block">
+                    {selectedData?.formattedStartHour +
+                      " - " +
+                      selectedData?.formattedEndHour}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="flex flex-row justify-between gap-4 px-5 py-1.5 border-t border-gray-100 items-center">
+          {/* Subtotal seleccionado */}
+          <div className="flex flex-row justify-between gap-4 px-5 py-3 border-t border-gray-300/60 items-center">
             <div className="flex flex-row gap-4">
               <span className="inline-block font-semibold">Subtotal: </span>
               <span className="inline-block font-semibold">
