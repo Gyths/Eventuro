@@ -1,5 +1,5 @@
 // src/pages/Home.jsx
-import placeholder from "../assets/image-placeholder.svg";
+import placeholder from "../assets/DefaultEvent.webp";
 import { useEffect, useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import BannerCarousel from "../components/BannerCarousel.jsx";

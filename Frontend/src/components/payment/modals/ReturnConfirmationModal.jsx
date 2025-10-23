@@ -1,8 +1,8 @@
 import React from "react";
-import BaseModal from "./BaseModal";
+import BaseModal from "../../BaseModal";
 import { useNavigate } from "react-router-dom";
 
-function ReturnConfirmationModal({ onCancel }) {
+export default function ReturnConfirmationModal({ onCancel }) {
   const navigate = useNavigate();
   const ticketSelectionRoute = "/seleccionTickets";
   return (
@@ -31,5 +31,3 @@ function ReturnConfirmationModal({ onCancel }) {
     </>
   );
 }
-
-export default ReturnConfirmationModal;

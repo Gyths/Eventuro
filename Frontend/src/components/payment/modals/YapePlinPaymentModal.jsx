@@ -4,7 +4,7 @@ import React from "react";
 import { EventuroApi } from "../../../api";
 import useOrder from "../../../services/Order/OrderContext";
 import { useAuth } from "../../../services/auth/AuthContext";
-import BaseModal from "./BaseModal";
+import BaseModal from "../../BaseModal";
 
 const inputField =
   "flex rounded-sm p-1.5 bg-gray-100 ring ring-gray-200 hover:ring-gray-300 focus:ring-gray-400 focus:outline-none transform-transition";
