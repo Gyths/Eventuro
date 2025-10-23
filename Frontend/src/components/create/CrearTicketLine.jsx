@@ -1,12 +1,11 @@
 // src/components/create/CrearTicketLine.js (or CrearZonasTickets.js)
 
 import React from "react";
-import BotonEliminar from "../BotonEliminar"; 
-import FormField from "./FormField";         
-import TextInput from "./TextInput";         
+import BotonEliminar from "../BotonEliminar";
+import FormField from "./FormField";
+import TextInput from "./TextInput";
 
 export default function CrearTicketLine({ zones, onChange, currency = "PEN" }) {
-
   const updateZones = (newZones) => {
     onChange(newZones);
   };
@@ -19,11 +18,11 @@ export default function CrearTicketLine({ zones, onChange, currency = "PEN" }) {
       updateZones(newZones);
     }
   };
-  
+
   const handleDeleteZone = (zoneIndex) => {
     updateZones(zones.filter((_, i) => i !== zoneIndex));
   };
-  
+
   // --- HANDLER FOR PRESALE TOGGLE ---
   const togglePresale = (zoneIndex) => {
     const newZones = zones.map((zone, zIdx) => {
@@ -32,18 +31,18 @@ export default function CrearTicketLine({ zones, onChange, currency = "PEN" }) {
         return {
           ...zone,
           presaleActive: isActive,
-          subtypes: zone.subtypes.map(s => ({
+          subtypes: zone.subtypes.map((s) => ({
             ...s,
-            presaleQuantity: isActive ? (s.presaleQuantity || "") : undefined,
-            presalePrice: isActive ? (s.presalePrice || "") : undefined,
-          }))
+            presaleQuantity: isActive ? s.presaleQuantity || "" : undefined,
+            presalePrice: isActive ? s.presalePrice || "" : undefined,
+          })),
         };
       }
       return zone;
     });
     updateZones(newZones);
   };
-  
+
   // --- Subtype Handlers ---
   const handleAddSubtype = (zoneIndex) => {
     const newZones = [...zones];
@@ -51,7 +50,12 @@ export default function CrearTicketLine({ zones, onChange, currency = "PEN" }) {
       ? { presaleQuantity: "", presalePrice: "" }
       : {};
 
-    newZones[zoneIndex].subtypes.push({ type: "", quantity: "", price: "", ...presaleFields });
+    newZones[zoneIndex].subtypes.push({
+      type: "",
+      quantity: "",
+      price: "",
+      ...presaleFields,
+    });
     updateZones(newZones);
   };
 
@@ -71,16 +75,22 @@ export default function CrearTicketLine({ zones, onChange, currency = "PEN" }) {
     if (intFields.includes(field)) {
       newValue = value.replace(/\D/g, "").replace(/^0+/, "");
       if (newValue === "" && value !== "") newValue = "0";
-      if (newValue.length > 7) return; 
+      if (newValue.length > 7) return;
     }
 
     if (moneyFields.includes(field)) {
       newValue = value.replace(/[^0-9.]/g, "").replace(/(\..*)\./g, "$1");
       if (newValue === "" && value !== "") newValue = "0";
-      if (newValue.length > 10) return; 
+      if (newValue.length > 10) return;
     }
-    
-    if (field === "type" && value.length > 100) return; 
+
+    if (field === "type" && value.length > 100) return;
+
+    if (field === "discount") {
+      newValue = value.replace(/\D/g, "");
+      if (newValue === "" && value !== "") newValue = "0";
+      if (Number(newValue) > 100) newValue = "100";
+    }
 
     const newZones = zones.map((zone, zIdx) => {
       if (zIdx === zoneIndex) {
@@ -94,11 +104,32 @@ export default function CrearTicketLine({ zones, onChange, currency = "PEN" }) {
       }
       return zone;
     });
-    
+
+    // --- Sanitizers para campos de zona ---
+    const sanitizeZoneInt = (v) =>
+      String(v ?? "")
+        .replace(/\D/g, "")
+        .replace(/^0+/, (m, off, s) => (s && v !== "" ? "" : m));
+    const sanitizeZoneMoney = (v) =>
+      String(v ?? "")
+        .replace(/[^0-9.]/g, "")
+        .replace(/(\..*)\./g, "$1");
+
+    // --- Cambiar cantidad / precio de la zona ---
+    const handleZoneFieldChange = (zoneIndex, field, value) => {
+      const newZones = [...zones];
+      const z = { ...newZones[zoneIndex] };
+      if (field === "quantity") value = sanitizeZoneInt(value);
+      if (field === "price") value = sanitizeZoneMoney(value);
+      z[field] = value;
+      newZones[zoneIndex] = z;
+      updateZones(newZones);
+    };
+
     if (field === "presaleQuantity") {
       const zoneToValidate = newZones[zoneIndex];
-      const newSubtype = zoneToValidate.subtypes[subtypeIndex]; 
-      
+      const newSubtype = zoneToValidate.subtypes[subtypeIndex];
+
       const newPresaleQty = Number(newSubtype.presaleQuantity);
       const totalQty = Number(newSubtype.quantity);
 
@@ -110,16 +141,39 @@ export default function CrearTicketLine({ zones, onChange, currency = "PEN" }) {
     updateZones(newZones);
   };
 
+  // --- Sanitizers para campos de zona ---
+  const sanitizeZoneInt = (v) =>
+    String(v ?? "")
+      .replace(/\D/g, "")
+      .replace(/^0+/, (m, off, s) => (s && v !== "" ? "" : m));
+  const sanitizeZoneMoney = (v) =>
+    String(v ?? "")
+      .replace(/[^0-9.]/g, "")
+      .replace(/(\..*)\./g, "$1");
+
+  // --- Cambiar cantidad / precio de la zona ---
+  const handleZoneFieldChange = (zoneIndex, field, value) => {
+    const newZones = [...zones];
+    const z = { ...newZones[zoneIndex] };
+    if (field === "quantity") value = sanitizeZoneInt(value);
+    if (field === "price") value = sanitizeZoneMoney(value);
+    z[field] = value;
+    newZones[zoneIndex] = z;
+    updateZones(newZones);
+  };
+
   // --- Rendering ---
   return (
     <div className="space-y-6">
       {zones.map((zone, zoneIndex) => {
         const presaleIsActive = !!zone.presaleActive;
-        const totalInputColumns = presaleIsActive ? 5 : 3; 
+        const totalInputColumns = presaleIsActive ? 7 : 4;
 
         return (
-          <div key={zoneIndex} className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm">
-            
+          <div
+            key={zoneIndex}
+            className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm"
+          >
             {/* --- Zone Header--- */}
             <div className="flex items-start justify-between gap-4 border-b border-gray-200 pb-4 mb-4">
               <div className="flex-grow">
@@ -136,99 +190,163 @@ export default function CrearTicketLine({ zones, onChange, currency = "PEN" }) {
                   </div>
                 </div>
               </div>
+
               <button
                 type="button"
                 onClick={() => togglePresale(zoneIndex)}
                 className={`py-2 px-4 rounded-full text-sm font-semibold transition-colors flex-shrink-0 whitespace-nowrap
-                  ${presaleIsActive 
-                    ? "bg-pink-500 text-white hover:bg-pink-600" 
-                    : "border border-pink-500 text-pink-500 hover:bg-pink-50"
-                  }`
-                }
+                  ${
+                    presaleIsActive
+                      ? "bg-pink-500 text-white hover:bg-pink-600"
+                      : "border border-pink-500 text-pink-500 hover:bg-pink-50"
+                  }`}
               >
                 {presaleIsActive ? "Preventa ACTIVA" : "Activar preventa"}
               </button>
               <div className="flex-shrink-0">
-                <BotonEliminar onClick={() => handleDeleteZone(zoneIndex)} tooltip="Eliminar Zona" />
+                <BotonEliminar
+                  onClick={() => handleDeleteZone(zoneIndex)}
+                  tooltip="Eliminar Zona"
+                />
               </div>
             </div>
-            
+
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-4">
+              <div className="md:col-span-6">
+                <FormField label="Cantidad*" hint="Tickets generales">
+                  <TextInput
+                    placeholder="0"
+                    value={zone.quantity || ""}
+                    onChange={(v) =>
+                      handleZoneFieldChange(zoneIndex, "quantity", v)
+                    }
+                  />
+                </FormField>
+              </div>
+
+              <div className="md:col-span-6">
+                <FormField
+                  label={`Precio* (${currency})`}
+                  hint="Precio general"
+                >
+                  <TextInput
+                    placeholder="0.00"
+                    value={zone.price || ""}
+                    onChange={(v) =>
+                      handleZoneFieldChange(zoneIndex, "price", v)
+                    }
+                  />
+                </FormField>
+              </div>
+            </div>
+
             {/* --- Subtypes List --- */}
-            <div className="space-y-5">
+            <div className="space-y-5 pl-6 sm:pl-10 border-l-2 border-pink-200">
               {zone.subtypes.map((subtype, subtypeIndex) => {
                 const isLastSubtype = zone.subtypes.length === 1;
-                
+
                 // Determine which field is the LAST one to include the delete button
                 const isPriceFieldLast = !presaleIsActive;
 
                 return (
                   <div
                     key={subtypeIndex}
-                    className={`grid gap-4 border-b border-gray-100 pb-4 last:border-b-0`}
-                    // Grid template now only includes the input columns (3 or 5)
-                    style={{
-                        gridTemplateColumns: `repeat(${totalInputColumns}, minmax(0, 1fr))`
-                    }}
+                    className="flex flex-col sm:flex-row sm:items-end sm:gap-4 border-b border-gray-100 pb-4 last:border-b-0"
                   >
-                    {/* 1. Tipo de entrada */}
-                    <FormField label="Tipo de entrada*" hint="Ej. Adulto, Niño">
+                    {/*Tipo de entrada */}
+                    <FormField
+                      label="Tipo de subcategoría*"
+                      hint="Ej. Adulto, Niño"
+                    >
                       <TextInput
                         placeholder="Ej. Adulto"
-                        value={subtype.type}
-                        onChange={(v) => handleSubtypeChange(zoneIndex, subtypeIndex, "type", v)}
+                        value={subtype.type || ""}
+                        onChange={(v) =>
+                          handleSubtypeChange(
+                            zoneIndex,
+                            subtypeIndex,
+                            "type",
+                            v
+                          )
+                        }
                       />
                     </FormField>
 
-                    {/* 2. Cantidad General */}
-                    <FormField label="Cantidad*" hint="Tickets generales">
+                    {/* % Descuento (aplicado al precio de la ZONA) */}
+                    <FormField label="% descuento" hint="0 - 100">
                       <TextInput
                         placeholder="0"
-                        value={subtype.quantity}
-                        onChange={(v) => handleSubtypeChange(zoneIndex, subtypeIndex, "quantity", v)}
+                        value={subtype.discount || ""}
+                        onChange={(v) =>
+                          handleSubtypeChange(
+                            zoneIndex,
+                            subtypeIndex,
+                            "discount",
+                            v
+                          )
+                        }
                       />
                     </FormField>
-                    
-                    {/* 3. Precio General */}
-                    <FormField label={`Precio* (${currency})`} hint="Precio general">
-                      <div className="flex items-center gap-2">
-                        <TextInput
-                          placeholder="0.00"
-                          value={subtype.price}
-                          onChange={(v) => handleSubtypeChange(zoneIndex, subtypeIndex, "price", v)}
+
+                    {/* Botón eliminar cuando NO hay preventa */}
+                    {!presaleIsActive && (
+                      <div className="flex items-center justify-center sm:pb-[35px]">
+                        <BotonEliminar
+                          onClick={() =>
+                            handleDeleteSubtype(zoneIndex, subtypeIndex)
+                          }
                         />
-                        {/* DELETE BUTTON: Only appears here if Presale is NOT active (i.e., this is the last column) */}
-                        {isPriceFieldLast && !isLastSubtype && (
-                          <div className="flex-shrink-0 w-[40px] flex justify-end">
-                            <BotonEliminar onClick={() => handleDeleteSubtype(zoneIndex, subtypeIndex)} />
-                          </div>
-                        )}
                       </div>
-                    </FormField>
-                    
+                    )}
+
                     {/* 4. Cantidad Preventa */}
                     {presaleIsActive && (
-                      <FormField label="Cant. Preventa" hint="Tickets de preventa">
+                      <FormField
+                        label="Cant. Preventa"
+                        hint="Tickets de preventa"
+                      >
                         <TextInput
                           placeholder="0"
                           value={subtype.presaleQuantity}
-                          onChange={(v) => handleSubtypeChange(zoneIndex, subtypeIndex, "presaleQuantity", v)}
+                          onChange={(v) =>
+                            handleSubtypeChange(
+                              zoneIndex,
+                              subtypeIndex,
+                              "presaleQuantity",
+                              v
+                            )
+                          }
                         />
                       </FormField>
                     )}
-                    
+
                     {/* 5. Precio Preventa */}
                     {presaleIsActive && (
-                      <FormField label={`Precio Preventa (${currency})`} hint="Precio con descuento">
+                      <FormField
+                        label={`Precio Preventa (${currency})`}
+                        hint="Precio con descuento"
+                      >
                         <div className="flex items-center gap-2">
                           <TextInput
                             placeholder="0.00"
                             value={subtype.presalePrice}
-                            onChange={(v) => handleSubtypeChange(zoneIndex, subtypeIndex, "presalePrice", v)}
+                            onChange={(v) =>
+                              handleSubtypeChange(
+                                zoneIndex,
+                                subtypeIndex,
+                                "presalePrice",
+                                v
+                              )
+                            }
                           />
                           {/* DELETE BUTTON: Only appears here if Presale IS active (i.e., this is the last column) */}
                           {!isLastSubtype && (
                             <div className="flex-shrink-0 w-[40px] flex justify-end">
-                              <BotonEliminar onClick={() => handleDeleteSubtype(zoneIndex, subtypeIndex)} />
+                              <BotonEliminar
+                                onClick={() =>
+                                  handleDeleteSubtype(zoneIndex, subtypeIndex)
+                                }
+                              />
                             </div>
                           )}
                         </div>
@@ -246,7 +364,7 @@ export default function CrearTicketLine({ zones, onChange, currency = "PEN" }) {
                 onClick={() => handleAddSubtype(zoneIndex)}
                 className="rounded-full border border-pink-300 bg-pink-500/90 text-white px-5 py-2 text-sm shadow hover:bg-pink-500"
               >
-                + Nuevo Tipo
+                + Nueva Subcategoría
               </button>
             </div>
           </div>
