@@ -33,7 +33,7 @@ export default function SelectAllocationModal({
   const { user } = useAuth();
   const { setOrder } = useOrder();
 
-  //console.log(selectedData);
+  console.log(selectedData);
 
   //States para el manejo de las cantidad de entradas seleccionadas
   const [notAllocatedGeneralQuantities, setNotAllocatedGeneralQuantities] =
@@ -48,16 +48,10 @@ export default function SelectAllocationModal({
           : "";
       })
     );
-  console.log(allocatedGeneralQuantities);
+  //console.log(allocatedGeneralQuantities);
 
   const [allocatedSeatedQuantities, setAllocatedSeatedQuantities] =
-    React.useState(
-      selectedData.zoneDates.map((zone) => {
-        return zone.allocations.length > 0
-          ? Array(zone.allocations.length).fill({})
-          : "";
-      })
-    );
+    React.useState(Array(selectedData.zoneDates.length).fill({}));
   console.log(allocatedSeatedQuantities);
 
   const [subtotal, setSubtotal] = React.useState(0);
@@ -87,19 +81,20 @@ export default function SelectAllocationModal({
   };
 
   //Manejo de entradas con sitio pero sin allocation
-  const handleNotAllocatedSeated = (i) => {
-    setSeatMap(selectedData.zoneDates[i].seatMap);
-    setZoneIndex(i);
+  const handleNotAllocatedSeated = (zoneIndex) => {
+    setSeatMap(selectedData.zoneDates[zoneIndex].seatMap);
+    setZoneIndex(zoneIndex);
+    setAllocationIndex(null);
     setModal("seats");
   };
 
   //Manejo de suma y resta de entradas con allocation
-  const handleAllocatedGeneralSubtraction = ({ zoneI, allocationI }) => {
-    const newValues = notAllocatedGeneralQuantities.map(
+  const handleAllocatedGeneralSubtraction = (zoneI, allocationI) => {
+    const newValues = allocatedGeneralQuantities.map(
       (allocation, zoneIndex) => {
         return zoneI === zoneIndex
           ? allocation.map((quantitie, allocationIndex) => {
-              return allocationI === allocationIndex
+              return allocationI === allocationIndex && quantitie > 0
                 ? quantitie - 1
                 : quantitie;
             })
@@ -109,21 +104,33 @@ export default function SelectAllocationModal({
     setAllocatedGeneralQuantities(newValues);
   };
 
-  const handleAllocatedGeneralSum = ({ zoneI, allocationI }) => {
+  const handleAllocatedGeneralSum = (zoneI, allocationI) => {
     //console.log(zoneIndex);
-    const newValues = notAllocatedGeneralQuantities.map((value, index) => {
-      return (index === zoneIndex) &
-        (value < parseInt(selectedData.zoneDates[zoneIndex].capacityRemaining))
-        ? value + 1
-        : value;
-    });
+    const newValues = allocatedGeneralQuantities.map(
+      (allocation, zoneIndex) => {
+        //console.log("sumando en " + zoneI + " " + allocationI);
+        return zoneI === zoneIndex
+          ? allocation.map((quantitie, allocationIndex) => {
+              return (allocationI === allocationIndex) &
+                (quantitie <
+                  parseInt(
+                    selectedData.zoneDates[zoneIndex].allocations[allocationI]
+                      .remainingQuantity
+                  ))
+                ? quantitie + 1
+                : quantitie;
+            })
+          : allocation;
+      }
+    );
     setAllocatedGeneralQuantities(newValues);
   };
 
   //Manejo de entradas con sitio y con allocation
-  const handleAllocatedSeated = (i) => {
-    setSeatMap(selectedData.zoneDates[i].seatMap);
-    setZoneIndex(i);
+  const handleAllocatedSeated = (zoneIndex, allocationIndex) => {
+    setSeatMap(selectedData.zoneDates[zoneIndex].seatMap);
+    setZoneIndex(zoneIndex);
+    setAllocationIndex(allocationIndex);
     setModal("seats");
   };
 
@@ -142,7 +149,7 @@ export default function SelectAllocationModal({
     }
   }, [notAllocatedGeneralQuantities]);
 
-  //Calculo del subtotal resultado de entradas con allocation pero sin sitios
+  //Calculo del subtotal resultado de entradas sin allocation pero con sitios
   React.useEffect(() => {
     if (selectedData) {
       let newSubtotal = 0;
@@ -156,6 +163,52 @@ export default function SelectAllocationModal({
       setSubtotal(newSubtotal);
     }
   }, [notAllocatedSeatedQuantities]);
+
+  //Calculo del subtotal resultado de entradas con allocation pero sin sitios
+  React.useEffect(() => {
+    if (selectedData) {
+      let newSubtotal = 0;
+
+      selectedData.zoneDates.map((zone, zoneIndex) => {
+        zone.allocations.map((quantities, allocationIndex) => {
+          //console.log(allocatedGeneralQuantities[zoneIndex][allocationIndex]);
+          //console.log(selectedData.zoneDates[zoneIndex].basePrice);
+          /*console.log(
+            selectedData.zoneDates[zoneIndex].allocations[allocationIndex]
+              .discountPercent
+          );*/
+
+          newSubtotal +=
+            parseInt(allocatedGeneralQuantities[zoneIndex][allocationIndex]) *
+            (parseInt(zone.basePrice) *
+              (1 -
+                parseInt(zone.allocations[allocationIndex].discountPercent) /
+                  100));
+        });
+      });
+      setSubtotal(newSubtotal);
+    }
+  }, [allocatedGeneralQuantities]);
+
+  //Calculo del subtotal resultado de entradas con allocations y sitios
+  React.useEffect(() => {
+    if (selectedData) {
+      let newSubtotal = 0;
+      selectedData.zoneDates.map((zone, zoneIndex) => {
+        for (const seat in allocatedSeatedQuantities[zoneIndex]) {
+          newSubtotal +=
+            parseInt(zone.basePrice) *
+            (1 -
+              parseInt(
+                zone.allocations[allocatedSeatedQuantities[zoneIndex][seat]]
+                  .discountPercent
+              ) /
+                100);
+        }
+      });
+      setSubtotal(newSubtotal);
+    }
+  }, [allocatedSeatedQuantities]);
 
   //Función para manejar enviar la orden a la bd
   const onContinue = async () => {
@@ -176,7 +229,7 @@ export default function SelectAllocationModal({
         });
     });
 
-    //Se añaden las entradas con allocation pero sin sitio
+    //Se añaden las entradas sin allocation pero con sitio
     notAllocatedSeatedQuantities.map((zoneAllocation, index) => {
       zoneAllocation.length > 0 &&
         zoneAllocation.map((seat) => {
@@ -189,8 +242,41 @@ export default function SelectAllocationModal({
           });
         });
     });
-    //Se añaden las entradas sin allocation pero con sitio
+
+    //Se añaden las entradas con allocation pero sin sitio
+    allocatedGeneralQuantities.map((zone, zoneIndex) => {
+      zone != "" &&
+        zone.map((quantitie, allocationIndex) => {
+          quantitie > 0 &&
+            orderData.items.push({
+              eventId: event.eventId,
+              eventDateId: selectedData.eventDateId,
+              eventDateZoneId:
+                selectedData.zoneDates[zoneIndex].eventDateZoneId,
+              eventDateZoneAllocationId:
+                selectedData.zoneDates[zoneIndex].allocations[allocationIndex]
+                  .eventDateZoneAllocationId,
+              quantity: quantitie,
+            });
+        });
+    });
+
     //Se añaden las entradas con allocation y con sitio
+
+    allocatedSeatedQuantities.map((seats, zoneIndex) => {
+      for (const seatId in seats) {
+        orderData.items.push({
+          eventId: event.eventId,
+          eventDateId: selectedData.eventDateId,
+          eventDateZoneId: selectedData.zoneDates[zoneIndex].eventDateZoneId,
+          eventDateZoneAllocationId:
+            selectedData.zoneDates[zoneIndex].allocations[seats[seatId]]
+              .eventDateZoneAllocationId,
+          quantity: 1,
+          seatId: seatId,
+        });
+      }
+    });
 
     console.log(orderData);
 
@@ -324,16 +410,22 @@ export default function SelectAllocationModal({
                                   </span>
                                   <PlusIcon
                                     onClick={() =>
-                                      handleAllocatedGeneralSum(allocationIndex)
+                                      handleAllocatedGeneralSum(
+                                        zoneIndex,
+                                        allocationIndex
+                                      )
                                     }
                                     className="select-none size-3 cursor-pointer rounded-xl bg-gray-300"
                                   ></PlusIcon>
                                 </div>
                               ) : (
-                                <>
+                                <div className="flex flex-row gap-3">
                                   <button
                                     onClick={() =>
-                                      handleAllocatedSeated(allocationIndex)
+                                      handleAllocatedSeated(
+                                        zoneIndex,
+                                        allocationIndex
+                                      )
                                     }
                                     className="bg-yellow-400 text-white px-2 rounded-md cursor-pointer hover:bg-yellow-500 hover:scale-105 transition-transform"
                                   >
@@ -341,12 +433,14 @@ export default function SelectAllocationModal({
                                   </button>
                                   (
                                   {
-                                    allocatedSeatedQuantities[zoneIndex][
-                                      allocationIndex
-                                    ].length
+                                    Object.values(
+                                      allocatedSeatedQuantities[zoneIndex]
+                                    ).filter(
+                                      (value) => value === allocationIndex
+                                    ).length
                                   }
                                   )
-                                </>
+                                </div>
                               )}
                             </div>
                           </div>
@@ -383,6 +477,8 @@ export default function SelectAllocationModal({
             allocationIndex={allocationIndex}
             notAllocatedSeatedQuantities={notAllocatedSeatedQuantities}
             setNotAllocatedSeatedQuantities={setNotAllocatedSeatedQuantities}
+            allocatedSeatedQuantities={allocatedSeatedQuantities}
+            setAllocatedSeatedQuantities={setAllocatedSeatedQuantities}
           />
         </AnimatePresence>
       )}

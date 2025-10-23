@@ -10,29 +10,80 @@ export default function SeatNumberSelectionModal({
   allocationIndex = null,
   notAllocatedSeatedQuantities = [],
   setNotAllocatedSeatedQuantities,
+  allocatedSeatedQuantities = [{}],
+  setAllocatedSeatedQuantities,
 }) {
+  //console.log("seatMap: ");
   //console.log(seatMap);
+  //console.log("zoneIndex: " + zoneIndex);
+  //console.log("allocationIndex: " + allocationIndex);
+
   const [selectedSeats, setSelectedSeats] = React.useState([]);
+  const [allocatedSelectedSeats, setAllocatedSelectedSeats] = React.useState(
+    {}
+  );
+  //console.log("selectedSeats: ");
+  //console.log(selectedSeats);
+  //console.log("allocatedSelectedSeats: ");
+  //console.log(allocatedSelectedSeats);
 
   const handleSeatSelection = (seatNum) => {
-    setSelectedSeats((selectedSeats) => {
-      if (selectedSeats.includes(seatNum)) {
-        return selectedSeats.filter((s) => s !== seatNum);
-      } else {
-        return [...selectedSeats, seatNum];
-      }
-    });
+    if (allocationIndex === null) {
+      setSelectedSeats(() => {
+        let selectedPlaceholder = selectedSeats;
+        if (selectedPlaceholder.includes(seatNum)) {
+          return selectedPlaceholder.filter((s) => s !== seatNum);
+        } else {
+          return [...selectedPlaceholder, seatNum];
+        }
+      });
+    } else {
+      setAllocatedSelectedSeats((allocatedSelectedSeats) => {
+        let selectedPlaceholder = { ...allocatedSelectedSeats };
+        if (seatNum in selectedPlaceholder) {
+          delete selectedPlaceholder[seatNum];
+        } else {
+          let globalCopy = allocatedSeatedQuantities.map((zoneSeats) => ({
+            ...zoneSeats,
+          }));
+
+          globalCopy.forEach((zoneSeats, zIndex) => {
+            if (seatNum in zoneSeats) {
+              delete zoneSeats[seatNum];
+            }
+          });
+
+          selectedPlaceholder[seatNum] = allocationIndex;
+
+          const newGlobal = globalCopy.map((zoneSeats, zIndex) =>
+            zIndex === zoneIndex ? selectedPlaceholder : zoneSeats
+          );
+          setAllocatedSeatedQuantities(newGlobal);
+        }
+        return selectedPlaceholder;
+      });
+    }
   };
 
   const handleAccept = () => {
     console.log(notAllocatedSeatedQuantities);
-    const newQuantities = notAllocatedSeatedQuantities.map(
-      (quantitie, index) => {
-        return index === zoneIndex ? selectedSeats : quantitie;
-      }
-    );
-    console.log(newQuantities);
-    setNotAllocatedSeatedQuantities(newQuantities);
+    if (allocationIndex === null) {
+      const newQuantities = notAllocatedSeatedQuantities.map(
+        (quantitie, index) => {
+          return index === zoneIndex ? selectedSeats : quantitie;
+        }
+      );
+      console.log(newQuantities);
+      setNotAllocatedSeatedQuantities(newQuantities);
+    } else {
+      const newAllocationQuantities = allocatedSeatedQuantities.map(
+        (seats, index) => {
+          return index === zoneIndex ? allocatedSelectedSeats : seats;
+        }
+      );
+      setAllocatedSeatedQuantities(newAllocationQuantities);
+    }
+
     setModal("tickets");
   };
 
@@ -45,11 +96,19 @@ export default function SeatNumberSelectionModal({
   }, [selectedSeats]);
 
   React.useEffect(() => {
+    console.log(allocatedSelectedSeats);
+  }, [allocatedSelectedSeats]);
+
+  React.useEffect(() => {
     if (
       Array.isArray(notAllocatedSeatedQuantities) &&
       Array.isArray(notAllocatedSeatedQuantities[zoneIndex])
     ) {
       setSelectedSeats(notAllocatedSeatedQuantities[zoneIndex]);
+    }
+
+    if (Array.isArray(allocatedSeatedQuantities)) {
+      setAllocatedSelectedSeats(allocatedSeatedQuantities[zoneIndex]);
     }
   }, []);
 
@@ -69,10 +128,18 @@ export default function SeatNumberSelectionModal({
         <span className=" py-3">
           *Esta no es una distribución real de asientos.
         </span>
-        <span>Seleccionados ({selectedSeats.length})</span>
+        <span>
+          Seleccionados (
+          {allocationIndex === null
+            ? selectedSeats.length
+            : Object.values(allocatedSelectedSeats).filter(
+                (value) => value === allocationIndex
+              ).length}
+          )
+        </span>
         <div className="grid grid-cols-10 gap-2 overflow-auto py-4 px-5">
           {seatMap &&
-            seatMap.occupiedSeats.map((seat, index) => (
+            seatMap.occupiedSeats.map((seat) => (
               <div
                 key={seat.seatId}
                 onClick={() =>
@@ -80,8 +147,13 @@ export default function SeatNumberSelectionModal({
                   handleSeatSelection(seat.seatId)
                 }
                 className={`text-center rounded-xl  transition-transform select-none ${
-                  selectedSeats.includes(seat.seatId)
+                  selectedSeats.includes(seat.seatId) ||
+                  (seat.seatId in allocatedSelectedSeats &&
+                    allocatedSelectedSeats[seat.seatId] === allocationIndex)
                     ? "bg-yellow-400 text-white cursor-pointer hover:scale-115"
+                    : seat.seatId in allocatedSelectedSeats &&
+                      allocatedSelectedSeats[seat.seatId] != allocationIndex
+                    ? "bg-orange-500/70 text-white cursor-pointer hover:scale-115"
                     : seat.status === "AVAILABLE"
                     ? "border border-green-800/50 hover:bg-gray-300 cursor-pointer hover:scale-115"
                     : "border border-red-700/80 bg-gray-100"
