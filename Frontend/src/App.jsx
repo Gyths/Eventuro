@@ -24,6 +24,7 @@ import AuthCallback from "./pages/AuthCallback";
 import CrearEventoCards from "./pages/CrearEventoCards.jsx";
 import MisTickets from "./pages/MisTickets";
 import OrganizerRoute from "./routes/OrganizerRoute";
+import MyCalendar from './pages/MyCalendar.jsx';
 function App() {
   return (
     <Routes>
@@ -39,8 +40,8 @@ function App() {
         </Route>
         <Route path="seleccionTickets" element={<TicketSelection />} />
 
-
-        <Route path="/misTickets" element={<MisTickets />} />
+        <Route path="miCalendario" element={<MyCalendar />} />
+        <Route path="misTickets" element={<MisTickets />} />
 
         <Route element={<ProtectedRoute />}>
           <Route path="pago" element={<PaymentMethod />} />

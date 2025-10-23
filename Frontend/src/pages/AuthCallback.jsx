@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../services/auth/AuthContext.jsx";
 import { BASE_URL } from "../config.js";
+import handleRoleNavigation from "../utils/handleRoleNavigation.js";
 
 export default function AuthCallback() {
   const navigate = useNavigate();
@@ -45,19 +46,9 @@ export default function AuthCallback() {
           const finalUser = JSON.parse(localStorage.getItem("session")).user;
           const roles = finalUser.roles || [];
           const organizerStatus = finalUser.organizerStatus || null;
+          handleRoleNavigation(roles,organizerStatus,navigate);
+          
 
-          if (roles.includes("ADMIN")) {
-            navigate("/");
-          } else if (roles.includes("ORGANIZER")) {
-            if (organizerStatus === "APPROVED") {
-              navigate("/crearEvento");
-            } else {
-              alert("Tu perfil de organizador está en revisión o pendiente de aprobación.");
-              navigate("/");
-            }
-          } else {
-            navigate("/");
-          }
 
           // 5️ Limpiar la URL (para que no queden los params visibles)
           window.history.replaceState({}, document.title, window.location.pathname);

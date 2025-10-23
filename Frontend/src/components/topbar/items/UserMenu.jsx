@@ -1,3 +1,4 @@
+// src/components/topbar/items/UserMenu.jsx
 import { useState, useRef, useEffect } from "react";
 import MenuItem from "./MenuItem";
 import { useNavigate } from "react-router-dom";
@@ -5,14 +6,16 @@ import { useAuth } from "../../../services/auth/AuthContext";
 import { UserIcon } from "@heroicons/react/24/outline";
 
 export default function UserMenu() {
+  // Rutas (ajusta si usas otras)
   const profileRoute = "/";
-  const myTicketsRoute = "/";
-  const claimsRoute = "/";
-  const loginRoute = "/";
+  const myTicketsRoute = "/misTickets";      // estandariza a kebab-case si puedes
+  const claimsRoute = "/reclamos";
+  const calendarRoute = "/miCalendario";     
+  const loginRoute = "/login";
 
   const navigate = useNavigate();
-
   const { logout } = useAuth();
+
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -23,6 +26,11 @@ export default function UserMenu() {
     document.addEventListener("click", onDoc);
     return () => document.removeEventListener("click", onDoc);
   }, []);
+
+  const go = (path) => {
+    setOpen(false);
+    navigate(path);
+  };
 
   return (
     <div className="relative" ref={ref}>
@@ -36,20 +44,16 @@ export default function UserMenu() {
 
       {open && (
         <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white p-2 shadow-xl">
-          <MenuItem
-            text="Configuración"
-            onClick={() => navigate(profileRoute)}
-          />
-          <MenuItem
-            text="Mis tickets"
-            onClick={() => navigate("/misTickets")}
-          />
-          <MenuItem text="Reclamos" onClick={() => navigate(claimsRoute)} />
+          <MenuItem text="Configuración" onClick={() => go(profileRoute)} />
+          <MenuItem text="Mis tickets" onClick={() => go(myTicketsRoute)} />
+          <MenuItem text="Mi calendario" onClick={() => go(calendarRoute)} /> {/* NUEVO */}
+          <MenuItem text="Reclamos" onClick={() => go(claimsRoute)} />
           <div className="my-1 h-px bg-gray-100" />
           <MenuItem
             text="Cerrar sesión"
             danger
             onClick={() => {
+              setOpen(false);
               logout();
               navigate(loginRoute);
             }}

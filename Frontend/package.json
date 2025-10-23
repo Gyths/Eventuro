@@ -10,9 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fullcalendar/core": "^6.1.19",
+    "@fullcalendar/daygrid": "^6.1.19",
+    "@fullcalendar/interaction": "^6.1.19",
+    "@fullcalendar/react": "^6.1.19",
     "@heroicons/react": "^2.2.0",
     "@radix-ui/themes": "^3.2.1",
     "@tailwindcss/vite": "^4.1.13",
+    "date-fns": "^4.1.0",
     "framer-motion": "^12.23.22",
     "react": "^19.1.1",
     "react-credit-cards-3": "^3.0.1",

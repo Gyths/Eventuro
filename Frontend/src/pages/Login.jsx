@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import LoginCard from "../components/LoginCard";
 import { useAuth } from "../services/auth/AuthContext.jsx";
 import { BASE_URL } from "../config.js";
-
+import handleRoleNavigation from "../utils/handleRoleNavigation.js";
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -48,7 +48,7 @@ export default function Login() {
 
               if (resMe.ok) {
                 const meData = await resMe.json();
-                finalUser = meData.user; // ✅ reemplazamos con datos reales
+                finalUser = meData.user; 
                 login({ token: data.token, user: meData.user });
               }
             } catch (err) {
@@ -58,21 +58,8 @@ export default function Login() {
             // 4️⃣ Usamos finalUser para decidir redirección
             const roles = finalUser.roles || [];
             const organizerStatus = finalUser.organizerStatus || null;
-
-            if (roles.includes("ADMIN")) {
-              navigate("/");
-            } else if (roles.includes("ORGANIZER")) {
-              if (organizerStatus === "APPROVED") {
-                navigate("/crearEvento");
-              } else {
-                alert(
-                  "Tu perfil de organizador está en revisión o pendiente de aprobación."
-                );
-                navigate("/");
-              }
-            } else {
-              navigate("/");
-            }
+             handleRoleNavigation(roles,organizerStatus,navigate);
+            
           } catch (err) {
             alert("Error en login: " + err.message);
           }

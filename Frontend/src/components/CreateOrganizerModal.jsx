@@ -1,8 +1,8 @@
 // src/components/modals/CreateOrganizerModal.jsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "../services/auth/AuthContext.jsx";
 
-/* --- SELECT PERSONALIZADO --- */
+/* ------- SELECT PERSONALIZADO (igual que tu versión) ------- */
 function FancySelect({ value, onChange, options, error }) {
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(
@@ -52,9 +52,7 @@ function FancySelect({ value, onChange, options, error }) {
         type="button"
         onClick={() => setOpen((v) => !v)}
         className={`w-full flex justify-between items-center rounded-2xl border bg-white/80 px-4 py-2.5 text-left shadow-sm outline-none transition
-        focus:ring-2 focus:ring-purple-500/50 ${
-          error ? "border-red-400" : "border-gray-200"
-        }`}
+        focus:ring-2 focus:ring-purple-500/50 ${error ? "border-red-400" : "border-gray-200"}`}
       >
         <span>{options.find((o) => o.value === value)?.label || "Selecciona"}</span>
         <span className="text-gray-400">▾</span>
@@ -93,7 +91,7 @@ function FancySelect({ value, onChange, options, error }) {
   );
 }
 
-/* --- MODAL PRINCIPAL --- */
+/* --------------------- MODAL CON VALIDACIONES --------------------- */
 export default function CreateOrganizerModal({ open, onClose, onSuccess }) {
   const { token } = useAuth();
   const [idType, setIdType] = useState("DNI");
@@ -105,7 +103,9 @@ export default function CreateOrganizerModal({ open, onClose, onSuccess }) {
   const panelRef = useRef(null);
   const idInputRef = useRef(null);
 
-  // Reset al cerrar
+  const maxLen = idType === "DNI" ? 8 : 11;
+
+  // Limpia todo al abrir/cerrar
   useEffect(() => {
     if (!open) {
       setIdType("DNI");
@@ -118,7 +118,7 @@ export default function CreateOrganizerModal({ open, onClose, onSuccess }) {
     }
   }, [open]);
 
-  // Cerrar con ESC y clic fuera
+  // Cerrar con ESC y click fuera
   useEffect(() => {
     if (!open) return;
     const onKey = (e) => e.key === "Escape" && onClose?.();
@@ -133,17 +133,55 @@ export default function CreateOrganizerModal({ open, onClose, onSuccess }) {
     };
   }, [open, onClose]);
 
+  /* ---------- utilidades de validación de números ---------- */
+  const onlyDigits = (str) => (str || "").replace(/\D/g, "");
+  const handleIdNumberChange = (e) => {
+    // quita todo lo que no sea dígito y corta a 8/11
+    const digits = onlyDigits(e.target.value).slice(0, maxLen);
+    setIdNumber(digits);
+    // validación en vivo:
+    setErrors((prev) => {
+      const next = { ...prev };
+      if (!digits) next.idNumber = "Este campo es obligatorio.";
+      else if (idType === "DNI" && digits.length !== 8)
+        next.idNumber = "El DNI debe tener 8 dígitos.";
+      else if (idType === "RUC" && digits.length !== 11)
+        next.idNumber = "El RUC debe tener 11 dígitos.";
+      else delete next.idNumber;
+      return next;
+    });
+  };
+
+  const blockNonNumericKeys = (e) => {
+    // Evita letras, e/E, +, -, .
+    const invalid = ["e", "E", "+", "-", ".", ","];
+    if (invalid.includes(e.key)) e.preventDefault();
+  };
+
+  const handlePasteNumeric = (e) => {
+    const pasted = (e.clipboardData || window.clipboardData).getData("text");
+    const cleaned = onlyDigits(pasted).slice(0, maxLen);
+    e.preventDefault();
+    const target = e.target;
+    const start = target.selectionStart ?? target.value.length;
+    const end = target.selectionEnd ?? target.value.length;
+    const next = (target.value.slice(0, start) + cleaned + target.value.slice(end)).slice(0, maxLen);
+    setIdNumber(onlyDigits(next));
+  };
+
   const validate = () => {
     const errs = {};
-    const digits = (idNumber || "").replace(/\D/g, "");
+    const digits = onlyDigits(idNumber);
+
     if (!idType) errs.idType = "Selecciona el tipo de documento.";
-    if (!idNumber) errs.idNumber = "Este campo es obligatorio.";
+    if (!digits) errs.idNumber = "Este campo es obligatorio.";
     else if (idType === "DNI" && digits.length !== 8)
       errs.idNumber = "El DNI debe tener 8 dígitos.";
     else if (idType === "RUC" && digits.length !== 11)
       errs.idNumber = "El RUC debe tener 11 dígitos.";
-    if (!companyName.trim())
-      errs.companyName = "Ingresa el nombre de la compañía.";
+
+    if (!companyName.trim()) errs.companyName = "Ingresa el nombre de la compañía.";
+
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -204,7 +242,12 @@ export default function CreateOrganizerModal({ open, onClose, onSuccess }) {
             </label>
             <FancySelect
               value={idType}
-              onChange={setIdType}
+              onChange={(v) => {
+                setIdType(v);
+                // revalida contra nueva longitud
+                setIdNumber((prev) => onlyDigits(prev).slice(0, v === "DNI" ? 8 : 11));
+                setErrors((prev) => ({ ...prev, idNumber: undefined }));
+              }}
               options={[
                 { value: "DNI", label: "DNI" },
                 { value: "RUC", label: "RUC" },
@@ -223,14 +266,19 @@ export default function CreateOrganizerModal({ open, onClose, onSuccess }) {
             </label>
             <input
               ref={idInputRef}
-              className={`w-full rounded-2xl border bg-white/80 px-4 py-2.5 shadow-sm outline-none transition
-              focus:ring-2 focus:ring-purple-500/50 ${
-                errors.idNumber ? "border-red-400" : "border-gray-200"
-              }`}
               value={idNumber}
-              onChange={(e) => setIdNumber(e.target.value)}
-              placeholder={idType === "DNI" ? "12345678" : "20123456789"}
+              onChange={handleIdNumberChange}
+              onKeyDown={blockNonNumericKeys}
+              onPaste={handlePasteNumeric}
               inputMode="numeric"
+              maxLength={maxLen}
+              // pattern ayuda si el form se valida por HTML; igual limpiamos nosotros
+              pattern={idType === "DNI" ? "\\d{8}" : "\\d{11}"}
+              className={`w-full rounded-2xl border bg-white/80 px-4 py-2.5 shadow-sm outline-none transition
+                focus:ring-2 focus:ring-purple-500/50 ${
+                  errors.idNumber ? "border-red-400" : "border-gray-200"
+                }`}
+              placeholder={idType === "DNI" ? "12345678" : "20123456789"}
             />
             {errors.idNumber && (
               <p className="mt-1 text-xs text-red-600">{errors.idNumber}</p>
@@ -244,9 +292,9 @@ export default function CreateOrganizerModal({ open, onClose, onSuccess }) {
             </label>
             <input
               className={`w-full rounded-2xl border bg-white/80 px-4 py-2.5 shadow-sm outline-none transition
-              focus:ring-2 focus:ring-purple-500/50 ${
-                errors.companyName ? "border-red-400" : "border-gray-200"
-              }`}
+                focus:ring-2 focus:ring-purple-500/50 ${
+                  errors.companyName ? "border-red-400" : "border-gray-200"
+                }`}
               value={companyName}
               onChange={(e) => setCompanyName(e.target.value)}
               placeholder="Eventos SAC"
