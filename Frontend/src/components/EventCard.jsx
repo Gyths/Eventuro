@@ -39,21 +39,9 @@ export default function EventCard({
   }).format(s); // ej. "19:00"
 
   function onClick() {
-    const event = {
+    setEvent({
       eventId: id,
-      image,
-      title,
-      description,
-      location,
-      locationUrl,
-      sDate: sDay + "-" + month + "-" + year,
-      eDate: sDay + month + year,
-      hour: `${hh}:${mm}`,
-      categories: categories,
-      accessPolicy: accessPolicy,
-      accessPolicyDescription: accessPolicyDescription,
-    };
-    setEvent(event);
+    });
     navigate(ticketSelectionPage);
   }
 

@@ -250,8 +250,40 @@ export async function listAvailableTicketsRepo(input) {
   return prisma.event.findUnique({
     where: { eventId: BigInt(input.eventId) },
     select: {
-      //Solo se devuelve el id del evento, el resto de campos se obtiene de listEventRepo
+      //Se consulta toda la información del evento en caso haya habido alguna actualización durante el tiempo que el usuario estuvo en la pantalla de inicio
       eventId: true,
+      organizerId: true,
+      title: true,
+      status: true,
+      inPerson: true,
+      description: true,
+      accessPolicy: true,
+      accessPolicyDescription: true,
+
+      // relación con EventCategory
+      categories: {
+        select: {
+          category: {
+            select: {
+              eventCategoryId: true,
+              initials: true,
+              description: true,
+            },
+          },
+        },
+      },
+
+      // relación con Venue
+      venue: {
+        select: {
+          city: true,
+          address: true,
+          addressUrl: true,
+          reference: true,
+          capacity: true,
+        },
+      },
+
       //Relación son SalesPhases
       salesPhases: {
         select: {
@@ -263,12 +295,19 @@ export async function listAvailableTicketsRepo(input) {
           active: false,
         },
       },
+
+      //Relación con Organizer
+      organizer: {
+        select: { organizerId: true, companyName: true },
+      },
+
       //Relación EventDate
       dates: {
         select: {
           eventDateId: true,
           startAt: true,
           endAt: true,
+
           //Relación EventZoneDate
           zoneDates: {
             select: {
@@ -281,6 +320,7 @@ export async function listAvailableTicketsRepo(input) {
               capacityRemaining: true,
               seatMapId: true,
               currency: true,
+
               //Relación EventZoneDateAllocated
               allocations: {
                 select: {
@@ -292,12 +332,14 @@ export async function listAvailableTicketsRepo(input) {
                   remainingQuantity: true,
                 },
               },
+
               //SeatMaps relacionados al evento
               seatMap: {
                 select: {
                   seatMapId: true,
                   rows: true,
                   cols: true,
+
                   //Asientos relacionados a cada seatMap
                   occupiedSeats: {
                     orderBy: {

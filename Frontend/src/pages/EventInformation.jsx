@@ -11,30 +11,25 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import SelectDateModal from "../components/selection/SelectDateModal";
 import SelectTicketModal from "../components/selection/SelectTicketModal";
+import placeholder from "../assets/DefaultEvent.webp";
 import SeatNumberSelectionModal from "../components/selection/SeatNumberSelectionModal";
 
 import {
   ChatBubbleBottomCenterTextIcon,
   MapPinIcon,
-  ClockIcon,
   UserIcon,
-  CalendarDaysIcon,
-  PlusIcon,
-  MinusIcon,
+  UserGroupIcon,
 } from "@heroicons/react/24/solid";
 
 export default function TicketSelection() {
   const homeRoute = "/home";
-  const orderEnpoint = "/orders";
   const availabilityEndpoint = "/event/availability";
   const apiMethod = "POST";
-  const paymentPage = "/pago";
   const loginPage = "/login";
   const navigate = useNavigate();
   //Manejo de objetos de negocio
   const { isAuthenticated, user } = useAuth();
-  const { event } = useEvent();
-  const { setOrder } = useOrder();
+  const { event, setEvent } = useEvent();
   const [dates, setDates] = React.useState(null);
   //State para el manejo del scroll
   const [scrolled, setScrolled] = React.useState(false);
@@ -47,6 +42,7 @@ export default function TicketSelection() {
     //Llamada a la api del back para consultar disponibilidad de un evento
     const fetchAvailability = async () => {
       try {
+        console.log(event.eventId);
         const response = await EventuroApi({
           endpoint: availabilityEndpoint,
           method: apiMethod,
@@ -86,9 +82,11 @@ export default function TicketSelection() {
             }
           ),
         }));
-
-        setDates(formatted);
-        console.log(formatted);
+        response.status != "A" && navigate(homeRoute);
+        response.dates = formatted;
+        response.image = response.image ?? placeholder;
+        setEvent(response);
+        console.log(response);
       } catch (err) {
         console.error("Error al consultar la disponibilidad:", err);
         throw err;
@@ -111,7 +109,19 @@ export default function TicketSelection() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const handleBuyButtonClick = () => {
+    if (!isAuthenticated) {
+      navigate(loginPage);
+      return;
+    }
+    setModal("dates");
+  };
+
   const handleContinue = (selectedData) => {
+    if (!isAuthenticated) {
+      navigate(loginPage);
+      return;
+    }
     setSelectedData(selectedData);
     setModal("tickets");
   };
@@ -139,7 +149,7 @@ export default function TicketSelection() {
           <div className="flex relative flex-wrap justify-center gap-10 xl:gap-0 items-center px-4 py-5 md:px-8">
             {/* Imagen */}
             <div className="flex w-96 aspect-[3/5] overflow-hidden rounded-xl">
-              <img src={event.image} className="w-full h-full object-cover" />
+              <img src={event?.image} className="w-full h-full object-cover" />
             </div>
             {/* Card de Información y entradas*/}
             <div className="flex flex-col justify-end rounded-lg xl:rounded-none xl:rounded-r-lg bg-white h-auto shadow-2xl pt-6 pb-12 pr-24 pl-10">
@@ -164,25 +174,33 @@ export default function TicketSelection() {
               <div className="flex flex-col gap-4 pl-16 pt-10 ">
                 {/* Detalles del evento*/}
                 <div className="inline-flex flex-row justify-start items-center text-center gap-4">
+                  <UserIcon className="flex-shrink-0 size-5 justify-start"></UserIcon>
+                  <p className="inline-flex text-start max-w-prose">
+                    {"Organizado por " + event?.organizer?.companyName}
+                  </p>
+                </div>
+                <div className="inline-flex flex-row justify-start items-center text-center gap-4">
                   <ChatBubbleBottomCenterTextIcon className="flex-shrink-0 size-5 justify-start"></ChatBubbleBottomCenterTextIcon>
                   <p className="inline-flex text-start max-w-prose">
                     {event?.description}
                   </p>
                 </div>
                 <div className="flex flex-1 flex-row justify-start items-center text-center gap-4">
-                  <UserIcon className="flex size-5 justify-center"></UserIcon>
+                  <UserGroupIcon className="flex size-5 justify-center"></UserGroupIcon>
                   <p className="flex text-center">
                     {event?.accessPolicyDescription}
                   </p>
                 </div>
                 <div className="flex flex-1 flex-row justify-start items-center text-center gap-4">
                   <MapPinIcon className="flex size-5 justify-center"></MapPinIcon>
-                  <p className="flex text-center">{event?.location}</p>
+                  <span className="flex text-center">
+                    {event?.venue?.address}
+                  </span>
                 </div>
                 <div className="flex flex-row justify-end">
                   <button
-                    onClick={() => setModal("dates")}
-                    className="self-start inline-flex w-auto items-center cursor-pointer justify-center rounded-lg bg-purple-600 text-white px-6 py-1 hover:scale-101 hover:bg-yellow-500 transition-all transition-transform duration-300"
+                    onClick={handleBuyButtonClick}
+                    className="self-start inline-flex w-auto items-center cursor-pointer justify-center rounded-lg bg-purple-600 text-white px-6 py-1 hover:scale-101 hover:bg-yellow-500 transition-transform duration-300"
                   >
                     Comprar entradas
                   </button>
@@ -203,9 +221,11 @@ export default function TicketSelection() {
                 <div className="flex size-auto border-2">
                   <iframe
                     className="flex relative max-h-96 max-w-96  size-dvh"
-                    src={`https://www.google.com/maps?q=${encodeURIComponent(
-                      event.location
-                    )}&output=embed`}
+                    src={
+                      "https://www.google.com/maps?q=" +
+                      event?.venue?.address +
+                      "&output=embed"
+                    }
                     allowFullScreen
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
@@ -219,7 +239,7 @@ export default function TicketSelection() {
       {modal === "dates" && (
         <AnimatePresence>
           <SelectDateModal
-            dates={dates}
+            dates={event.dates}
             onClose={() => setModal(null)}
             onContinue={handleContinue}
           />
