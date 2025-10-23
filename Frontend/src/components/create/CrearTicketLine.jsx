@@ -141,6 +141,27 @@ export default function CrearTicketLine({ zones, onChange, currency = "PEN" }) {
     updateZones(newZones);
   };
 
+  // --- Sanitizers para campos de zona ---
+  const sanitizeZoneInt = (v) =>
+    String(v ?? "")
+      .replace(/\D/g, "")
+      .replace(/^0+/, (m, off, s) => (s && v !== "" ? "" : m));
+  const sanitizeZoneMoney = (v) =>
+    String(v ?? "")
+      .replace(/[^0-9.]/g, "")
+      .replace(/(\..*)\./g, "$1");
+
+  // --- Cambiar cantidad / precio de la zona ---
+  const handleZoneFieldChange = (zoneIndex, field, value) => {
+    const newZones = [...zones];
+    const z = { ...newZones[zoneIndex] };
+    if (field === "quantity") value = sanitizeZoneInt(value);
+    if (field === "price") value = sanitizeZoneMoney(value);
+    z[field] = value;
+    newZones[zoneIndex] = z;
+    updateZones(newZones);
+  };
+
   // --- Rendering ---
   return (
     <div className="space-y-6">
@@ -190,7 +211,6 @@ export default function CrearTicketLine({ zones, onChange, currency = "PEN" }) {
               </div>
             </div>
 
-            {/* ADDED: Bloque por defecto debajo del encabezado: Cantidad + Precio de la ZONA */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-4">
               <div className="md:col-span-6">
                 <FormField label="Cantidad*" hint="Tickets generales">
