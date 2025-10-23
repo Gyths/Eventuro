@@ -36,11 +36,14 @@ export default function SelectAllocationModal({
 
   console.log(selectedData);
 
-  //States para el manejo de las cantidad de entradas seleccionadas
+  // States para el manejo de las cantidad de entradas seleccionadas
   const [notAllocatedGeneralQuantities, setNotAllocatedGeneralQuantities] =
     React.useState(Array(selectedData.zoneDates.length).fill(0));
+
+  // CAMBIO: evitar fill([]) que comparte la misma referencia
   const [notAllocatedSeatedQuantities, setNotAllocatedSeatedQuantities] =
-    React.useState(Array(selectedData.zoneDates.length).fill([]));
+    React.useState(() => selectedData.zoneDates.map(() => []));
+
   const [allocatedGeneralQuantities, setAllocatedGeneralQuantities] =
     React.useState(
       selectedData.zoneDates.map((zone) => {
@@ -49,11 +52,10 @@ export default function SelectAllocationModal({
           : "";
       })
     );
-  //console.log(allocatedGeneralQuantities);
 
+  // CAMBIO: evitar fill({}) que comparte la misma referencia
   const [allocatedSeatedQuantities, setAllocatedSeatedQuantities] =
-    React.useState(Array(selectedData.zoneDates.length).fill({}));
-  console.log(allocatedSeatedQuantities);
+    React.useState(() => selectedData.zoneDates.map(() => ({})));
 
   const [subtotal, setSubtotal] = React.useState(0);
   const [seatMap, setSeatMap] = React.useState(null);
@@ -62,26 +64,25 @@ export default function SelectAllocationModal({
 
   const currencies = { PEN: "S/." };
 
-  //Manejo de suma y resta de entradas sin allocation
+  // Manejo de suma y resta de entradas sin allocation
   const handleNoAllocationGeneralSubtraction = (zoneIndex) => {
-    const newValues = notAllocatedGeneralQuantities.map((value, index) => {
-      return (index === zoneIndex) & (value > 0) ? value - 1 : value;
-    });
+    // CAMBIO: usar && en vez de &
+    const newValues = notAllocatedGeneralQuantities.map((value, index) =>
+      index === zoneIndex && value > 0 ? value - 1 : value
+    );
     setNotAllocatedGeneralQuantities(newValues);
   };
 
   const handleNoAllocationGeneralSum = (zoneIndex) => {
-    //console.log(zoneIndex);
-    const newValues = notAllocatedGeneralQuantities.map((value, index) => {
-      return (index === zoneIndex) &
-        (value < parseInt(selectedData.zoneDates[zoneIndex].capacityRemaining))
-        ? value + 1
-        : value;
-    });
+    // CAMBIO: usar && y Number para límites
+    const cap = Number(selectedData.zoneDates[zoneIndex].capacityRemaining || 0);
+    const newValues = notAllocatedGeneralQuantities.map((value, index) =>
+      index === zoneIndex && value < cap ? value + 1 : value
+    );
     setNotAllocatedGeneralQuantities(newValues);
   };
 
-  //Manejo de entradas con sitio pero sin allocation
+  // Manejo de entradas con sitio pero sin allocation
   const handleNotAllocatedSeated = (zoneIndex) => {
     setSeatMap(selectedData.zoneDates[zoneIndex].seatMap);
     setZoneIndex(zoneIndex);
@@ -89,16 +90,16 @@ export default function SelectAllocationModal({
     setModal("seats");
   };
 
-  //Manejo de suma y resta de entradas con allocation
+  // Manejo de suma y resta de entradas con allocation
   const handleAllocatedGeneralSubtraction = (zoneI, allocationI) => {
     const newValues = allocatedGeneralQuantities.map(
       (allocation, zoneIndex) => {
         return zoneI === zoneIndex
-          ? allocation.map((quantitie, allocationIndex) => {
-              return allocationI === allocationIndex && quantitie > 0
+          ? allocation.map((quantitie, allocationIndex) =>
+              allocationI === allocationIndex && quantitie > 0
                 ? quantitie - 1
-                : quantitie;
-            })
+                : quantitie
+            )
           : allocation;
       }
     );
@@ -106,28 +107,26 @@ export default function SelectAllocationModal({
   };
 
   const handleAllocatedGeneralSum = (zoneI, allocationI) => {
-    //console.log(zoneIndex);
+    // CAMBIO: usar && y Number
+    const rem = Number(
+      selectedData.zoneDates[zoneI].allocations[allocationI].remainingQuantity ||
+        0
+    );
     const newValues = allocatedGeneralQuantities.map(
       (allocation, zoneIndex) => {
-        //console.log("sumando en " + zoneI + " " + allocationI);
         return zoneI === zoneIndex
-          ? allocation.map((quantitie, allocationIndex) => {
-              return (allocationI === allocationIndex) &
-                (quantitie <
-                  parseInt(
-                    selectedData.zoneDates[zoneIndex].allocations[allocationI]
-                      .remainingQuantity
-                  ))
+          ? allocation.map((quantitie, allocationIndex) =>
+              allocationI === allocationIndex && quantitie < rem
                 ? quantitie + 1
-                : quantitie;
-            })
+                : quantitie
+            )
           : allocation;
       }
     );
     setAllocatedGeneralQuantities(newValues);
   };
 
-  //Manejo de entradas con sitio y con allocation
+  // Manejo de entradas con sitio y con allocation
   const handleAllocatedSeated = (zoneIndex, allocationIndex) => {
     setSeatMap(selectedData.zoneDates[zoneIndex].seatMap);
     setZoneIndex(zoneIndex);
@@ -135,105 +134,95 @@ export default function SelectAllocationModal({
     setModal("seats");
   };
 
-  //Calculo del subtotal resultado de entradas sin allocation ni sitios
+  // Calculo del subtotal resultado de entradas sin allocation ni sitios
   React.useEffect(() => {
     if (selectedData) {
       let newSubtotal = 0;
       for (let i = 0; i < selectedData.zoneDates.length; i++) {
-        //console.log(notAllocatedGeneralQuantities[i]);
-        //console.log(selectedData.zoneDates[i].basePrice);
+        // CAMBIO: Number/parseFloat para decimales
         newSubtotal +=
-          parseInt(notAllocatedGeneralQuantities[i]) *
-          parseInt(selectedData.zoneDates[i].basePrice);
+          Number(notAllocatedGeneralQuantities[i]) *
+          parseFloat(selectedData.zoneDates[i].basePrice || 0);
       }
       setSubtotal(newSubtotal);
     }
-  }, [notAllocatedGeneralQuantities]);
+  }, [notAllocatedGeneralQuantities, selectedData]);
 
-  //Calculo del subtotal resultado de entradas sin allocation pero con sitios
+  // Calculo del subtotal resultado de entradas sin allocation pero con sitios
   React.useEffect(() => {
     if (selectedData) {
       let newSubtotal = 0;
       for (let i = 0; i < selectedData.zoneDates.length; i++) {
-        //console.log(notAllocatedSeatedQuantities[i]);
-        //console.log(selectedData.zoneDates[i].basePrice);
         newSubtotal +=
-          parseInt(notAllocatedSeatedQuantities[i].length) *
-          parseInt(selectedData.zoneDates[i].basePrice);
+          Number(notAllocatedSeatedQuantities[i].length) *
+          parseFloat(selectedData.zoneDates[i].basePrice || 0);
       }
       setSubtotal(newSubtotal);
     }
-  }, [notAllocatedSeatedQuantities]);
+  }, [notAllocatedSeatedQuantities, selectedData]);
 
-  //Calculo del subtotal resultado de entradas con allocation pero sin sitios
+  // Calculo del subtotal resultado de entradas con allocation pero sin sitios
   React.useEffect(() => {
     if (selectedData) {
       let newSubtotal = 0;
 
-      selectedData.zoneDates.map((zone, zoneIndex) => {
-        zone.allocations.map((quantities, allocationIndex) => {
-          //console.log(allocatedGeneralQuantities[zoneIndex][allocationIndex]);
-          //console.log(selectedData.zoneDates[zoneIndex].basePrice);
-          /*console.log(
-            selectedData.zoneDates[zoneIndex].allocations[allocationIndex]
-              .discountPercent
-          );*/
-
+      selectedData.zoneDates.forEach((zone, zoneIndex) => {
+        zone.allocations.forEach((_, allocationIndex) => {
           newSubtotal +=
-            parseInt(allocatedGeneralQuantities[zoneIndex][allocationIndex]) *
-            (parseInt(zone.basePrice) *
+            Number(allocatedGeneralQuantities[zoneIndex][allocationIndex]) *
+            (parseFloat(zone.basePrice || 0) *
               (1 -
-                parseInt(zone.allocations[allocationIndex].discountPercent) /
+                Number(zone.allocations[allocationIndex].discountPercent || 0) /
                   100));
         });
       });
       setSubtotal(newSubtotal);
     }
-  }, [allocatedGeneralQuantities]);
+  }, [allocatedGeneralQuantities, selectedData]);
 
-  //Calculo del subtotal resultado de entradas con allocations y sitios
+  // Calculo del subtotal resultado de entradas con allocations y sitios
   React.useEffect(() => {
     if (selectedData) {
       let newSubtotal = 0;
-      selectedData.zoneDates.map((zone, zoneIndex) => {
+      selectedData.zoneDates.forEach((zone, zoneIndex) => {
         for (const seat in allocatedSeatedQuantities[zoneIndex]) {
           newSubtotal +=
-            parseInt(zone.basePrice) *
+            parseFloat(zone.basePrice || 0) *
             (1 -
-              parseInt(
+              Number(
                 zone.allocations[allocatedSeatedQuantities[zoneIndex][seat]]
-                  .discountPercent
+                  .discountPercent || 0
               ) /
                 100);
         }
       });
       setSubtotal(newSubtotal);
     }
-  }, [allocatedSeatedQuantities]);
+  }, [allocatedSeatedQuantities, selectedData]);
 
-  //Función para manejar enviar la orden a la bd
+  // Función para manejar enviar la orden a la bd
   const onContinue = async () => {
-    //Se establece la información de la orden
     const orderData = {};
     orderData.buyerUserId = user.userId;
     orderData.currency = "PEN";
     orderData.items = [];
 
-    //Se añaden las entradas sin allocation ni sitio
-    notAllocatedGeneralQuantities.map((value, index) => {
-      value > 0 &&
+    // Entradas sin allocation ni sitio
+    notAllocatedGeneralQuantities.forEach((value, index) => {
+      if (value > 0) {
         orderData.items.push({
           eventId: event.eventId,
           eventDateId: selectedData.eventDateId,
           eventDateZoneId: selectedData.zoneDates[index].eventDateZoneId,
           quantity: value,
         });
+      }
     });
 
-    //Se añaden las entradas sin allocation pero con sitio
-    notAllocatedSeatedQuantities.map((zoneAllocation, index) => {
-      zoneAllocation.length > 0 &&
-        zoneAllocation.map((seat) => {
+    // Entradas sin allocation pero con sitio
+    notAllocatedSeatedQuantities.forEach((zoneAllocation, index) => {
+      if (zoneAllocation.length > 0) {
+        zoneAllocation.forEach((seat) => {
           orderData.items.push({
             eventId: event.eventId,
             eventDateId: selectedData.eventDateId,
@@ -242,13 +231,14 @@ export default function SelectAllocationModal({
             seatId: seat,
           });
         });
+      }
     });
 
-    //Se añaden las entradas con allocation pero sin sitio
-    allocatedGeneralQuantities.map((zone, zoneIndex) => {
-      zone != "" &&
-        zone.map((quantitie, allocationIndex) => {
-          quantitie > 0 &&
+    // Entradas con allocation pero sin sitio
+    allocatedGeneralQuantities.forEach((zone, zoneIndex) => {
+      if (zone !== "") {
+        zone.forEach((quantitie, allocationIndex) => {
+          if (quantitie > 0) {
             orderData.items.push({
               eventId: event.eventId,
               eventDateId: selectedData.eventDateId,
@@ -259,12 +249,13 @@ export default function SelectAllocationModal({
                   .eventDateZoneAllocationId,
               quantity: quantitie,
             });
+          }
         });
+      }
     });
 
-    //Se añaden las entradas con allocation y con sitio
-
-    allocatedSeatedQuantities.map((seats, zoneIndex) => {
+    // Entradas con allocation y con sitio
+    allocatedSeatedQuantities.forEach((seats, zoneIndex) => {
       for (const seatId in seats) {
         orderData.items.push({
           eventId: event.eventId,
@@ -281,7 +272,6 @@ export default function SelectAllocationModal({
 
     console.log(orderData);
 
-    //Se envía la orden
     try {
       const response = await EventuroApi({
         endpoint: orderEndpoint,
@@ -295,7 +285,6 @@ export default function SelectAllocationModal({
       throw err;
     }
 
-    //Avanza a la siguiente página
     navigate(paymentPage);
   };
 
@@ -382,10 +371,10 @@ export default function SelectAllocationModal({
                                     <span>
                                       {currencies.PEN +
                                         " " +
-                                        parseInt(zone.basePrice) *
+                                        parseFloat(zone.basePrice || 0) *
                                           (1 -
-                                            parseInt(
-                                              allocation.discountPercent
+                                            Number(
+                                              allocation.discountPercent || 0
                                             ) /
                                               100)}
                                     </span>
@@ -438,7 +427,8 @@ export default function SelectAllocationModal({
                                           Object.values(
                                             allocatedSeatedQuantities[zoneIndex]
                                           ).filter(
-                                            (value) => value === allocationIndex
+                                            (value) =>
+                                              value === allocationIndex
                                           ).length
                                         }
                                         )
@@ -483,7 +473,7 @@ export default function SelectAllocationModal({
             <div className="flex flex-row gap-4">
               <span className="inline-block font-semibold">Subtotal: </span>
               <span className="inline-block font-semibold">
-                {currencies.PEN + " " + subtotal}
+                {currencies.PEN + " " + subtotal.toFixed(2)}
               </span>
             </div>
             <button
