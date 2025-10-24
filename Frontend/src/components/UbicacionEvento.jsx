@@ -1,24 +1,38 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../styles/UbicacionEvento.css";
 import BotonCTA from "./BotonCTA";
 import Titulo from "./Titulo";
 
-function UbicacionEvento() {
+function UbicacionEvento({ initialData, onSave }) {
   const [city, setCity] = useState("");
   const [address, setAddress] = useState("");
+  const [addressUrl, setAddressUrl] = useState("");
   const [reference, setReference] = useState("");
   const [howToFind, setHowToFind] = useState("");
   const [capacity, setCapacity] = useState(0);
 
+  useEffect(() => {
+    if (!initialData) return;
+    setCity(initialData.city ?? "");
+    setAddress(initialData.address ?? "");
+    setAddressUrl(initialData.addressUrl ?? "");
+    setReference(initialData.reference ?? "");
+    setHowToFind(initialData.howToFind ?? "");
+    setCapacity(initialData.capacity ?? 0);
+  }, [initialData]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log({
+    const payload = {
       city,
       address,
+      addressUrl,
       reference,
       howToFind,
-      capacity,
-    });
+      capacity: Number(capacity || 0),
+    };
+    if (typeof onSave === "function") onSave(payload);
+    else console.log(payload);
   };
 
   return (
@@ -47,9 +61,9 @@ function UbicacionEvento() {
                 className="border rounded px-4 py-2 w-full"
               >
                 <option value="">Elije una Ciudad para el evento</option>
-                <option value="cusco">Cusco</option>
-                <option value="lima">Lima</option>
-                <option value="arequipa">Arequipa</option>
+                <option value="Cusco">Cusco</option>
+                <option value="Lima">Lima</option>
+                <option value="Arequipa">Arequipa</option>
               </select>
             </div>
 
@@ -65,7 +79,24 @@ function UbicacionEvento() {
                 id="address"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                placeholder="Recomendación: Ingrese un nombre llamativo y corto"
+                placeholder="Ej. Av. Siempre Viva 123"
+                className="border rounded px-4 py-2 w-full"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="addressUrl"
+                className="block text-sm font-medium text-gray-700"
+              >
+                URL de Google Maps
+              </label>
+              <input
+                type="url"
+                id="addressUrl"
+                value={addressUrl}
+                onChange={(e) => setAddressUrl(e.target.value)}
+                placeholder="https://maps.google.com/..."
                 className="border rounded px-4 py-2 w-full"
               />
             </div>
@@ -82,7 +113,7 @@ function UbicacionEvento() {
                 id="reference"
                 value={reference}
                 onChange={(e) => setReference(e.target.value)}
-                placeholder="Ej. Al frente de la gasolinera del centro"
+                placeholder="Ej. Frente a la gasolinera del centro"
                 className="border rounded px-4 py-2 w-full"
               />
             </div>
@@ -117,13 +148,18 @@ function UbicacionEvento() {
                   value={capacity}
                   onChange={(e) => setCapacity(e.target.value)}
                   className="border rounded px-4 py-2 w-full"
+                  min={0}
                 />
               </div>
+            </div>
+
+            <div className="flex justify-end">
+              <BotonCTA type="submit">Guardar ubicación</BotonCTA>
             </div>
           </form>
         </div>
 
-        <div className="w-full md:w-1/3 ml-4">
+        <div className="w-full md:w-1/3 md:ml-4">
           <div className="map-container">
             <div className="map-placeholder">Mapa se cargará aquí</div>
           </div>
