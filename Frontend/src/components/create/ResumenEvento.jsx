@@ -19,7 +19,9 @@ export default function ResumenEvento({ basics, imagePreview, dates = [], locati
           Detalles del evento
         </h4>
         <Row label="Nombre">{basics.name || "—"}</Row>
-        <Row label="Categoría">{basics.category || "—"}</Row>
+        <Row label="Categoría">{Array.isArray(basics.categories) && basics.categories.length > 0? 
+          basics.categoriesLabels? basics.categoriesLabels.join(", "): basics.categories.join(", "): "—"}
+        </Row>
         <Row label="Descripción">{basics.description || "—"}</Row>
         <Row label="Información adicional">{basics.extraInfo || "—"}</Row>
         <Row label="Restricciones">

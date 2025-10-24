@@ -66,7 +66,12 @@ export default function EventBasicsForm({ form, onChange }) {
         return found?.id ?? Number(k);
       });
 
-    onChange?.({ categories: next });
+    onChange?.({
+      categories: next, // IDs
+      categoriesLabels: categories
+        .filter((c) => next.includes(c.id))
+        .map((c) => c.label),
+    });
   };
 
   return (
