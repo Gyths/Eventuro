@@ -110,18 +110,18 @@ export default function SelectAllocationModal({
     const newValues = allocatedGeneralQuantities.map(
       (allocation, zoneIndex) => {
         //console.log("sumando en " + zoneI + " " + allocationI);
-        return zoneI === zoneIndex
-          ? allocation.map((quantitie, allocationIndex) => {
-              return (allocationI === allocationIndex) &
-                (quantitie <
-                  parseInt(
-                    selectedData.zoneDates[zoneIndex].allocations[allocationI]
-                      .remainingQuantity
-                  ))
-                ? quantitie + 1
-                : quantitie;
-            })
-          : allocation;
+        if (zoneI !== zoneIndex) return allocation;
+        const zone = selectedData.zoneDates[zoneIndex];
+        const totalSelectedInZone = allocation.reduce(
+          (sum, q) => sum + parseInt(q || 0),
+          0
+        );
+        if (totalSelectedInZone >= parseInt(zone.capacityRemaining)) {
+          return allocation;
+        }
+        return allocation.map((quantitie, allocationIndex) => {
+          return allocationIndex === allocationI ? quantitie + 1 : quantitie;
+        });
       }
     );
     setAllocatedGeneralQuantities(newValues);

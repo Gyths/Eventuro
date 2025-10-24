@@ -39,29 +39,32 @@ export default function SeatNumberSelectionModal({
         }
       });
     } else {
-      setAllocatedSelectedSeats((allocatedSelectedSeats) => {
-        let selectedPlaceholder = { ...allocatedSelectedSeats };
-        if (seatNum in selectedPlaceholder) {
-          delete selectedPlaceholder[seatNum];
-        } else {
-          let globalCopy = allocatedSeatedQuantities.map((zoneSeats) => ({
-            ...zoneSeats,
-          }));
+      setAllocatedSelectedSeats((prev) => {
+        let updated = { ...prev };
 
-          globalCopy.forEach((zoneSeats, zIndex) => {
-            if (seatNum in zoneSeats) {
-              delete zoneSeats[seatNum];
+        // Si el asiento ya estaba en este allocation → deseleccionar
+        if (seatNum in updated && updated[seatNum] === allocationIndex) {
+          delete updated[seatNum];
+        } else {
+          // Si el asiento estaba asignado a otro allocation dentro del mismo modal → reasignar
+          const otherAllocations = { ...updated };
+          for (const id in otherAllocations) {
+            if (id === String(seatNum)) continue;
+            if (otherAllocations[id] !== allocationIndex && id == seatNum) {
+              delete otherAllocations[id];
             }
+          }
+
+          // Quitar si estaba asignado a otro allocation distinto dentro del mismo modal
+          Object.keys(updated).forEach((id) => {
+            if (parseInt(id) === seatNum) delete updated[id];
           });
 
-          selectedPlaceholder[seatNum] = allocationIndex;
-
-          const newGlobal = globalCopy.map((zoneSeats, zIndex) =>
-            zIndex === zoneIndex ? selectedPlaceholder : zoneSeats
-          );
-          setAllocatedSeatedQuantities(newGlobal);
+          // Asignar al allocation actual
+          updated[seatNum] = allocationIndex;
         }
-        return selectedPlaceholder;
+
+        return updated;
       });
     }
   };
@@ -109,7 +112,7 @@ export default function SeatNumberSelectionModal({
     }
 
     if (Array.isArray(allocatedSeatedQuantities)) {
-      setAllocatedSelectedSeats(allocatedSeatedQuantities[zoneIndex]);
+      setAllocatedSelectedSeats(...allocatedSeatedQuantities[zoneIndex]);
     }
   }, []);
 
