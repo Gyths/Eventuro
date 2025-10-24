@@ -112,7 +112,7 @@ export default function SeatNumberSelectionModal({
     }
 
     if (Array.isArray(allocatedSeatedQuantities)) {
-      setAllocatedSelectedSeats(...allocatedSeatedQuantities[zoneIndex]);
+      setAllocatedSelectedSeats(allocatedSeatedQuantities[zoneIndex]);
     }
   }, []);
 

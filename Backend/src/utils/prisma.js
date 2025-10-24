@@ -1,5 +1,5 @@
 // src/utils/prisma.js
-import { PrismaClient } from "../generated/prisma/index.js"; //por tu "output" del generator;
+import { PrismaClient } from "@prisma/client"; //por tu "output" del generator;
 // Si usaras el default, sería: import { PrismaClient } from '@prisma/client';
 
 const globalForPrisma = globalThis;

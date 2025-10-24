@@ -11,7 +11,6 @@ import BaseModal from "../../BaseModal";
 
 export default function CompraExitosaModal({
   total,
-  transaccionId = "0000",
   correo = "ejemplo@correo.com",
   onReturnHome,
   onViewTickets,
@@ -22,7 +21,7 @@ export default function CompraExitosaModal({
   return (
     <>
       <BaseModal>
-        <div className="flex flex-col justify-center items-center bg-white rounded-xl shadow-2xl max-w-md p-5">
+        <div className="flex flex-col justify-center items-center bg-white rounded-xl shadow-2xl max-w-[25vw] p-5">
           {/* Icono de éxito */}
           <div className="flex justify-center">
             <CheckCircleIcon className="text-green-500 w-16 h-16" />
@@ -35,19 +34,17 @@ export default function CompraExitosaModal({
           <div className="bg-gray-100 rounded-lg text-left p-4">
             <div className="flex justify-between mb-1 gap-6">
               <span className="font-medium text-gray-700">Monto</span>
-              <span className="font-semibold">S/ {order.totalAmount}</span>
+              <span className="font-semibold">S/ {order?.totalAmount}</span>
             </div>
 
             <div className="flex justify-between mb-3 border-b border-gray-400 pb-2 gap-6">
-              <span className="font-medium text-gray-700">
-                N° de Transacción
-              </span>
-              <span className="font-semibold">#{transaccionId}</span>
+              <span className="font-medium text-gray-700">N° de Orden</span>
+              <span className="font-semibold">#{order?.orderId}</span>
             </div>
 
-            <div className="flex flex-row items-center gap-2">
+            <div className="flex flex-row items-start gap-2">
               <StarIcon className="flex size-9"></StarIcon>
-              <span className="flex flex-1 justify-end font-medium">
+              <span className="inline-block justify-end text-end font-medium">
                 {event?.title}
               </span>
             </div>
@@ -55,7 +52,7 @@ export default function CompraExitosaModal({
             <div className="flex flex-row items-center gap-2">
               <CalendarDaysIcon className="flex size-8"></CalendarDaysIcon>
               <span className="flex flex-1 justify-end font-medium">
-                {event?.sDate}
+                {event?.selectedDate}
               </span>
             </div>
           </div>

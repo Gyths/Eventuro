@@ -1,5 +1,6 @@
 import React from "react";
 import useOrder from "../../services/Order/OrderContext";
+import useEvent from "../../services/Event/EventContext";
 
 export default function ShoppingCart({
   termsAccepted,
@@ -11,6 +12,10 @@ export default function ShoppingCart({
   const tickets = [];
 
   const { order } = useOrder();
+  const { event } = useEvent();
+  console.log(event);
+
+  const currencies = { PEN: "S/." };
 
   const handleSubmit = () => {
     //Validación de inputs necesarios
@@ -34,18 +39,25 @@ export default function ShoppingCart({
       <h2 className="text-2xl font-bold text-gray-800">Compras</h2>
       <hr className="my-4 border-gray-300 mx-2 min-w-60" />
       {/*Acá se muestran los tickets a comprar*/}
-      <div className="space-y-3">
-        {tickets.map((ticket, index) => (
-          <div
-            key={index}
-            className="flex justify-between text-gray-700 gap-52"
-          >
-            <span>{ticket.tipo}</span>
-            <span className="font-semibold">S/. {ticket.precio}</span>
-          </div>
-        ))}
+      <div className="space-y-3"></div>
+      <div className="flex flex-col h-70">
+        {event.shoppingCart != null &&
+          Object.entries(event.shoppingCart).map(([key, item], index) => {
+            return (
+              <div
+                key={index}
+                className="flex justify-between font-semibold items-center text-black gap-10"
+              >
+                <span className="inline-block">{key}</span>
+                <span>{"x" + item.quantity}</span>
+                <div className="flex flex-row items-center">
+                  {currencies.PEN + " "}
+                  <span>{item.price}</span>
+                </div>
+              </div>
+            );
+          })}
       </div>
-      <div className="flex flex-col h-70"></div>
       {/*Acá se muestra el total a pagar*/}
       <div className="flex flex-col">
         <hr className="my-4 border-gray-300 mx-2" />
