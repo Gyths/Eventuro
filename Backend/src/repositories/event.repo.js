@@ -314,3 +314,40 @@ export async function listAvailableTicketsRepo(input) {
     },
   });
 }
+
+export async function setEventFeeRepo({ eventId, percentage }) {
+  const eventIdNormalized = BigInt(eventId);
+  const percentageNormalized = Number(percentage).toFixed(2);
+
+  return prisma.$transaction(async (tx) => {
+
+    let fee = await tx.fee.findFirst({
+      where: { percentage: percentageNormalized },
+      select: {
+        feeId: true,
+        percentage: true
+      },
+    });
+
+    if (!fee) {
+      fee = await tx.fee.create({
+        data: { percentage: percentageNormalized },
+        select: {
+          feeId: true,
+          percentage: true
+        },
+      });
+    }
+
+    const event = await tx.event.update({
+      where: { eventId: eventIdNormalized},
+      data: { feeId: fee.feeId},
+      select: {
+        eventId: true,
+        title: true,
+        fee: { select: { feeId: true, percentage: true } },
+      }
+    });
+    return event;
+  });
+}
