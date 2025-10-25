@@ -193,16 +193,6 @@ export default function CrearEventoCards() {
     updateRestrictions([]); // según tu hook; si usa objeto, pásale {}.
   };
 
-  // CONVERTIDOR IMAGEN A BASE64
-  const fileToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result.split(",")[1]);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  };
-
 
   //###### GENERADOR DEL JSON PARA POST A LA BD ##########
   const generateAndPostJson = async () => {
@@ -364,7 +354,6 @@ export default function CrearEventoCards() {
         body: formData, // ¡sin JSON.stringify!
       });
 
-
       const raw = await res.text();
       let payload = null;
       try {
@@ -373,7 +362,7 @@ export default function CrearEventoCards() {
         payload = raw;
       }
 
-      if (res.ok) {        
+      if (res.ok) {
         await Swal.fire({
           icon: "success",
           title: "¡Evento publicado!",
