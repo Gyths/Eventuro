@@ -119,9 +119,7 @@ export async function createEventRepo(input) {
               data: {
                 eventDateZoneId: eventDateZone.eventDateZoneId,
                 audienceName: allocation.audienceName,
-                discountPercent: Number(allocation.discountPercent),
-                allocatedQuantity: Number(allocation.allocatedQuantity),
-                remainingQuantity: Number(allocation.remainingQuantity),
+                discountPercent: Number(allocation.discountPercent)
               },
               select: { eventDateZoneAllocationId: true },
             });
@@ -260,8 +258,6 @@ export async function listAvailableTicketsRepo(input) {
                   eventDateZoneAllocationId: true,
                   audienceName: true,
                   discountPercent: true,
-                  allocatedQuantity: true,
-                  remainingQuantity: true,
                 },
               },
               //SeatMaps relacionados al evento
