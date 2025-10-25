@@ -362,7 +362,7 @@ export default function CrearEventoCards() {
           reference: location.reference,
           capacity: Number(location.capacity),
         },
-        eventCategories: form.category ? [Number(form.category)] : [],
+        eventCategories: Array.isArray(form.categories)? form.categories.map((id) => Number(id)): [],
         salePhases: salePhases,
         dates: eventDates,
         zones: eventZones,

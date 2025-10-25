@@ -2,6 +2,7 @@ import {
   createEventRepo,
   listEventRepo,
   listAvailableTicketsRepo,
+  setEventFeeRepo,
 } from "../repositories/event.repo.js";
 
 export async function createEventSvc(input) {
@@ -14,4 +15,8 @@ export async function listEventSvc() {
 
 export async function listAvailableTicketsSvc(input) {
   return listAvailableTicketsRepo(input);
+}
+
+export async function setEventFeeSvc({ id, percentage }) {
+  return setEventFeeRepo({ eventId: id, percentage: percentage });
 }

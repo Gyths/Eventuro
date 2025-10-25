@@ -31,3 +31,21 @@ export async function listAvailableTickets(req, res) {
     return res.status(400).json({ error: err.message });
   }
 }
+
+// src/controllers/event.controller.js
+import { setEventFeeSvc } from '../services/event.service.js';
+import { toJSONSafe } from '../utils/toJSONSafe.js';
+
+export async function setEventFee(req, res, next) {
+  try {
+    const { id } = req.params;              
+    const { percentage } = req.body;        
+    const data = await setEventFeeSvc({ id, percentage });
+    return res.status(200).json(toJSONSafe(data));
+  } catch (err) {
+    if (err?.code === 'P2025') {
+      return res.status(404).json({ message: 'El evento no existe.' });
+    }
+    return next(err);
+  }
+}
