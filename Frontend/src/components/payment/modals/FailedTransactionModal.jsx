@@ -1,7 +1,7 @@
 import React from "react";
 import { XCircleIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
-import BaseModal from "./BaseModal";
+import BaseModal from "../../BaseModal";
 
 function FailedTransactionModal() {
   const ticketSelectionPage = "/seleccionTickets";

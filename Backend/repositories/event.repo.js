@@ -250,40 +250,8 @@ export async function listAvailableTicketsRepo(input) {
   return prisma.event.findUnique({
     where: { eventId: BigInt(input.eventId) },
     select: {
-      //Se consulta toda la información del evento en caso haya habido alguna actualización durante el tiempo que el usuario estuvo en la pantalla de inicio
+      //Solo se devuelve el id del evento, el resto de campos se obtiene de listEventRepo
       eventId: true,
-      organizerId: true,
-      title: true,
-      status: true,
-      inPerson: true,
-      description: true,
-      accessPolicy: true,
-      accessPolicyDescription: true,
-
-      // relación con EventCategory
-      categories: {
-        select: {
-          category: {
-            select: {
-              eventCategoryId: true,
-              initials: true,
-              description: true,
-            },
-          },
-        },
-      },
-
-      // relación con Venue
-      venue: {
-        select: {
-          city: true,
-          address: true,
-          addressUrl: true,
-          reference: true,
-          capacity: true,
-        },
-      },
-
       //Relación son SalesPhases
       salesPhases: {
         select: {
@@ -295,24 +263,16 @@ export async function listAvailableTicketsRepo(input) {
           active: false,
         },
       },
-
-      //Relación con Organizer
-      organizer: {
-        select: { organizerId: true, companyName: true },
-      },
-
       //Relación EventDate
       dates: {
         select: {
           eventDateId: true,
           startAt: true,
           endAt: true,
-
           //Relación EventZoneDate
           zoneDates: {
             select: {
               eventDateZoneId: true,
-              eventDateId: true,
               name: true,
               kind: true,
               basePrice: true,
@@ -320,31 +280,24 @@ export async function listAvailableTicketsRepo(input) {
               capacityRemaining: true,
               seatMapId: true,
               currency: true,
-
               //Relación EventZoneDateAllocated
               allocations: {
                 select: {
                   eventDateZoneAllocationId: true,
-                  eventDateZoneId: true,
                   audienceName: true,
                   discountPercent: true,
                   allocatedQuantity: true,
                   remainingQuantity: true,
                 },
               },
-
               //SeatMaps relacionados al evento
               seatMap: {
                 select: {
                   seatMapId: true,
                   rows: true,
                   cols: true,
-
                   //Asientos relacionados a cada seatMap
                   occupiedSeats: {
-                    orderBy: {
-                      seatId: "asc",
-                    },
                     select: {
                       seatId: true,
                       rowNumber: true,
@@ -359,42 +312,5 @@ export async function listAvailableTicketsRepo(input) {
         },
       },
     },
-  });
-}
-
-export async function setEventFeeRepo({ eventId, percentage }) {
-  const eventIdNormalized = BigInt(eventId);
-  const percentageNormalized = Number(percentage).toFixed(2);
-
-  return prisma.$transaction(async (tx) => {
-
-    let fee = await tx.fee.findFirst({
-      where: { percentage: percentageNormalized },
-      select: {
-        feeId: true,
-        percentage: true
-      },
-    });
-
-    if (!fee) {
-      fee = await tx.fee.create({
-        data: { percentage: percentageNormalized },
-        select: {
-          feeId: true,
-          percentage: true
-        },
-      });
-    }
-
-    const event = await tx.event.update({
-      where: { eventId: eventIdNormalized},
-      data: { feeId: fee.feeId},
-      select: {
-        eventId: true,
-        title: true,
-        fee: { select: { feeId: true, percentage: true } },
-      }
-    });
-    return event;
   });
 }

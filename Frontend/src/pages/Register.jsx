@@ -65,8 +65,15 @@ export default function Register() {
             }
 
             // 3) Guardar sesión y pasar al home (TopBar privado)
-            login({ token: loginPayload.token, user: loginPayload.user });
-            navigate("/", { replace: true });
+              login({ token: loginPayload.token, user: loginPayload.user });
+
+              if (loginPayload.user.roles?.includes("ADMIN")) {
+                navigate("/");
+              } else if (loginPayload.user.roles?.includes("ORGANIZER")) {
+                navigate("/crearEvento");
+              } else {
+                navigate("/");
+              }
           } catch (err) {
             const msg =
               err.name === "AbortError"
