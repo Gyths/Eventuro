@@ -5,6 +5,7 @@ import EventBasicsForm from "../components/create/EventBasicsForm";
 import ImageRestrictionsPanel from "../components/create/ImageRestrictionsPanel";
 import DatesSection from "../components/create/DatesSection";
 import useEventForm from "../hooks/useEventForm";
+import SalesSeasonCard from "../components/create/SalesSeasonCard";
 
 // Paso 2
 import CrearTicketCard from "../components/create/CrearTicketCard";
@@ -18,7 +19,6 @@ import ResumenEvento from "../components/create/ResumenEvento";
 
 // Componentes comunes
 import BotonCTA from "../components/BotonCTA";
-import { DiscountCodeCard } from "../components/create/DiscountCodeCard";
 import DiscountCodesSection from "../components/create/DiscountCodesSection";
 import Swal from "sweetalert2";
 import { BASE_URL } from "../config.js";
@@ -175,6 +175,18 @@ export default function CrearEventoCards() {
       tier: { enabled: false, qty: "", period: "diariamente" },
     });
 
+    // Limpiar fases de venta
+    setSalesSeasons({
+      seasons: [{
+        id: Date.now(),
+        name: "", 
+        percentage: "10",
+        isIncrease: false,
+        startDate: "",
+        endDate: ""
+      }]
+    });
+
     // Limpiar política de devoluciones
     setReturnsPolicy({ text: "", file: null });
 
@@ -306,7 +318,7 @@ export default function CrearEventoCards() {
         }));
         return {
           name: zone.zoneName || "Zona sin nombre",
-          kind: "GENERAL",
+          kind: "GENERAL", // Prensencial o virtual
           currency: tickets.currency,
           basePrice: Number(zone.price) || 0,
           capacity: Number(zone.quantity) || 0,
@@ -314,6 +326,26 @@ export default function CrearEventoCards() {
           rows: 0,
           allocations,
         };
+      });
+
+      const salePhases = (salesSeasons.seasons || [])
+        .filter(season => season.name && season.startDate && season.endDate) // Solo incluir temporadas completas
+        .map(season => {
+          // Convertir porcentaje a número con signo según isIncrease
+          const percentage = season.isIncrease 
+            ? Number(season.percentage) || 0 
+            : -(Number(season.percentage) || 0);
+          
+          // Convertir fechas YYYY-MM-DD a ISO string válido para Date
+          const startDateISO = `${season.startDate}T00:00:00.000Z`;
+          const endDateISO = `${season.endDate}T23:59:59.999Z`;
+          
+          return {
+            name: season.name,
+            startAt: startDateISO,  
+            endAt: endDateISO, 
+            percentage: percentage
+          };
       });
 
       const finalJson = {
@@ -330,7 +362,8 @@ export default function CrearEventoCards() {
           reference: location.reference,
           capacity: Number(location.capacity),
         },
-        eventCategories: form.category ? [Number(form.category)] : [],
+        eventCategories: Array.isArray(form.categories)? form.categories.map((id) => Number(id)): [],
+        salePhases: salePhases,
         dates: eventDates,
         zones: eventZones,
       };
@@ -391,6 +424,19 @@ export default function CrearEventoCards() {
   // Paso 4 — Política de devoluciones (estado en el padre)
   const [returnsPolicy, setReturnsPolicy] = useState({ text: "", file: null });
   const [errors, setErrors] = useState({});
+
+  const [salesSeasons, setSalesSeasons] = useState({
+    seasons: [
+      { 
+        id: Date.now(),
+        name: "", 
+        percentage: "10",
+        isIncrease: false,
+        startDate: "",
+        endDate: ""
+      }
+    ]
+  });
 
   //Validaciones
   const validateStep = (stepIndex) => {
@@ -629,14 +675,14 @@ export default function CrearEventoCards() {
       </div>
 
       {/* ======== PASO 3 ======== */}
-      <div
+     <div
         ref={(el) => (cardRefs.current[2] = el)}
         className={isActive(2) ? "block" : "hidden"}
         aria-hidden={!isActive(2)}
       >
         <WizardCard
-          title="Política de devoluciones Y Códigos de descuento"
-          subtitle="Define tus reglas de reembolso y promociones"
+          title="Temporadas de venta, Descuentos y Devoluciones"
+          subtitle="Define tus reglas de reembolso, promociones y precios por temporada"
           badge={<StepBadge number={3} />}
         >
           {Object.keys(errors).length > 0 && (
@@ -647,6 +693,7 @@ export default function CrearEventoCards() {
             </div>
           )}
           <div className="space-y-8">
+            <SalesSeasonCard value={salesSeasons} onChange={setSalesSeasons} />
             <DiscountCodesSection />
             <ReturnsPolicy value={returnsPolicy} onChange={setReturnsPolicy} />
           </div>

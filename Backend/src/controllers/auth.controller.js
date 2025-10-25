@@ -32,6 +32,10 @@ export const login = async (req, res) => {
           birthdate: user.birthdate,
           gender: user.gender,
           status: user.status,
+          roles: [
+            user.administrator ? "ADMIN" : null,
+            user.organizer ? "ORGANIZER" : null
+          ].filter(Boolean),
           createdAt: user.createdAt,
           updatedAt: user.updatedAt
         }
@@ -43,25 +47,31 @@ export const login = async (req, res) => {
 
 export const googleCallback = async (req, res) => {
   try {
-    const googleUser = req.user;
+    const googleUser = req.user; // viene de handleGoogleProfile()
 
-    let user = await prisma.user.findUnique({
+    if (!googleUser?.email) {
+      throw new Error("El perfil de Google no devolvió un email válido.");
+    }
+
+    // Buscar usuario en la base para traer roles y demás
+    const user = await prisma.user.findUnique({
       where: { email: googleUser.email },
+      include: {
+        organizer: true,
+        administrator: true,
+      },
     });
 
     if (!user) {
-      user = await prisma.user.create({
-        data: {
-          name: googleUser.given_name,
-          lastName: googleUser.family_name,
-          email: googleUser.email,
-          status: "A",
-        },
-      });
+      throw new Error("El usuario no se encontró o no se creó correctamente.");
     }
 
-    const token = generateToken(user);
+    const token = generateToken({
+      id: user.userId,
+      email: user.email,
+    });
 
+    // Estructura de usuario seguro para frontend
     const userSafe = {
       userId: user.userId.toString(),
       name: user.name,
@@ -71,18 +81,30 @@ export const googleCallback = async (req, res) => {
       birthdate: user.birthdate,
       gender: user.gender,
       status: user.status,
+      roles: [
+        user.administrator ? "ADMIN" : null,
+        user.organizer ? "ORGANIZER" : null,
+      ].filter(Boolean),
       createdAt: user.createdAt,
-      updatedAt: user.updatedAt
+      updatedAt: user.updatedAt,
     };
 
     const encodedUser = encodeURIComponent(JSON.stringify(userSafe));
 
+    // Redirigir al frontend con token + datos
     const redirectUrl = `http://localhost:5173/auth/callback?token=${token}&user=${encodedUser}`;
-    res.redirect(redirectUrl);
+    return res.redirect(redirectUrl);
   } catch (err) {
-    res.status(400).json({ error: 'Error en login con Google' });
+    console.error(" Error en login con Google:", err);
+    return res.status(500).json({ error: "Error en login con Google" });
   }
 };
+// src/controllers/auth.controller.js
+export async function me(req, res) {
+  // El middleware attachUserContext ya cargó el usuario completo en req.auth
+  return res.json({ user: req.auth.user });
+}
+
 /*
 export async function tempRegister(req, res) {
   try {

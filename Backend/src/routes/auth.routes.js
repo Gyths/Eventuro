@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { passport } from '../services/passport.js';
 import { home, failure, logout, login, googleCallback } from '../controllers/auth.controller.js';
+import { me } from "../controllers/auth.controller.js";
+import { verifyToken, attachUserContext } from '../middlewares/ensureAuth.js';
 //import { tempRegister } from '../controllers/auth.controller.js';
 
 const router = Router();
@@ -14,6 +16,7 @@ router.get('/auth/failure', failure);
 router.get('/logout', logout);
 
 router.post('/login', login);
+router.get("/me", verifyToken, attachUserContext, me);
 //router.post("/temp-register", tempRegister);
 
 export default router;

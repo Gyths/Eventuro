@@ -7,7 +7,7 @@ import {
 import useOrder from "../../../services/Order/OrderContext";
 import useEvent from "../../../services/Event/EventContext";
 import { useAuth } from "../../../services/auth/AuthContext";
-import BaseModal from "./BaseModal";
+import BaseModal from "../../BaseModal";
 
 export default function CompraExitosaModal({
   total,

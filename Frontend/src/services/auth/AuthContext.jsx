@@ -18,8 +18,29 @@ export function AuthProvider({ children }) {
   const [ready, setReady] = useState(false);
 
   useLayoutEffect(() => {
-    // Si validas con backend, hazlo aquí; si no, basta marcar ready.
-    setReady(true);
+    const verifySession = async () => {
+      const raw = localStorage.getItem("session");
+      if (!raw) return setReady(true);
+
+      const s = JSON.parse(raw);
+      try {
+        const res = await fetch("http://localhost:4000/me", {
+          headers: { Authorization: `Bearer ${s.token}` },
+        });
+
+        if (!res.ok) throw new Error("Token inválido o expirado");
+
+        const data = await res.json();
+        setSession({ token: s.token, user: data.user });
+      } catch {
+        localStorage.removeItem("session");
+        setSession({ token: null, user: null });
+      } finally {
+        setReady(true);
+      }
+    };
+
+    verifySession();
   }, []);
 
   const login = ({ token, user }) => {
