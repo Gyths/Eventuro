@@ -24,8 +24,7 @@ const app = express();
 const route = "/eventuro/api";
 app.use(express.json());
 
-const upload = multer();
-app.use(upload.none());
+const upload = multer({ storage: multer.memoryStorage() }); // memoria
 
 app.use(
   cors({

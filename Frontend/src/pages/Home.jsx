@@ -102,7 +102,7 @@ export default function Home() {
             hour,
             location,
             locationUrl: ev.venue.addressUrl,
-            image: ev.image ?? placeholder,
+            image: ev.imagePrincipalURLSigned ?? placeholder,
             categories: ev.categories,
             accessPolicy: ev.accessPolicy,
             accessPolicyDescription: ev.accessPolicyDescription,

@@ -193,6 +193,17 @@ export default function CrearEventoCards() {
     updateRestrictions([]); // según tu hook; si usa objeto, pásale {}.
   };
 
+  // CONVERTIDOR IMAGEN A BASE64
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(",")[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+
   //###### GENERADOR DEL JSON PARA POST A LA BD ##########
   const generateAndPostJson = async () => {
     try {
@@ -316,33 +327,43 @@ export default function CrearEventoCards() {
         };
       });
 
-      const finalJson = {
-        organizerId: 1,
-        title: form.name,
-        inPerson: true,
-        description: form.description,
-        accessPolicy: "E",
-        accessPolicyDescription: form.extraInfo,
-        venue: {
-          city: location.city,
-          address: location.address,
-          addressUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-          reference: location.reference,
-          capacity: Number(location.capacity),
-        },
-        eventCategories: Array.isArray(form.categories)? form.categories.map((id) => Number(id)): [],
-        dates: eventDates,
-        zones: eventZones,
-      };
 
+      // Construir objeto FormData
+      const formData = new FormData();
+
+      // Datos simples (texto)
+      formData.append("organizerId", 1);
+      formData.append("title", form.name);
+      formData.append("inPerson", true);
+      formData.append("description", form.description);
+      formData.append("accessPolicy", "E");
+      formData.append("accessPolicyDescription", form.extraInfo);
+      formData.append("venue", JSON.stringify({
+        city: location.city,
+        address: location.address,
+        addressUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        reference: location.reference,
+        capacity: Number(location.capacity),
+      }));
+      formData.append("eventCategories", JSON.stringify(
+        Array.isArray(form.categories)
+          ? form.categories.map((id) => Number(id))
+          : []
+      ));
+      formData.append("dates", JSON.stringify(eventDates));
+      formData.append("zones", JSON.stringify(eventZones));
+
+      // Imagen (archivo)
+      if (form.imageFile) {
+        formData.append("imagenPrincipal", form.imageFile);
+      }
+
+      // --- Enviar con fetch ---
       const res = await fetch(`${BASE_URL}/eventuro/api/event/`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(finalJson),
+        body: formData, // ¡sin JSON.stringify!
       });
+
 
       const raw = await res.text();
       let payload = null;
@@ -352,7 +373,7 @@ export default function CrearEventoCards() {
         payload = raw;
       }
 
-      if (res.ok) {
+      if (res.ok) {        
         await Swal.fire({
           icon: "success",
           title: "¡Evento publicado!",

@@ -194,6 +194,8 @@ model Event {
   organizerId             BigInt        @db.BigInt
   feeId                   BigInt?       @db.BigInt
   title                   String
+  imagePrincipalKey       String
+  imageBannerKey          String
   status                  EVENT_STATUS  @default(P)
   inPerson                Boolean
   description             String
