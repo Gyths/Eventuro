@@ -29,12 +29,12 @@ import TicketSelection from "./pages/EventInformation.jsx";
 
 import AdminRoute from "./routes/AdminRoute";
 
-const AdminDashboard = () => <div>Página: Dashboard de Admin</div>;
-const AdminSettings = () => <div>Página: Ajustes del Sistema</div>;
-const AdminEvents = () => <div>Página: Eventos</div>;
-const AdminComplaints = () => <div>Página: Libro de Reclamaciones</div>;
-const AdminUsers = () => <div>Página: Usuarios</div>;
-const AdminLogs = () => <div>Página: Logs</div>;
+import AdminDashboard from "./pages/admin/AdminDashboard.jsx";
+import AdminSettings from "./pages/admin/AdminSettings.jsx";
+import AdminEvents from "./pages/admin/AdminEvents.jsx";
+import AdminComplaints from "./pages/admin/AdminComplaints.jsx";
+import AdminUsers from "./pages/admin/AdminUsers.jsx";
+import AdminLogs from "./pages/admin/AdminLogs.jsx";
 
 function App() {
   return (

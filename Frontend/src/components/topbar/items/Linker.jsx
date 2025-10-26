@@ -99,7 +99,11 @@ export default function Linker({
   // Ruta interna SPA
   if (to) {
     return (
-      <Link to={to} className={classes} aria-current={isActive ? "page" : undefined}>
+      <Link
+        to={to}
+        className={classes}
+        aria-current={isActive ? "page" : undefined}
+      >
         {content}
       </Link>
     );
