@@ -112,7 +112,7 @@ export default function CrearEventoCards() {
   };
 
   // Paso 1
-  const { form, updateForm, updateRestrictions, imagePreview } = useEventForm();
+  const { form, updateForm, updateRestrictions, imagePreview, bannerPreview } = useEventForm();
   const [dates, setDates] = useState([]); // [{id, date: Date|ISO, schedules:[{id,start,end}]}]
   const handlePrev = () => setCurrent((c) => Math.max(0, c - 1));
   const isActive = (i) => current === i;
@@ -200,6 +200,7 @@ export default function CrearEventoCards() {
       categories: [],
       extraInfo: "",
       imageFile: null,
+      bannerFile: null,
       restrictions: [],
     });
     updateRestrictions([]); // según tu hook; si usa objeto, pásale {}.
@@ -473,6 +474,10 @@ export default function CrearEventoCards() {
         newErrors.image = "Debes subir una imagen para el evento.";
       }
 
+      if (!form.bannerFile && !imagePreview) {
+        newErrors.image = "Debes subir un banner para el evento.";
+      }
+
       const restrictionsCount = Array.isArray(form.restrictions)
         ? form.restrictions.length
         : Object.values(form.restrictions || {}).filter(Boolean).length;
@@ -714,6 +719,7 @@ export default function CrearEventoCards() {
             basics={form}
             dates={dates}
             imagePreview={imagePreview}
+            bannerPreview={bannerPreview}
             tickets={tickets}
             returnsPolicy={returnsPolicy}
             location={location}
