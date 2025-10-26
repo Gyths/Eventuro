@@ -6,7 +6,7 @@ import {
 } from "../repositories/event.repo.js";
 
 export async function createEventSvc(input) {
-  return createEventRepo(input);
+  return await createEventRepo(input);
 }
 
 export async function listEventSvc() {

@@ -206,6 +206,7 @@ export default function CrearEventoCards() {
     updateRestrictions([]); // según tu hook; si usa objeto, pásale {}.
   };
 
+
   //###### GENERADOR DEL JSON PARA POST A LA BD ##########
   const generateAndPostJson = async () => {
     try {
@@ -349,33 +350,45 @@ export default function CrearEventoCards() {
           };
       });
 
-      const finalJson = {
-        organizerId: 1,
-        title: form.name,
-        inPerson: true,
-        description: form.description,
-        accessPolicy: "E",
-        accessPolicyDescription: form.extraInfo,
-        venue: {
-          city: location.city,
-          address: location.address,
-          addressUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-          reference: location.reference,
-          capacity: Number(location.capacity),
-        },
-        eventCategories: Array.isArray(form.categories)? form.categories.map((id) => Number(id)): [],
-        salePhases: salePhases,
-        dates: eventDates,
-        zones: eventZones,
-      };
+      // Construir objeto FormData
+      const formData = new FormData();
 
+      // Datos simples (texto)
+      formData.append("organizerId", 1);
+      formData.append("title", form.name);
+      formData.append("inPerson", true);
+      formData.append("description", form.description);
+      formData.append("accessPolicy", "E");
+      formData.append("accessPolicyDescription", form.extraInfo);
+      formData.append("venue", JSON.stringify({
+        city: location.city,
+        address: location.address,
+        addressUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        reference: location.reference,
+        capacity: Number(location.capacity),
+      }));
+      formData.append("eventCategories", JSON.stringify(
+        Array.isArray(form.categories)
+          ? form.categories.map((id) => Number(id))
+          : []
+      ));
+      formData.append("salePhases", JSON.stringify(salePhases));
+      formData.append("dates", JSON.stringify(eventDates));
+      formData.append("zones", JSON.stringify(eventZones));
+
+      // imagenPrincipal (archivo)
+      if (form.imageFile) {
+        formData.append("imagenPrincipal", form.imageFile);
+      }
+      // ImagenBanner (archivo)
+      if (form.bannerFile) {
+        formData.append("imagenBanner", form.bannerFile);
+      }
+
+      // --- Enviar con fetch ---
       const res = await fetch(`${BASE_URL}/eventuro/api/event/`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(finalJson),
+        body: formData, // ¡sin JSON.stringify!
       });
 
       const raw = await res.text();
@@ -563,6 +576,16 @@ export default function CrearEventoCards() {
       ) {
         newErrors.tickets =
           "El precio por zona debe ser un número mayor que 0.";
+      }
+
+      // variable para comparar capacidad del recinto
+      const aforo = Number( location.capacity || 0 );
+      // variable para comparar la cantidad total de tickets
+      const totalTickets = zones.reduce( (sum, z) => sum + Number(z.quantity || 0) , 0 );
+
+      // comparación: la cantidad total de tickets deben ser menor al aforo
+      if (aforo > 0 && totalTickets > 0 && totalTickets > aforo) {
+        newErrors.capacity = `El total de tickets (${totalTickets}) debe ser menor al aforo (${aforo}).`;
       }
 
       if (tickets?.tier?.enabled) {
