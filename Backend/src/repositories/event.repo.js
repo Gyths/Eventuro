@@ -248,7 +248,7 @@ export async function listEventRepo() {
 }
 
 export async function eventDetails(id) {
-  return prisma.event.findMany({
+  return prisma.event.findUnique({
     where: { eventId: BigInt(id) },
     include: {
       dates: {

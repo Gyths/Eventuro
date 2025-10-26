@@ -119,6 +119,8 @@ export default function CrearEventoCards() {
   const [dates, setDates] = useState([]); // [{id, date: Date|ISO, schedules:[{id,start,end}]}]
   const handlePrev = () => setCurrent((c) => Math.max(0, c - 1));
   const isActive = (i) => current === i;
+  const user = JSON.parse(localStorage.getItem("userData"));
+
   // Paso 2 — Ubicación (estado en el padre)
   const [location, setLocation] = useState({
     inPerson: null,
@@ -353,7 +355,7 @@ export default function CrearEventoCards() {
       });
 
       const finalJson = {
-        organizerId: 1,
+        organizerId: user?.userId,
         title: form.name,
         inPerson: true,
         description: form.description,
@@ -864,6 +866,7 @@ export default function CrearEventoCards() {
         isOpen={showCopyModal}
         onClose={() => setShowCopyModal(false)}
         onSelectEvent={handleCopyEvent}
+        idOrganizer={user?.userId}
       />
     </section>
   );
