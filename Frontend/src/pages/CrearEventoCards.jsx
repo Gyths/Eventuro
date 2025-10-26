@@ -446,6 +446,24 @@ export default function CrearEventoCards() {
 
   const [showCopyModal, setShowCopyModal] = useState(false);
   // 3. Función para mapear los datos del evento copiado a los estados del wizard
+  const mapRestrictionsArrayToObject = (restrictionsArray) => {
+    const restrictionsObj = {
+      general: false,
+      conUnAdulto: false,
+      soloAdultos: false,
+    };
+    
+    if (Array.isArray(restrictionsArray)) {
+      restrictionsArray.forEach(restriction => {
+        if (restriction === "General") restrictionsObj.general = true;
+        if (restriction === "conUnAdulto") restrictionsObj.conUnAdulto = true;
+        if (restriction === "soloAdultos") restrictionsObj.soloAdultos = true;
+      });
+    }
+    
+    return restrictionsObj;
+  };
+
   const handleCopyEvent = (eventData) => {
     // Mapear datos básicos
     updateForm({
@@ -453,7 +471,7 @@ export default function CrearEventoCards() {
       description: eventData.description,
       categories: eventData.categories,
       extraInfo: eventData.extraInfo,
-      restrictions: eventData.restrictions,
+      restrictions: mapRestrictionsArrayToObject(eventData.restrictions),
       imageFile: null, // No copiamos archivos
     });
 
