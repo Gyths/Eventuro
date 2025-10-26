@@ -212,6 +212,8 @@ model Event {
   organizerId             BigInt        @db.BigInt
   feeId                   BigInt?       @db.BigInt
   title                   String
+  imagePrincipalKey       String
+  imageBannerKey          String
   status                  EVENT_STATUS  @default(P)
   inPerson                Boolean
   description             String
@@ -312,8 +314,6 @@ model EventDateZoneAllocation {
   eventDateZoneId           BigInt  @db.BigInt
   audienceName              String
   discountPercent           Decimal @db.Decimal(5, 2)
-  allocatedQuantity         Int
-  remainingQuantity         Int?
 
   // relaciones
   zone      EventDateZone @relation(fields: [eventDateZoneId], references: [eventDateZoneId], onDelete: Cascade)

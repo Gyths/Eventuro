@@ -9,9 +9,16 @@ import { toJSONSafe } from "../utils/serialize.js";
 
 export async function createEvent(req, res) {
   try {
-    const data = await createEventSvc(req.body);
+    // Pasa el archivo con el mismo nombre que espera el repo
+    const data = await createEventSvc({
+      ...req.body,
+      imagenPrincipal: req.files?.imagenPrincipal?.[0] || null,
+      imagenBanner: req.files?.imagenBanner?.[0] || null,
+    });
+
     return res.status(201).json(toJSONSafe(data));
   } catch (err) {
+    console.error("Error en createEvent:", err);
     return res.status(400).json({ error: err.message });
   }
 }
