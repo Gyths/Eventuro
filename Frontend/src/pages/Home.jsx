@@ -102,7 +102,8 @@ export default function Home() {
             hour,
             location,
             locationUrl: ev.venue?.addressUrl,
-            image: ev.image ?? placeholder,
+            image: ev.imagePrincipalURLSigned ?? placeholder, //imagen principal evento
+            bannerEv: ev.imageBannerURLSigned ?? placeholder, //imagen banner evento
             categories: ev.categories,
             accessPolicy: ev.accessPolicy,
             accessPolicyDescription: ev.accessPolicyDescription,

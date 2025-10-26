@@ -112,7 +112,8 @@ export default function CrearEventoCards() {
   };
 
   // Paso 1
-  const { form, updateForm, updateRestrictions, imagePreview } = useEventForm();
+  const { form, updateForm, updateRestrictions, imagePreview, bannerPreview } =
+    useEventForm();
   const [dates, setDates] = useState([]); // [{id, date: Date|ISO, schedules:[{id,start,end}]}]
   const handlePrev = () => setCurrent((c) => Math.max(0, c - 1));
   const isActive = (i) => current === i;
@@ -206,6 +207,7 @@ export default function CrearEventoCards() {
       categories: [],
       extraInfo: "",
       imageFile: null,
+      bannerFile: null,
       restrictions: [],
     });
     updateRestrictions([]); // según tu hook; si usa objeto, pásale {}.
@@ -392,13 +394,48 @@ export default function CrearEventoCards() {
         zones: eventZones,
       };
 
+      // Datos simples (texto)
+      formData.append("organizerId", 1);
+      formData.append("title", form.name);
+      formData.append("inPerson", true);
+      formData.append("description", form.description);
+      formData.append("accessPolicy", "E");
+      formData.append("accessPolicyDescription", form.extraInfo);
+      formData.append(
+        "venue",
+        JSON.stringify({
+          city: location.city,
+          address: location.address,
+          addressUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          reference: location.reference,
+          capacity: Number(location.capacity),
+        })
+      );
+      formData.append(
+        "eventCategories",
+        JSON.stringify(
+          Array.isArray(form.categories)
+            ? form.categories.map((id) => Number(id))
+            : []
+        )
+      );
+      formData.append("salePhases", JSON.stringify(salePhases));
+      formData.append("dates", JSON.stringify(eventDates));
+      formData.append("zones", JSON.stringify(eventZones));
+
+      // imagenPrincipal (archivo)
+      if (form.imageFile) {
+        formData.append("imagenPrincipal", form.imageFile);
+      }
+      // ImagenBanner (archivo)
+      if (form.bannerFile) {
+        formData.append("imagenBanner", form.bannerFile);
+      }
+
+      // --- Enviar con fetch ---
       const res = await fetch(`${BASE_URL}/eventuro/api/event/`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(finalJson),
+        body: formData, // ¡sin JSON.stringify!
       });
 
       const raw = await res.text();
@@ -499,6 +536,10 @@ export default function CrearEventoCards() {
       // Ajusta a cómo subes la imagen en tu hook: imageFile / image / imagePreview
       if (!form.imageFile && !imagePreview) {
         newErrors.image = "Debes subir una imagen para el evento.";
+      }
+
+      if (!form.bannerFile && !imagePreview) {
+        newErrors.image = "Debes subir un banner para el evento.";
       }
 
       const restrictionsCount = Array.isArray(form.restrictions)
@@ -794,6 +835,7 @@ export default function CrearEventoCards() {
             basics={form}
             dates={dates}
             imagePreview={imagePreview}
+            bannerPreview={bannerPreview}
             tickets={tickets}
             returnsPolicy={returnsPolicy}
             location={location}
