@@ -350,26 +350,6 @@ export default function CrearEventoCards() {
           };
       });
 
-      const finalJson = {
-        organizerId: 1,
-        title: form.name,
-        inPerson: true,
-        description: form.description,
-        accessPolicy: "E",
-        accessPolicyDescription: form.extraInfo,
-        venue: {
-          city: location.city,
-          address: location.address,
-          addressUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-          reference: location.reference,
-          capacity: Number(location.capacity),
-        },
-        eventCategories: Array.isArray(form.categories)? form.categories.map((id) => Number(id)): [],
-        salePhases: salePhases,
-        dates: eventDates,
-        zones: eventZones,
-      };
-
       // Construir objeto FormData
       const formData = new FormData();
 
@@ -392,12 +372,17 @@ export default function CrearEventoCards() {
           ? form.categories.map((id) => Number(id))
           : []
       ));
+      formData.append("salePhases", JSON.stringify(salePhases));
       formData.append("dates", JSON.stringify(eventDates));
       formData.append("zones", JSON.stringify(eventZones));
 
-      // Imagen (archivo)
+      // imagenPrincipal (archivo)
       if (form.imageFile) {
         formData.append("imagenPrincipal", form.imageFile);
+      }
+      // ImagenBanner (archivo)
+      if (form.bannerFile) {
+        formData.append("imagenBanner", form.bannerFile);
       }
 
       // --- Enviar con fetch ---

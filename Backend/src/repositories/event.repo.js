@@ -5,12 +5,20 @@ import { uploadFile, getSignedUrlForFile } from "../utils/s3.js";
 export async function createEventRepo(input) {
   return prisma.$transaction(async (tx) => {
 
-    // --- Manejo del archivo (multer) ---
+    // --- Manejo del imagenPrincipal (multer) ---
     let imagePrincipalKey = null;
     if (input.imagenPrincipal) {
       const buffer = input.imagenPrincipal.buffer;
       const fileName = `events/${Date.now()}_${input.imagenPrincipal.originalname}`;
       imagePrincipalKey = await uploadFile(fileName, buffer, input.imagenPrincipal.mimetype);
+    }
+
+    // --- Manejo del imagenBanner (multer) ---
+    let imageBannerKey = null;
+    if (input.imagenBanner) {
+      const buffer = input.imagenBanner.buffer;
+      const fileName = `events/${Date.now()}_${input.imagenBanner.originalname}`;
+      imageBannerKey = await uploadFile(fileName, buffer, input.imagenBanner.mimetype);
     }
 
     // --- Parsear y convertir tipos ---
@@ -29,7 +37,7 @@ export async function createEventRepo(input) {
     title: input.title,
     inPerson: inPerson,
     imagePrincipalKey: imagePrincipalKey  ?? "",
-    imageBannerKey: "vacio",
+    imageBannerKey: imageBannerKey  ?? "",
     description: input.description,
     accessPolicy: input.accessPolicy,
     accessPolicyDescription: input.accessPolicyDescription ?? null,
@@ -192,7 +200,7 @@ export async function listEventRepo() {
 
   const enriched = await Promise.all(
     events.map(async (event) => {
-    if (event.imagePrincipalKey) {
+    if (event.imagePrincipalKey) { //crear url firmada imagen principal
       try {
         event.imagePrincipalURLSigned = await getSignedUrlForFile(event.imagePrincipalKey);
       } catch (err) {
@@ -201,8 +209,8 @@ export async function listEventRepo() {
       }
     }
 
-    /*
-    if (event.imageBannerKey) {
+    
+    if (event.imageBannerKey) { //crear url firmada imagen banner
       try {
         event.imageBannerURLSigned = await getSignedUrlForFile(event.imageBannerKey);
       } catch (err) {
@@ -210,7 +218,7 @@ export async function listEventRepo() {
         event.imageBannerURLSigned = null;
       }
     }
-    */
+    
 
       return event;
     })
@@ -219,7 +227,7 @@ export async function listEventRepo() {
 }
 
 export async function listAvailableTicketsRepo(input) {
-  return prisma.event.findUnique({
+  const event = await prisma.event.findUnique({
     where: { eventId: BigInt(input.eventId) },
     select: {
       //Se consulta toda la información del evento en caso haya habido alguna actualización durante el tiempo que el usuario estuvo en la pantalla de inicio
@@ -231,6 +239,10 @@ export async function listAvailableTicketsRepo(input) {
       description: true,
       accessPolicy: true,
       accessPolicyDescription: true,
+
+      imagePrincipalKey: true,
+      imageBannerKey: true,
+
 
       // relación con EventCategory
       categories: {
@@ -330,6 +342,28 @@ export async function listAvailableTicketsRepo(input) {
       },
     },
   });
+
+  // === Generar URLs firmadas ===
+  if (event?.imagePrincipalKey) {
+    try {
+      event.imagePrincipalURLSigned = await getSignedUrlForFile(event.imagePrincipalKey);
+    } catch (err) {
+      console.error("Error generando signed URL principal:", err);
+      event.imagePrincipalURLSigned = null;
+    }
+  }
+
+  if (event?.imageBannerKey) {
+    try {
+      event.imageBannerURLSigned = await getSignedUrlForFile(event.imageBannerKey);
+    } catch (err) {
+      console.error("Error generando signed URL banner:", err);
+      event.imageBannerURLSigned = null;
+    }
+  }
+
+  return event;
+
 }
 
 export async function setEventFeeRepo({ eventId, percentage }) {

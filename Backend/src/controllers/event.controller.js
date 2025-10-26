@@ -10,7 +10,8 @@ export async function createEvent(req, res) {
     // Pasa el archivo con el mismo nombre que espera el repo
     const data = await createEventSvc({
       ...req.body,
-      imagenPrincipal: req.file, // <- aquí estaba 'file'
+      imagenPrincipal: req.files?.imagenPrincipal?.[0] || null,
+      imagenBanner: req.files?.imagenBanner?.[0] || null,
     });
 
     return res.status(201).json(toJSONSafe(data));

@@ -10,7 +10,7 @@ import multer from "multer";
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
-router.post("/", upload.single("imagenPrincipal"), createEvent);
+router.post("/",upload.fields([{ name: "imagenPrincipal" },{ name: "imagenBanner" }]),createEvent);
 router.get("/list", listEvent);
 router.post("/availability", listAvailableTickets);
 router.put('/:id/fee', setEventFee);
