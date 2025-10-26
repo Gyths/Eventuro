@@ -135,7 +135,9 @@ export default function CrearEventoCards() {
         zoneName: "",
         quantity: "",
         price: "",
-        subtypes: [{ type: "", discount: "" }],
+        subtypes: [
+          { type: "", pricingMode: "percent", discount: "", newPrice: "" },
+        ],
       },
     ],
     endSaleWhen: "termino", // "termino" | "inicio" | "2dias"
@@ -167,7 +169,9 @@ export default function CrearEventoCards() {
           zoneName: "",
           quantity: "",
           price: "",
-          subtypes: [{ type: "", discount: "" }],
+          subtypes: [
+            { type: "", pricingMode: "percent", discount: "", newPrice: "" },
+          ],
         },
       ],
       endSaleWhen: "termino",
@@ -177,14 +181,16 @@ export default function CrearEventoCards() {
 
     // Limpiar fases de venta
     setSalesSeasons({
-      seasons: [{
-        id: Date.now(),
-        name: "", 
-        percentage: "10",
-        isIncrease: false,
-        startDate: "",
-        endDate: ""
-      }]
+      seasons: [
+        {
+          id: Date.now(),
+          name: "",
+          percentage: "10",
+          isIncrease: false,
+          startDate: "",
+          endDate: "",
+        },
+      ],
     });
 
     // Limpiar política de devoluciones
@@ -311,16 +317,31 @@ export default function CrearEventoCards() {
       );
 
       const eventZones = (tickets.zones || []).map((zone) => {
-        const allocations = (zone.subtypes || []).map((subtype) => ({
-          audienceName: subtype.type || "Entrada General",
-          discountPercent: Number(subtype.discount) || 0,
-          allocatedQuantity: Number(zone.quantity) || 0,
-        }));
+        const basePrice = Number(zone.price) || 0;
+
+        const allocations = (zone.subtypes || []).map((st) => {
+          const mode = st.pricingMode || "percent";
+          const allocation = {
+            audienceName: st.type || "Entrada General",
+            allocatedQuantity: Number(zone.quantity) || 0,
+          };
+
+          if (mode === "percent") {
+            allocation.discountPercent = Number(st.discount) || 0;
+          }
+
+          if (mode === "newPrice") {
+            allocation.newPrice = Number(st.newPrice) || 0;
+          }
+
+          return allocation;
+        });
+
         return {
           name: zone.zoneName || "Zona sin nombre",
-          kind: "GENERAL", // Prensencial o virtual
+          kind: "GENERAL",
           currency: tickets.currency,
-          basePrice: Number(zone.price) || 0,
+          basePrice,
           capacity: Number(zone.quantity) || 0,
           cols: 0,
           rows: 0,
@@ -329,24 +350,24 @@ export default function CrearEventoCards() {
       });
 
       const salePhases = (salesSeasons.seasons || [])
-        .filter(season => season.name && season.startDate && season.endDate) // Solo incluir temporadas completas
-        .map(season => {
+        .filter((season) => season.name && season.startDate && season.endDate) // Solo incluir temporadas completas
+        .map((season) => {
           // Convertir porcentaje a número con signo según isIncrease
-          const percentage = season.isIncrease 
-            ? Number(season.percentage) || 0 
+          const percentage = season.isIncrease
+            ? Number(season.percentage) || 0
             : -(Number(season.percentage) || 0);
-          
+
           // Convertir fechas YYYY-MM-DD a ISO string válido para Date
           const startDateISO = `${season.startDate}T00:00:00.000Z`;
           const endDateISO = `${season.endDate}T23:59:59.999Z`;
-          
+
           return {
             name: season.name,
-            startAt: startDateISO,  
-            endAt: endDateISO, 
-            percentage: percentage
+            startAt: startDateISO,
+            endAt: endDateISO,
+            percentage: percentage,
           };
-      });
+        });
 
       const finalJson = {
         organizerId: 1,
@@ -362,7 +383,9 @@ export default function CrearEventoCards() {
           reference: location.reference,
           capacity: Number(location.capacity),
         },
-        eventCategories: Array.isArray(form.categories)? form.categories.map((id) => Number(id)): [],
+        eventCategories: Array.isArray(form.categories)
+          ? form.categories.map((id) => Number(id))
+          : [],
         salePhases: salePhases,
         dates: eventDates,
         zones: eventZones,
@@ -427,16 +450,20 @@ export default function CrearEventoCards() {
 
   const [salesSeasons, setSalesSeasons] = useState({
     seasons: [
-      { 
+      {
         id: Date.now(),
-        name: "", 
+        name: "",
         percentage: "10",
         isIncrease: false,
         startDate: "",
-        endDate: ""
-      }
-    ]
+        endDate: "",
+      },
+    ],
   });
+
+  const zoneNames = useMemo(() => {
+    return (tickets.zones || []).map((z) => z.zoneName.trim()).filter(Boolean); // Solo nombres definidos y no vacíos
+  }, [tickets.zones]);
 
   //Validaciones
   const validateStep = (stepIndex) => {
@@ -560,6 +587,58 @@ export default function CrearEventoCards() {
           "El precio por zona debe ser un número mayor que 0.";
       }
 
+      if (!newErrors.tickets) {
+        const zones = tickets.zones || [];
+        const pricingErrors = [];
+
+        zones.forEach((z, zi) => {
+          const base = Number(z.price || 0);
+          (z.subtypes || []).forEach((st, si) => {
+            const mode = st.pricingMode || "percent";
+            const labelZona = z.zoneName?.trim()
+              ? z.zoneName.trim()
+              : `Zona ${zi + 1}`;
+            const labelTipo = st.type?.trim()
+              ? st.type.trim()
+              : `Subtipo ${si + 1}`;
+
+            if (mode === "percent") {
+              const raw = st.discount;
+              const val = Number(raw);
+              if (raw === "" || isNaN(val)) {
+                pricingErrors.push(
+                  `Completa el % de descuento en ${labelZona} → ${labelTipo}.`
+                );
+              } else if (val < 0 || val > 100) {
+                pricingErrors.push(
+                  `El % de descuento debe estar entre 0 y 100 en ${labelZona} → ${labelTipo}.`
+                );
+              }
+            } else if (mode === "newPrice") {
+              const raw = st.newPrice;
+              const val = Number(raw);
+              if (raw === "" || isNaN(val)) {
+                pricingErrors.push(
+                  `Completa el nuevo precio en ${labelZona} → ${labelTipo}.`
+                );
+              } else if (val <= 0) {
+                pricingErrors.push(
+                  `El nuevo precio debe ser mayor que 0 en ${labelZona} → ${labelTipo}.`
+                );
+              } else if (base > 0 && val >= base) {
+                pricingErrors.push(
+                  `El nuevo precio debe ser menor al precio general (${base}) en ${labelZona} → ${labelTipo}.`
+                );
+              }
+            }
+          });
+        });
+
+        if (pricingErrors.length > 0) {
+          newErrors.tickets = pricingErrors[0];
+        }
+      }
+
       if (tickets?.tier?.enabled) {
         const tierQty = Number(tickets.tier.qty || 0);
 
@@ -675,7 +754,7 @@ export default function CrearEventoCards() {
       </div>
 
       {/* ======== PASO 3 ======== */}
-     <div
+      <div
         ref={(el) => (cardRefs.current[2] = el)}
         className={isActive(2) ? "block" : "hidden"}
         aria-hidden={!isActive(2)}
@@ -694,7 +773,7 @@ export default function CrearEventoCards() {
           )}
           <div className="space-y-8">
             <SalesSeasonCard value={salesSeasons} onChange={setSalesSeasons} />
-            <DiscountCodesSection />
+            <DiscountCodesSection zoneNames={zoneNames} />
             <ReturnsPolicy value={returnsPolicy} onChange={setReturnsPolicy} />
           </div>
         </WizardCard>
