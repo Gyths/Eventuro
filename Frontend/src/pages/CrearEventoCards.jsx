@@ -324,6 +324,7 @@ export default function CrearEventoCards() {
           const allocation = {
             audienceName: st.type || "Entrada General",
             allocatedQuantity: Number(zone.quantity) || 0,
+            discountPercent: 0,
           };
 
           if (mode === "percent") {
@@ -372,7 +373,7 @@ export default function CrearEventoCards() {
       const finalJson = {
         organizerId: 1,
         title: form.name,
-        inPerson: true,
+        inPerson: location.inPerson === false ? false : true,
         description: form.description,
         accessPolicy: "E",
         accessPolicyDescription: form.extraInfo,
