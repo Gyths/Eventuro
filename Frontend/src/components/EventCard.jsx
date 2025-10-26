@@ -1,7 +1,29 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import useEvent from "../services/Event/EventContext";
+function formatRangeCompact(startDate, endDate) {
+  if (!startDate) return "";
 
+  const s = new Date(`${startDate}T00:00:00Z`);
+  const e = new Date(`${(endDate || startDate)}T00:00:00Z`);
+
+  const dayS = s.getUTCDate();
+  const monS = s.toLocaleString("es-ES", { month: "short", timeZone: "UTC" }).toUpperCase();
+  const yearS = s.getUTCFullYear();
+
+  const dayE = e.getUTCDate();
+  const monE = e.toLocaleString("es-ES", { month: "short", timeZone: "UTC" }).toUpperCase();
+  const yearE = e.getUTCFullYear();
+
+  // Si no hay fin o es el mismo día → una fecha
+  if (!endDate || startDate === endDate) return `${dayS} ${monS} ${yearS}`;
+
+  // Si es el mismo mes y año → rango
+  if (monS === monE && yearS === yearE) return `${dayS} – ${dayE} ${monS} ${yearS}`;
+
+  // Mes o año distinto → SOLO la primera fecha
+  return `${dayS} ${monS} ${yearS}`;
+}
 export default function EventCard({
   id,
   image,
@@ -21,7 +43,7 @@ export default function EventCard({
   const e = endDate ? new Date(endDate) : new Date(s.getTime() + 2 * 86400000);
   const ticketSelectionPage = "/seleccionTickets";
   const navigate = useNavigate();
-  // ⬇️ Usa UTC para evitar el corrimiento de -5h
+  //  Usa UTC para evitar el corrimiento de -5h
   const sDay = s.getUTCDate();
   const eDay = e.getUTCDate();
   const year = s.getUTCFullYear();
@@ -39,21 +61,9 @@ export default function EventCard({
   }).format(s); // ej. "19:00"
 
   function onClick() {
-    const event = {
-      id,
-      image,
-      title,
-      description,
-      location,
-      locationUrl,
-      sDate: sDay + "-" + month + "-" + year,
-      eDate: sDay + month + year,
-      hour: `${hh}:${mm}`,
-      categories: categories,
-      accessPolicy: accessPolicy,
-      accessPolicyDescription: accessPolicyDescription,
-    };
-    setEvent(event);
+    setEvent({
+      eventId: id,
+    });
     navigate(ticketSelectionPage);
   }
 
@@ -91,32 +101,21 @@ export default function EventCard({
         </div>
 
         <div className="mt-4 flex items-start justify-between">
-          <div className="flex items-baseline gap-2">
-            <div className="flex items-baseline gap-2 leading-none">
-              <span className="text-3xl font-semibold text-gray-900">
-                {sDay}
-              </span>
-              <span className="text-3xl font-semibold text-gray-900">–</span>
-              <span className="text-3xl font-semibold text-gray-900">
-                {eDay}
-              </span>
-            </div>
-            <span className="text-xs font-medium uppercase tracking-wide text-gray-600">
-              {month} {year}
+          <div className="flex flex-col leading-none">
+            <span className="text-lg md:text-xl font-semibold text-gray-900">
+              {formatRangeCompact(startDate, endDate)}
             </span>
           </div>
 
+
           <div className="text-right leading-none text-gray-900">
             <div className="flex items-baseline justify-end">
-              <span className="text-3xl font-semibold">{hh}</span>
-              <span className="ml-[2px] text-[10px] font-semibold relative -top-1">
-                {mm}
-              </span>
+              <span className="text-xl md:text-2xl font-semibold">{hh}</span>
+              <span className="ml-[2px] text-[10px] font-semibold relative -top-0.5">{mm}</span>
             </div>
-            <div className="mt-[2px] text-[11px] tracking-wide text-gray-500">
-              horas
-            </div>
+            <div className="mt-[1px] text-[10px] tracking-wide text-gray-500">horas</div>
           </div>
+
         </div>
       </div>
     </article>

@@ -9,7 +9,7 @@ function Row({ label, children }) {
   );
 }
 
-export default function ResumenEvento({ basics, imagePreview, dates = [], location, tickets, returnsPolicy }) {
+export default function ResumenEvento({ basics, imagePreview, bannerPreview, dates = [], location, tickets, returnsPolicy }) {
   {
     if (!basics) basics = {};
 
@@ -39,6 +39,15 @@ export default function ResumenEvento({ basics, imagePreview, dates = [], locati
               alt="preview"
               className="h-24 rounded-md border"
             />
+          ) : (
+            "—"
+          )}
+        </Row>
+        
+        {/* Banner (igual que la imagen principal) */}
+        <Row label="Banner">
+          {bannerPreview ? (
+            <img src={bannerPreview} alt="banner preview" className="h-24 rounded-md border" />
           ) : (
             "—"
           )}

@@ -23,7 +23,7 @@ export default function OrganizerVariant() {
         <Linker
           label="Crear Evento"
           icon="plus-circle"
-          to="/create_event"
+          to="/crearEvento"
           activeMatch="/create_event"
         />
       </div>

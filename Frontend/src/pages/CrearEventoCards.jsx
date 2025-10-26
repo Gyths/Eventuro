@@ -5,6 +5,7 @@ import EventBasicsForm from "../components/create/EventBasicsForm";
 import ImageRestrictionsPanel from "../components/create/ImageRestrictionsPanel";
 import DatesSection from "../components/create/DatesSection";
 import useEventForm from "../hooks/useEventForm";
+import SalesSeasonCard from "../components/create/SalesSeasonCard";
 
 // Paso 2
 import CrearTicketCard from "../components/create/CrearTicketCard";
@@ -18,7 +19,6 @@ import ResumenEvento from "../components/create/ResumenEvento";
 
 // Componentes comunes
 import BotonCTA from "../components/BotonCTA";
-import { DiscountCodeCard } from "../components/create/DiscountCodeCard";
 import DiscountCodesSection from "../components/create/DiscountCodesSection";
 import Swal from "sweetalert2";
 import { BASE_URL } from "../config.js";
@@ -112,7 +112,7 @@ export default function CrearEventoCards() {
   };
 
   // Paso 1
-  const { form, updateForm, updateRestrictions, imagePreview } = useEventForm();
+  const { form, updateForm, updateRestrictions, imagePreview, bannerPreview } = useEventForm();
   const [dates, setDates] = useState([]); // [{id, date: Date|ISO, schedules:[{id,start,end}]}]
   const handlePrev = () => setCurrent((c) => Math.max(0, c - 1));
   const isActive = (i) => current === i;
@@ -175,6 +175,18 @@ export default function CrearEventoCards() {
       tier: { enabled: false, qty: "", period: "diariamente" },
     });
 
+    // Limpiar fases de venta
+    setSalesSeasons({
+      seasons: [{
+        id: Date.now(),
+        name: "", 
+        percentage: "10",
+        isIncrease: false,
+        startDate: "",
+        endDate: ""
+      }]
+    });
+
     // Limpiar política de devoluciones
     setReturnsPolicy({ text: "", file: null });
 
@@ -188,6 +200,7 @@ export default function CrearEventoCards() {
       categories: [],
       extraInfo: "",
       imageFile: null,
+      bannerFile: null,
       restrictions: [],
     });
     updateRestrictions([]); // según tu hook; si usa objeto, pásale {}.
@@ -307,7 +320,7 @@ export default function CrearEventoCards() {
         }));
         return {
           name: zone.zoneName || "Zona sin nombre",
-          kind: "GENERAL",
+          kind: "GENERAL", // Prensencial o virtual
           currency: tickets.currency,
           basePrice: Number(zone.price) || 0,
           capacity: Number(zone.quantity) || 0,
@@ -317,6 +330,45 @@ export default function CrearEventoCards() {
         };
       });
 
+      const salePhases = (salesSeasons.seasons || [])
+        .filter(season => season.name && season.startDate && season.endDate) // Solo incluir temporadas completas
+        .map(season => {
+          // Convertir porcentaje a número con signo según isIncrease
+          const percentage = season.isIncrease 
+            ? Number(season.percentage) || 0 
+            : -(Number(season.percentage) || 0);
+          
+          // Convertir fechas YYYY-MM-DD a ISO string válido para Date
+          const startDateISO = `${season.startDate}T00:00:00.000Z`;
+          const endDateISO = `${season.endDate}T23:59:59.999Z`;
+          
+          return {
+            name: season.name,
+            startAt: startDateISO,  
+            endAt: endDateISO, 
+            percentage: percentage
+          };
+      });
+
+      const finalJson = {
+        organizerId: 1,
+        title: form.name,
+        inPerson: true,
+        description: form.description,
+        accessPolicy: "E",
+        accessPolicyDescription: form.extraInfo,
+        venue: {
+          city: location.city,
+          address: location.address,
+          addressUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          reference: location.reference,
+          capacity: Number(location.capacity),
+        },
+        eventCategories: Array.isArray(form.categories)? form.categories.map((id) => Number(id)): [],
+        salePhases: salePhases,
+        dates: eventDates,
+        zones: eventZones,
+      };
 
       // Construir objeto FormData
       const formData = new FormData();
@@ -402,6 +454,19 @@ export default function CrearEventoCards() {
   const [returnsPolicy, setReturnsPolicy] = useState({ text: "", file: null });
   const [errors, setErrors] = useState({});
 
+  const [salesSeasons, setSalesSeasons] = useState({
+    seasons: [
+      { 
+        id: Date.now(),
+        name: "", 
+        percentage: "10",
+        isIncrease: false,
+        startDate: "",
+        endDate: ""
+      }
+    ]
+  });
+
   //Validaciones
   const validateStep = (stepIndex) => {
     const newErrors = {};
@@ -435,6 +500,10 @@ export default function CrearEventoCards() {
       // Ajusta a cómo subes la imagen en tu hook: imageFile / image / imagePreview
       if (!form.imageFile && !imagePreview) {
         newErrors.image = "Debes subir una imagen para el evento.";
+      }
+
+      if (!form.bannerFile && !imagePreview) {
+        newErrors.image = "Debes subir un banner para el evento.";
       }
 
       const restrictionsCount = Array.isArray(form.restrictions)
@@ -649,14 +718,14 @@ export default function CrearEventoCards() {
       </div>
 
       {/* ======== PASO 3 ======== */}
-      <div
+     <div
         ref={(el) => (cardRefs.current[2] = el)}
         className={isActive(2) ? "block" : "hidden"}
         aria-hidden={!isActive(2)}
       >
         <WizardCard
-          title="Política de devoluciones Y Códigos de descuento"
-          subtitle="Define tus reglas de reembolso y promociones"
+          title="Temporadas de venta, Descuentos y Devoluciones"
+          subtitle="Define tus reglas de reembolso, promociones y precios por temporada"
           badge={<StepBadge number={3} />}
         >
           {Object.keys(errors).length > 0 && (
@@ -667,6 +736,7 @@ export default function CrearEventoCards() {
             </div>
           )}
           <div className="space-y-8">
+            <SalesSeasonCard value={salesSeasons} onChange={setSalesSeasons} />
             <DiscountCodesSection />
             <ReturnsPolicy value={returnsPolicy} onChange={setReturnsPolicy} />
           </div>
@@ -687,6 +757,7 @@ export default function CrearEventoCards() {
             basics={form}
             dates={dates}
             imagePreview={imagePreview}
+            bannerPreview={bannerPreview}
             tickets={tickets}
             returnsPolicy={returnsPolicy}
             location={location}

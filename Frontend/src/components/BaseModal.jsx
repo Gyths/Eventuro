@@ -1,10 +1,10 @@
 import React from "react";
 import { motion } from "framer-motion";
 
-function BaseModal({ children }) {
+export default function BaseModal({ children }) {
   return (
     <motion.div
-      className="fixed inset-0 flex items-center justify-center backdrop-blur-xs"
+      className="fixed inset-0 flex items-center justify-center"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -12,7 +12,7 @@ function BaseModal({ children }) {
     >
       <div
         className={
-          "fixed inset-0 flex justify-center items-center transition-colors bg-black/20"
+          "fixed inset-0 flex justify-center items-center transition-colors bg-black/20 backdrop-blur-xs"
         }
       >
         {children}
@@ -20,5 +20,3 @@ function BaseModal({ children }) {
     </motion.div>
   );
 }
-
-export default BaseModal;
