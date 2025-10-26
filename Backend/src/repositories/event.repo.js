@@ -1,3 +1,4 @@
+import { create } from "domain";
 import { dmmfToRuntimeDataModel } from "../generated/prisma/runtime/library.js";
 import { prisma } from "../utils/prisma.js";
 import { uploadFile, getSignedUrlForFile } from "../utils/s3.js";
@@ -226,6 +227,47 @@ export async function listEventRepo() {
   return enriched;
 }
 
+export async function eventDetails(id) {
+  return prisma.event.findUnique({
+    where: { eventId: BigInt(id) },
+    include: {
+      dates: {
+        include: {
+          zoneDates: {
+            include: {
+              allocations: true,
+            },
+          },
+        },
+      },
+      salesPhases: true,
+      categories: {
+        include: { category: true },
+      },
+      organizer: true,
+      venue: true,
+      fee: true,
+    },
+  })
+}
+
+export async function listEventsByOrganizerRepo(idOrganizer) {
+  return prisma.event.findMany({
+    where: { organizerId: BigInt(idOrganizer) },
+    select: {
+      eventId: true,
+      title: true,
+      createdAt: true,
+      venue: {
+        select: {
+          city: true,
+        },
+      },
+    },
+  });
+}
+
+
 export async function listAvailableTicketsRepo(input) {
   const event = await prisma.event.findUnique({
     where: { eventId: BigInt(input.eventId) },
@@ -391,8 +433,8 @@ export async function setEventFeeRepo({ eventId, percentage }) {
     }
 
     const event = await tx.event.update({
-      where: { eventId: eventIdNormalized},
-      data: { feeId: fee.feeId},
+      where: { eventId: eventIdNormalized },
+      data: { feeId: fee.feeId },
       select: {
         eventId: true,
         title: true,
