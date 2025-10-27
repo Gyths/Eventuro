@@ -9,12 +9,13 @@ export default function useEventForm() {
     extraInfo: "",
     restrictions: { general: false, withAdult: false, adultsOnly: false },
     imageFile: null,
+    bannerFile: null,
   });
 
   const updateForm = (patch) => setForm((f) => ({ ...f, ...patch }));
   const updateRestrictions = (patch) => setForm((f) => ({ ...f, restrictions: { ...f.restrictions, ...patch } }));
 
   const imagePreview = useObjectURL(form.imageFile);
-
-  return { form, updateForm, updateRestrictions, imagePreview };
+  const bannerPreview = useObjectURL(form.bannerFile);
+  return { form, updateForm, updateRestrictions, imagePreview, bannerPreview };
 }

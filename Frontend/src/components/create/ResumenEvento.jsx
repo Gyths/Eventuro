@@ -9,7 +9,7 @@ function Row({ label, children }) {
   );
 }
 
-export default function ResumenEvento({ basics, imagePreview, dates = [], location, tickets, returnsPolicy }) {
+export default function ResumenEvento({ basics, imagePreview, bannerPreview, dates = [], location, tickets, returnsPolicy }) {
   {
     if (!basics) basics = {};
 
@@ -19,7 +19,9 @@ export default function ResumenEvento({ basics, imagePreview, dates = [], locati
           Detalles del evento
         </h4>
         <Row label="Nombre">{basics.name || "—"}</Row>
-        <Row label="Categoría">{basics.category || "—"}</Row>
+        <Row label="Categoría">{Array.isArray(basics.categories) && basics.categories.length > 0? 
+          basics.categoriesLabels? basics.categoriesLabels.join(", "): basics.categories.join(", "): "—"}
+        </Row>
         <Row label="Descripción">{basics.description || "—"}</Row>
         <Row label="Información adicional">{basics.extraInfo || "—"}</Row>
         <Row label="Restricciones">
@@ -37,6 +39,15 @@ export default function ResumenEvento({ basics, imagePreview, dates = [], locati
               alt="preview"
               className="h-24 rounded-md border"
             />
+          ) : (
+            "—"
+          )}
+        </Row>
+        
+        {/* Banner (igual que la imagen principal) */}
+        <Row label="Banner">
+          {bannerPreview ? (
+            <img src={bannerPreview} alt="banner preview" className="h-24 rounded-md border" />
           ) : (
             "—"
           )}

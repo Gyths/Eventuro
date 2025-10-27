@@ -5,6 +5,7 @@ import EventBasicsForm from "../components/create/EventBasicsForm";
 import ImageRestrictionsPanel from "../components/create/ImageRestrictionsPanel";
 import DatesSection from "../components/create/DatesSection";
 import useEventForm from "../hooks/useEventForm";
+import SalesSeasonCard from "../components/create/SalesSeasonCard";
 
 // Paso 2
 import CrearTicketCard from "../components/create/CrearTicketCard";
@@ -18,10 +19,12 @@ import ResumenEvento from "../components/create/ResumenEvento";
 
 // Componentes comunes
 import BotonCTA from "../components/BotonCTA";
-import { DiscountCodeCard } from "../components/create/DiscountCodeCard";
 import DiscountCodesSection from "../components/create/DiscountCodesSection";
 import Swal from "sweetalert2";
 import { BASE_URL } from "../config.js";
+
+//Copiar Configuracion
+import CopyConfigModal from "../components/create/CopyConfigModal";
 
 function WizardCard({ title, subtitle, badge, children }) {
   return (
@@ -112,12 +115,15 @@ export default function CrearEventoCards() {
   };
 
   // Paso 1
-  const { form, updateForm, updateRestrictions, imagePreview } = useEventForm();
+  const { form, updateForm, updateRestrictions, imagePreview, bannerPreview } = useEventForm();
   const [dates, setDates] = useState([]); // [{id, date: Date|ISO, schedules:[{id,start,end}]}]
   const handlePrev = () => setCurrent((c) => Math.max(0, c - 1));
   const isActive = (i) => current === i;
+  const user = JSON.parse(localStorage.getItem("userData"));
+
   // Paso 2 — Ubicación (estado en el padre)
   const [location, setLocation] = useState({
+    inPerson: null,
     city: "",
     address: "",
     reference: "",
@@ -132,7 +138,9 @@ export default function CrearEventoCards() {
       // Changed from 'items' to 'zones'
       {
         zoneName: "",
-        subtypes: [{ type: "", quantity: "", price: "" }],
+        quantity: "",
+        price: "",
+        subtypes: [{ type: "", discount: "" }],
       },
     ],
     endSaleWhen: "termino", // "termino" | "inicio" | "2dias"
@@ -160,11 +168,28 @@ export default function CrearEventoCards() {
     setTickets({
       currency: "PEN",
       zones: [
-        { zoneName: "", subtypes: [{ type: "", quantity: "", price: "" }] },
+        {
+          zoneName: "",
+          quantity: "",
+          price: "",
+          subtypes: [{ type: "", discount: "" }],
+        },
       ],
       endSaleWhen: "termino",
       maxPerUser: "10",
       tier: { enabled: false, qty: "", period: "diariamente" },
+    });
+
+    // Limpiar fases de venta
+    setSalesSeasons({
+      seasons: [{
+        id: Date.now(),
+        name: "", 
+        percentage: "10",
+        isIncrease: false,
+        startDate: "",
+        endDate: ""
+      }]
     });
 
     // Limpiar política de devoluciones
@@ -180,10 +205,12 @@ export default function CrearEventoCards() {
       categories: [],
       extraInfo: "",
       imageFile: null,
+      bannerFile: null,
       restrictions: [],
     });
     updateRestrictions([]); // según tu hook; si usa objeto, pásale {}.
   };
+
 
   //###### GENERADOR DEL JSON PARA POST A LA BD ##########
   const generateAndPostJson = async () => {
@@ -293,47 +320,80 @@ export default function CrearEventoCards() {
       const eventZones = (tickets.zones || []).map((zone) => {
         const allocations = (zone.subtypes || []).map((subtype) => ({
           audienceName: subtype.type || "Entrada General",
-          discountPercent: Number(subtype.price) || 0,
-          allocatedQuantity: Number(subtype.quantity) || 0,
+          discountPercent: Number(subtype.discount) || 0,
+          allocatedQuantity: Number(zone.quantity) || 0,
         }));
         return {
           name: zone.zoneName || "Zona sin nombre",
-          kind: "GENERAL",
+          kind: "GENERAL", // Prensencial o virtual
           currency: tickets.currency,
-          basePrice: 0,
-          capacity: 0,
+          basePrice: Number(zone.price) || 0,
+          capacity: Number(zone.quantity) || 0,
           cols: 0,
           rows: 0,
           allocations,
         };
       });
 
-      const finalJson = {
-        organizerId: 1,
-        title: form.name,
-        inPerson: true,
-        description: form.description,
-        accessPolicy: "E",
-        accessPolicyDescription: form.extraInfo,
-        venue: {
-          city: location.city,
-          address: location.address,
-          addressUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-          reference: location.reference,
-          capacity: Number(location.capacity),
-        },
-        eventCategories: form.category ? [Number(form.category)] : [],
-        dates: eventDates,
-        zones: eventZones,
-      };
+      const salePhases = (salesSeasons.seasons || [])
+        .filter(season => season.name && season.startDate && season.endDate) // Solo incluir temporadas completas
+        .map(season => {
+          // Convertir porcentaje a número con signo según isIncrease
+          const percentage = season.isIncrease 
+            ? Number(season.percentage) || 0 
+            : -(Number(season.percentage) || 0);
+          
+          // Convertir fechas YYYY-MM-DD a ISO string válido para Date
+          const startDateISO = `${season.startDate}T00:00:00.000Z`;
+          const endDateISO = `${season.endDate}T23:59:59.999Z`;
+          
+          return {
+            name: season.name,
+            startAt: startDateISO,  
+            endAt: endDateISO, 
+            percentage: percentage
+          };
+      });
 
+      // Construir objeto FormData
+      const formData = new FormData();
+
+      // Datos simples (texto)
+      formData.append("organizerId", 1);
+      formData.append("title", form.name);
+      formData.append("inPerson", true);
+      formData.append("description", form.description);
+      formData.append("accessPolicy", "E");
+      formData.append("accessPolicyDescription", form.extraInfo);
+      formData.append("venue", JSON.stringify({
+        city: location.city,
+        address: location.address,
+        addressUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        reference: location.reference,
+        capacity: Number(location.capacity),
+      }));
+      formData.append("eventCategories", JSON.stringify(
+        Array.isArray(form.categories)
+          ? form.categories.map((id) => Number(id))
+          : []
+      ));
+      formData.append("salePhases", JSON.stringify(salePhases));
+      formData.append("dates", JSON.stringify(eventDates));
+      formData.append("zones", JSON.stringify(eventZones));
+
+      // imagenPrincipal (archivo)
+      if (form.imageFile) {
+        formData.append("imagenPrincipal", form.imageFile);
+      }
+      // ImagenBanner (archivo)
+      if (form.bannerFile) {
+        formData.append("imagenBanner", form.bannerFile);
+      }
+
+      // --- Enviar con fetch ---
       const res = await fetch(`${BASE_URL}/eventuro/api/event/`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(finalJson),
+        body: formData, // ¡sin JSON.stringify!
       });
 
       const raw = await res.text();
@@ -384,6 +444,138 @@ export default function CrearEventoCards() {
   const [returnsPolicy, setReturnsPolicy] = useState({ text: "", file: null });
   const [errors, setErrors] = useState({});
 
+  const [salesSeasons, setSalesSeasons] = useState({
+    seasons: [
+      { 
+        id: Date.now(),
+        name: "", 
+        percentage: "10",
+        isIncrease: false,
+        startDate: "",
+        endDate: ""
+      }
+    ]
+  });
+
+  const [showCopyModal, setShowCopyModal] = useState(false);
+  // 3. Función para mapear los datos del evento copiado a los estados del wizard
+  const mapRestrictionsArrayToObject = (restrictionsArray) => {
+    const restrictionsObj = {
+      general: false,
+      conUnAdulto: false,
+      soloAdultos: false,
+    };
+    
+    if (Array.isArray(restrictionsArray)) {
+      restrictionsArray.forEach(restriction => {
+        if (restriction === "General") restrictionsObj.general = true;
+        if (restriction === "conUnAdulto") restrictionsObj.conUnAdulto = true;
+        if (restriction === "soloAdultos") restrictionsObj.soloAdultos = true;
+      });
+    }
+    
+    return restrictionsObj;
+  };
+
+  const handleCopyEvent = (eventData) => {
+    // Mapear datos básicos
+    updateForm({
+      name: eventData.title,
+      description: eventData.description,
+      categories: eventData.categories,
+      extraInfo: eventData.extraInfo,
+      restrictions: mapRestrictionsArrayToObject(eventData.restrictions),
+      imageFile: null, // No copiamos archivos
+    });
+
+    // Mapear ubicación
+    setLocation({
+      inPerson: true,
+      city: eventData.venue.city,
+      address: eventData.venue.address,
+      reference: eventData.venue.reference,
+      howToFind: "",
+      capacity: String(eventData.venue.capacity),
+    });
+
+    // Mapear fechas y horarios
+    const mappedDates = eventData.dates.map((date, idx) => {
+      const startDate = new Date(date.startAt);
+      const endDate = new Date(date.endAt);
+      
+      // Formatear horas a HH:mm
+      const formatTime = (d) => {
+        const h = String(d.getHours()).padStart(2, "0");
+        const m = String(d.getMinutes()).padStart(2, "0");
+        return `${h}:${m}`;
+      };
+
+      return {
+        id: Date.now() + idx,
+        date: startDate,
+        schedules: [{
+          id: Date.now() + idx + 1000,
+          start: formatTime(startDate),
+          end: formatTime(endDate),
+        }]
+      };
+    });
+    setDates(mappedDates);
+
+    // Mapear tickets/zonas
+    const mappedZones = eventData.zones.map(zone => ({
+      zoneName: zone.name,
+      quantity: String(zone.capacity),
+      price: String(zone.basePrice),
+      subtypes: zone.allocations.map(alloc => ({
+        type: alloc.audienceName,
+        discount: String(alloc.discountPercent),
+      })),
+    }));
+
+    setTickets(prev => ({
+      ...prev,
+      currency: eventData.zones[0]?.currency || "PEN",
+      zones: mappedZones,
+    }));
+
+    // Mapear temporadas de venta
+    if (eventData.salePhases && eventData.salePhases.length > 0) {
+      const mappedSeasons = eventData.salePhases.map((phase, idx) => {
+        const startDate = new Date(phase.startAt);
+        const endDate = new Date(phase.endAt);
+        
+        // Formatear a YYYY-MM-DD
+        const formatDate = (d) => {
+          const y = d.getFullYear();
+          const m = String(d.getMonth() + 1).padStart(2, "0");
+          const day = String(d.getDate()).padStart(2, "0");
+          return `${y}-${m}-${day}`;
+        };
+
+        return {
+          id: Date.now() + idx,
+          name: phase.name,
+          percentage: String(Math.abs(phase.percentage)),
+          isIncrease: phase.percentage > 0,
+          startDate: formatDate(startDate),
+          endDate: formatDate(endDate),
+        };
+      });
+
+      setSalesSeasons({ seasons: mappedSeasons });
+    }
+
+    // Mostrar mensaje de éxito
+    Swal.fire({
+      icon: "success",
+      title: "Configuración copiada",
+      text: "Los datos del evento se han cargado correctamente.",
+      timer: 2000,
+      showConfirmButton: false,
+    });
+  };
+
   //Validaciones
   const validateStep = (stepIndex) => {
     const newErrors = {};
@@ -419,6 +611,10 @@ export default function CrearEventoCards() {
         newErrors.image = "Debes subir una imagen para el evento.";
       }
 
+      if (!form.bannerFile && !imagePreview) {
+        newErrors.image = "Debes subir un banner para el evento.";
+      }
+
       const restrictionsCount = Array.isArray(form.restrictions)
         ? form.restrictions.length
         : Object.values(form.restrictions || {}).filter(Boolean).length;
@@ -450,61 +646,80 @@ export default function CrearEventoCards() {
     }
 
     if (stepIndex === 1) {
-      if (!location.city) {
-        newErrors.city = "La ciudad es obligatoria.";
+      const isVirtual = location.inPerson === false;
+      if (!isVirtual) {
+        if (!location.city) {
+          newErrors.city = "La ciudad es obligatoria.";
+        }
+        if (!location.address || location.address.trim() === "") {
+          newErrors.address = "La dirección es obligatoria.";
+        } else if (location.address.length < 5) {
+          newErrors.address = "La dirección es muy corta.";
+        } else if (location.address.length > 150) {
+          newErrors.address =
+            "La dirección no puede tener más de 150 caracteres.";
+        }
+        if (
+          Number(location.capacity) > 200000 ||
+          Number(location.capacity) <= 0
+        ) {
+          newErrors.capacity =
+            "La capacidad debe ser un número válido (entre 0 y 200,000).";
+        }
       }
-      if (!location.address || location.address.trim() === "") {
-        newErrors.address = "La dirección es obligatoria.";
-      } else if (location.address.length < 5) {
-        newErrors.address = "La dirección es muy corta.";
-      } else if (location.address.length > 150) {
-        newErrors.address =
-          "La dirección no puede tener más de 150 caracteres.";
-      }
-      if (
-        Number(location.capacity) > 200000 ||
-        Number(location.capacity) <= 0
-      ) {
-        newErrors.capacity =
-          "La capacidad debe ser un número válido (entre 0 y 200,000).";
-      }
-      const allSubtypes = tickets.zones.flatMap((zone) => zone.subtypes || []);
 
-      if (!tickets.zones || tickets.zones.length === 0) {
+      // === Validación de Tickets/Zonas ===
+      const zones = tickets.zones || [];
+      const allSubtypes = zones.flatMap((z) => z.subtypes || []);
+
+      if (zones.length === 0) {
         newErrors.tickets = "Debe crear al menos una zona de entrada.";
-      } else if (
-        tickets.zones.some((z) => !z.zoneName || z.zoneName.trim() === "")
-      ) {
+      } else if (zones.some((z) => !z.zoneName || z.zoneName.trim() === "")) {
         newErrors.tickets = "Completa el nombre de todas las zonas.";
-      } else if (allSubtypes.length === 0) {
-        newErrors.tickets =
-          "Debe crear al menos un tipo de entrada en una zona.";
       } else if (
-        allSubtypes.some(
-          (t) => !t.type || t.type.trim() === "" || !t.price || !t.quantity
+        zones.some(
+          (z) =>
+            z.subtypes.length === 0 ||
+            z.subtypes.some((st) => !st.type || st.type.trim() === "")
         )
       ) {
         newErrors.tickets =
-          "Completa todos los campos (Tipo, Precio, Cantidad) de cada entrada.";
+          "Debe crear al menos un tipo de entrada por zona y completar el tipo.";
       } else if (
-        allSubtypes.some(
-          (t) => isNaN(Number(t.quantity)) || Number(t.quantity) <= 0
+        zones.some(
+          (z) =>
+            !z.quantity || isNaN(Number(z.quantity)) || Number(z.quantity) <= 0
         )
       ) {
         newErrors.tickets =
-          "Cantidad de entradas inválida (debe ser un número mayor que 0).";
+          "La cantidad por zona debe ser un número mayor que 0.";
+      } else if (
+        zones.some(
+          (z) => !z.price || isNaN(Number(z.price)) || Number(z.price) <= 0
+        )
+      ) {
+        newErrors.tickets =
+          "El precio por zona debe ser un número mayor que 0.";
+      }
+
+      // variable para comparar capacidad del recinto
+      const aforo = Number( location.capacity || 0 );
+      // variable para comparar la cantidad total de tickets
+      const totalTickets = zones.reduce( (sum, z) => sum + Number(z.quantity || 0) , 0 );
+
+      // comparación: la cantidad total de tickets deben ser menor al aforo
+      if (aforo > 0 && totalTickets > 0 && totalTickets > aforo) {
+        newErrors.capacity = `El total de tickets (${totalTickets}) debe ser menor al aforo (${aforo}).`;
       }
 
       if (tickets?.tier?.enabled) {
         const tierQty = Number(tickets.tier.qty || 0);
 
-        // Calcular cantidad total de todas las entradas (ahora desde zones.subtypes)
-        const totalTickets = (tickets.zones || [])
-          .flatMap((zone) => zone.subtypes || [])
-          .reduce((sum, subtype) => {
-            const q = Number(subtype.quantity || 0);
-            return sum + (isNaN(q) ? 0 : q);
-          }, 0);
+        // Calcular cantidad total desde las ZONAS
+        const totalTickets = (tickets.zones || []).reduce((sum, z) => {
+          const q = Number(z.quantity || 0);
+          return sum + (isNaN(q) ? 0 : q);
+        }, 0);
 
         if (!Number.isInteger(tierQty) || tierQty <= 0) {
           newErrors.tierQty =
@@ -553,6 +768,15 @@ export default function CrearEventoCards() {
           subtitle="Nombre, categoría, descripción, imagen y restricciones"
           badge={<StepBadge number={1} />}
         >
+          {/* Botón Copiar Configuración */}
+          <div className="mb-4 lg:mb-0 lg:absolute lg:top-10 lg:right-10">
+            <BotonCTA
+              variant="secondary"
+              onClick={() => setShowCopyModal(true)}
+            >
+              Copiar Configuración
+            </BotonCTA>
+          </div>
           {Object.keys(errors).length > 0 && (
             <div className="mb-4 rounded-lg bg-red-100 text-red-800 p-3 text-sm">
               {Object.values(errors).map((err, i) => (
@@ -612,14 +836,14 @@ export default function CrearEventoCards() {
       </div>
 
       {/* ======== PASO 3 ======== */}
-      <div
+     <div
         ref={(el) => (cardRefs.current[2] = el)}
         className={isActive(2) ? "block" : "hidden"}
         aria-hidden={!isActive(2)}
       >
         <WizardCard
-          title="Política de devoluciones Y Códigos de descuento"
-          subtitle="Define tus reglas de reembolso y promociones"
+          title="Temporadas de venta, Descuentos y Devoluciones"
+          subtitle="Define tus reglas de reembolso, promociones y precios por temporada"
           badge={<StepBadge number={3} />}
         >
           {Object.keys(errors).length > 0 && (
@@ -630,6 +854,7 @@ export default function CrearEventoCards() {
             </div>
           )}
           <div className="space-y-8">
+            <SalesSeasonCard value={salesSeasons} onChange={setSalesSeasons} />
             <DiscountCodesSection />
             <ReturnsPolicy value={returnsPolicy} onChange={setReturnsPolicy} />
           </div>
@@ -650,6 +875,7 @@ export default function CrearEventoCards() {
             basics={form}
             dates={dates}
             imagePreview={imagePreview}
+            bannerPreview={bannerPreview}
             tickets={tickets}
             returnsPolicy={returnsPolicy}
             location={location}
@@ -676,6 +902,13 @@ export default function CrearEventoCards() {
           />
         </div>
       </div>
+
+      <CopyConfigModal
+        isOpen={showCopyModal}
+        onClose={() => setShowCopyModal(false)}
+        onSelectEvent={handleCopyEvent}
+        idOrganizer={user?.userId}
+      />
     </section>
   );
 }

@@ -102,7 +102,8 @@ export default function Home() {
             hour,
             location,
             locationUrl: ev.venue?.addressUrl,
-            image: ev.image ?? placeholder,
+            image: ev.imagePrincipalURLSigned ?? placeholder, //imagen principal evento
+            bannerEv: ev.imageBannerURLSigned ?? placeholder, //imagen banner evento
             categories: ev.categories,
             accessPolicy: ev.accessPolicy,
             accessPolicyDescription: ev.accessPolicyDescription,
@@ -156,13 +157,13 @@ export default function Home() {
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {/* Banner */}
         <div className="lg:col-span-4">
-          <BannerCarousel
+          {/*<BannerCarousel
             images={imagesDemo}
             interval={5000}
             showArrows={false}
             heightClass="h-48 md:h-64 lg:h-72"
             className="rounded-2xl shadow-lg"
-          />
+          />*/}
         </div>
 
         {loading && (

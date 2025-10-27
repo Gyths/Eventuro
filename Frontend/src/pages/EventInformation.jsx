@@ -85,7 +85,9 @@ export default function TicketSelection() {
         }));
         //response.status != "A" && navigate(homeRoute);
         response.dates = formatted;
-        response.image = response.image ?? placeholder;
+        response.image = response.imagePrincipalURLSigned ?? placeholder;
+        response.bannerEv = response.imageBannerURLSigned ?? placeholder;
+
         setEvent(response);
         console.log(response);
       } catch (err) {
@@ -133,7 +135,7 @@ export default function TicketSelection() {
         {/* Imagen de fondo */}
         <div className="fixed inset-0 h-screen w-full overflow-hidden">
           <img
-            src={event?.image}
+            src={event?.bannerEv}
             alt="Fondo del evento"
             className={`w-full h-full object-cover transition-all duration-700 ease-in-out
           ${
