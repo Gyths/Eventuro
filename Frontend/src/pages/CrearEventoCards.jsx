@@ -206,6 +206,8 @@ export default function CrearEventoCards() {
       extraInfo: "",
       imageFile: null,
       bannerFile: null,
+      imageBannerKey: null,
+      imagePrincipalKey: null,
       restrictions: [],
     });
     updateRestrictions([]); // según tu hook; si usa objeto, pásale {}.
@@ -384,10 +386,16 @@ export default function CrearEventoCards() {
       // imagenPrincipal (archivo)
       if (form.imageFile) {
         formData.append("imagenPrincipal", form.imageFile);
+      }else if (form.imagePrincipalKey) {
+      // Si hay key existente, enviarla para reutilizar
+        formData.append("imagePrincipalKey", form.imagePrincipalKey);
       }
       // ImagenBanner (archivo)
       if (form.bannerFile) {
         formData.append("imagenBanner", form.bannerFile);
+      }else if (form.imageBannerKey) {
+        // Si hay key existente, enviarla para reutilizar
+        formData.append("imageBannerKey", form.imageBannerKey);
       }
 
       // --- Enviar con fetch ---
@@ -477,6 +485,7 @@ export default function CrearEventoCards() {
     return restrictionsObj;
   };
 
+  //Formato para copiar configuracion de evento
   const handleCopyEvent = (eventData) => {
     // Mapear datos básicos
     updateForm({
@@ -485,7 +494,12 @@ export default function CrearEventoCards() {
       categories: eventData.categories,
       extraInfo: eventData.extraInfo,
       restrictions: mapRestrictionsArrayToObject(eventData.restrictions),
-      imageFile: null, // No copiamos archivos
+      imageFile: null,
+      bannerFile: null,
+      imagePrincipalKey: eventData.imagePrincipalKey,
+      imageBannerKey: eventData.imageBannerKey,
+      imagePreview: eventData.imagePrincipalURLSigned,
+      bannerPreview: eventData.imageBannerURLSigned,
     });
 
     // Mapear ubicación
