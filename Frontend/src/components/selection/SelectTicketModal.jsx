@@ -75,7 +75,9 @@ export default function SelectAllocationModal({
 
   const handleNoAllocationGeneralSum = (zoneIndex) => {
     // CAMBIO: usar && y Number para límites
-    const cap = Number(selectedData.zoneDates[zoneIndex].capacityRemaining || 0);
+    const cap = Number(
+      selectedData.zoneDates[zoneIndex].capacityRemaining || 0
+    );
     const newValues = notAllocatedGeneralQuantities.map((value, index) =>
       index === zoneIndex && value < cap ? value + 1 : value
     );
@@ -95,19 +97,11 @@ export default function SelectAllocationModal({
     const newValues = allocatedGeneralQuantities.map(
       (allocation, zoneIndex) => {
         return zoneI === zoneIndex
-<<<<<<< HEAD
           ? allocation.map((quantity, allocationIndex) => {
               return allocationI === allocationIndex && quantity > 0
                 ? quantity - 1
                 : quantity;
             })
-=======
-          ? allocation.map((quantitie, allocationIndex) =>
-              allocationI === allocationIndex && quantitie > 0
-                ? quantitie - 1
-                : quantitie
-            )
->>>>>>> main
           : allocation;
       }
     );
@@ -117,12 +111,11 @@ export default function SelectAllocationModal({
   const handleAllocatedGeneralSum = (zoneI, allocationI) => {
     // CAMBIO: usar && y Number
     const rem = Number(
-      selectedData.zoneDates[zoneI].allocations[allocationI].remainingQuantity ||
-        0
+      selectedData.zoneDates[zoneI].allocations[allocationI]
+        .remainingQuantity || 0
     );
     const newValues = allocatedGeneralQuantities.map(
       (allocation, zoneIndex) => {
-<<<<<<< HEAD
         //console.log("sumando en " + zoneI + " " + allocationI);
         if (zoneI !== zoneIndex) return allocation;
         const zone = selectedData.zoneDates[zoneIndex];
@@ -136,15 +129,6 @@ export default function SelectAllocationModal({
         return allocation.map((quantity, allocationIndex) => {
           return allocationIndex === allocationI ? quantity + 1 : quantity;
         });
-=======
-        return zoneI === zoneIndex
-          ? allocation.map((quantitie, allocationIndex) =>
-              allocationI === allocationIndex && quantitie < rem
-                ? quantitie + 1
-                : quantitie
-            )
-          : allocation;
->>>>>>> main
       }
     );
     setAllocatedGeneralQuantities(newValues);
@@ -510,8 +494,7 @@ export default function SelectAllocationModal({
                                           Object.values(
                                             allocatedSeatedQuantities[zoneIndex]
                                           ).filter(
-                                            (value) =>
-                                              value === allocationIndex
+                                            (value) => value === allocationIndex
                                           ).length
                                         }
                                         )
