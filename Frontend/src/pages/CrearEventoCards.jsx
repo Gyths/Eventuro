@@ -361,7 +361,7 @@ export default function CrearEventoCards() {
       // Datos simples (texto)
       formData.append("organizerId", 1);
       formData.append("title", form.name);
-      formData.append("inPerson", true);
+      formData.append("inPerson", String(location.inPerson === true));
       formData.append("description", form.description);
       formData.append("accessPolicy", "E");
       formData.append("accessPolicyDescription", form.extraInfo);
@@ -384,10 +384,16 @@ export default function CrearEventoCards() {
       // imagenPrincipal (archivo)
       if (form.imageFile) {
         formData.append("imagenPrincipal", form.imageFile);
+      }else if (form.imagePrincipalKey) {
+      // Si hay key existente, enviarla para reutilizar
+        formData.append("imagePrincipalKey", form.imagePrincipalKey);
       }
       // ImagenBanner (archivo)
       if (form.bannerFile) {
         formData.append("imagenBanner", form.bannerFile);
+      }else if (form.imageBannerKey) {
+        // Si hay key existente, enviarla para reutilizar
+        formData.append("imageBannerKey", form.imageBannerKey);
       }
 
       // --- Enviar con fetch ---
@@ -477,6 +483,7 @@ export default function CrearEventoCards() {
     return restrictionsObj;
   };
 
+  //Formato para copiar configuracion de evento
   const handleCopyEvent = (eventData) => {
     // Mapear datos básicos
     updateForm({
@@ -485,7 +492,13 @@ export default function CrearEventoCards() {
       categories: eventData.categories,
       extraInfo: eventData.extraInfo,
       restrictions: mapRestrictionsArrayToObject(eventData.restrictions),
-      imageFile: null, // No copiamos archivos
+      imageFile: null,
+      bannerFile: null,
+      imagePrincipalKey: eventData.imagePrincipalKey,
+      imageBannerKey: eventData.imageBannerKey,
+      imagePrincipalURL: eventData.imagePrincipalURLSigned,
+      imageBannerURL: eventData.imageBannerURLSigned,
+      inPerson: eventData.inPerson,
     });
 
     // Mapear ubicación
@@ -596,7 +609,7 @@ export default function CrearEventoCards() {
         newErrors.description =
           "La descripción no puede tener más de 300 caracteres.";
       }
-      if (!form.imageFile)
+      if (!form.imageFile && !imagePreview)
         newErrors.image = "Debes subir una imagen para el evento.";
 
       const selectedCats = Array.isArray(form.categories)
@@ -795,6 +808,7 @@ export default function CrearEventoCards() {
                 restrictions={form.restrictions}
                 onChangeRestrictions={updateRestrictions}
                 imagePreview={imagePreview}
+                bannerPreview={bannerPreview}
               />
             </div>
           </div>
