@@ -81,6 +81,13 @@ enum ORGANIZER_STATUS {
   REJECTED
 }
 
+enum REFUND_STATUS {
+  NONE
+  REQUESTED
+  APPROVED
+  REJECTED
+}
+
 // ====================== Models ======================
 
 // Usuario general
@@ -400,6 +407,9 @@ model Ticket {
   currency                  CURRENCY      @default(PEN)
   issuedAt                  DateTime      @default(now())
   status                    TICKET_STATUS @default(PAID)
+
+  refundStatus      REFUND_STATUS @default(NONE)
+  refundRequestedAt DateTime?
 
   item       OrderItem                @relation(fields: [orderItemId], references: [orderItemId], onDelete: Restrict)
   eventDate  EventDate                @relation(fields: [eventDateId], references: [eventDateId], onDelete: Restrict)
