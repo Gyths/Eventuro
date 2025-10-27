@@ -34,7 +34,6 @@ export async function listAvailableTickets(req, res) {
 
 // src/controllers/event.controller.js
 import { setEventFeeSvc } from '../services/event.service.js';
-import { toJSONSafe } from '../utils/toJSONSafe.js';
 
 export async function setEventFee(req, res, next) {
   try {

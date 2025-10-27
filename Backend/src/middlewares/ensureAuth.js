@@ -17,6 +17,9 @@ export function verifyToken(req, res, next) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     req.user = decoded;
+    
+    // Guarda el userId globalmente para el middleware de auditoría
+    global.currentUserId = decoded.userId;
 
     next();
   } catch (err) {

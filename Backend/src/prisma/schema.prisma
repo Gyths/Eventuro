@@ -93,6 +93,7 @@ model User {
   oauths    OAuthUser[]
   organizer Organizer?
   Ticket    Ticket[]      @relation("TicketOwner")
+  auditLogs AuditLog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -412,3 +413,21 @@ model Hold {
   @@index([eventDateId, eventDateZoneId])
   @@index([expiresAt])
 }
+
+model AuditLog {
+  auditLogId  BigInt   @id @default(autoincrement()) @db.BigInt
+  userId      BigInt?  @db.BigInt                   // quién realizó la acción (puede ser null si es un proceso automático)
+  userType    String?                                // "User", "Organizer" o "Administrador"
+  entityName  String                                // Ej: "Event", "Ticket", "User", etc.
+  entityId    BigInt?  @db.BigInt
+  action      String                                // "CREATE", "UPDATE", "DELETE"
+  description String?
+  createdAt   DateTime  @default(now())
+
+  user User? @relation(fields: [userId], references: [userId], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([entityName, action])
+  @@index([createdAt])
+}
+
