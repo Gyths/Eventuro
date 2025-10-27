@@ -18,16 +18,16 @@ import ticket from "./routes/ticket.routes.js";
 import auditRoutes from "./routes/audit.routes.js";
 
 
+import organizerRoutes from "./routes/organizer.routes.js";
 import defaultUserRoutes from "./routes/defaultUser.routes.js";
 
 import { config } from "./config/env.js";
-
 const app = express();
 const route = "/eventuro/api";
+
 app.use(express.json());
 
-const upload = multer();
-app.use(upload.none());
+const upload = multer({ storage: multer.memoryStorage() }); // memoria
 
 app.use(
   cors({
@@ -44,7 +44,7 @@ app.use(passport.session());
 // Montar rutas
 
 app.use(route + "/defaultUser", defaultUserRoutes); // usuario no-google o manual
-
+app.use(route, organizerRoutes);
 app.use(authRoutes);
 app.use(userRoutes);
 app.use(route + "/event-category", eventCategory);

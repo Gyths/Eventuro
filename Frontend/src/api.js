@@ -21,7 +21,7 @@ export const EventuroApi = async ({ endpoint, method, data = null }) => {
     }
 
     const result = await response.json();
-    console.log(result);
+    //console.log(result);
     return result;
   } catch (err) {
     console.error("Error en la consulta de la api " + endpoint + ": " + err);

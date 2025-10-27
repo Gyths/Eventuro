@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useObjectURL from "./useObjectURL";
 
 export default function useEventForm() {
@@ -7,14 +7,26 @@ export default function useEventForm() {
     category: "",
     description: "",
     extraInfo: "",
-    restrictions: { general: false, withAdult: false, adultsOnly: false },
+    restrictions: { general: false, conUnAdulto: false, soloAdultos: false }, 
     imageFile: null,
+    bannerFile: null,
+    imagePrincipalKey: null, 
+    imageBannerKey: null,
+    imagePrincipalURL: null, 
+    imageBannerURL: null,
   });
 
   const updateForm = (patch) => setForm((f) => ({ ...f, ...patch }));
   const updateRestrictions = (patch) => setForm((f) => ({ ...f, restrictions: { ...f.restrictions, ...patch } }));
 
-  const imagePreview = useObjectURL(form.imageFile);
+  // Previsualización de archivos locales (si se sube uno nuevo)
+  const localImagePreview = useObjectURL(form.imageFile);
+  const localBannerPreview = useObjectURL(form.bannerFile);
 
-  return { form, updateForm, updateRestrictions, imagePreview };
+  // Lógica para determinar la URL final de previsualización:
+  // Si hay un archivo local, usa su URL. Si no, usa la URL copiada.
+  const imagePreview = form.imageFile ? localImagePreview : form.imagePrincipalURL;
+  const bannerPreview = form.bannerFile ? localBannerPreview : form.imageBannerURL;
+
+  return { form, updateForm, updateRestrictions, imagePreview, bannerPreview };
 }

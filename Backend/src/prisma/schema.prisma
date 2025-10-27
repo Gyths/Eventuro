@@ -1,12 +1,8 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -33,20 +29,20 @@ enum ID_TYPE {
 }
 
 enum ACCESS_POLICY {
-  E //everyone: todo el mundo
-  T //teenagers: mayores a 14 con compañia adulta
-  AO //adults only: mayores a 18
+  E // everyone: todo el mundo
+  T // teenagers: mayores a 14 con compañia adulta
+  AO // adults only: mayores a 18
 }
 
 enum EVENT_STATUS {
-  P //pending: pendiente
-  A //acepted: aceptado
-  D //denied: denegado
+  P // pending: pendiente
+  A // acepted: aceptado
+  D // denied: denegado
 }
 
 enum ZONE_KIND {
-  GENERAL //aforo
-  SEATED //asientos numerados
+  GENERAL // aforo
+  SEATED // asientos numerados
 }
 
 enum CURRENCY {
@@ -75,6 +71,16 @@ enum TICKET_STATUS {
   EXPIRED
 }
 
+/**
+ * NUEVO: estado del perfil de organizador
+ */
+enum ORGANIZER_STATUS {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
 // ====================== Models ======================
 
 // Usuario general
@@ -92,6 +98,7 @@ model User {
   password  PasswordUser?
   oauths    OAuthUser[]
   organizer Organizer?
+  administrator Administrator? // NUEVO: relación 1:1 con Administrator
   Ticket    Ticket[]      @relation("TicketOwner")
   auditLogs AuditLog[]
 
@@ -120,13 +127,24 @@ model OAuthUser {
   @@index([userId])
 }
 
+/**
+ * NUEVO: perfil de administrador (1:1 con User)
+ */
+model Administrator {
+  administratorId BigInt @id @default(autoincrement()) @db.BigInt
+  userId          BigInt @unique @db.BigInt
+
+  user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+}
+
 // Organizador (1:1 con User)
 model Organizer {
-  organizerId BigInt  @id @default(autoincrement()) @db.BigInt
-  userId      BigInt  @unique @db.BigInt
+  organizerId BigInt           @id @default(autoincrement()) @db.BigInt
+  userId      BigInt           @unique @db.BigInt
   companyName String
   idType      ID_TYPE
-  idNumber    String  @unique
+  idNumber    String           @unique
+  status      ORGANIZER_STATUS @default(DRAFT) // NUEVO
 
   user   User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
   events Event[]
@@ -138,19 +156,19 @@ model EventCategory {
   initials        String @unique
   description     String
 
-  //relaciones
+  // relaciones
   events EventToCategory[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-//Tabla intermedia entre Evento y Categorías
+// Tabla intermedia entre Evento y Categorías
 model EventToCategory {
   eventId         BigInt @db.BigInt
   eventCategoryId BigInt @db.BigInt
 
-  //relaciones
+  // relaciones
   event    Event         @relation(fields: [eventId], references: [eventId], onDelete: Cascade)
   category EventCategory @relation(fields: [eventCategoryId], references: [eventCategoryId], onDelete: Cascade)
 
@@ -170,19 +188,19 @@ model Venue {
   reference  String?
   capacity   Int
 
-  //relacion
+  // relación
   event Event @relation("EventVenue", fields: [eventId], references: [eventId], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-//Tarifa
+// Tarifa
 model Fee {
   feeId      BigInt  @id @default(autoincrement()) @db.BigInt
   percentage Decimal @db.Decimal(10, 2)
 
-  //relacion
+  // relación
   event Event[]
 
   createdAt DateTime @default(now())
@@ -195,13 +213,15 @@ model Event {
   organizerId             BigInt        @db.BigInt
   feeId                   BigInt?       @db.BigInt
   title                   String
+  imagePrincipalKey       String
+  imageBannerKey          String
   status                  EVENT_STATUS  @default(P)
   inPerson                Boolean
   description             String
   accessPolicy            ACCESS_POLICY
   accessPolicyDescription String?
 
-  //Relaciones
+  // Relaciones
   organizer   Organizer         @relation(fields: [organizerId], references: [organizerId])
   venue       Venue?            @relation("EventVenue")
   fee         Fee?              @relation(fields: [feeId], references: [feeId], onDelete: SetNull)
@@ -223,7 +243,7 @@ model EventDate {
   startAt     DateTime
   endAt       DateTime
 
-  //relaciones
+  // relaciones
   event     Event           @relation(fields: [eventId], references: [eventId], onDelete: Cascade)
   zoneDates EventDateZone[]
   OrderItem OrderItem[]
@@ -244,7 +264,7 @@ model EventDateZone {
   seatMapId         BigInt?   @unique @db.BigInt
   currency          CURRENCY
 
-  //relaciones
+  // relaciones
   eventDate   EventDate                 @relation(fields: [eventDateId], references: [eventDateId], onDelete: Cascade)
   seatMap     SeatMap?                  @relation(fields: [seatMapId], references: [seatMapId], onDelete: SetNull)
   allocations EventDateZoneAllocation[]
@@ -263,7 +283,7 @@ model SeatMap {
   rows      Int
   cols      Int
 
-  //relaciones
+  // relaciones
   occupiedSeats Seat[]
   EventDateZone EventDateZone?
 
@@ -279,7 +299,7 @@ model Seat {
   status    SEAT_STATUS @default(AVAILABLE)
   holdUntil DateTime?
 
-  //relaciones
+  // relaciones
   seatMap   SeatMap     @relation(fields: [seatMapId], references: [seatMapId], onDelete: Cascade)
   OrderItem OrderItem[]
   Ticket    Ticket[]
@@ -295,10 +315,8 @@ model EventDateZoneAllocation {
   eventDateZoneId           BigInt  @db.BigInt
   audienceName              String
   discountPercent           Decimal @db.Decimal(5, 2)
-  allocatedQuantity         Int
-  remainingQuantity         Int?
 
-  //relaciones
+  // relaciones
   zone      EventDateZone @relation(fields: [eventDateZoneId], references: [eventDateZoneId], onDelete: Cascade)
   OrderItem OrderItem[]
   Ticket    Ticket[]
@@ -309,7 +327,7 @@ model EventDateZoneAllocation {
   @@index([eventDateZoneId, audienceName])
 }
 
-//se deberia dis
+// Fases de venta
 model EventSalesPhase {
   eventSalesPhaseId BigInt    @id @default(autoincrement()) @db.BigInt
   eventId           BigInt    @db.BigInt
@@ -334,7 +352,7 @@ model Order {
   currency    CURRENCY
   totalAmount Decimal      @db.Decimal(10, 2)
 
-  //Relaciones
+  // Relaciones
   items OrderItem[]
 
   createdAt DateTime @default(now())
@@ -357,7 +375,7 @@ model OrderItem {
   discountAmount            Decimal? @db.Decimal(10, 2)
   finalPrice                Decimal  @db.Decimal(10, 2)
 
-  //Relaciones
+  // Relaciones
   order      Order                    @relation(fields: [orderId], references: [orderId], onDelete: Cascade)
   eventDate  EventDate                @relation(fields: [eventDateId], references: [eventDateId], onDelete: Restrict)
   zone       EventDateZone            @relation(fields: [eventDateZoneId], references: [eventDateZoneId], onDelete: Restrict)
