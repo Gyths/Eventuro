@@ -445,3 +445,41 @@ export async function cancelOrderRepo(orderId) {
     return { orderId: Number(orderId), status: "CANCELLED" };
   });
 }
+export const findByUserId = async (userId) => {
+  return await prisma.order.findMany({
+    where: { buyerUserId: userId },
+    orderBy: { createdAt: "desc" },
+    include: {
+      items: {
+        include: {
+          eventDate: {
+            include: {
+              event: {
+                select: {
+                  title: true,
+                  description: true,
+                  inPerson: true,
+                  venue: {
+                    select: {
+                      city: true,
+                      address: true,
+                      addressUrl: true,
+                    },
+                  },
+                  categories: {
+                    include: {
+                      category: { select: { description: true } },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          zone: { select: { name: true, kind: true } },
+          allocation: { select: { audienceName: true, discountPercent: true } },
+          seat: { select: { rowNumber: true, colNumber: true } },
+        },
+      },
+    },
+  });
+};

@@ -1,7 +1,7 @@
 import { createTicketSvc } from '../services/ticket.service.js';
 import { updateTicketSvc } from '../services/ticket.service.js';
 import { toJSONSafe } from '../utils/serialize.js';
-
+import {getTicketsByUser} from '../services/ticket.service.js';
 export async function createTicketCtrl(req, res) {
   try {
     const sessionUserId = req.user?.userId;
@@ -49,3 +49,39 @@ export async function updateTicketCtrl(req, res) {
     return res.status(400).json({ error: err.message });
   }
 }
+
+if (!('toJSON' in BigInt.prototype)) {
+  // eslint-disable-next-line no-extend-native
+  BigInt.prototype.toJSON = function () { return this.toString(); };
+}
+
+export const getTicketsByUserCtrl = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+
+    const {
+      page = '1',
+      pageSize = '20',
+      status,        // TICKET_STATUS: PAID|CANCELLED|USED|EXPIRED
+      upcoming,      // 'true' => solo futuros
+      from,          // ISO date
+      to,            // ISO date
+      order = 'desc' // 'asc' | 'desc' por issuedAt
+    } = req.query;
+
+    const result = await getTicketsByUser({
+      userId,
+      page: Number(page),
+      pageSize: Number(pageSize),
+      status,
+      upcoming: upcoming === 'true',
+      from,
+      to,
+      order
+    });
+
+    return res.json(result);
+  } catch (err) {
+    next(err);
+  }
+};
