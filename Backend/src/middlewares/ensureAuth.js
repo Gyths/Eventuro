@@ -37,6 +37,10 @@ export function verifyToken(req, res, next) {
 export async function attachUserContext(req, res, next) {
   try {
     if (!req.user?.id) return res.status(401).json({ message: "No autenticado." });
+
+    // Guarda el ID del usuario globalmente
+    global.currentUserId = Number(req.user.id);
+
     const ctx = await getUserRolesAndOrganizerStatus(req.user.id);
     req.auth = ctx;
     next();

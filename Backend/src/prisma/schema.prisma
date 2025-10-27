@@ -434,8 +434,8 @@ model Hold {
 
 model AuditLog {
   auditLogId  BigInt   @id @default(autoincrement()) @db.BigInt
-  userId      BigInt?  @db.BigInt                   // quién realizó la acción (puede ser null si es un proceso automático)
-  userType    String?                                // "User", "Organizer" o "Administrador"
+  userId      BigInt?  @db.BigInt                   // quién realizó la acción (puede ser null si se realiza desde base de datos directamente)
+  userType    String?                                // "User", "Organizer" o "Administrador". Por ahora solo Administrador
   entityName  String                                // Ej: "Event", "Ticket", "User", etc.
   entityId    BigInt?  @db.BigInt
   action      String                                // "CREATE", "UPDATE", "DELETE"

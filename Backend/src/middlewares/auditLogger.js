@@ -1,4 +1,3 @@
-
 import { PrismaClient } from "../generated/prisma/index.js";
 const prisma = new PrismaClient();
 
@@ -6,17 +5,38 @@ export function auditMiddleware() {
   return async (params, next) => {
     const actionsToLog = ["create", "update", "delete"];
 
+    // Si no es una acción relevante, continúa normal
     if (!actionsToLog.includes(params.action)) {
       return next(params);
     }
 
+    // Ejecutar la acción dentro de un try/catch
     let result;
-    let description = "";
-    let entityId = null;
-
     try {
-      // Antes del update, obtener datos previos
+      // Verificar si el usuario actual es Administrador
+      const currentUserId = global.currentUserId || null;
+
+      if (!currentUserId) {
+        // Si no hay usuario logueado, no auditar
+        return await next(params);
+      }
+
+      // Buscar si este userId pertenece a un administrador
+      const admin = await prisma.administrator.findUnique({
+        where: { userId: currentUserId },
+      });
+
+      // Si no es administrador, no auditar
+      if (!admin) {
+        return await next(params);
+      }
+
+      // --- En este punto, sí es Administrador ---
+      let description = "";
+      let entityId = null;
       let before = null;
+
+      // Si es update, obtenemos los datos previos
       if (params.action === "update") {
         before = await prisma[params.model.toLowerCase()].findUnique({
           where: params.args.where,
@@ -26,25 +46,16 @@ export function auditMiddleware() {
       // Ejecutar la acción real
       result = await next(params);
 
-      // Obtener ID del registro afectado
+      // Obtener ID afectado
       const idField = Object.keys(result).find((key) =>
         key.toLowerCase().endsWith("id")
       );
       if (idField) entityId = result[idField];
 
-      // Determinar tipo de usuario dinámicamente
-      let userType = "Administrador";
-      if (global.currentUserId) {
-        const organizer = await prisma.organizer.findUnique({
-          where: { userId: global.currentUserId },
-        });
-        userType = organizer ? "Organizer" : "User";
-      }
-
       // Crear descripción según acción
       switch (params.action) {
         case "create":
-          description = `Se creó ${params.model} con Id ${entityId}.`;
+          description = `Administrador ${currentUserId} creó ${params.model} con Id ${entityId}.`;
           break;
 
         case "update":
@@ -57,26 +68,27 @@ export function auditMiddleware() {
             }
           }
           description = updatedFields.length
-            ? `Se actualizaron los campos ${updatedFields.join(", ")} en ${params.model} con Id ${entityId}.`
-            : `Se actualizó ${params.model} con Id ${entityId}, sin cambios visibles.`;
+            ? `Administrador ${currentUserId} actualizó ${params.model} con Id ${entityId}. Campos: ${updatedFields.join(", ")}.`
+            : `Administrador ${currentUserId} actualizó ${params.model} con Id ${entityId}, sin cambios visibles.`;
           break;
 
         case "delete":
-          description = `Se eliminó ${params.model} con Id ${entityId}.`;
+          description = `Administrador ${currentUserId} eliminó ${params.model} con Id ${entityId}.`;
           break;
       }
 
       // Registrar auditoría
       await prisma.auditLog.create({
         data: {
-          userId: global.currentUserId || null,
-          userType,
+          userId: currentUserId,
+          userType: "Administrador",
           entityName: params.model,
           entityId,
           action: params.action.toUpperCase(),
           description,
         },
       });
+
     } catch (error) {
       console.error("Error en middleware de auditoría:", error);
     }
@@ -84,4 +96,3 @@ export function auditMiddleware() {
     return result;
   };
 }
-
