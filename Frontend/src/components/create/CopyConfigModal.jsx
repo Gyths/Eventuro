@@ -100,6 +100,7 @@ export default function CopyConfigModal({ isOpen, onClose, onSelectEvent, idOrga
         extraInfo: payload.accessPolicyDescription ?? "",
         imagePrincipalKey: payload.imagePrincipalKey ?? null,
         imageBannerKey: payload.imageBannerKey ?? null,
+        inPerson: payload.inPerson ?? true,
         imagePrincipalURLSigned: payload.imagePrincipalURLSigned ?? null,
         imageBannerURLSigned: payload.imageBannerURLSigned ?? null,
 

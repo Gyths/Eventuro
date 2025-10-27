@@ -32,37 +32,26 @@ export default function ImageRestrictionsPanel({
 
   return (
     <div className="space-y-6">
-      {/* Primer FormField con ImageDropzone */}
       <FormField label="Imagen principal * (836 px x 522 px)">
         <ImageDropzone
           file={form.imageFile}
           onFile={handleFile}
+          previewUrl={imagePreview} 
           accept="image/*"
           className="h-[320px] md:h-[250px]"
         />
-        {imagePreview && (
-          <p className="mt-2 text-xs text-gray-500 truncate">
-            Previsualización activa
-          </p>
-        )}
       </FormField>
-
-      {/* Segundo ImageDropzone agregado entre los dos campos */}
+      
       <FormField label="Banner (1200 px x 300 px)">
         <ImageDropzone
           file={form.bannerFile}
           onFile={handleSecondaryFile}
+          previewUrl={bannerPreview} 
           accept="image/*"
           className="h-[220px] md:h-[200px] border-dashed border-2 border-gray-300 rounded-lg"
         />
-        {bannerPreview && (
-          <p className="mt-2 text-xs text-gray-500 truncate">
-            Previsualización activa
-          </p>
-        )}
       </FormField>
 
-      {/* Campo de restricciones */}
       <FormField label="Restricción *">
         <Restrictions value={restrictions} onChange={onChangeRestrictions} />
       </FormField>

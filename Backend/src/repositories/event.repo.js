@@ -8,18 +8,26 @@ export async function createEventRepo(input) {
 
     // --- Manejo del imagenPrincipal (multer) ---
     let imagePrincipalKey = null;
-    if (input.imagenPrincipal) {
-      const buffer = input.imagenPrincipal.buffer;
-      const fileName = `events/${Date.now()}_${input.imagenPrincipal.originalname}`;
-      imagePrincipalKey = await uploadFile(fileName, buffer, input.imagenPrincipal.mimetype);
+      if (input.imagenPrincipal) {
+        // 1. Si se sube un nuevo archivo (Multer)
+        const buffer = input.imagenPrincipal.buffer;
+        const fileName = `events/${Date.now()}_${input.imagenPrincipal.originalname}`;
+        imagePrincipalKey = await uploadFile(fileName, buffer, input.imagenPrincipal.mimetype);
+      } else if (input.imagePrincipalKey) {
+        // 2. Si se está reutilizando una clave (Evento copiado)
+        imagePrincipalKey = input.imagePrincipalKey;
     }
 
-    // --- Manejo del imagenBanner (multer) ---
+    // --- Manejo del imagenBanner ---
     let imageBannerKey = null;
-    if (input.imagenBanner) {
-      const buffer = input.imagenBanner.buffer;
-      const fileName = `events/${Date.now()}_${input.imagenBanner.originalname}`;
-      imageBannerKey = await uploadFile(fileName, buffer, input.imagenBanner.mimetype);
+      if (input.imagenBanner) {
+        // 1. Si se sube un nuevo archivo (Multer)
+        const buffer = input.imagenBanner.buffer;
+        const fileName = `events/${Date.now()}_${input.imagenBanner.originalname}`;
+        imageBannerKey = await uploadFile(fileName, buffer, input.imagenBanner.mimetype);
+      } else if (input.imageBannerKey) {
+        // 2. Si se está reutilizando una clave (Evento copiado)
+        imageBannerKey = input.imageBannerKey;
     }
 
     // --- Parsear y convertir tipos ---

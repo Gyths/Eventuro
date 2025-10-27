@@ -206,8 +206,6 @@ export default function CrearEventoCards() {
       extraInfo: "",
       imageFile: null,
       bannerFile: null,
-      imageBannerKey: null,
-      imagePrincipalKey: null,
       restrictions: [],
     });
     updateRestrictions([]); // según tu hook; si usa objeto, pásale {}.
@@ -363,7 +361,7 @@ export default function CrearEventoCards() {
       // Datos simples (texto)
       formData.append("organizerId", 1);
       formData.append("title", form.name);
-      formData.append("inPerson", true);
+      formData.append("inPerson", String(location.inPerson === true));
       formData.append("description", form.description);
       formData.append("accessPolicy", "E");
       formData.append("accessPolicyDescription", form.extraInfo);
@@ -498,8 +496,9 @@ export default function CrearEventoCards() {
       bannerFile: null,
       imagePrincipalKey: eventData.imagePrincipalKey,
       imageBannerKey: eventData.imageBannerKey,
-      imagePreview: eventData.imagePrincipalURLSigned,
-      bannerPreview: eventData.imageBannerURLSigned,
+      imagePrincipalURL: eventData.imagePrincipalURLSigned,
+      imageBannerURL: eventData.imageBannerURLSigned,
+      inPerson: eventData.inPerson,
     });
 
     // Mapear ubicación
@@ -610,7 +609,7 @@ export default function CrearEventoCards() {
         newErrors.description =
           "La descripción no puede tener más de 300 caracteres.";
       }
-      if (!form.imageFile)
+      if (!form.imageFile && !imagePreview)
         newErrors.image = "Debes subir una imagen para el evento.";
 
       const selectedCats = Array.isArray(form.categories)
@@ -809,6 +808,7 @@ export default function CrearEventoCards() {
                 restrictions={form.restrictions}
                 onChangeRestrictions={updateRestrictions}
                 imagePreview={imagePreview}
+                bannerPreview={bannerPreview}
               />
             </div>
           </div>
