@@ -394,6 +394,8 @@ export default function CrearEventoCards() {
         zones: eventZones,
       };
 
+      const formData = new FormData();
+
       // Datos simples (texto)
       formData.append("organizerId", 1);
       formData.append("title", form.name);

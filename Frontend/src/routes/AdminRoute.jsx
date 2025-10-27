@@ -5,7 +5,7 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../services/auth/AuthContext";
 
 export default function AdminRoute() {
-  /*const { ready, isAuthenticated, user } = useAuth();
+  const { ready, isAuthenticated, user } = useAuth();
   const location = useLocation();
 
   if (!ready) {
@@ -25,7 +25,7 @@ export default function AdminRoute() {
     return (
       <Navigate to="/" state={{ reason: "notAdmin", from: location }} replace />
     );
-  }*/
+  }
 
   return <Outlet />;
 }

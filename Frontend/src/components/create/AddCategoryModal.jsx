@@ -1,27 +1,46 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-
-// 1. IMPORTA EL LOGO
-// (Ajusta esta ruta si es necesario. Asumo que está en 'assets')
 import logo from "../../assets/logoB.svg";
 
-export default function AddCategoryModal({ isOpen, onClose, onSave }) {
+export default function AddCategoryModal({
+  isOpen,
+  onClose,
+  onSave,
+  initialData = null,
+}) {
   const [categoryName, setCategoryName] = useState("");
   const [categoryDescription, setCategoryDescription] = useState("");
   const [categoryInitials, setCategoryInitials] = useState("");
 
+  const isEditing = initialData !== null;
+  const modalTitle = isEditing ? "Editar categoría" : "Nueva categoría";
+  const saveButtonText = isEditing ? "Actualizar cambios" : "Guardar cambios";
+
+  useEffect(() => {
+    if (isOpen) {
+      if (isEditing) {
+        // Modo Edición: Rellena los campos
+        setCategoryName(initialData.name || "");
+        setCategoryDescription(initialData.description || ""); // Asumo que quieres editar la descripción también
+        setCategoryInitials(initialData.initials || "");
+      } else {
+        // Modo Creación: Limpia los campos
+        setCategoryName("");
+        setCategoryDescription("");
+        setCategoryInitials("");
+      }
+    }
+  }, [isOpen, initialData, isEditing]); // Dependencias del efecto
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (categoryName.trim()) {
+    if (categoryName.trim() && categoryInitials.trim()) {
       onSave({
         name: categoryName.trim(),
         description: categoryDescription.trim(),
         initials: categoryInitials.trim(),
       });
-      setCategoryName("");
-      setCategoryDescription("");
-      setCategoryInitials("");
-      onClose();
+      // El modal se cierra desde el 'onSave' (handleUpdateCategory)
     } else {
       alert(
         "El nombre y las iniciales de la categoría no pueden estar vacíos."
@@ -55,10 +74,9 @@ export default function AddCategoryModal({ isOpen, onClose, onSave }) {
           <img src={logo} alt="Eventuro" className="h-8 w-auto" />
 
           <button
-            onClick={onClose}
+            onClick={onClose} // Llama a la función 'onClose' pasada por props
             className="text-white p-1.5 rounded-lg border border-white/50 hover:bg-white/10 transition-colors"
             title="Cerrar"
-            T
           >
             <XMarkIcon className="h-6 w-6" />
           </button>
@@ -68,7 +86,7 @@ export default function AddCategoryModal({ isOpen, onClose, onSave }) {
         <div className="p-6">
           {/* TÍTULO */}
           <h2 className="text-3xl font-bold text-gray-900 mb-6">
-            Nueva categoría
+            {modalTitle}
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -126,7 +144,7 @@ export default function AddCategoryModal({ isOpen, onClose, onSave }) {
                 type="submit"
                 className="px-6 py-3 rounded-full bg-purple-600 text-white font-semibold text-lg hover:bg-purple-700 transition-colors shadow-md"
               >
-                Guardar cambios
+                {saveButtonText}
               </button>
             </div>
           </form>

@@ -35,6 +35,7 @@ import AdminEvents from "./pages/admin/AdminEvents.jsx";
 import AdminComplaints from "./pages/admin/AdminComplaints.jsx";
 import AdminUsers from "./pages/admin/AdminUsers.jsx";
 import AdminLogs from "./pages/admin/AdminLogs.jsx";
+import ManageCategories from "./pages/admin/ManageCategories.jsx";
 
 function App() {
   return (
@@ -70,6 +71,7 @@ function App() {
           <Route path="/admin/complaints" element={<AdminComplaints />} />
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/logs" element={<AdminLogs />} />
+          <Route path="/admin/categories" element={<ManageCategories />} />
           {/* Redirección de /admin a /admin/dashboard */}
           <Route
             path="/admin"
