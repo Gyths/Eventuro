@@ -788,7 +788,6 @@ export default function CrearEventoCards() {
           "El precio por zona debe ser un número mayor que 0.";
       }
 
-<<<<<<< HEAD
       // variable para comparar capacidad del recinto
       const aforo = Number(location.capacity || 0);
       // variable para comparar la cantidad total de tickets
@@ -796,11 +795,9 @@ export default function CrearEventoCards() {
         (sum, z) => sum + Number(z.quantity || 0),
         0
       );
-=======
       if (!newErrors.tickets) {
         const zones = tickets.zones || [];
         const pricingErrors = [];
->>>>>>> main
 
         zones.forEach((z, zi) => {
           const base = Number(z.price || 0);
