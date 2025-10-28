@@ -31,7 +31,7 @@ export default function AdminTopBar() {
         <div className="flex items-center gap-2">
           <Linker
             label="Dashboard"
-            icon="home" // "home" está definido en Linker.jsx
+            icon="dashboard" // "home" está definido en Linker.jsx
             to="/admin/dashboard"
           />
           <Linker
@@ -45,8 +45,8 @@ export default function AdminTopBar() {
             to="/admin/events"
           />
           <Linker
-            label="Reclamaciones"
-            icon="lifebuoy" // "lifebuoy" está definido en Linker.jsx
+            label="Libro de reclamaciones"
+            icon="book-open" // "lifebuoy" está definido en Linker.jsx
             to="/admin/complaints"
           />
           <Linker
@@ -56,7 +56,7 @@ export default function AdminTopBar() {
           />
           <Linker
             label="Logs"
-            icon="adjustments-horizontal" // "adjustments-horizontal" está definido en Linker.jsx
+            icon="document-log" // "adjustments-horizontal" está definido en Linker.jsx
             to="/admin/logs"
           />
         </div>

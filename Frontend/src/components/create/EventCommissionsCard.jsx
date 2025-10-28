@@ -1,23 +1,17 @@
-// src/components/create/EventCommissionsCard.jsx
 import React, { useState, useEffect } from "react";
 import { BanknotesIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import Swal from "sweetalert2";
 
 const EVENTS_API_URL = "http://localhost:4000/eventuro/api/event/list";
-const FEE_API_URL = "http://localhost:4000/eventuro/api/event"; // Se completará con /:id/fee
+const FEE_API_URL = "http://localhost:4000/eventuro/api/event";
 
 export default function EventCommissionsCard() {
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // 1. Estado para guardar los inputs de comisión
-  // (Guardará el valor de cada input por eventId, ej: { 2: "5.5" })
   const [commissionInputs, setCommissionInputs] = useState({});
-  // 2. Estado para saber qué evento se está guardando
   const [savingEventId, setSavingEventId] = useState(null);
 
-  // --- 3. FUNCIÓN GET (Cargar Eventos) ---
   const fetchEvents = async () => {
     setIsLoading(true);
     setError(null);
@@ -27,20 +21,14 @@ export default function EventCommissionsCard() {
         throw new Error(`Error: ${response.status} ${response.statusText}`);
       }
       const data = await response.json();
-
-      // Parseamos los datos que nos interesan
       const parsedEvents = (data || []).map((event) => ({
         id: event.eventId,
         title: event.title || "Evento sin título",
         description: event.description || "Sin descripción.",
-        // Mapeamos el array de categorías anidado
         categories: (event.categories || []).map(
           (cat) => cat.category.description
         ),
-        // (Asumimos que la API no nos da la comisión actual,
-        // así que el input estará vacío)
       }));
-
       setEvents(parsedEvents);
     } catch (err) {
       setError(err.message || "No se pudieron cargar los eventos");
@@ -48,17 +36,12 @@ export default function EventCommissionsCard() {
       setIsLoading(false);
     }
   };
-
   useEffect(() => {
     fetchEvents();
   }, []);
-
-  // --- 4. FUNCIÓN PUT (Guardar Comisión) ---
   const handleSaveCommission = async (eventId) => {
     const commissionValue = commissionInputs[eventId] || "";
     const percentage = parseFloat(commissionValue);
-
-    // Validación
     if (isNaN(percentage) || percentage < 0) {
       Swal.fire(
         "Valor inválido",
@@ -67,29 +50,23 @@ export default function EventCommissionsCard() {
       );
       return;
     }
-
-    setSavingEventId(eventId); // Muestra el loader en el botón
-
-    // Armamos el JSON
+    setSavingEventId(eventId);
     const jsonBody = {
       percentage: percentage,
     };
-
     try {
       const response = await fetch(`${FEE_API_URL}/${eventId}/fee`, {
-        method: "PUT", // O POST, o PATCH (según tu backend)
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
         body: JSON.stringify(jsonBody),
       });
-
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || `Error ${response.status}`);
       }
-
       await Swal.fire({
         icon: "success",
         title: "¡Comisión Guardada!",
@@ -99,13 +76,10 @@ export default function EventCommissionsCard() {
     } catch (err) {
       await Swal.fire("Error", err.message, "error");
     } finally {
-      setSavingEventId(null); // Oculta el loader del botón
+      setSavingEventId(null);
     }
   };
-
-  // --- 5. Función para actualizar el estado de los inputs ---
   const handleInputChange = (eventId, value) => {
-    // Permite solo números y un punto decimal
     const sanitizedValue = value
       .replace(/[^0-9.]/g, "")
       .replace(/(\..*)\./g, "$1");
@@ -114,22 +88,21 @@ export default function EventCommissionsCard() {
       [eventId]: sanitizedValue,
     }));
   };
+  // --- FIN DE LA LÓGICA ---
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm max-w-4xl mx-auto">
-      {/* Encabezado */}
-      <div className="border-b border-gray-200 p-4 sm:p-5">
-        <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-          <BanknotesIcon className="h-6 w-6 text-purple-600" />
+    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm max-w-4xl mx-auto overflow-hidden transition-shadow duration-300 hover:shadow-md">
+      <div className="border-b border-gray-200 p-6 sm:p-8 bg-gray-50/70">
+        <h3 className="text-3xl font-semibold text-gray-800 flex items-center gap-3">
+          <BanknotesIcon className="h-9 w-9 text-purple-600" />
           Comisiones por Evento
         </h3>
-        <p className="mt-1 text-sm text-gray-600">
+        <p className="mt-2 text-base text-gray-600">
           Define el porcentaje de comisión para cada evento publicado.
         </p>
       </div>
 
-      {/* Cuerpo con la lista de eventos */}
-      <div className="p-4 sm:p-5 space-y-4">
+      <div className="p-4 sm:p-5">
         {isLoading && (
           <div className="text-center p-4">Cargando eventos...</div>
         )}
@@ -138,12 +111,11 @@ export default function EventCommissionsCard() {
         )}
 
         {!isLoading && !error && (
-          <div className="space-y-5">
+          <div className="divide-y divide-gray-200 rounded-lg border">
             {events.map((event) => (
-              // Fila de un evento
               <div
                 key={event.id}
-                className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-lg border border-gray-200"
+                className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 transition-colors hover:bg-purple-50/50"
               >
                 {/* Info del Evento */}
                 <div className="flex-grow">
@@ -151,7 +123,6 @@ export default function EventCommissionsCard() {
                   <p className="text-sm text-gray-600 truncate">
                     {event.description}
                   </p>
-                  {/* Píldoras de categoría */}
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     {event.categories.map((catName) => (
                       <span
@@ -168,7 +139,7 @@ export default function EventCommissionsCard() {
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                   <div className="relative w-full sm:w-28">
                     <input
-                      type="text" // Usamos text para controlar el formato
+                      type="text"
                       value={commissionInputs[event.id] || ""}
                       onChange={(e) =>
                         handleInputChange(event.id, e.target.value)

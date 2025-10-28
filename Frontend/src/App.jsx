@@ -26,6 +26,7 @@ import MisTickets from "./pages/MisTickets";
 import OrganizerRoute from "./routes/OrganizerRoute";
 import MyCalendar from "./pages/MyCalendar.jsx";
 import TicketSelection from "./pages/EventInformation.jsx";
+import SolicitudesReembolso from "./pages/SolicitudesReembolso.jsx";
 
 import AdminRoute from "./routes/AdminRoute";
 
@@ -49,6 +50,10 @@ function App() {
         <Route path="registro" element={<Register />} />
         <Route element={<OrganizerRoute requireApproved={true} />}>
           <Route path="/crearEvento" element={<CrearEventoCards />} />
+          <Route
+            path="/solicitudes-reembolso"
+            element={<SolicitudesReembolso />}
+          />
 
           {/*<Route> se comenta para evitar que la pagina dentro de ella esté restringida a una sesión autenticada*/}
           <Route element={<ProtectedRoute />}></Route>

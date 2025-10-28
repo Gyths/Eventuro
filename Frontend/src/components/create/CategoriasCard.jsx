@@ -6,8 +6,6 @@ import {
   PlusCircleIcon,
   ArrowRightIcon,
 } from "@heroicons/react/24/outline";
-
-// --- 1. IMPORTA useNavigate ---
 import { useNavigate } from "react-router-dom";
 
 const API_URL = "http://localhost:4000/eventuro/api/event-category";
@@ -18,11 +16,8 @@ export default function CategoriasCard() {
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-
-  // --- 2. INICIALIZA useNavigate ---
   const navigate = useNavigate();
 
-  // 3. Función GET (sin cambios)
   const fetchCategories = async () => {
     if (categories.length === 0) setIsLoading(true);
     setError(null);
@@ -43,20 +38,15 @@ export default function CategoriasCard() {
       setIsLoading(false);
     }
   };
-
   useEffect(() => {
     fetchCategories();
   }, []);
-
   const handleOpenModal = () => {
     setIsModalOpen(true);
   };
-
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
-
-  // 4. LÓGICA 'POST' IMPLEMENTADA (sin cambios)
   const handleSaveCategory = async (modalData) => {
     const jsonBody = {
       initials: modalData.initials,
@@ -98,12 +88,12 @@ export default function CategoriasCard() {
       setIsSaving(false);
     }
   };
+  // --- FIN DE LA LÓGICA ---
 
   return (
     <>
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm max-w-4xl mx-auto">
-        {/* ... (Encabezado y Cuerpo de la Tarjeta sin cambios) ... */}
-        <div className="p-6 sm:p-8">
+      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm max-w-4xl mx-auto overflow-hidden transition-shadow duration-300 hover:shadow-md">
+        <div className="p-6 sm:p-8 bg-gray-50/70 border-b border-gray-200">
           <h3 className="text-3xl font-semibold text-gray-800 flex items-center gap-3">
             <ListBulletIcon className="h-9 w-9 text-purple-600" />
             <span>Gestión de categorías de eventos</span>
@@ -112,7 +102,9 @@ export default function CategoriasCard() {
             Algunas de las categorías registradas:
           </p>
         </div>
-        <div className="p-6 sm:p-8 pt-0 min-h-[150px] flex items-center justify-center">
+
+        {/* Cuerpo de la Tarjeta (Fondo blanco) */}
+        <div className="p-6 sm:p-8 pt-6 min-h-[150px] flex items-center justify-center">
           {isLoading && (
             <div className="text-center text-gray-500 py-10 w-full">
               Cargando categorías...
@@ -128,7 +120,7 @@ export default function CategoriasCard() {
               {categories.map((category) => (
                 <div
                   key={category.id}
-                  className="px-4 py-2 rounded-lg bg-purple-100 text-purple-800 font-medium text-sm hover:bg-purple-200 transition-colors cursor-default"
+                  className="px-4 py-2 rounded-lg bg-purple-100 text-purple-800 font-medium text-sm shadow-sm transition-all hover:scale-105 hover:shadow-md cursor-default"
                 >
                   {category.name}
                 </div>
@@ -142,8 +134,7 @@ export default function CategoriasCard() {
           )}
         </div>
 
-        {/* --- 5. MODIFICACIÓN DEL BOTÓN --- */}
-        <div className="p-6 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-center gap-4">
+        <div className="p-6 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-center gap-4 bg-gray-50/70">
           <button
             type="button"
             onClick={handleOpenModal}
@@ -154,7 +145,6 @@ export default function CategoriasCard() {
           </button>
           <button
             type="button"
-            // --- AÑADE EL onClick CON LA NAVEGACIÓN ---
             onClick={() => navigate("/admin/categories")}
             className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-purple-700 font-semibold text-sm border border-purple-200 hover:bg-purple-50 transition-colors shadow-sm"
           >
