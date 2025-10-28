@@ -2,48 +2,62 @@ import React, { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { DiscountCodeCard } from "./DiscountCodeCard";
-export default function DiscountCodesSection() {
-  const [codes, setCodes] = useState([
-    {
-      id: uuidv4(),
-      code: "EVNTR2025",
-      available: 250,
-      from: "11/09/2025",
-      to: "15/09/2025",
-      appliesTo: ["Tipo A Sub A", "Tipo A Sub B"],
-      percent: 25,
-    },
-  ]);
-
+export default function DiscountCodesSection({
+  zoneNames = [],
+  value = [],
+  onChange = () => {},
+}) {
   const [showAdd, setShowAdd] = useState(false);
-  const [draft, setDraft] = useState({ code: "", available: 0, from: "", to: "", percent: 0, applies: "" });
+  const [draft, setDraft] = useState({
+    code: "",
+    available: 0,
+    from: "",
+    to: "",
+    percent: 0,
+    appliesToOne: "ALL",
+  });
 
   const addCode = () => {
     if (!draft.code || !draft.from || !draft.to) return;
-    setCodes((c) => [
-      ...c,
-      {
-        id: uuidv4(),
-        code: draft.code.trim(),
-        available: Number(draft.available || 0),
-        from: draft.from,
-        to: draft.to,
-        appliesTo: draft.applies
-          ? draft.applies.split(",").map((s) => s.trim()).filter(Boolean)
-          : [],
-        percent: Number(draft.percent || 0),
-      },
-    ]);
-    setDraft({ code: "", available: 0, from: "", to: "", percent: 0, applies: "" });
+    const computedAppliesTo =
+      draft.appliesToOne === "ALL"
+        ? [...zoneNames] // todas las zonas definidas en el paso 2
+        : draft.appliesToOne
+        ? [draft.appliesToOne]
+        : [];
+
+    const newCode = {
+      id: uuidv4(),
+      code: draft.code.trim(),
+      available: Number(draft.available || 0),
+      from: draft.from,
+      to: draft.to,
+
+      appliesToOne: draft.appliesToOne,
+
+      appliesTo: computedAppliesTo,
+      percent: Number(draft.percent || 0),
+    };
+    onChange([...value, newCode]);
+    setDraft({
+      code: "",
+      available: 0,
+      from: "",
+      to: "",
+      percent: 0,
+      appliesToOne: "ALL",
+    });
     setShowAdd(false);
   };
 
-  const removeCode = (id) => setCodes((c) => c.filter((x) => x.id !== id));
+  const removeCode = (id) => onChange(value.filter((x) => x.id !== id));
 
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-800">Códigos de descuento</h3>
+        <h3 className="text-lg font-semibold text-gray-800">
+          Códigos de descuento
+        </h3>
         <button
           type="button"
           onClick={() => setShowAdd((v) => !v)}
@@ -61,7 +75,9 @@ export default function DiscountCodesSection() {
               <input
                 className="mt-1 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-200"
                 value={draft.code}
-                onChange={(e) => setDraft((d) => ({ ...d, code: e.target.value }))}
+                onChange={(e) =>
+                  setDraft((d) => ({ ...d, code: e.target.value }))
+                }
                 placeholder="EVNTR2025"
               />
             </div>
@@ -71,7 +87,9 @@ export default function DiscountCodesSection() {
                 type="number"
                 className="mt-1 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-200"
                 value={draft.available}
-                onChange={(e) => setDraft((d) => ({ ...d, available: e.target.value }))}
+                onChange={(e) =>
+                  setDraft((d) => ({ ...d, available: e.target.value }))
+                }
                 min={0}
               />
             </div>
@@ -81,7 +99,9 @@ export default function DiscountCodesSection() {
                 type="number"
                 className="mt-1 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-200"
                 value={draft.percent}
-                onChange={(e) => setDraft((d) => ({ ...d, percent: e.target.value }))}
+                onChange={(e) =>
+                  setDraft((d) => ({ ...d, percent: e.target.value }))
+                }
                 min={0}
                 max={100}
               />
@@ -92,7 +112,9 @@ export default function DiscountCodesSection() {
                 type="date"
                 className="mt-1 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-200"
                 value={draft.from}
-                onChange={(e) => setDraft((d) => ({ ...d, from: e.target.value }))}
+                onChange={(e) =>
+                  setDraft((d) => ({ ...d, from: e.target.value }))
+                }
               />
             </div>
             <div>
@@ -101,17 +123,32 @@ export default function DiscountCodesSection() {
                 type="date"
                 className="mt-1 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-200"
                 value={draft.to}
-                onChange={(e) => setDraft((d) => ({ ...d, to: e.target.value }))}
+                onChange={(e) =>
+                  setDraft((d) => ({ ...d, to: e.target.value }))
+                }
               />
             </div>
             <div className="lg:col-span-3">
-              <label className="text-xs text-gray-600">Aplica para (separa por coma)</label>
-              <input
+              <label className="text-xs text-gray-600">Aplica para: </label>
+              <select
                 className="mt-1 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-200"
-                value={draft.applies}
-                onChange={(e) => setDraft((d) => ({ ...d, applies: e.target.value }))}
-                placeholder="Tipo A Sub A, Tipo A Sub B"
-              />
+                value={draft.appliesToOne}
+                onChange={(e) =>
+                  setDraft((d) => ({ ...d, appliesToOne: e.target.value }))
+                }
+              >
+                <option value="ALL">Todas</option>
+                {zoneNames.map((zn, i) => (
+                  <option key={i} value={zn}>
+                    {zn}
+                  </option>
+                ))}
+              </select>
+
+              <p className="mt-1 text-[11px] text-gray-500">
+                Selecciona una zona específica o “Todas”. Si eliges “Todas”, el
+                código se aplicará a todas las zonas actuales.
+              </p>
             </div>
           </div>
           <div className="mt-4 flex justify-end">
@@ -127,7 +164,7 @@ export default function DiscountCodesSection() {
       )}
 
       <div className="grid md:grid-cols-2 gap-4">
-        {codes.map((c) => (
+        {value.map((c) => (
           <DiscountCodeCard
             key={c.id}
             code={c.code}
@@ -139,6 +176,11 @@ export default function DiscountCodesSection() {
             onRemove={() => removeCode(c.id)}
           />
         ))}
+        {value.length === 0 && !showAdd && (
+          <p className="text-sm text-gray-500 md:col-span-2">
+            No hay códigos de descuento agregados.
+          </p>
+        )}
       </div>
     </section>
   );

@@ -8,18 +8,24 @@ import { useMemo } from "react";
  * - onChange:(nextIds:number[]|string[]) => void
  * - className?: string
  */
-export default function CategoryPills({ options = [], values = [], onChange, className = "" }) {
+export default function CategoryPills({
+  options = [],
+  values = [],
+  onChange,
+  className = "",
+}) {
   const set = useMemo(() => new Set((values || []).map(String)), [values]);
 
   const toggle = (id) => {
     const s = new Set(set);
     const key = String(id);
-    if (s.has(key)) s.delete(key); else s.add(key);
+    if (s.has(key)) s.delete(key);
+    else s.add(key);
     const next = options
-      .map(o => String(o.id))
-      .filter(k => s.has(k))
-      .map(k => {
-        const o = options.find(x => String(x.id) === k);
+      .map((o) => String(o.id))
+      .filter((k) => s.has(k))
+      .map((k) => {
+        const o = options.find((x) => String(x.id) === k);
         return o?.id ?? k;
       });
     onChange?.(next);
@@ -28,7 +34,11 @@ export default function CategoryPills({ options = [], values = [], onChange, cla
   return (
     <div className={className}>
       <div className="mb-2 text-sm font-medium text-gray-700">Categorías</div>
-      <div className="flex flex-wrap gap-2" role="group" aria-label="Seleccionar categorías">
+      <div
+        className="flex flex-wrap gap-2"
+        role="group"
+        aria-label="Seleccionar categorías"
+      >
         {options.map((opt) => {
           const selected = set.has(String(opt.id));
           return (
@@ -41,7 +51,7 @@ export default function CategoryPills({ options = [], values = [], onChange, cla
                 selected
                   ? "bg-violet-50 border-violet-400 text-violet-700 ring-2 ring-violet-200"
                   : "bg-white border-gray-200 text-gray-700 hover:border-violet-300 hover:shadow",
-                "focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
+                "focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400",
               ].join(" ")}
               aria-pressed={selected}
             >

@@ -141,7 +141,9 @@ export default function CrearEventoCards() {
         zoneName: "",
         quantity: "",
         price: "",
-        subtypes: [{ type: "", discount: "" }],
+        subtypes: [
+          { type: "", pricingMode: "percent", discount: "", newPrice: "" },
+        ],
       },
     ],
     endSaleWhen: "termino", // "termino" | "inicio" | "2dias"
@@ -173,7 +175,9 @@ export default function CrearEventoCards() {
           zoneName: "",
           quantity: "",
           price: "",
-          subtypes: [{ type: "", discount: "" }],
+          subtypes: [
+            { type: "", pricingMode: "percent", discount: "", newPrice: "" },
+          ],
         },
       ],
       endSaleWhen: "termino",
@@ -320,17 +324,30 @@ export default function CrearEventoCards() {
       );
 
       const eventZones = (tickets.zones || []).map((zone) => {
-        console.log(zone.subtypes);
-        const allocations = (zone.subtypes || []).map((subtype) => ({
-          audienceName: subtype.type || "Entrada General",
-          discountType: "PERCENTAGE",
-          discountValue: Number(subtype.discount) || 0,
-        }));
+        const basePrice = Number(zone.price) || 0;
+
+        const allocations = (zone.subtypes || []).map((st) => {
+          const mode = st.pricingMode || "percent";
+
+          const allocation = {
+            audienceName: st.type || "Entrada General",
+            allocatedQuantity: Number(zone.quantity) || 0,
+
+            discountType: mode === "percent" ? "PERCENTAGE" : "CASH",
+            discountValue:
+              mode === "percent"
+                ? Number(st.discount) || 0
+                : Number(st.newPrice) || 0,
+          };
+
+          return allocation;
+        });
+
         return {
           name: zone.zoneName || "Zona sin nombre",
-          kind: "GENERAL", // Prensencial o virtual
+          kind: "GENERAL",
           currency: tickets.currency,
-          basePrice: Number(zone.price) || 0,
+          basePrice,
           capacity: Number(zone.quantity) || 0,
           cols: 0,
           rows: 0,
@@ -358,7 +375,47 @@ export default function CrearEventoCards() {
           };
         });
 
-      // Construir objeto FormData
+      const discounts = (discountCodes || []).map((code) => {
+        const startAt = `${code.from}T00:00:00.000Z`;
+        const endAt = `${code.to}T23:59:59.000Z`;
+
+        return {
+          scope: "EVENT",
+          userId: null,
+          code: code.code,
+          percentage: Number(code.percent) || 0,
+          stackable: false,
+          startAt: startAt,
+          endAt: endAt,
+          status: "A",
+          availableQty: Number(code.available) || 0,
+          appliesTo: code.appliesToOne || "ALL",
+        };
+      });
+
+      const finalJson = {
+        organizerId: 1,
+        title: form.name,
+        inPerson: location.inPerson === false ? false : true,
+        description: form.description,
+        accessPolicy: "E",
+        accessPolicyDescription: form.extraInfo,
+        venue: {
+          city: location.city,
+          address: location.address,
+          addressUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          reference: location.reference,
+          capacity: Number(location.capacity),
+        },
+        eventCategories: Array.isArray(form.categories)
+          ? form.categories.map((id) => Number(id))
+          : [],
+        salePhases: salePhases,
+        dates: eventDates,
+        zones: eventZones,
+        discounts: discounts,
+      };
+
       const formData = new FormData();
 
       // Datos simples (texto)
@@ -389,6 +446,7 @@ export default function CrearEventoCards() {
       formData.append("salePhases", JSON.stringify(salePhases));
       formData.append("dates", JSON.stringify(eventDates));
       formData.append("zones", JSON.stringify(eventZones));
+      formData.append("discounts", JSON.stringify(discounts));
 
       // imagenPrincipal (archivo)
       if (form.imageFile) {
@@ -472,6 +530,10 @@ export default function CrearEventoCards() {
     ],
   });
 
+  const [discountCodes, setDiscountCodes] = useState([]);
+  const zoneNames = useMemo(() => {
+    return (tickets.zones || []).map((z) => z.zoneName.trim()).filter(Boolean); // Solo nombres definidos y no vacíos
+  }, [tickets.zones]);
   const [showCopyModal, setShowCopyModal] = useState(false);
   // 3. Función para mapear los datos del evento copiado a los estados del wizard
   const mapRestrictionsArrayToObject = (restrictionsArray) => {
@@ -726,6 +788,7 @@ export default function CrearEventoCards() {
           "El precio por zona debe ser un número mayor que 0.";
       }
 
+<<<<<<< HEAD
       // variable para comparar capacidad del recinto
       const aforo = Number(location.capacity || 0);
       // variable para comparar la cantidad total de tickets
@@ -733,10 +796,58 @@ export default function CrearEventoCards() {
         (sum, z) => sum + Number(z.quantity || 0),
         0
       );
+=======
+      if (!newErrors.tickets) {
+        const zones = tickets.zones || [];
+        const pricingErrors = [];
+>>>>>>> main
 
-      // comparación: la cantidad total de tickets deben ser menor al aforo
-      if (aforo > 0 && totalTickets > 0 && totalTickets > aforo) {
-        newErrors.capacity = `El total de tickets (${totalTickets}) debe ser menor al aforo (${aforo}).`;
+        zones.forEach((z, zi) => {
+          const base = Number(z.price || 0);
+          (z.subtypes || []).forEach((st, si) => {
+            const mode = st.pricingMode || "percent";
+            const labelZona = z.zoneName?.trim()
+              ? z.zoneName.trim()
+              : `Zona ${zi + 1}`;
+            const labelTipo = st.type?.trim()
+              ? st.type.trim()
+              : `Subtipo ${si + 1}`;
+
+            if (mode === "percent") {
+              const raw = st.discount;
+              const val = Number(raw);
+              if (raw === "" || isNaN(val)) {
+                pricingErrors.push(
+                  `Completa el % de descuento en ${labelZona} → ${labelTipo}.`
+                );
+              } else if (val < 0 || val > 100) {
+                pricingErrors.push(
+                  `El % de descuento debe estar entre 0 y 100 en ${labelZona} → ${labelTipo}.`
+                );
+              }
+            } else if (mode === "newPrice") {
+              const raw = st.newPrice;
+              const val = Number(raw);
+              if (raw === "" || isNaN(val)) {
+                pricingErrors.push(
+                  `Completa el nuevo precio en ${labelZona} → ${labelTipo}.`
+                );
+              } else if (val <= 0) {
+                pricingErrors.push(
+                  `El nuevo precio debe ser mayor que 0 en ${labelZona} → ${labelTipo}.`
+                );
+              } else if (base > 0 && val >= base) {
+                pricingErrors.push(
+                  `El nuevo precio debe ser menor al precio general (${base}) en ${labelZona} → ${labelTipo}.`
+                );
+              }
+            }
+          });
+        });
+
+        if (pricingErrors.length > 0) {
+          newErrors.tickets = pricingErrors[0];
+        }
       }
 
       if (tickets?.tier?.enabled) {
@@ -883,7 +994,11 @@ export default function CrearEventoCards() {
           )}
           <div className="space-y-8">
             <SalesSeasonCard value={salesSeasons} onChange={setSalesSeasons} />
-            <DiscountCodesSection />
+            <DiscountCodesSection
+              zoneNames={zoneNames}
+              value={discountCodes}
+              onChange={setDiscountCodes}
+            />
             <ReturnsPolicy value={returnsPolicy} onChange={setReturnsPolicy} />
           </div>
         </WizardCard>
