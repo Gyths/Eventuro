@@ -10,7 +10,7 @@ function Calendar({ month, year, selectableDays, handleSelectDate }) {
   for (let day = 1; day <= daysInMonth; day++) calendarDays.push(day);
 
   return (
-    <div className="grid grid-cols-7 gap-1.5 p-4 text-center">
+    <div className="grid grid-cols-7 gap-1.5 p-4 text-center overflow-auto">
       {daysOfWeek.map((day) => (
         <div key={day} className="font-semibold text-sm text-gray-700">
           {day}
@@ -24,7 +24,7 @@ function Calendar({ month, year, selectableDays, handleSelectDate }) {
         return (
           <div
             key={index}
-            className={`flex text-2x1 rounded-md justify-center size-16 items-center py-2 font-medium transition-all duration-200 ${
+            className={`flex text-2x1 rounded-md justify-center items-center py-2 font-medium transition-all duration-200 ${
               selectable
                 ? "cursor-pointer bg-gray-50 border border-transparent hover:border-yellow-400 hover:scale-105"
                 : "bg-gray-200 text-gray-400"

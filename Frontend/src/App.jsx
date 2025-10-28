@@ -23,7 +23,7 @@ import AuthCallback from "./pages/AuthCallback";
 import CrearEventoCards from "./pages/CrearEventoCards.jsx";
 import MisTickets from "./pages/MisTickets";
 import OrganizerRoute from "./routes/OrganizerRoute";
-import MyCalendar from './pages/MyCalendar.jsx';
+import MyCalendar from "./pages/MyCalendar.jsx";
 import TicketSelection from "./pages/EventInformation.jsx";
 
 function App() {
@@ -40,11 +40,11 @@ function App() {
           <Route path="/crearEvento" element={<CrearEventoCards />} />
 
           {/*<Route> se comenta para evitar que la pagina dentro de ella esté restringida a una sesión autenticada*/}
-          <Route element={<ProtectedRoute />}>
-            
-          </Route>
           <Route path="app/*" element={<Navigate to="/" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+        <Route element={<ProtectedRoute />}>
+          <Route path="pago" element={<PaymentMethod />} />
         </Route>
         <Route path="seleccionTickets" element={<TicketSelection />} />
         <Route path="pago" element={<PaymentMethod />} />
