@@ -9,6 +9,9 @@ import { OrderProvider } from "./services/Order/OrderContext.jsx";
 import "./styles/index.css";
 import App from "./App.jsx";
 import "@radix-ui/themes/styles.css";
+
+import "./styles/fullcalendar.css";
+
 import { Theme } from "@radix-ui/themes";
 
 createRoot(document.getElementById("root")).render(

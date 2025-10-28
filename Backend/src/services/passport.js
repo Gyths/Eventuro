@@ -33,7 +33,13 @@ if (
   );
 }
 
-passport.serializeUser((user, done) => done(null, user.userId)); // string
+passport.serializeUser((user, done) => {
+  if (!user || !user.userId) {
+    console.error("Passport: user.userId no definido al serializar", user);
+    return done(new Error("User ID missing during serialization"));
+  }
+  done(null, user.userId);
+});
 passport.deserializeUser(async (id, done) => {
   try {
     const u = await findUserByIdString(id);
