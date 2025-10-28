@@ -2,6 +2,10 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 
+import useOrder from "../services/Order/OrderContext";
+import useEvent from "../services/Event/EventContext";
+import { useAuth } from "../services/auth/AuthContext";
+
 import ArrowButton from "../components/ArrowButton";
 import EventInfoCard from "../components/payment/EvenInfoCard";
 import ETicketDescription from "../components/payment/ETicketDescription";
@@ -9,7 +13,7 @@ import TermsServicesCheckbox from "../components/payment/TermsServicesCheckbox";
 import PaymentOptions from "../components/payment/PaymentOptions";
 import DiscountCode from "../components/payment/DiscountCode";
 import ShoppingCart from "../components/payment/ShoppingCart";
-import AlertMessage from "../components/payment/AlertMessage";
+import AlertMessage from "../components/AlertMessage";
 
 import { PAYMENT_OPTION_TEXTS } from "../components/payment/texts";
 import { TERMS_AND_CONDITIONS_TEXTS } from "../components/payment/texts";
@@ -33,6 +37,10 @@ export default function PaymentMethod() {
   const homeDest = "/home";
   const viewTicketDest = "/entradas";
 
+  const { event } = useEvent();
+  const { order, setOrder } = useOrder();
+  console.log(order);
+  const { user } = useAuth();
   const { modal, setModal } = useModal(null);
 
   const [termsAccepted, setTermsAccepted] = React.useState(false);
@@ -98,7 +106,12 @@ export default function PaymentMethod() {
               </AlertMessage>
             )}
             {/* TODO: Ingreso de código de descuento*/}
-            <DiscountCode />
+            <DiscountCode
+              userId={user.userId}
+              eventId={event.eventId}
+              order={order}
+              setOrder={setOrder}
+            />
           </div>
           {/* Carrito de compras*/}
           <div className="flex flex-col w-full lg:w-2/5 items-center sm:w-full">

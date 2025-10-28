@@ -16,6 +16,7 @@ import eventToCategory from "./routes/eventToCategory.routes.js";
 import order from "./routes/order.routes.js";
 import ticket from "./routes/ticket.routes.js";
 import auditRoutes from "./routes/audit.routes.js";
+import discount from "./routes/discount.routes.js"
 
 
 import organizerRoutes from "./routes/organizer.routes.js";
@@ -56,6 +57,7 @@ app.use(route + "/orders", order);
 app.use(route + "/tickets", ticket);
 app.use(route + "/audit", auditRoutes);
 
+app.use(route + "/discount", discount)
 
 app.listen(4000, () =>
   console.log("Servidor corriendo en http://localhost:4000")

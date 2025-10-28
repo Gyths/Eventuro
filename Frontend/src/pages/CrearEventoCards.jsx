@@ -115,7 +115,8 @@ export default function CrearEventoCards() {
   };
 
   // Paso 1
-  const { form, updateForm, updateRestrictions, imagePreview, bannerPreview } = useEventForm();
+  const { form, updateForm, updateRestrictions, imagePreview, bannerPreview } =
+    useEventForm();
   const [dates, setDates] = useState([]); // [{id, date: Date|ISO, schedules:[{id,start,end}]}]
   const handlePrev = () => setCurrent((c) => Math.max(0, c - 1));
   const isActive = (i) => current === i;
@@ -140,7 +141,9 @@ export default function CrearEventoCards() {
         zoneName: "",
         quantity: "",
         price: "",
-        subtypes: [{ type: "", discount: "" }],
+        subtypes: [
+          { type: "", pricingMode: "percent", discount: "", newPrice: "" },
+        ],
       },
     ],
     endSaleWhen: "termino", // "termino" | "inicio" | "2dias"
@@ -172,7 +175,9 @@ export default function CrearEventoCards() {
           zoneName: "",
           quantity: "",
           price: "",
-          subtypes: [{ type: "", discount: "" }],
+          subtypes: [
+            { type: "", pricingMode: "percent", discount: "", newPrice: "" },
+          ],
         },
       ],
       endSaleWhen: "termino",
@@ -182,14 +187,16 @@ export default function CrearEventoCards() {
 
     // Limpiar fases de venta
     setSalesSeasons({
-      seasons: [{
-        id: Date.now(),
-        name: "", 
-        percentage: "10",
-        isIncrease: false,
-        startDate: "",
-        endDate: ""
-      }]
+      seasons: [
+        {
+          id: Date.now(),
+          name: "",
+          percentage: "10",
+          isIncrease: false,
+          startDate: "",
+          endDate: "",
+        },
+      ],
     });
 
     // Limpiar política de devoluciones
@@ -210,7 +217,6 @@ export default function CrearEventoCards() {
     });
     updateRestrictions([]); // según tu hook; si usa objeto, pásale {}.
   };
-
 
   //###### GENERADOR DEL JSON PARA POST A LA BD ##########
   const generateAndPostJson = async () => {
@@ -318,16 +324,30 @@ export default function CrearEventoCards() {
       );
 
       const eventZones = (tickets.zones || []).map((zone) => {
-        const allocations = (zone.subtypes || []).map((subtype) => ({
-          audienceName: subtype.type || "Entrada General",
-          discountPercent: Number(subtype.discount) || 0,
-          allocatedQuantity: Number(zone.quantity) || 0,
-        }));
+        const basePrice = Number(zone.price) || 0;
+
+        const allocations = (zone.subtypes || []).map((st) => {
+          const mode = st.pricingMode || "percent";
+
+          const allocation = {
+            audienceName: st.type || "Entrada General",
+            allocatedQuantity: Number(zone.quantity) || 0,
+
+            discountType: mode === "percent" ? "PERCENTAGE" : "CASH",
+            discountValue:
+              mode === "percent"
+                ? Number(st.discount) || 0
+                : Number(st.newPrice) || 0,
+          };
+
+          return allocation;
+        });
+
         return {
           name: zone.zoneName || "Zona sin nombre",
-          kind: "GENERAL", // Prensencial o virtual
+          kind: "GENERAL",
           currency: tickets.currency,
-          basePrice: Number(zone.price) || 0,
+          basePrice,
           capacity: Number(zone.quantity) || 0,
           cols: 0,
           rows: 0,
@@ -336,26 +356,66 @@ export default function CrearEventoCards() {
       });
 
       const salePhases = (salesSeasons.seasons || [])
-        .filter(season => season.name && season.startDate && season.endDate) // Solo incluir temporadas completas
-        .map(season => {
+        .filter((season) => season.name && season.startDate && season.endDate) // Solo incluir temporadas completas
+        .map((season) => {
           // Convertir porcentaje a número con signo según isIncrease
-          const percentage = season.isIncrease 
-            ? Number(season.percentage) || 0 
+          const percentage = season.isIncrease
+            ? Number(season.percentage) || 0
             : -(Number(season.percentage) || 0);
-          
+
           // Convertir fechas YYYY-MM-DD a ISO string válido para Date
           const startDateISO = `${season.startDate}T00:00:00.000Z`;
           const endDateISO = `${season.endDate}T23:59:59.999Z`;
-          
+
           return {
             name: season.name,
-            startAt: startDateISO,  
-            endAt: endDateISO, 
-            percentage: percentage
+            startAt: startDateISO,
+            endAt: endDateISO,
+            percentage: percentage,
           };
+        });
+
+      const discounts = (discountCodes || []).map((code) => {
+        const startAt = `${code.from}T00:00:00.000Z`;
+        const endAt = `${code.to}T23:59:59.000Z`;
+
+        return {
+          scope: "EVENT",
+          userId: null,
+          code: code.code,
+          percentage: Number(code.percent) || 0,
+          stackable: false,
+          startAt: startAt,
+          endAt: endAt,
+          status: "A",
+          availableQty: Number(code.available) || 0,
+          appliesTo: code.appliesToOne || "ALL",
+        };
       });
 
-      // Construir objeto FormData
+      const finalJson = {
+        organizerId: 1,
+        title: form.name,
+        inPerson: location.inPerson === false ? false : true,
+        description: form.description,
+        accessPolicy: "E",
+        accessPolicyDescription: form.extraInfo,
+        venue: {
+          city: location.city,
+          address: location.address,
+          addressUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          reference: location.reference,
+          capacity: Number(location.capacity),
+        },
+        eventCategories: Array.isArray(form.categories)
+          ? form.categories.map((id) => Number(id))
+          : [],
+        salePhases: salePhases,
+        dates: eventDates,
+        zones: eventZones,
+        discounts: discounts,
+      };
+
       const formData = new FormData();
 
       // Datos simples (texto)
@@ -365,33 +425,40 @@ export default function CrearEventoCards() {
       formData.append("description", form.description);
       formData.append("accessPolicy", "E");
       formData.append("accessPolicyDescription", form.extraInfo);
-      formData.append("venue", JSON.stringify({
-        city: location.city,
-        address: location.address,
-        addressUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-        reference: location.reference,
-        capacity: Number(location.capacity),
-      }));
-      formData.append("eventCategories", JSON.stringify(
-        Array.isArray(form.categories)
-          ? form.categories.map((id) => Number(id))
-          : []
-      ));
+      formData.append(
+        "venue",
+        JSON.stringify({
+          city: location.city,
+          address: location.address,
+          addressUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          reference: location.reference,
+          capacity: Number(location.capacity),
+        })
+      );
+      formData.append(
+        "eventCategories",
+        JSON.stringify(
+          Array.isArray(form.categories)
+            ? form.categories.map((id) => Number(id))
+            : []
+        )
+      );
       formData.append("salePhases", JSON.stringify(salePhases));
       formData.append("dates", JSON.stringify(eventDates));
       formData.append("zones", JSON.stringify(eventZones));
+      formData.append("discounts", JSON.stringify(discounts));
 
       // imagenPrincipal (archivo)
       if (form.imageFile) {
         formData.append("imagenPrincipal", form.imageFile);
-      }else if (form.imagePrincipalKey) {
-      // Si hay key existente, enviarla para reutilizar
+      } else if (form.imagePrincipalKey) {
+        // Si hay key existente, enviarla para reutilizar
         formData.append("imagePrincipalKey", form.imagePrincipalKey);
       }
       // ImagenBanner (archivo)
       if (form.bannerFile) {
         formData.append("imagenBanner", form.bannerFile);
-      }else if (form.imageBannerKey) {
+      } else if (form.imageBannerKey) {
         // Si hay key existente, enviarla para reutilizar
         formData.append("imageBannerKey", form.imageBannerKey);
       }
@@ -452,17 +519,21 @@ export default function CrearEventoCards() {
 
   const [salesSeasons, setSalesSeasons] = useState({
     seasons: [
-      { 
+      {
         id: Date.now(),
-        name: "", 
+        name: "",
         percentage: "10",
         isIncrease: false,
         startDate: "",
-        endDate: ""
-      }
-    ]
+        endDate: "",
+      },
+    ],
   });
 
+  const [discountCodes, setDiscountCodes] = useState([]);
+  const zoneNames = useMemo(() => {
+    return (tickets.zones || []).map((z) => z.zoneName.trim()).filter(Boolean); // Solo nombres definidos y no vacíos
+  }, [tickets.zones]);
   const [showCopyModal, setShowCopyModal] = useState(false);
   // 3. Función para mapear los datos del evento copiado a los estados del wizard
   const mapRestrictionsArrayToObject = (restrictionsArray) => {
@@ -471,15 +542,15 @@ export default function CrearEventoCards() {
       conUnAdulto: false,
       soloAdultos: false,
     };
-    
+
     if (Array.isArray(restrictionsArray)) {
-      restrictionsArray.forEach(restriction => {
+      restrictionsArray.forEach((restriction) => {
         if (restriction === "General") restrictionsObj.general = true;
         if (restriction === "conUnAdulto") restrictionsObj.conUnAdulto = true;
         if (restriction === "soloAdultos") restrictionsObj.soloAdultos = true;
       });
     }
-    
+
     return restrictionsObj;
   };
 
@@ -515,7 +586,7 @@ export default function CrearEventoCards() {
     const mappedDates = eventData.dates.map((date, idx) => {
       const startDate = new Date(date.startAt);
       const endDate = new Date(date.endAt);
-      
+
       // Formatear horas a HH:mm
       const formatTime = (d) => {
         const h = String(d.getHours()).padStart(2, "0");
@@ -526,27 +597,29 @@ export default function CrearEventoCards() {
       return {
         id: Date.now() + idx,
         date: startDate,
-        schedules: [{
-          id: Date.now() + idx + 1000,
-          start: formatTime(startDate),
-          end: formatTime(endDate),
-        }]
+        schedules: [
+          {
+            id: Date.now() + idx + 1000,
+            start: formatTime(startDate),
+            end: formatTime(endDate),
+          },
+        ],
       };
     });
     setDates(mappedDates);
 
     // Mapear tickets/zonas
-    const mappedZones = eventData.zones.map(zone => ({
+    const mappedZones = eventData.zones.map((zone) => ({
       zoneName: zone.name,
       quantity: String(zone.capacity),
       price: String(zone.basePrice),
-      subtypes: zone.allocations.map(alloc => ({
+      subtypes: zone.allocations.map((alloc) => ({
         type: alloc.audienceName,
         discount: String(alloc.discountPercent),
       })),
     }));
 
-    setTickets(prev => ({
+    setTickets((prev) => ({
       ...prev,
       currency: eventData.zones[0]?.currency || "PEN",
       zones: mappedZones,
@@ -557,7 +630,7 @@ export default function CrearEventoCards() {
       const mappedSeasons = eventData.salePhases.map((phase, idx) => {
         const startDate = new Date(phase.startAt);
         const endDate = new Date(phase.endAt);
-        
+
         // Formatear a YYYY-MM-DD
         const formatDate = (d) => {
           const y = d.getFullYear();
@@ -715,14 +788,56 @@ export default function CrearEventoCards() {
           "El precio por zona debe ser un número mayor que 0.";
       }
 
-      // variable para comparar capacidad del recinto
-      const aforo = Number( location.capacity || 0 );
-      // variable para comparar la cantidad total de tickets
-      const totalTickets = zones.reduce( (sum, z) => sum + Number(z.quantity || 0) , 0 );
+      if (!newErrors.tickets) {
+        const zones = tickets.zones || [];
+        const pricingErrors = [];
 
-      // comparación: la cantidad total de tickets deben ser menor al aforo
-      if (aforo > 0 && totalTickets > 0 && totalTickets > aforo) {
-        newErrors.capacity = `El total de tickets (${totalTickets}) debe ser menor al aforo (${aforo}).`;
+        zones.forEach((z, zi) => {
+          const base = Number(z.price || 0);
+          (z.subtypes || []).forEach((st, si) => {
+            const mode = st.pricingMode || "percent";
+            const labelZona = z.zoneName?.trim()
+              ? z.zoneName.trim()
+              : `Zona ${zi + 1}`;
+            const labelTipo = st.type?.trim()
+              ? st.type.trim()
+              : `Subtipo ${si + 1}`;
+
+            if (mode === "percent") {
+              const raw = st.discount;
+              const val = Number(raw);
+              if (raw === "" || isNaN(val)) {
+                pricingErrors.push(
+                  `Completa el % de descuento en ${labelZona} → ${labelTipo}.`
+                );
+              } else if (val < 0 || val > 100) {
+                pricingErrors.push(
+                  `El % de descuento debe estar entre 0 y 100 en ${labelZona} → ${labelTipo}.`
+                );
+              }
+            } else if (mode === "newPrice") {
+              const raw = st.newPrice;
+              const val = Number(raw);
+              if (raw === "" || isNaN(val)) {
+                pricingErrors.push(
+                  `Completa el nuevo precio en ${labelZona} → ${labelTipo}.`
+                );
+              } else if (val <= 0) {
+                pricingErrors.push(
+                  `El nuevo precio debe ser mayor que 0 en ${labelZona} → ${labelTipo}.`
+                );
+              } else if (base > 0 && val >= base) {
+                pricingErrors.push(
+                  `El nuevo precio debe ser menor al precio general (${base}) en ${labelZona} → ${labelTipo}.`
+                );
+              }
+            }
+          });
+        });
+
+        if (pricingErrors.length > 0) {
+          newErrors.tickets = pricingErrors[0];
+        }
       }
 
       if (tickets?.tier?.enabled) {
@@ -850,7 +965,7 @@ export default function CrearEventoCards() {
       </div>
 
       {/* ======== PASO 3 ======== */}
-     <div
+      <div
         ref={(el) => (cardRefs.current[2] = el)}
         className={isActive(2) ? "block" : "hidden"}
         aria-hidden={!isActive(2)}
@@ -869,7 +984,11 @@ export default function CrearEventoCards() {
           )}
           <div className="space-y-8">
             <SalesSeasonCard value={salesSeasons} onChange={setSalesSeasons} />
-            <DiscountCodesSection />
+            <DiscountCodesSection
+              zoneNames={zoneNames}
+              value={discountCodes}
+              onChange={setDiscountCodes}
+            />
             <ReturnsPolicy value={returnsPolicy} onChange={setReturnsPolicy} />
           </div>
         </WizardCard>

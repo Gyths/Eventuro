@@ -37,6 +37,7 @@ export default function TicketSelection() {
   const [modal, setModal] = React.useState("");
 
   const [selectedData, setSelectedData] = React.useState();
+  const currencies = { PEN: "S/." };
 
   React.useEffect(() => {
     //Llamada a la api del back para consultar disponibilidad de un evento
@@ -136,36 +137,41 @@ export default function TicketSelection() {
           <img
             src={event?.bannerEv}
             alt="Fondo del evento"
-            className={`w-full h-full object-contain transition-all duration-700 ease-in-out
-        ${
-          scrolled
-            ? "blur-2xl brightness-75 scale-105"
-            : "blur-0 brightness-100 scale-100"
-        }`}
+            className={`w-full h-full object-cover transition-all duration-700 ease-in-out
+          ${
+            scrolled
+              ? "blur-2xl brightness-75 scale-105"
+              : "blur-0 brightness-100 scale-100"
+          }`}
           />
         </div>
 
-        {/* Contenido */}
         <div className="flex h-screen"></div>
+        {/* Contenido */}
         <div className="flex flex-col z-10 justify-center min-h-screen text-center gap-20">
-          <div className="flex relative flex-wrap justify-center gap-10 xl:gap-0 items-center px-4 py-5 md:px-8">
+          <div className="flex px-5 relative flex-col md:flex-row xl:flex-row justify-center gap-10 md:gap-0 xl:gap-0 items-stretch md:px-8">
             {/* Imagen */}
-            <div className="flex h-[85vh] aspect-[3/5] overflow-hidden rounded-xl">
-              <img src={event?.image} className="w-full h-full object-cover" />
+            <div className="flex w-full md:max-w-[30vw] scale-y-110 xl:max-w-[30vw] overflow-hidden rounded-lg">
+              <img
+                src={event?.image}
+                className="w-full h-full object-cover"
+                alt="Imagen del evento"
+              />
             </div>
+
             {/* Card de Información y entradas*/}
-            <div className="flex flex-col justify-end rounded-lg xl:rounded-none xl:rounded-r-lg bg-white h-auto shadow-2xl pt-6 pb-12 pr-24 pl-10">
+            <div className="flex flex-col items-start xl:pl-5 xl:py-5 justify-start gap-3 w-[95vw] xl:w-[60vw] rounded-lg md:rounded-none md:rounded-r-lg xl:rounded-none xl:rounded-r-lg bg-white shadow-2xl">
               <div className="flex flex-row justify-start items-center lg gap-2">
                 <ArrowButton onClick={() => navigate(homeRoute)}></ArrowButton>
                 {/* Título */}
                 <div className="inline-flex text-start flex-wrap flex-row">
-                  <h1 className="inline-flex font-bold text-3xl">
+                  <h1 className="inline-block font-bold text-2xl xl:text-3xl">
                     {event?.title}
                   </h1>
                 </div>
               </div>
-              <div className="flex flex-row gap-2 pl-20">
-                {/* Categorías */}
+              {/* Categorías */}
+              <div className="flex flex-wrap gap-2 pl-5 xl:pl-15">
                 {event?.categories?.map((category, index) => (
                   <div
                     key={index}
@@ -175,7 +181,7 @@ export default function TicketSelection() {
                   </div>
                 ))}
               </div>
-              <div className="flex flex-col gap-4 pl-16 pt-10 ">
+              <div className="flex flex-col gap-4 pl-5 xl:pl-10 xl:pt-2.5">
                 {/* Detalles del evento*/}
                 <div className="inline-flex flex-row justify-start items-center text-center gap-4">
                   <UserIcon className="flex-shrink-0 size-5 justify-start"></UserIcon>
@@ -183,48 +189,71 @@ export default function TicketSelection() {
                     {"Organizado por " + event?.organizer?.companyName}
                   </p>
                 </div>
-                <div className="inline-flex flex-row justify-start items-center text-center gap-4">
-                  <ChatBubbleBottomCenterTextIcon className="flex-shrink-0 size-5 justify-start"></ChatBubbleBottomCenterTextIcon>
-                  <p className="inline-flex text-start max-w-prose">
+                <div className="inline-flex flex-row justify-start items-start xl:items-center text-center gap-4">
+                  <ChatBubbleBottomCenterTextIcon className="flex-shrink-0 size-5 items-end"></ChatBubbleBottomCenterTextIcon>
+                  <p className="inline-block text-start max-w-prose">
                     {event?.description}
                   </p>
                 </div>
                 <div className="flex flex-1 flex-row justify-start items-center text-center gap-4">
-                  <UserGroupIcon className="flex size-5 justify-center"></UserGroupIcon>
-                  <p className="flex text-center">
+                  <UserGroupIcon className="flex size-5"></UserGroupIcon>
+                  <p className="inline-block text-start">
                     {event?.accessPolicyDescription}
                   </p>
                 </div>
                 <div className="flex flex-1 flex-row justify-start items-center text-center gap-4">
-                  <MapPinIcon className="flex size-5 justify-center"></MapPinIcon>
-                  <span className="flex text-center">
+                  <MapPinIcon className="inline-block size-5"></MapPinIcon>
+                  <span className="flex text-start">
                     {event?.venue?.address}
                   </span>
                 </div>
-                <div className="flex flex-row justify-end">
-                  <button
-                    onClick={handleBuyButtonClick}
-                    className="self-start inline-flex w-auto items-center cursor-pointer justify-center rounded-lg bg-purple-600 text-white px-6 py-1 hover:scale-101 hover:bg-yellow-500 transition-transform duration-300"
-                  >
-                    Comprar entradas
-                  </button>
-                </div>
+              </div>
+              {/* ZONAS */}
+              <div className="flex flex-row pl-10">
+                <span className="flex font-semibold text-2xl justify-start items">
+                  Zonas
+                </span>
+              </div>
+              <div className="flex w-4/5 flex-col pl-10">
+                {event?.dates &&
+                  event.dates[0]?.zoneDates.map((zone, index) => (
+                    <div
+                      key={index}
+                      className="flex flex-row w-full border justify-between border-gray-400 p-4"
+                    >
+                      <span className="inline-block font-semibold">
+                        {zone.name}
+                      </span>
+                      <span className="font-semibold justify-end">
+                        {currencies.PEN + " " + zone.basePrice}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+              {/* Botón de compras */}
+              <div className="flex flex-row w-full justify-center xl:justify-end px-5 items-center p-2.5">
+                <button
+                  onClick={handleBuyButtonClick}
+                  className="self-start inline-flex w-full xl:w-auto items-center cursor-pointer justify-center rounded-lg bg-purple-600 text-white px-4 py-1.5 hover:scale-105 hover:bg-yellow-500 transition-transform duration-300"
+                >
+                  Comprar entradas
+                </button>
               </div>
             </div>
           </div>
           {/* Información adicional */}
           <div className="flex relative flex-1 flex-col fill-white bg-white p-6">
-            <span className="flex font-bold text-4xl p-6">
+            <span className="inline-block text-start font-bold text-4xl p-6">
               Información adicional
             </span>
-            <div className="flex flex-row px-6">
+            <div className="flex flex-row">
               <div className="flex flex-col gap-6">
                 <h2 className="font-bold text-2xl text-start">
                   Ubicación en mapa :D
                 </h2>
-                <div className="flex size-auto border-2">
+                <div className="flex size-auto border-2 h-[40vh] sm:h-[60vh] md:h-[60vh] lg:h-[60vh] sm:w-[40vw] md:w-[40vw] lg:w-[30vw] ">
                   <iframe
-                    className="flex relative max-h-96 max-w-96  size-dvh"
+                    className="flex border-r-2 relative h-auto w-full"
                     src={
                       "https://www.google.com/maps?q=" +
                       encodeURIComponent(event?.venue?.address) +
@@ -263,22 +292,22 @@ export default function TicketSelection() {
 
       {/* Comentado por si se usa posteriormente (no creo pero porsiaca)
 
-       Barra inferior 
-      <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 shadow-md p-4 flex items-center justify-between z-50">
-        <div className="text-lg font-semibold text-gray-800">
-          Subtotal:{" "}
-          <span className="text-purple-700">{subtotal ? subtotal : "0"}</span>
-        </div>
+        Barra inferior 
+        <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 shadow-md p-4 flex items-center justify-between z-50">
+          <div className="text-lg font-semibold text-gray-800">
+            Subtotal:{" "}
+            <span className="text-purple-700">{subtotal ? subtotal : "0"}</span>
+          </div>
 
-        <div className="flex flex-row class justify-end items-end">
-          <button
-            onClick={() => onClick(event.id)}
-            className="rounded-2xl h-8 w-24 p-2 cursor-pointer flex justify-center items-center text-white bg-purple-600 hover:bg-yellow-500 hover:shadow-lg hover:scale-105 transition-transform duration-200"
-          >
-            Continuar
-          </button>
-        </div>
-      </div>*/}
+          <div className="flex flex-row class justify-end items-end">
+            <button
+              onClick={() => onClick(event.id)}
+              className="rounded-2xl h-8 w-24 p-2 cursor-pointer flex justify-center items-center text-white bg-purple-600 hover:bg-yellow-500 hover:shadow-lg hover:scale-105 transition-transform duration-200"
+            >
+              Continuar
+            </button>
+          </div>
+        </div>*/}
     </>
   );
 }

@@ -107,7 +107,7 @@ export default function SelectDateModal({ dates, onClose, onContinue }) {
 
   return (
     <BaseModal>
-      <div className="flex flex-col md:flex-row items-stretch h-[55vh] w-[45vw] bg-white shadow-2xl rounded-md">
+      <div className="flex flex-col md:flex-row items-stretch h-[70vh] sm:h-[55vh] md:h-[55vh] lg:h-[55vh] w-[80vw] sm:w-[80vm] md:w-[80vw] lg:w-[50vw] bg-white shadow-2xl rounded-md">
         <div className="flex flex-col flex-[3] border-r border-gray-200">
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-3  text-gray-900">

@@ -18,6 +18,9 @@ import {
   Cog6ToothIcon,
   HomeIcon,
   SparklesIcon,
+  ChartPieIcon,
+  BookOpenIcon,
+  ClipboardDocumentIcon,
 } from "@heroicons/react/24/outline";
 
 const ICONS = {
@@ -41,6 +44,9 @@ const ICONS = {
   cog: Cog6ToothIcon,
   home: HomeIcon,
   sparkles: SparklesIcon,
+  dashboard: ChartPieIcon,
+  "book-open": BookOpenIcon,
+  "document-log": ClipboardDocumentIcon,
 };
 
 function cx(...classes) {
@@ -99,7 +105,11 @@ export default function Linker({
   // Ruta interna SPA
   if (to) {
     return (
-      <Link to={to} className={classes} aria-current={isActive ? "page" : undefined}>
+      <Link
+        to={to}
+        className={classes}
+        aria-current={isActive ? "page" : undefined}
+      >
         {content}
       </Link>
     );
