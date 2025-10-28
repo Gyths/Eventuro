@@ -60,6 +60,9 @@ function App() {
           <Route path="app/*" element={<Navigate to="/" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
+        <Route element={<ProtectedRoute />}>
+          <Route path="pago" element={<PaymentMethod />} />
+        </Route>
         <Route path="seleccionTickets" element={<TicketSelection />} />
         <Route path="pago" element={<PaymentMethod />} />
         <Route path="miCalendario" element={<MyCalendar />} />

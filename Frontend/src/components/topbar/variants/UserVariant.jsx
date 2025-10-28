@@ -27,9 +27,9 @@ export default function UserVariant({ filters, setFilters }) {
 
   return (
     <>
-      <div className="flex items-center justify-between px-6 w-full">
+      <div className="flex items-center justify-between px-6 w-full gap-4">
         {/* === IZQUIERDA: SEARCH === */}
-        <div className="relative flex items-center justify-start w-[320px]">
+        <div className="relative flex items-center justify-start w-[15vw]">
           <SearchBar />
         </div>
 
