@@ -1,21 +1,14 @@
-
 import { prisma } from "../utils/prisma.js";
 import { toJSONSafe } from "../utils/serialize.js";
 
-export async function getAuditLogs(limit = 50) {
+export async function getAuditLogs() {
   const logs = await prisma.auditLog.findMany({
-    take: limit,
     orderBy: { createdAt: "desc" },
     include: {
       administrator: {
-        include: {
-          user: {
-            select: {
-              name: true,
-              lastName: true,
-              email: true,
-            },
-          },
+        select: {
+          administratorId: true, // ID del administrador
+          userId: true,           // ID del usuario asociado al admin
         },
       },
     },
