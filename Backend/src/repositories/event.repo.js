@@ -8,18 +8,26 @@ export async function createEventRepo(input) {
 
     // --- Manejo del imagenPrincipal (multer) ---
     let imagePrincipalKey = null;
-    if (input.imagenPrincipal) {
-      const buffer = input.imagenPrincipal.buffer;
-      const fileName = `events/${Date.now()}_${input.imagenPrincipal.originalname}`;
-      imagePrincipalKey = await uploadFile(fileName, buffer, input.imagenPrincipal.mimetype);
+      if (input.imagenPrincipal) {
+        // 1. Si se sube un nuevo archivo (Multer)
+        const buffer = input.imagenPrincipal.buffer;
+        const fileName = `events/${Date.now()}_${input.imagenPrincipal.originalname}`;
+        imagePrincipalKey = await uploadFile(fileName, buffer, input.imagenPrincipal.mimetype);
+      } else if (input.imagePrincipalKey) {
+        // 2. Si se está reutilizando una clave (Evento copiado)
+        imagePrincipalKey = input.imagePrincipalKey;
     }
 
-    // --- Manejo del imagenBanner (multer) ---
+    // --- Manejo del imagenBanner ---
     let imageBannerKey = null;
-    if (input.imagenBanner) {
-      const buffer = input.imagenBanner.buffer;
-      const fileName = `events/${Date.now()}_${input.imagenBanner.originalname}`;
-      imageBannerKey = await uploadFile(fileName, buffer, input.imagenBanner.mimetype);
+      if (input.imagenBanner) {
+        // 1. Si se sube un nuevo archivo (Multer)
+        const buffer = input.imagenBanner.buffer;
+        const fileName = `events/${Date.now()}_${input.imagenBanner.originalname}`;
+        imageBannerKey = await uploadFile(fileName, buffer, input.imagenBanner.mimetype);
+      } else if (input.imageBannerKey) {
+        // 2. Si se está reutilizando una clave (Evento copiado)
+        imageBannerKey = input.imageBannerKey;
     }
 
     // --- Parsear y convertir tipos ---
@@ -228,7 +236,7 @@ export async function listEventRepo() {
 }
 
 export async function eventDetails(id) {
-  return prisma.event.findUnique({
+  const event = await prisma.event.findUnique({
     where: { eventId: BigInt(id) },
     include: {
       dates: {
@@ -248,8 +256,31 @@ export async function eventDetails(id) {
       venue: true,
       fee: true,
     },
-  })
+  });
+
+  if (event) {
+    if (event.imagePrincipalKey) {
+      try {
+        event.imagePrincipalURLSigned = await getSignedUrlForFile(event.imagePrincipalKey);
+      } catch (err) {
+        console.error("Error generando signed URL imagen principal:", err);
+        event.imagePrincipalURLSigned = null;
+      }
+    }
+
+    if (event.imageBannerKey) {
+      try {
+        event.imageBannerURLSigned = await getSignedUrlForFile(event.imageBannerKey);
+      } catch (err) {
+        console.error("Error generando signed URL banner:", err);
+        event.imageBannerURLSigned = null;
+      }
+    }
+  }
+
+  return event; // ✅ Devolver el objeto, no un array
 }
+
 
 export async function listEventsByOrganizerRepo(idOrganizer) {
   return prisma.event.findMany({

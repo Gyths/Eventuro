@@ -98,6 +98,11 @@ export default function CopyConfigModal({ isOpen, onClose, onSelectEvent, idOrga
         title: payload.title ?? "Evento Copiado", // Se incluye el título para referenciaS.
         description: payload.description ?? "",
         extraInfo: payload.accessPolicyDescription ?? "",
+        imagePrincipalKey: payload.imagePrincipalKey ?? null,
+        imageBannerKey: payload.imageBannerKey ?? null,
+        inPerson: payload.inPerson ?? true,
+        imagePrincipalURLSigned: payload.imagePrincipalURLSigned ?? null,
+        imageBannerURLSigned: payload.imageBannerURLSigned ?? null,
 
         // CONVERSIÓN DE ACCESS POLICY (código) a RESTRICTIONS (lista de strings)
         restrictions: mapAccessPolicyToRestrictions(
