@@ -1,7 +1,15 @@
-import { PrismaClient } from "../generated/prisma/index.js";
+import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export function auditMiddleware() {
+
+  // Helper para acceder al modelo correcto de Prisma
+  function getModel(prisma, modelName) {
+    if (!modelName) return null;
+    const key = modelName.charAt(0).toLowerCase() + modelName.slice(1);
+    return prisma[key] || null;
+  }
+
   return async (params, next) => {
     const actionsToLog = ["create", "update", "delete"];
     const modelsToLog = ["Fee", "EventCategory", "Event", "User", "Organizer"];
@@ -11,11 +19,16 @@ export function auditMiddleware() {
       return next(params);
     }
 
+    // Evitar auditar los logs de auditoría (previene bucles)
+    if (params.model === "AuditLog") {
+      return next(params);
+    }
+
     const currentUserId = global.currentUserId || null;
     if (!currentUserId) return next(params);
 
     // Confirmar que sea administrador
-    const admin = await prisma.Administrator.findUnique({
+    const admin = await prisma.administrator.findUnique({
       where: { userId: currentUserId },
     });
     if (!admin) return next(params);
@@ -26,9 +39,12 @@ export function auditMiddleware() {
     let before = null;
 
     try {
+      const model = getModel(prisma, params.model);
+      if (!model) return next(params); // si no existe el modelo, salir
+
       // Si es UPDATE, obtener datos previos
       if (params.action === "update") {
-        before = await prisma[params.model.toLowerCase()].findUnique({
+        before = await model.findUnique({
           where: params.args.where,
         });
       }

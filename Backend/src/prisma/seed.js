@@ -56,14 +56,14 @@ async function main() {
   await prisma.eventCategory.createMany({
     data: [
       { initials: 'MUS', description: 'Música', createdAt: new Date(), updatedAt: new Date() },
-      {initials: 'DEP', description: 'Deportes', createdAt: new Date(), updatedAt: new Date() },
-      {initials: 'TEA', description: 'Teatro', createdAt: new Date(), updatedAt: new Date() },
-      {initials: 'CUL', description: 'Cultura', createdAt: new Date(), updatedAt: new Date() },
-      {initials: 'TEC', description: 'Tecnología', createdAt: new Date(), updatedAt: new Date() },
-      {initials: 'GAS', description: 'Gastronomía', createdAt: new Date(), updatedAt: new Date() },
-      {initials: 'EDU', description: 'Educativo', createdAt: new Date(), updatedAt: new Date() },
-      {initials: 'NEG', description: 'Negocios', createdAt: new Date(), updatedAt: new Date() },
-      {initials: 'EXP', description: 'Exposición', createdAt: new Date(), updatedAt: new Date() },
+      { initials: 'DEP', description: 'Deportes', createdAt: new Date(), updatedAt: new Date() },
+      { initials: 'TEA', description: 'Teatro', createdAt: new Date(), updatedAt: new Date() },
+      { initials: 'CUL', description: 'Cultura', createdAt: new Date(), updatedAt: new Date() },
+      { initials: 'TEC', description: 'Tecnología', createdAt: new Date(), updatedAt: new Date() },
+      { initials: 'GAS', description: 'Gastronomía', createdAt: new Date(), updatedAt: new Date() },
+      { initials: 'EDU', description: 'Educativo', createdAt: new Date(), updatedAt: new Date() },
+      { initials: 'NEG', description: 'Negocios', createdAt: new Date(), updatedAt: new Date() },
+      { initials: 'EXP', description: 'Exposición', createdAt: new Date(), updatedAt: new Date() },
     ],
     skipDuplicates: true, // evita errores si ya existen
   });
