@@ -1,14 +1,9 @@
-import {
-  createEventSvc,
-  listEventSvc,
-  listAvailableTicketsSvc,
-  _getEventDetails,
-  _listEventsByOrganizer,
-} from "../services/event.service.js";
 import { createEventSvc } from "../services/event.service.js";
 import { listEventSvc } from "../services/event.service.js";
 import { listAvailableTicketsSvc } from "../services/event.service.js";
 import { setEventFeeSvc } from '../services/event.service.js';
+import { _getEventDetails } from "../services/event.service.js";
+import { _listEventsByOrganizer } from "../services/event.service.js";
 import { toJSONSafe } from "../utils/serialize.js";
 
 export async function createEvent(req, res) {
@@ -44,9 +39,6 @@ export async function listAvailableTickets(req, res) {
     return res.status(400).json({ error: err.message });
   }
 }
-
-// src/controllers/event.controller.js
-import { setEventFeeSvc } from '../services/event.service.js';
 
 export async function setEventFee(req, res, next) {
   try {

@@ -104,6 +104,15 @@ enum STATUS_DISCOUNT {
   A
   I
 }
+/**
+ * NUEVO: estado del perfil de organizador
+ */
+enum ORGANIZER_STATUS {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
 
 // ====================== Models ======================
 
@@ -342,7 +351,6 @@ model EventDateZoneAllocation {
   eventDateZoneAllocationId BigInt        @id @default(autoincrement()) @db.BigInt
   eventDateZoneId           BigInt        @db.BigInt
   audienceName              String
-  discountPercent           Decimal @db.Decimal(5, 2)
   discountType              DISCOUNT_TYPE
   discountValue             Decimal       @db.Decimal(5, 2)
   allocatedQuantity         Int
