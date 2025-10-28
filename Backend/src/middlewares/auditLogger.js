@@ -4,90 +4,122 @@ const prisma = new PrismaClient();
 export function auditMiddleware() {
   return async (params, next) => {
     const actionsToLog = ["create", "update", "delete"];
+    const modelsToLog = ["Fee", "EventCategory", "Event", "User", "Organizer"];
 
-    // Si no es una acción relevante, continúa normal
-    if (!actionsToLog.includes(params.action)) {
+    // Verificar si es una acción y modelo relevantes
+    if (!actionsToLog.includes(params.action) || !modelsToLog.includes(params.model)) {
       return next(params);
     }
 
-    // Ejecutar la acción dentro de un try/catch
+    const currentUserId = global.currentUserId || null;
+    if (!currentUserId) return next(params);
+
+    // Confirmar que sea administrador
+    const admin = await prisma.administrator.findUnique({
+      where: { userId: currentUserId },
+    });
+    if (!admin) return next(params);
+
     let result;
+    let entityId = null;
+    let description = "";
+    let before = null;
+
     try {
-      // Verificar si el usuario actual es Administrador
-      const currentUserId = global.currentUserId || null;
-
-      if (!currentUserId) {
-        // Si no hay usuario logueado, no auditar
-        return await next(params);
-      }
-
-      // Buscar si este userId pertenece a un administrador
-      const admin = await prisma.administrator.findUnique({
-        where: { userId: currentUserId },
-      });
-
-      // Si no es administrador, no auditar
-      if (!admin) {
-        return await next(params);
-      }
-
-      // --- En este punto, sí es Administrador ---
-      let description = "";
-      let entityId = null;
-      let before = null;
-
-      // Si es update, obtenemos los datos previos
+      // Si es UPDATE, obtener datos previos
       if (params.action === "update") {
         before = await prisma[params.model.toLowerCase()].findUnique({
           where: params.args.where,
         });
       }
 
-      // Ejecutar la acción real
+      // Ejecutar acción principal
       result = await next(params);
 
-      // Obtener ID afectado
-      const idField = Object.keys(result).find((key) =>
-        key.toLowerCase().endsWith("id")
-      );
+      // Identificar ID de entidad afectada
+      const idField = Object.keys(result).find(k => k.toLowerCase().endsWith("id"));
       if (idField) entityId = result[idField];
 
-      // Crear descripción según acción
-      switch (params.action) {
-        case "create":
-          description = `Administrador ${currentUserId} creó ${params.model} con Id ${entityId}.`;
-          break;
-
-        case "update":
-          const updatedFields = [];
-          for (const key in params.args.data) {
-            const oldValue = before?.[key];
-            const newValue = params.args.data[key];
-            if (oldValue !== newValue) {
-              updatedFields.push(`${key}: '${oldValue}' → '${newValue}'`);
-            }
+      // === Descripciones personalizadas ===
+      switch (params.model) {
+        case "Fee":
+          switch (params.action) {
+            case "create":
+              description = `El administrador ${currentUserId} creó una nueva comisión (Fee) con ID ${entityId}.`;
+              break;
+            case "update":
+              description = `El administrador ${currentUserId} actualizó la comisión (Fee) con ID ${entityId}.`;
+              break;
+            case "delete":
+              description = `El administrador ${currentUserId} eliminó la comisión (Fee) con ID ${entityId}.`;
+              break;
           }
-          description = updatedFields.length
-            ? `Administrador ${currentUserId} actualizó ${params.model} con Id ${entityId}. Campos: ${updatedFields.join(", ")}.`
-            : `Administrador ${currentUserId} actualizó ${params.model} con Id ${entityId}, sin cambios visibles.`;
           break;
 
-        case "delete":
-          description = `Administrador ${currentUserId} eliminó ${params.model} con Id ${entityId}.`;
+        case "EventCategory":
+          switch (params.action) {
+            case "create":
+              description = `El administrador ${currentUserId} creó una nueva categoría de evento con ID ${entityId}.`;
+              break;
+            case "update":
+              description = `El administrador ${currentUserId} actualizó la categoría de evento con ID ${entityId}.`;
+              break;
+            case "delete":
+              description = `El administrador ${currentUserId} eliminó la categoría de evento con ID ${entityId}.`;
+              break;
+          }
+          break;
+
+        case "Event":
+          if (params.action === "update" && "status" in params.args.data) {
+            description = `El administrador ${currentUserId} actualizó el estado del evento ${entityId} a '${params.args.data.status}'.`;
+          } else if (params.action === "update") {
+            // Si actualiza otra cosa del evento
+            description = `El administrador ${currentUserId} modificó el evento con ID ${entityId}.`;
+          }
+          break;
+
+        case "User":
+          switch (params.action) {
+            case "create":
+              description = `El administrador ${currentUserId} registró un nuevo usuario con ID ${entityId}.`;
+              break;
+            case "update":
+              description = `El administrador ${currentUserId} actualizó los datos del usuario con ID ${entityId}.`;
+              break;
+            case "delete":
+              description = `El administrador ${currentUserId} eliminó el usuario con ID ${entityId}.`;
+              break;
+          }
+          break;
+
+        case "Organizer":
+          switch (params.action) {
+            case "create":
+              description = `El administrador ${currentUserId} registró un nuevo organizador con ID ${entityId}.`;
+              break;
+            case "update":
+              description = `El administrador ${currentUserId} actualizó la información del organizador con ID ${entityId}.`;
+              break;
+            case "delete":
+              description = `El administrador ${currentUserId} eliminó el organizador con ID ${entityId}.`;
+              break;
+          }
           break;
       }
 
-      // Registrar auditoría
-      await prisma.auditLog.create({
-        data: {
-          userId: currentUserId,
-          userType: "Administrador",
-          entityName: params.model,
-          entityId,
-          action: params.action.toUpperCase(),
-          description,
-        },
-      });
+      // Registrar la auditoría solo si hay descripción
+      if (description) {
+        await prisma.auditLog.create({
+          data: {
+            administratorId: admin.administratorId, 
+            entityName: params.model,
+            entityId,
+            action: params.action.toUpperCase(),
+            description,
+          },
+        });
+      }
 
     } catch (error) {
       console.error("Error en middleware de auditoría:", error);

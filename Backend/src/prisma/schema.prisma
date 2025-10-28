@@ -100,7 +100,6 @@ model User {
   organizer Organizer?
   administrator Administrator? // NUEVO: relación 1:1 con Administrator
   Ticket    Ticket[]      @relation("TicketOwner")
-  auditLogs AuditLog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -133,6 +132,9 @@ model OAuthUser {
 model Administrator {
   administratorId BigInt @id @default(autoincrement()) @db.BigInt
   userId          BigInt @unique @db.BigInt
+
+  //Relaciones
+  auditLogs AuditLog[]
 
   user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
@@ -434,17 +436,16 @@ model Hold {
 
 model AuditLog {
   auditLogId  BigInt   @id @default(autoincrement()) @db.BigInt
-  userId      BigInt?  @db.BigInt                   // quién realizó la acción (puede ser null si se realiza desde base de datos directamente)
-  userType    String?                                // "User", "Organizer" o "Administrador". Por ahora solo Administrador
+  administratorId BigInt? @db.BigInt  // relación directa a Administrator                   
   entityName  String                                // Ej: "Event", "Ticket", "User", etc.
   entityId    BigInt?  @db.BigInt
   action      String                                // "CREATE", "UPDATE", "DELETE"
   description String?
   createdAt   DateTime  @default(now())
 
-  user User? @relation(fields: [userId], references: [userId], onDelete: SetNull)
+  administrator Administrator? @relation(fields: [administratorId], references: [administratorId], onDelete: SetNull)
 
-  @@index([userId])
+  @@index([administratorId])
   @@index([entityName, action])
   @@index([createdAt])
 }
