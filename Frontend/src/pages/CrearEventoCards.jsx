@@ -328,19 +328,17 @@ export default function CrearEventoCards() {
 
         const allocations = (zone.subtypes || []).map((st) => {
           const mode = st.pricingMode || "percent";
+
           const allocation = {
             audienceName: st.type || "Entrada General",
             allocatedQuantity: Number(zone.quantity) || 0,
-            discountPercent: 0,
+
+            discountType: mode === "percent" ? "PERCENTAGE" : "CASH",
+            discountValue:
+              mode === "percent"
+                ? Number(st.discount) || 0
+                : Number(st.newPrice) || 0,
           };
-
-          if (mode === "percent") {
-            allocation.discountPercent = Number(st.discount) || 0; //discountType -> discountPercent (discountValue) PERCENTAGE
-          }
-
-          if (mode === "newPrice") {
-            allocation.newPrice = Number(st.newPrice) || 0; //discountType (discountValue: NUMERO DEL PORCENTAJE / NUMERO DEL NUEVO PRECIO) CASH
-          }
 
           return allocation;
         });
@@ -377,6 +375,24 @@ export default function CrearEventoCards() {
           };
         });
 
+      const discounts = (discountCodes || []).map((code) => {
+        const startAt = `${code.from}T00:00:00.000Z`;
+        const endAt = `${code.to}T23:59:59.000Z`;
+
+        return {
+          scope: "EVENT",
+          userId: null,
+          code: code.code,
+          percentage: Number(code.percent) || 0,
+          stackable: false,
+          startAt: startAt,
+          endAt: endAt,
+          status: "A",
+          availableQty: Number(code.available) || 0,
+          appliesTo: code.appliesToOne || "ALL",
+        };
+      });
+
       const finalJson = {
         organizerId: 1,
         title: form.name,
@@ -397,6 +413,7 @@ export default function CrearEventoCards() {
         salePhases: salePhases,
         dates: eventDates,
         zones: eventZones,
+        discounts: discounts,
       };
 
       const formData = new FormData();
@@ -429,6 +446,7 @@ export default function CrearEventoCards() {
       formData.append("salePhases", JSON.stringify(salePhases));
       formData.append("dates", JSON.stringify(eventDates));
       formData.append("zones", JSON.stringify(eventZones));
+      formData.append("discounts", JSON.stringify(discounts));
 
       // imagenPrincipal (archivo)
       if (form.imageFile) {
@@ -512,6 +530,7 @@ export default function CrearEventoCards() {
     ],
   });
 
+  const [discountCodes, setDiscountCodes] = useState([]);
   const zoneNames = useMemo(() => {
     return (tickets.zones || []).map((z) => z.zoneName.trim()).filter(Boolean); // Solo nombres definidos y no vacíos
   }, [tickets.zones]);
@@ -965,7 +984,11 @@ export default function CrearEventoCards() {
           )}
           <div className="space-y-8">
             <SalesSeasonCard value={salesSeasons} onChange={setSalesSeasons} />
-            <DiscountCodesSection zoneNames={zoneNames} />
+            <DiscountCodesSection
+              zoneNames={zoneNames}
+              value={discountCodes}
+              onChange={setDiscountCodes}
+            />
             <ReturnsPolicy value={returnsPolicy} onChange={setReturnsPolicy} />
           </div>
         </WizardCard>

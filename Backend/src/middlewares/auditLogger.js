@@ -15,7 +15,7 @@ export function auditMiddleware() {
     if (!currentUserId) return next(params);
 
     // Confirmar que sea administrador
-    const admin = await prisma.administrator.findUnique({
+    const admin = await prisma.Administrator.findUnique({
       where: { userId: currentUserId },
     });
     if (!admin) return next(params);

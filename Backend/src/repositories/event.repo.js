@@ -405,7 +405,8 @@ export async function listAvailableTicketsRepo(input) {
                   eventDateZoneAllocationId: true,
                   eventDateZoneId: true,
                   audienceName: true,
-                  discountPercent: true,
+                  discountType: true,
+                  discountValue: true,
                 },
               },
 

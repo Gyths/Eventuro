@@ -344,7 +344,7 @@ model EventDateZoneAllocation {
   audienceName              String
   discountType              DISCOUNT_TYPE
   discountValue             Decimal       @db.Decimal(5, 2)
-  allocatedQuantity         Int
+  allocatedQuantity         Int?
   remainingQuantity         Int?
 
   // relaciones

@@ -2,19 +2,11 @@ import React, { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { DiscountCodeCard } from "./DiscountCodeCard";
-export default function DiscountCodesSection({ zoneNames = [] }) {
-  const [codes, setCodes] = useState([
-    {
-      id: uuidv4(),
-      code: "EVNTR2025",
-      available: 250,
-      from: "11/09/2025",
-      to: "15/09/2025",
-      appliesTo: ["Tipo A Sub A", "Tipo A Sub B"],
-      percent: 25,
-    },
-  ]);
-
+export default function DiscountCodesSection({
+  zoneNames = [],
+  value = [],
+  onChange = () => {},
+}) {
   const [showAdd, setShowAdd] = useState(false);
   const [draft, setDraft] = useState({
     code: "",
@@ -34,18 +26,19 @@ export default function DiscountCodesSection({ zoneNames = [] }) {
         ? [draft.appliesToOne]
         : [];
 
-    setCodes((c) => [
-      ...c,
-      {
-        id: uuidv4(),
-        code: draft.code.trim(),
-        available: Number(draft.available || 0),
-        from: draft.from,
-        to: draft.to,
-        appliesTo: computedAppliesTo,
-        percent: Number(draft.percent || 0),
-      },
-    ]);
+    const newCode = {
+      id: uuidv4(),
+      code: draft.code.trim(),
+      available: Number(draft.available || 0),
+      from: draft.from,
+      to: draft.to,
+
+      appliesToOne: draft.appliesToOne,
+
+      appliesTo: computedAppliesTo,
+      percent: Number(draft.percent || 0),
+    };
+    onChange([...value, newCode]);
     setDraft({
       code: "",
       available: 0,
@@ -57,7 +50,7 @@ export default function DiscountCodesSection({ zoneNames = [] }) {
     setShowAdd(false);
   };
 
-  const removeCode = (id) => setCodes((c) => c.filter((x) => x.id !== id));
+  const removeCode = (id) => onChange(value.filter((x) => x.id !== id));
 
   return (
     <section className="space-y-4">
@@ -151,7 +144,7 @@ export default function DiscountCodesSection({ zoneNames = [] }) {
                   </option>
                 ))}
               </select>
-              {/* Hint opcional */}
+
               <p className="mt-1 text-[11px] text-gray-500">
                 Selecciona una zona específica o “Todas”. Si eliges “Todas”, el
                 código se aplicará a todas las zonas actuales.
@@ -171,7 +164,7 @@ export default function DiscountCodesSection({ zoneNames = [] }) {
       )}
 
       <div className="grid md:grid-cols-2 gap-4">
-        {codes.map((c) => (
+        {value.map((c) => (
           <DiscountCodeCard
             key={c.id}
             code={c.code}
@@ -183,6 +176,11 @@ export default function DiscountCodesSection({ zoneNames = [] }) {
             onRemove={() => removeCode(c.id)}
           />
         ))}
+        {value.length === 0 && !showAdd && (
+          <p className="text-sm text-gray-500 md:col-span-2">
+            No hay códigos de descuento agregados.
+          </p>
+        )}
       </div>
     </section>
   );
