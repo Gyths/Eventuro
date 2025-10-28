@@ -11,11 +11,11 @@ export const prisma =
     log: ["warn", "error"], // agrega 'query' si quieres depurar
   });
 
-/*const middleware = auditMiddleware();
+const middleware = auditMiddleware();
 const originalRequest = prisma._request.bind(prisma);
 
 prisma._request = async (params) => {
   return middleware(params, (p) => originalRequest(p));
-};*/
+};
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
