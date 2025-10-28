@@ -23,6 +23,9 @@ import DiscountCodesSection from "../components/create/DiscountCodesSection";
 import Swal from "sweetalert2";
 import { BASE_URL } from "../config.js";
 
+//Copiar Configuracion
+import CopyConfigModal from "../components/create/CopyConfigModal";
+
 function WizardCard({ title, subtitle, badge, children }) {
   return (
     <div className="relative rounded-[28px] bg-gray-100 p-6 sm:p-7 lg:p-10 shadow-[0_10px_30px_rgba(0,0,0,0.08)]">
@@ -117,6 +120,8 @@ export default function CrearEventoCards() {
   const [dates, setDates] = useState([]); // [{id, date: Date|ISO, schedules:[{id,start,end}]}]
   const handlePrev = () => setCurrent((c) => Math.max(0, c - 1));
   const isActive = (i) => current === i;
+  const user = JSON.parse(localStorage.getItem("userData"));
+
   // Paso 2 — Ubicación (estado en el padre)
   const [location, setLocation] = useState({
     inPerson: null,
@@ -399,7 +404,7 @@ export default function CrearEventoCards() {
       // Datos simples (texto)
       formData.append("organizerId", 1);
       formData.append("title", form.name);
-      formData.append("inPerson", true);
+      formData.append("inPerson", String(location.inPerson === true));
       formData.append("description", form.description);
       formData.append("accessPolicy", "E");
       formData.append("accessPolicyDescription", form.extraInfo);
@@ -428,10 +433,16 @@ export default function CrearEventoCards() {
       // imagenPrincipal (archivo)
       if (form.imageFile) {
         formData.append("imagenPrincipal", form.imageFile);
+      } else if (form.imagePrincipalKey) {
+        // Si hay key existente, enviarla para reutilizar
+        formData.append("imagePrincipalKey", form.imagePrincipalKey);
       }
       // ImagenBanner (archivo)
       if (form.bannerFile) {
         formData.append("imagenBanner", form.bannerFile);
+      } else if (form.imageBannerKey) {
+        // Si hay key existente, enviarla para reutilizar
+        formData.append("imageBannerKey", form.imageBannerKey);
       }
 
       // --- Enviar con fetch ---
@@ -504,6 +515,133 @@ export default function CrearEventoCards() {
   const zoneNames = useMemo(() => {
     return (tickets.zones || []).map((z) => z.zoneName.trim()).filter(Boolean); // Solo nombres definidos y no vacíos
   }, [tickets.zones]);
+  const [showCopyModal, setShowCopyModal] = useState(false);
+  // 3. Función para mapear los datos del evento copiado a los estados del wizard
+  const mapRestrictionsArrayToObject = (restrictionsArray) => {
+    const restrictionsObj = {
+      general: false,
+      conUnAdulto: false,
+      soloAdultos: false,
+    };
+
+    if (Array.isArray(restrictionsArray)) {
+      restrictionsArray.forEach((restriction) => {
+        if (restriction === "General") restrictionsObj.general = true;
+        if (restriction === "conUnAdulto") restrictionsObj.conUnAdulto = true;
+        if (restriction === "soloAdultos") restrictionsObj.soloAdultos = true;
+      });
+    }
+
+    return restrictionsObj;
+  };
+
+  //Formato para copiar configuracion de evento
+  const handleCopyEvent = (eventData) => {
+    // Mapear datos básicos
+    updateForm({
+      name: eventData.title,
+      description: eventData.description,
+      categories: eventData.categories,
+      extraInfo: eventData.extraInfo,
+      restrictions: mapRestrictionsArrayToObject(eventData.restrictions),
+      imageFile: null,
+      bannerFile: null,
+      imagePrincipalKey: eventData.imagePrincipalKey,
+      imageBannerKey: eventData.imageBannerKey,
+      imagePrincipalURL: eventData.imagePrincipalURLSigned,
+      imageBannerURL: eventData.imageBannerURLSigned,
+      inPerson: eventData.inPerson,
+    });
+
+    // Mapear ubicación
+    setLocation({
+      inPerson: true,
+      city: eventData.venue.city,
+      address: eventData.venue.address,
+      reference: eventData.venue.reference,
+      howToFind: "",
+      capacity: String(eventData.venue.capacity),
+    });
+
+    // Mapear fechas y horarios
+    const mappedDates = eventData.dates.map((date, idx) => {
+      const startDate = new Date(date.startAt);
+      const endDate = new Date(date.endAt);
+
+      // Formatear horas a HH:mm
+      const formatTime = (d) => {
+        const h = String(d.getHours()).padStart(2, "0");
+        const m = String(d.getMinutes()).padStart(2, "0");
+        return `${h}:${m}`;
+      };
+
+      return {
+        id: Date.now() + idx,
+        date: startDate,
+        schedules: [
+          {
+            id: Date.now() + idx + 1000,
+            start: formatTime(startDate),
+            end: formatTime(endDate),
+          },
+        ],
+      };
+    });
+    setDates(mappedDates);
+
+    // Mapear tickets/zonas
+    const mappedZones = eventData.zones.map((zone) => ({
+      zoneName: zone.name,
+      quantity: String(zone.capacity),
+      price: String(zone.basePrice),
+      subtypes: zone.allocations.map((alloc) => ({
+        type: alloc.audienceName,
+        discount: String(alloc.discountPercent),
+      })),
+    }));
+
+    setTickets((prev) => ({
+      ...prev,
+      currency: eventData.zones[0]?.currency || "PEN",
+      zones: mappedZones,
+    }));
+
+    // Mapear temporadas de venta
+    if (eventData.salePhases && eventData.salePhases.length > 0) {
+      const mappedSeasons = eventData.salePhases.map((phase, idx) => {
+        const startDate = new Date(phase.startAt);
+        const endDate = new Date(phase.endAt);
+
+        // Formatear a YYYY-MM-DD
+        const formatDate = (d) => {
+          const y = d.getFullYear();
+          const m = String(d.getMonth() + 1).padStart(2, "0");
+          const day = String(d.getDate()).padStart(2, "0");
+          return `${y}-${m}-${day}`;
+        };
+
+        return {
+          id: Date.now() + idx,
+          name: phase.name,
+          percentage: String(Math.abs(phase.percentage)),
+          isIncrease: phase.percentage > 0,
+          startDate: formatDate(startDate),
+          endDate: formatDate(endDate),
+        };
+      });
+
+      setSalesSeasons({ seasons: mappedSeasons });
+    }
+
+    // Mostrar mensaje de éxito
+    Swal.fire({
+      icon: "success",
+      title: "Configuración copiada",
+      text: "Los datos del evento se han cargado correctamente.",
+      timer: 2000,
+      showConfirmButton: false,
+    });
+  };
 
   //Validaciones
   const validateStep = (stepIndex) => {
@@ -525,7 +663,7 @@ export default function CrearEventoCards() {
         newErrors.description =
           "La descripción no puede tener más de 300 caracteres.";
       }
-      if (!form.imageFile)
+      if (!form.imageFile && !imagePreview)
         newErrors.image = "Debes subir una imagen para el evento.";
 
       const selectedCats = Array.isArray(form.categories)
@@ -739,6 +877,15 @@ export default function CrearEventoCards() {
           subtitle="Nombre, categoría, descripción, imagen y restricciones"
           badge={<StepBadge number={1} />}
         >
+          {/* Botón Copiar Configuración */}
+          <div className="mb-4 lg:mb-0 lg:absolute lg:top-10 lg:right-10">
+            <BotonCTA
+              variant="secondary"
+              onClick={() => setShowCopyModal(true)}
+            >
+              Copiar Configuración
+            </BotonCTA>
+          </div>
           {Object.keys(errors).length > 0 && (
             <div className="mb-4 rounded-lg bg-red-100 text-red-800 p-3 text-sm">
               {Object.values(errors).map((err, i) => (
@@ -757,6 +904,7 @@ export default function CrearEventoCards() {
                 restrictions={form.restrictions}
                 onChangeRestrictions={updateRestrictions}
                 imagePreview={imagePreview}
+                bannerPreview={bannerPreview}
               />
             </div>
           </div>
@@ -864,6 +1012,13 @@ export default function CrearEventoCards() {
           />
         </div>
       </div>
+
+      <CopyConfigModal
+        isOpen={showCopyModal}
+        onClose={() => setShowCopyModal(false)}
+        onSelectEvent={handleCopyEvent}
+        idOrganizer={user?.userId}
+      />
     </section>
   );
 }

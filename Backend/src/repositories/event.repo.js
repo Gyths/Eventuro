@@ -1,3 +1,4 @@
+import { create } from "domain";
 import { dmmfToRuntimeDataModel } from "../generated/prisma/runtime/library.js";
 import { prisma } from "../utils/prisma.js";
 import { uploadFile, getSignedUrlForFile } from "../utils/s3.js";
@@ -7,18 +8,26 @@ export async function createEventRepo(input) {
 
     // --- Manejo del imagenPrincipal (multer) ---
     let imagePrincipalKey = null;
-    if (input.imagenPrincipal) {
-      const buffer = input.imagenPrincipal.buffer;
-      const fileName = `events/${Date.now()}_${input.imagenPrincipal.originalname}`;
-      imagePrincipalKey = await uploadFile(fileName, buffer, input.imagenPrincipal.mimetype);
+      if (input.imagenPrincipal) {
+        // 1. Si se sube un nuevo archivo (Multer)
+        const buffer = input.imagenPrincipal.buffer;
+        const fileName = `events/${Date.now()}_${input.imagenPrincipal.originalname}`;
+        imagePrincipalKey = await uploadFile(fileName, buffer, input.imagenPrincipal.mimetype);
+      } else if (input.imagePrincipalKey) {
+        // 2. Si se está reutilizando una clave (Evento copiado)
+        imagePrincipalKey = input.imagePrincipalKey;
     }
 
-    // --- Manejo del imagenBanner (multer) ---
+    // --- Manejo del imagenBanner ---
     let imageBannerKey = null;
-    if (input.imagenBanner) {
-      const buffer = input.imagenBanner.buffer;
-      const fileName = `events/${Date.now()}_${input.imagenBanner.originalname}`;
-      imageBannerKey = await uploadFile(fileName, buffer, input.imagenBanner.mimetype);
+      if (input.imagenBanner) {
+        // 1. Si se sube un nuevo archivo (Multer)
+        const buffer = input.imagenBanner.buffer;
+        const fileName = `events/${Date.now()}_${input.imagenBanner.originalname}`;
+        imageBannerKey = await uploadFile(fileName, buffer, input.imagenBanner.mimetype);
+      } else if (input.imageBannerKey) {
+        // 2. Si se está reutilizando una clave (Evento copiado)
+        imageBannerKey = input.imageBannerKey;
     }
 
     // --- Parsear y convertir tipos ---
@@ -226,6 +235,70 @@ export async function listEventRepo() {
   return enriched;
 }
 
+export async function eventDetails(id) {
+  const event = await prisma.event.findUnique({
+    where: { eventId: BigInt(id) },
+    include: {
+      dates: {
+        include: {
+          zoneDates: {
+            include: {
+              allocations: true,
+            },
+          },
+        },
+      },
+      salesPhases: true,
+      categories: {
+        include: { category: true },
+      },
+      organizer: true,
+      venue: true,
+      fee: true,
+    },
+  });
+
+  if (event) {
+    if (event.imagePrincipalKey) {
+      try {
+        event.imagePrincipalURLSigned = await getSignedUrlForFile(event.imagePrincipalKey);
+      } catch (err) {
+        console.error("Error generando signed URL imagen principal:", err);
+        event.imagePrincipalURLSigned = null;
+      }
+    }
+
+    if (event.imageBannerKey) {
+      try {
+        event.imageBannerURLSigned = await getSignedUrlForFile(event.imageBannerKey);
+      } catch (err) {
+        console.error("Error generando signed URL banner:", err);
+        event.imageBannerURLSigned = null;
+      }
+    }
+  }
+
+  return event; // ✅ Devolver el objeto, no un array
+}
+
+
+export async function listEventsByOrganizerRepo(idOrganizer) {
+  return prisma.event.findMany({
+    where: { organizerId: BigInt(idOrganizer) },
+    select: {
+      eventId: true,
+      title: true,
+      createdAt: true,
+      venue: {
+        select: {
+          city: true,
+        },
+      },
+    },
+  });
+}
+
+
 export async function listAvailableTicketsRepo(input) {
   const event = await prisma.event.findUnique({
     where: { eventId: BigInt(input.eventId) },
@@ -391,8 +464,8 @@ export async function setEventFeeRepo({ eventId, percentage }) {
     }
 
     const event = await tx.event.update({
-      where: { eventId: eventIdNormalized},
-      data: { feeId: fee.feeId},
+      where: { eventId: eventIdNormalized },
+      data: { feeId: fee.feeId },
       select: {
         eventId: true,
         title: true,
