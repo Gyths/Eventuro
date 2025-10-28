@@ -18,6 +18,4 @@ prisma._request = async (params) => {
   return middleware(params, (p) => originalRequest(p));
 };
 
-//prisma.$use(auditMiddleware());
-
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
