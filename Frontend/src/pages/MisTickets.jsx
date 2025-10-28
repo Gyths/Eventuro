@@ -4,6 +4,7 @@ import { useAuth } from "../services/auth/AuthContext";
 import { EventuroApi } from "../api";
 import QRCode from "react-qr-code";
 import placeholder from "../assets/image-placeholder.svg";
+import RefundRequestModal from "../components/RefundRequestModal";
 
 const CURRENCIES = { PEN: "S/.", USD: "$" };
 
@@ -161,12 +162,15 @@ export default function MisOrdenes() {
   );
 }
 
-/** Tarjeta de detalle tipo ticket con imagen + QR + botón Descargar (sin “Orden #…”) */
+/** Tarjeta de detalle tipo ticket con imagen + QR + botón Descargar + Devolución */
 function OrderDetail({ orderCard }) {
   const { user } = useAuth();
   const o = orderCard.raw;
-  const sym = orderCard.currencySymbol;
+  const sym = orderCard.currencySymbol; // (reservado por si lo usas luego)
   const cardRef = useRef(null);
+
+  // Estado para abrir/cerrar el modal de devolución
+  const [showRefund, setShowRefund] = useState(false);
 
   // Primer ítem como base del ticket
   const firstItem = Array.isArray(o.items) && o.items[0] ? o.items[0] : null;
@@ -222,49 +226,70 @@ function OrderDetail({ orderCard }) {
   }
 
   return (
-    <div ref={cardRef} className="rounded-2xl border border-blue-300 p-4 sm:p-5">
-      {/* Título y fecha (sin “Orden #…”) */}
-      <h3 className="text-2xl font-extrabold text-purple-900 mb-1">{title}</h3>
-      <p className="text-sm text-gray-700 mb-3">{when}</p>
+    <>
+      <div ref={cardRef} className="rounded-2xl border border-blue-300 p-4 sm:p-5">
+        {/* Título y fecha */}
+        <h3 className="text-2xl font-extrabold text-purple-900 mb-1">{title}</h3>
+        <p className="text-sm text-gray-700 mb-3">{when}</p>
 
-      {/* Imagen grande */}
-      <img src={image} alt={title} className="w-full h-52 object-cover rounded-xl mb-3" />
+        {/* Imagen grande */}
+        <img src={image} alt={title} className="w-full h-52 object-cover rounded-xl mb-3" />
 
-      {/* Ubicación */}
-      <div className="flex items-center gap-2 text-gray-800 mb-4">
-        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24" className="text-purple-600">
-          <path d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z" />
-        </svg>
-        <span className="text-sm">{location || "Ubicación"}</span>
-      </div>
+        {/* Ubicación */}
+        <div className="flex items-center gap-2 text-gray-800 mb-4">
+          <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24" className="text-purple-600">
+            <path d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z" />
+          </svg>
+          <span className="text-sm">{location || "Ubicación"}</span>
+        </div>
 
-      {/* Datos + QR */}
-      <div className="grid grid-cols-1 sm:grid-cols-[1fr_180px] gap-4 items-start">
-        <div>
-          <p className="text-sm font-semibold text-gray-900 mb-1">Datos</p>
-          <p className="text-sm text-gray-700">Nombre: {user?.name || "—"}</p>
-          <p className="text-sm text-gray-700">Documento: {user?.document || "—"}</p>
+        {/* Datos + QR */}
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_180px] gap-4 items-start">
+          <div>
+            <p className="text-sm font-semibold text-gray-900 mb-1">Datos</p>
+            <p className="text-sm text-gray-700">Nombre: {user?.name || "—"}</p>
+            <p className="text-sm text-gray-700">Documento: {user?.document || "—"}</p>
 
-          <div className="mt-4 text-sm text-gray-800">
-            <p className="font-semibold">{zoneText}</p>
-            <p>Cantidad: {totalQty}</p>
+            <div className="mt-4 text-sm text-gray-800">
+              <p className="font-semibold">{zoneText}</p>
+              <p>Cantidad: {totalQty}</p>
+            </div>
+          </div>
+
+          <div className="flex sm:justify-end">
+            <div className="bg-white p-2 rounded-xl border border-gray-200">
+              <QRCode value={qrValue} size={150} bgColor="#ffffff" fgColor="#000000" />
+            </div>
           </div>
         </div>
 
-        <div className="flex sm:justify-end">
-          <div className="bg-white p-2 rounded-xl border border-gray-200">
-            <QRCode value={qrValue} size={150} bgColor="#ffffff" fgColor="#000000" />
-          </div>
+        {/* Acciones */}
+        <div className="mt-4 flex flex-col sm:flex-row gap-3">
+          <button
+            onClick={handleDownload}
+            className="inline-block bg-yellow-300 text-gray-700 font-semibold px-4 py-2 rounded-xl hover:brightness-95"
+          >
+            Imprimir / Descargar
+          </button>
+
+          <button
+            onClick={() => setShowRefund(true)}
+            className="inline-block bg-rose-600 text-white font-semibold px-4 py-2 rounded-xl hover:bg-rose-700"
+          >
+            Solicitar devolución
+          </button>
         </div>
       </div>
 
-      {/* Botón Descargar */}
-      <button
-        disabled
-        className="mt-4 inline-block bg-yellow-300 text-gray-700 font-semibold px-4 py-2 rounded-xl opacity-70 cursor-not-allowed"
-      >
-        Descargar
-      </button>
-    </div>
+      {/* Modal de solicitud de devolución */}
+      {showRefund && (
+        <RefundRequestModal
+          isOpen={showRefund}
+          onClose={() => setShowRefund(false)}
+          order={o}
+          onSubmitted={() => setShowRefund(false)}
+        />
+      )}
+    </>
   );
 }

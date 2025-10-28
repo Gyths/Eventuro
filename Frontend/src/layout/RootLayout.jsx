@@ -2,17 +2,19 @@
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import TopBar from "../components/topbar/TopBar";
-import UserVariant from "../components/topbar/variants/UserVariant";
-import OrganizerVariant from "../components/topbar/variants/OrganizerVariant";
 import PaymentVariant from "../components/topbar/variants/PaymentVariant";
+import TopBarRoles from "../components/topbar/TopBarRoles"; // 👈 nuevo topbar unificado
 import { useAuth } from "../services/auth/AuthContext";
 
 export default function RootLayout() {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
+  // Oculta el topbar en login/registro
   const hideTop = pathname === "/login" || pathname === "/registro";
+
+  // Filtros globales de búsqueda
   const [filters, setFilters] = useState({
     category: null,
     dateFrom: null,
@@ -20,50 +22,45 @@ export default function RootLayout() {
     location: "",
   });
 
-  const [variant, setVariant] = useState("client");
+  // Variante de layout (solo dejamos pago aparte)
+  const [variant, setVariant] = useState("roles");
 
+  // Al cambiar de ruta, desplazamiento arriba
   useEffect(() => {
     window.scrollTo({
       top: 0,
       left: 0,
-      behavior: "smooth", // o "auto" si prefieres sin animación
+      behavior: "smooth",
     });
   }, [pathname]);
 
-  //useEffect que decide que tipo de topbar utilizar
+  // Determinar qué tipo de barra mostrar
   useEffect(() => {
-    //Si esto no funciona, modificar para adpatar a la lógica de gestión de tipos de usuario
-    switch (user?.userType) {
-      case "O":
-        setVariant("organizer");
-        break;
-      default:
-        setVariant("client");
-        break;
+    // Si estamos en la página de pago → usar PaymentVariant
+    if (pathname === "/pago") {
+      setVariant("payment");
+      return;
     }
 
-    //Borrar esto cuando haya lógica para usuario administrador
-    pathname === "/crearEvento" && setVariant("organizer");
-
-    //No borrar esto
-    pathname === "/pago" && setVariant("payment");
+    // En cualquier otra ruta → usar la nueva barra unificada
+    setVariant("roles");
   }, [user, pathname, isAuthenticated]);
 
-  let layout_type = new Map();
+  // Map de tipos de barra
+  const layout_type = new Map();
   layout_type.set(
-    "client",
-    <UserVariant filters={filters} setFilters={setFilters}></UserVariant>
+    "roles",
+    <TopBarRoles filters={filters} setFilters={setFilters} />
   );
-  layout_type.set("organizer", <OrganizerVariant></OrganizerVariant>);
-  layout_type.set("payment", <PaymentVariant></PaymentVariant>);
+  layout_type.set("payment", <PaymentVariant />);
 
   return (
     <>
+      {/* Solo mostrar el TopBar si no está oculto */}
       {!hideTop && <TopBar>{layout_type.get(variant)}</TopBar>}
 
-      {/* Si ocultas la TopBar, no pongas padding superior */}
+      {/* Main con padding superior si hay topbar */}
       <main className={hideTop ? "" : "pt-14"}>
-        {/* carga de filtros */}
         <Outlet context={{ filters }} />
       </main>
     </>
