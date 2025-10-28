@@ -30,3 +30,8 @@ export const PAYMENT_OPTION_TEXTS = {
   },
   alert: "Debes seleccionar una opción para realizar el pago",
 };
+
+export const DISCOUNT_CODE_TEXTS = {
+  title: "¿Tienes algún código de descuento?",
+  alerts: { 0: "Mensaje de alerta de prueba" },
+};

@@ -75,7 +75,9 @@ export default function SelectAllocationModal({
 
   const handleNoAllocationGeneralSum = (zoneIndex) => {
     // CAMBIO: usar && y Number para límites
-    const cap = Number(selectedData.zoneDates[zoneIndex].capacityRemaining || 0);
+    const cap = Number(
+      selectedData.zoneDates[zoneIndex].capacityRemaining || 0
+    );
     const newValues = notAllocatedGeneralQuantities.map((value, index) =>
       index === zoneIndex && value < cap ? value + 1 : value
     );
@@ -95,19 +97,11 @@ export default function SelectAllocationModal({
     const newValues = allocatedGeneralQuantities.map(
       (allocation, zoneIndex) => {
         return zoneI === zoneIndex
-<<<<<<< HEAD
           ? allocation.map((quantity, allocationIndex) => {
               return allocationI === allocationIndex && quantity > 0
                 ? quantity - 1
                 : quantity;
             })
-=======
-          ? allocation.map((quantitie, allocationIndex) =>
-              allocationI === allocationIndex && quantitie > 0
-                ? quantitie - 1
-                : quantitie
-            )
->>>>>>> main
           : allocation;
       }
     );
@@ -117,12 +111,11 @@ export default function SelectAllocationModal({
   const handleAllocatedGeneralSum = (zoneI, allocationI) => {
     // CAMBIO: usar && y Number
     const rem = Number(
-      selectedData.zoneDates[zoneI].allocations[allocationI].remainingQuantity ||
-        0
+      selectedData.zoneDates[zoneI].allocations[allocationI]
+        .remainingQuantity || 0
     );
     const newValues = allocatedGeneralQuantities.map(
       (allocation, zoneIndex) => {
-<<<<<<< HEAD
         //console.log("sumando en " + zoneI + " " + allocationI);
         if (zoneI !== zoneIndex) return allocation;
         const zone = selectedData.zoneDates[zoneIndex];
@@ -136,15 +129,6 @@ export default function SelectAllocationModal({
         return allocation.map((quantity, allocationIndex) => {
           return allocationIndex === allocationI ? quantity + 1 : quantity;
         });
-=======
-        return zoneI === zoneIndex
-          ? allocation.map((quantitie, allocationIndex) =>
-              allocationI === allocationIndex && quantitie < rem
-                ? quantitie + 1
-                : quantitie
-            )
-          : allocation;
->>>>>>> main
       }
     );
     setAllocatedGeneralQuantities(newValues);
@@ -226,32 +210,22 @@ export default function SelectAllocationModal({
 
   // Función para manejar enviar la orden a la bd
   const onContinue = async () => {
-<<<<<<< HEAD
     //Se establece la información de la orden
     let shoppingCart = {};
-=======
->>>>>>> main
     const orderData = {};
     orderData.buyerUserId = user.userId;
     orderData.currency = "PEN";
     orderData.items = [];
 
-<<<<<<< HEAD
     //Se añaden las entradas sin allocation ni sitio
     notAllocatedGeneralQuantities.map((quantity, index) => {
       if (quantity > 0) {
-=======
-    // Entradas sin allocation ni sitio
-    notAllocatedGeneralQuantities.forEach((value, index) => {
-      if (value > 0) {
->>>>>>> main
         orderData.items.push({
           eventId: event.eventId,
           eventDateId: selectedData.eventDateId,
           eventDateZoneId: selectedData.zoneDates[index].eventDateZoneId,
           quantity: quantity,
         });
-<<<<<<< HEAD
         shoppingCart[selectedData.zoneDates[index].name] = {
           quantity: parseInt(quantity),
           price:
@@ -265,15 +239,6 @@ export default function SelectAllocationModal({
     notAllocatedSeatedQuantities.map((seats, index) => {
       if (seats.length > 0) {
         seats.map((seat) => {
-=======
-      }
-    });
-
-    // Entradas sin allocation pero con sitio
-    notAllocatedSeatedQuantities.forEach((zoneAllocation, index) => {
-      if (zoneAllocation.length > 0) {
-        zoneAllocation.forEach((seat) => {
->>>>>>> main
           orderData.items.push({
             eventId: event.eventId,
             eventDateId: selectedData.eventDateId,
@@ -282,7 +247,6 @@ export default function SelectAllocationModal({
             seatId: seat,
           });
         });
-<<<<<<< HEAD
         shoppingCart[selectedData.zoneDates[index].name] = {
           quantity: seats.length,
           price:
@@ -297,16 +261,6 @@ export default function SelectAllocationModal({
       if (zone != "") {
         zone.map((quantity, allocationIndex) => {
           quantity > 0 &&
-=======
-      }
-    });
-
-    // Entradas con allocation pero sin sitio
-    allocatedGeneralQuantities.forEach((zone, zoneIndex) => {
-      if (zone !== "") {
-        zone.forEach((quantitie, allocationIndex) => {
-          if (quantitie > 0) {
->>>>>>> main
             orderData.items.push({
               eventId: event.eventId,
               eventDateId: selectedData.eventDateId,
@@ -317,7 +271,6 @@ export default function SelectAllocationModal({
                   .eventDateZoneAllocationId,
               quantity: quantity,
             });
-<<<<<<< HEAD
           shoppingCart[
             selectedData.zoneDates[zoneIndex].name +
               " - " +
@@ -335,20 +288,12 @@ export default function SelectAllocationModal({
                 ) /
                   100),
           };
-=======
-          }
->>>>>>> main
         });
       }
     });
 
-<<<<<<< HEAD
     //Se añaden las entradas con allocation y con sitio
     allocatedSeatedQuantities.map((seats, zoneIndex) => {
-=======
-    // Entradas con allocation y con sitio
-    allocatedSeatedQuantities.forEach((seats, zoneIndex) => {
->>>>>>> main
       for (const seatId in seats) {
         orderData.items.push({
           eventId: event.eventId,
@@ -398,7 +343,6 @@ export default function SelectAllocationModal({
       console.error("Error al consultar disponbilidad:", err);
       throw err;
     }
-<<<<<<< HEAD
     console.log(shoppingCart);
     setEvent({
       ...event,
@@ -408,9 +352,6 @@ export default function SelectAllocationModal({
       shoppingCart: shoppingCart,
     });
     //Avanza a la siguiente página
-=======
-
->>>>>>> main
     navigate(paymentPage);
   };
 
@@ -553,8 +494,7 @@ export default function SelectAllocationModal({
                                           Object.values(
                                             allocatedSeatedQuantities[zoneIndex]
                                           ).filter(
-                                            (value) =>
-                                              value === allocationIndex
+                                            (value) => value === allocationIndex
                                           ).length
                                         }
                                         )
