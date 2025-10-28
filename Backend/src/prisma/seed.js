@@ -55,15 +55,15 @@ async function main() {
 
   await prisma.eventCategory.createMany({
     data: [
-      { eventCategoryId: 1, initials: 'MUS', description: 'Música', createdAt: new Date(), updatedAt: new Date() },
-      { eventCategoryId: 2, initials: 'DEP', description: 'Deportes', createdAt: new Date(), updatedAt: new Date() },
-      { eventCategoryId: 3, initials: 'TEA', description: 'Teatro', createdAt: new Date(), updatedAt: new Date() },
-      { eventCategoryId: 4, initials: 'CUL', description: 'Cultura', createdAt: new Date(), updatedAt: new Date() },
-      { eventCategoryId: 5, initials: 'TEC', description: 'Tecnología', createdAt: new Date(), updatedAt: new Date() },
-      { eventCategoryId: 6, initials: 'GAS', description: 'Gastronomía', createdAt: new Date(), updatedAt: new Date() },
-      { eventCategoryId: 7, initials: 'EDU', description: 'Educativo', createdAt: new Date(), updatedAt: new Date() },
-      { eventCategoryId: 8, initials: 'NEG', description: 'Negocios', createdAt: new Date(), updatedAt: new Date() },
-      { eventCategoryId: 9, initials: 'EXP', description: 'Exposición', createdAt: new Date(), updatedAt: new Date() },
+      { initials: 'MUS', description: 'Música', createdAt: new Date(), updatedAt: new Date() },
+      {initials: 'DEP', description: 'Deportes', createdAt: new Date(), updatedAt: new Date() },
+      {initials: 'TEA', description: 'Teatro', createdAt: new Date(), updatedAt: new Date() },
+      {initials: 'CUL', description: 'Cultura', createdAt: new Date(), updatedAt: new Date() },
+      {initials: 'TEC', description: 'Tecnología', createdAt: new Date(), updatedAt: new Date() },
+      {initials: 'GAS', description: 'Gastronomía', createdAt: new Date(), updatedAt: new Date() },
+      {initials: 'EDU', description: 'Educativo', createdAt: new Date(), updatedAt: new Date() },
+      {initials: 'NEG', description: 'Negocios', createdAt: new Date(), updatedAt: new Date() },
+      {initials: 'EXP', description: 'Exposición', createdAt: new Date(), updatedAt: new Date() },
     ],
     skipDuplicates: true, // evita errores si ya existen
   });

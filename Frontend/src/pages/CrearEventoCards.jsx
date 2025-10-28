@@ -26,6 +26,8 @@ import { BASE_URL } from "../config.js";
 //Copiar Configuracion
 import CopyConfigModal from "../components/create/CopyConfigModal";
 
+import { useAuth } from "../services/auth/AuthContext";
+
 function WizardCard({ title, subtitle, badge, children }) {
   return (
     <div className="relative rounded-[28px] bg-gray-100 p-6 sm:p-7 lg:p-10 shadow-[0_10px_30px_rgba(0,0,0,0.08)]">
@@ -118,9 +120,9 @@ export default function CrearEventoCards() {
   const { form, updateForm, updateRestrictions, imagePreview, bannerPreview } =
     useEventForm();
   const [dates, setDates] = useState([]); // [{id, date: Date|ISO, schedules:[{id,start,end}]}]
+  const { user } = useAuth();
   const handlePrev = () => setCurrent((c) => Math.max(0, c - 1));
   const isActive = (i) => current === i;
-  const user = JSON.parse(localStorage.getItem("userData"));
 
   // Paso 2 — Ubicación (estado en el padre)
   const [location, setLocation] = useState({
@@ -220,8 +222,42 @@ export default function CrearEventoCards() {
 
   //###### GENERADOR DEL JSON PARA POST A LA BD ##########
   const generateAndPostJson = async () => {
+    console.log(
+      "Datos COMPLETOS del usuario al publicar:",
+      JSON.stringify(user, null, 2)
+    );
+    console.log(
+      "IDs de categorías que se están enviando:",
+      JSON.stringify(form.categories, null, 2)
+    );
     try {
       setPosting(true);
+
+      const organizerId = user?.organizer?.organizerId;
+
+      if (!organizerId) {
+        await Swal.fire({
+          icon: "error",
+          title: "Error de Usuario",
+          text: "No se pudo leer el ID de Organizador (user.organizer.organizerId está nulo). Revisa la consola.",
+          confirmButtonText: "Entendido",
+        });
+        setPosting(false); // Detener el spinner
+        return; // Detener la función aquí
+      }
+
+      const numericOrganizerId = Number(organizerId);
+
+      if (isNaN(numericOrganizerId)) {
+        await Swal.fire({
+          icon: "error",
+          title: "Error de ID",
+          text: `Tu ID de organizador ("${organizerId}") no es un número válido.`,
+          confirmButtonText: "Entendido",
+        });
+        setPosting(false);
+        return;
+      }
 
       // ====== construir el JSON (tu mismo código adaptado) ======
       const toYMD = (d) => {
@@ -394,7 +430,7 @@ export default function CrearEventoCards() {
       });
 
       const finalJson = {
-        organizerId: 1,
+        organizerId: numericOrganizerId,
         title: form.name,
         inPerson: location.inPerson === false ? false : true,
         description: form.description,
@@ -419,7 +455,7 @@ export default function CrearEventoCards() {
       const formData = new FormData();
 
       // Datos simples (texto)
-      formData.append("organizerId", 1);
+      formData.append("organizerId", numericOrganizerId);
       formData.append("title", form.name);
       formData.append("inPerson", String(location.inPerson === true));
       formData.append("description", form.description);
@@ -745,12 +781,11 @@ export default function CrearEventoCards() {
           newErrors.address =
             "La dirección no puede tener más de 150 caracteres.";
         }
-        if (
-          Number(location.capacity) > 200000 ||
-          Number(location.capacity) <= 0
-        ) {
+        const capacityNum = Number(location.capacity);
+
+        if (isNaN(capacityNum) || capacityNum > 200000 || capacityNum <= 0) {
           newErrors.capacity =
-            "La capacidad debe ser un número válido (entre 0 y 200,000).";
+            "La capacidad debe ser un número válido (entre 1 y 200,000).";
         }
       }
 
