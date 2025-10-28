@@ -34,6 +34,14 @@ export const PAYMENT_OPTION_TEXTS = {
 export const DISCOUNT_CODE_TEXTS = {
   title: "¿Tienes algún código de descuento?",
   alerts: {
-    0: "Mensaje de alerta de prueba",
+    0: "Mensaje de alerta de prueba.",
+    1: "Ingresar un código de descuento.",
+    2: "El código ingresado no es válido.",
+    3: "El código ingresado no es aplicable en este evento.",
+    4: "El código de descuento no está activo.",
+    5: "El código de descuento ha expirado.",
+    6: "Se alcanzó el límite de usos.",
+    7: "Este código de descuento no puede ser combinado con otros código.",
+    8: "No hay ítems aplicables en el carrito de compras",
   },
 };

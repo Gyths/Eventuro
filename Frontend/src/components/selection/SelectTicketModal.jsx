@@ -8,6 +8,7 @@ import { useAuth } from "../../services/auth/AuthContext";
 import { EventuroApi } from "../../api";
 
 import SeatNumberSelectionModal from "./SeatNumberSelectionModal";
+import AlertMessage from "../AlertMessage";
 
 import { AnimatePresence } from "framer-motion";
 import {
@@ -35,6 +36,8 @@ export default function SelectAllocationModal({
   const { setOrder } = useOrder();
 
   console.log(selectedData);
+
+  const [showAlertMessage, setShowAlertMessage] = React.useState(false);
 
   // States para el manejo de las cantidad de entradas seleccionadas
   const [notAllocatedGeneralQuantities, setNotAllocatedGeneralQuantities] =
@@ -211,6 +214,19 @@ export default function SelectAllocationModal({
   // Función para manejar enviar la orden a la bd
   const onContinue = async () => {
     //Se establece la información de la orden
+
+    if (
+      !notAllocatedGeneralQuantities.length &&
+      !allocatedSeatedQuantities.length &&
+      !notAllocatedGeneralQuantities.length &&
+      !notAllocatedSeatedQuantities.length
+    ) {
+      setShowAlertMessage(true);
+      return;
+    } else {
+      setShowAlertMessage(false);
+    }
+
     let shoppingCart = {};
     const orderData = {};
     orderData.buyerUserId = user.userId;
@@ -260,7 +276,7 @@ export default function SelectAllocationModal({
     allocatedGeneralQuantities.map((zone, zoneIndex) => {
       if (zone != "") {
         zone.map((quantity, allocationIndex) => {
-          quantity > 0 &&
+          if (quantity > 0) {
             orderData.items.push({
               eventId: event.eventId,
               eventDateId: selectedData.eventDateId,
@@ -271,23 +287,25 @@ export default function SelectAllocationModal({
                   .eventDateZoneAllocationId,
               quantity: quantity,
             });
-          shoppingCart[
-            selectedData.zoneDates[zoneIndex].name +
-              " - " +
-              selectedData.zoneDates[zoneIndex].allocations[allocationIndex]
-                .audienceName
-          ] = {
-            quantity: quantity,
-            price:
-              parseInt(quantity) *
-              parseInt(selectedData.zoneDates[zoneIndex].basePrice) *
-              (1 -
-                parseInt(
-                  selectedData.zoneDates[zoneIndex].allocations[allocationIndex]
-                    .discountPercent
-                ) /
-                  100),
-          };
+            const allocation =
+              selectedData.zoneDates[zoneIndex].allocations[allocationIndex];
+            const zone = selectedData.zoneDates[zoneIndex];
+            const discount =
+              allocation.discountType === "PERCENTAGE"
+                ? (parseInt(zone.basePrice) *
+                    parseInt(allocation.discountValue)) /
+                  100
+                : allocation.discountValue;
+            shoppingCart[
+              selectedData.zoneDates[zoneIndex].name +
+                " - " +
+                selectedData.zoneDates[zoneIndex].allocations[allocationIndex]
+                  .audienceName
+            ] = {
+              quantity: quantity,
+              price: parseInt(quantity) * (parseInt(zone.basePrice) - discount),
+            };
+          }
         });
       }
     });
@@ -312,6 +330,13 @@ export default function SelectAllocationModal({
               allocatedSeatedQuantities[zoneIndex]
             ).filter((value) => value === index).length;
             if (quantity) {
+              const zone = selectedData.zoneDates[zoneIndex];
+              const discount =
+                allocation.discountType === "PERCENTAGE"
+                  ? (parseInt(zone.basePrice) *
+                      parseInt(allocation.discountValue)) /
+                    100
+                  : allocation.discountValue;
               shoppingCart[
                 selectedData.zoneDates[zoneIndex].name +
                   " - " +
@@ -319,9 +344,7 @@ export default function SelectAllocationModal({
               ] = {
                 quantity: quantity,
                 price:
-                  parseInt(quantity) *
-                  parseInt(selectedData.zoneDates[zoneIndex].basePrice) *
-                  (1 - parseInt(allocation.discountPercent) / 100),
+                  parseInt(quantity) * (parseInt(zone.basePrice) - discount),
               };
             }
           }
@@ -511,8 +534,8 @@ export default function SelectAllocationModal({
               </div>
             </div>
             {/* Sección de información del evento */}
-            <div className="flex-[2] overflow-auto">
-              <div className="flex flex-col py-6 px-6 gap-3 justify-start ">
+            <div className="flex-[2]">
+              <div className="flex flex-col overflow-auto py-6 px-6 gap-3 justify-start ">
                 <img src={event?.image} className="rounded-lg"></img>
                 <span className="inline-block text-start font-semibold text-2xl">
                   {event?.title}
@@ -542,12 +565,19 @@ export default function SelectAllocationModal({
                 {currencies.PEN + " " + subtotal.toFixed(2)}
               </span>
             </div>
-            <button
-              onClick={onContinue}
-              className="inline-block bg-purple-600 rounded-lg text-white px-2.5 py-1 cursor-pointer"
-            >
-              Continuar
-            </button>
+            <div>
+              {showAlertMessage && (
+                <AlertMessage id={zoneIndex}>
+                  Debe seleccionar al menos un tipo de entrada
+                </AlertMessage>
+              )}
+              <button
+                onClick={onContinue}
+                className="inline-block bg-purple-600 rounded-lg text-white px-2.5 py-1 cursor-pointer"
+              >
+                Continuar
+              </button>
+            </div>
           </div>
         </div>
       </BaseModal>
@@ -557,6 +587,7 @@ export default function SelectAllocationModal({
             setModal={setModal}
             seatMap={seatMap}
             zoneIndex={zoneIndex}
+            capacityRemaining={selectedData[zoneIndex].capacityRemaining}
             allocationIndex={allocationIndex}
             notAllocatedSeatedQuantities={notAllocatedSeatedQuantities}
             setNotAllocatedSeatedQuantities={setNotAllocatedSeatedQuantities}
