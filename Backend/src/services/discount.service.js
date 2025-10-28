@@ -14,22 +14,22 @@ export async function validateDiscountSvc(input) {
     const appliedCodes = Array.isArray(input?.appliedCodes) ? input.appliedCodes : [];
 
     if (!code) {
-        return { valid: false, reason: "Missing code" };
+        return { valid: false, code: 1, reason: "Missing code" };
     }
 
     const discounts = await listDiscountByCode(code);
 
     if (!Array.isArray(discounts) || discounts.length === 0) {
-        return { valid: false, reason: "Code not found" };
+        return { valid: false, code: 2, reason: "Code not found" };
     }
 
     const discount = pickBestScopeMatch(discounts, eventId, userId);
     if (!discount) {
-        return { valid: false, reason: "The code does not apply to this context (user/event)" };
+        return { valid: false, code: 3, reason: "The code does not apply to this context (user/event)" };
     }
 
     if (discount.status !== "A") {
-        return { valid: false, reason: "Inactive discount" };
+        return { valid: false, code: 4, reason: "Inactive discount" };
     }
 
     const now = new Date();
@@ -37,14 +37,14 @@ export async function validateDiscountSvc(input) {
     const endAt = toDate(discount.endAt);
 
     if ((startAt && now < startAt) || (endAt && now > endAt)) {
-        return { valid: false, reason: "Outside the valid time window" };
+        return { valid: false, code: 5, reason: "Outside the valid time window" };
     }
 
     const availableQty = discount.availableQty;
     if (availableQty !== null && availableQty !== undefined) {
         const qtyNum = Number(availableQty);
         if (!Number.isFinite(qtyNum) || qtyNum <= 0) {
-            return { valid: false, reason: "Discount sold out" };
+            return { valid: false, code: 6, reason: "Discount sold out" };
         }
     }
 
@@ -52,7 +52,7 @@ export async function validateDiscountSvc(input) {
         const existing = await listDiscountsByCodes(appliedCodes); // => [{ code, stackable, ... }]
         const cannotStackReason = evaluateStacking(discount, Array.isArray(existing) ? existing : []);
         if (cannotStackReason) {
-            return { valid: false, reason: cannotStackReason };
+            return { valid: false, code: 7, reason: cannotStackReason };
         }
     }
 
@@ -68,7 +68,7 @@ export async function validateDiscountSvc(input) {
         .reduce((a, d) => a + Number(d.quantity || 0), 0);
 
     if (eligibleQty === 0) {
-        return { valid: false, reason: "No items are eligible for this discount", eligibleDetail };
+        return { valid: false, code: 8, reason: "No items are eligible for this discount", eligibleDetail };
     }
 
     return {
