@@ -71,23 +71,13 @@ enum TICKET_STATUS {
   EXPIRED
 }
 
-/**
- * NUEVO: estado del perfil de organizador
- */
-enum ORGANIZER_STATUS {
-  DRAFT
-  SUBMITTED
-  APPROVED
-  REJECTED
-}
-
 enum REFUND_STATUS {
   NONE
   REQUESTED
   APPROVED
   REJECTED
-
 }
+
 enum DISCOUNT_TYPE {
   CASH
   PERCENTAGE
@@ -104,6 +94,7 @@ enum STATUS_DISCOUNT {
   A
   I
 }
+
 /**
  * NUEVO: estado del perfil de organizador
  */
@@ -128,12 +119,12 @@ model User {
   status    STATUS_USER @default(A)
 
   // Relaciones
-  password  PasswordUser?
-  oauths    OAuthUser[]
-  organizer Organizer?
+  password      PasswordUser?
+  oauths        OAuthUser[]
+  organizer     Organizer?
   administrator Administrator? // NUEVO: relación 1:1 con Administrator
-  Ticket    Ticket[]      @relation("TicketOwner")
-  Discount  Discount[]
+  Ticket        Ticket[]       @relation("TicketOwner")
+  Discount      Discount[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -477,13 +468,13 @@ model Hold {
 }
 
 model AuditLog {
-  auditLogId  BigInt   @id @default(autoincrement()) @db.BigInt
-  administratorId BigInt? @db.BigInt  // relación directa a Administrator                   
-  entityName  String                                // Ej: "Event", "Ticket", "User", etc.
-  entityId    BigInt?  @db.BigInt
-  action      String                                // "CREATE", "UPDATE", "DELETE"
-  description String?
-  createdAt   DateTime  @default(now())
+  auditLogId      BigInt   @id @default(autoincrement()) @db.BigInt
+  administratorId BigInt?  @db.BigInt // relación directa a Administrator                   
+  entityName      String // Ej: "Event", "Ticket", "User", etc.
+  entityId        BigInt?  @db.BigInt
+  action          String // "CREATE", "UPDATE", "DELETE"
+  description     String?
+  createdAt       DateTime @default(now())
 
   administrator Administrator? @relation(fields: [administratorId], references: [administratorId], onDelete: SetNull)
 
