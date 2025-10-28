@@ -335,11 +335,11 @@ export default function CrearEventoCards() {
           };
 
           if (mode === "percent") {
-            allocation.discountPercent = Number(st.discount) || 0;
+            allocation.discountPercent = Number(st.discount) || 0; //discountType -> discountPercent (discountValue) PERCENTAGE
           }
 
           if (mode === "newPrice") {
-            allocation.newPrice = Number(st.newPrice) || 0;
+            allocation.newPrice = Number(st.newPrice) || 0; //discountType (discountValue: NUMERO DEL PORCENTAJE / NUMERO DEL NUEVO PRECIO) CASH
           }
 
           return allocation;
