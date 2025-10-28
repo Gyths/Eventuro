@@ -30,7 +30,7 @@ export default function SelectAllocationModal({
 
   const navigate = useNavigate();
 
-  const { event } = useEvent();
+  const { event, setEvent } = useEvent();
   const { user } = useAuth();
   const { setOrder } = useOrder();
 
@@ -75,7 +75,9 @@ export default function SelectAllocationModal({
 
   const handleNoAllocationGeneralSum = (zoneIndex) => {
     // CAMBIO: usar && y Number para límites
-    const cap = Number(selectedData.zoneDates[zoneIndex].capacityRemaining || 0);
+    const cap = Number(
+      selectedData.zoneDates[zoneIndex].capacityRemaining || 0
+    );
     const newValues = notAllocatedGeneralQuantities.map((value, index) =>
       index === zoneIndex && value < cap ? value + 1 : value
     );
@@ -95,11 +97,11 @@ export default function SelectAllocationModal({
     const newValues = allocatedGeneralQuantities.map(
       (allocation, zoneIndex) => {
         return zoneI === zoneIndex
-          ? allocation.map((quantitie, allocationIndex) =>
-              allocationI === allocationIndex && quantitie > 0
-                ? quantitie - 1
-                : quantitie
-            )
+          ? allocation.map((quantity, allocationIndex) => {
+              return allocationI === allocationIndex && quantity > 0
+                ? quantity - 1
+                : quantity;
+            })
           : allocation;
       }
     );
@@ -109,18 +111,24 @@ export default function SelectAllocationModal({
   const handleAllocatedGeneralSum = (zoneI, allocationI) => {
     // CAMBIO: usar && y Number
     const rem = Number(
-      selectedData.zoneDates[zoneI].allocations[allocationI].remainingQuantity ||
-        0
+      selectedData.zoneDates[zoneI].allocations[allocationI]
+        .remainingQuantity || 0
     );
     const newValues = allocatedGeneralQuantities.map(
       (allocation, zoneIndex) => {
-        return zoneI === zoneIndex
-          ? allocation.map((quantitie, allocationIndex) =>
-              allocationI === allocationIndex && quantitie < rem
-                ? quantitie + 1
-                : quantitie
-            )
-          : allocation;
+        //console.log("sumando en " + zoneI + " " + allocationI);
+        if (zoneI !== zoneIndex) return allocation;
+        const zone = selectedData.zoneDates[zoneIndex];
+        const totalSelectedInZone = allocation.reduce(
+          (sum, q) => sum + parseInt(q || 0),
+          0
+        );
+        if (totalSelectedInZone >= parseInt(zone.capacityRemaining)) {
+          return allocation;
+        }
+        return allocation.map((quantity, allocationIndex) => {
+          return allocationIndex === allocationI ? quantity + 1 : quantity;
+        });
       }
     );
     setAllocatedGeneralQuantities(newValues);
@@ -202,27 +210,35 @@ export default function SelectAllocationModal({
 
   // Función para manejar enviar la orden a la bd
   const onContinue = async () => {
+    //Se establece la información de la orden
+    let shoppingCart = {};
     const orderData = {};
     orderData.buyerUserId = user.userId;
     orderData.currency = "PEN";
     orderData.items = [];
 
-    // Entradas sin allocation ni sitio
-    notAllocatedGeneralQuantities.forEach((value, index) => {
-      if (value > 0) {
+    //Se añaden las entradas sin allocation ni sitio
+    notAllocatedGeneralQuantities.map((quantity, index) => {
+      if (quantity > 0) {
         orderData.items.push({
           eventId: event.eventId,
           eventDateId: selectedData.eventDateId,
           eventDateZoneId: selectedData.zoneDates[index].eventDateZoneId,
-          quantity: value,
+          quantity: quantity,
         });
+        shoppingCart[selectedData.zoneDates[index].name] = {
+          quantity: parseInt(quantity),
+          price:
+            parseInt(quantity) *
+            parseInt(selectedData.zoneDates[index].basePrice),
+        };
       }
     });
 
-    // Entradas sin allocation pero con sitio
-    notAllocatedSeatedQuantities.forEach((zoneAllocation, index) => {
-      if (zoneAllocation.length > 0) {
-        zoneAllocation.forEach((seat) => {
+    //Se añaden las entradas sin allocation pero con sitio
+    notAllocatedSeatedQuantities.map((seats, index) => {
+      if (seats.length > 0) {
+        seats.map((seat) => {
           orderData.items.push({
             eventId: event.eventId,
             eventDateId: selectedData.eventDateId,
@@ -231,14 +247,20 @@ export default function SelectAllocationModal({
             seatId: seat,
           });
         });
+        shoppingCart[selectedData.zoneDates[index].name] = {
+          quantity: seats.length,
+          price:
+            parseInt(seats.length) *
+            parseInt(selectedData.zoneDates[index].basePrice),
+        };
       }
     });
 
-    // Entradas con allocation pero sin sitio
-    allocatedGeneralQuantities.forEach((zone, zoneIndex) => {
-      if (zone !== "") {
-        zone.forEach((quantitie, allocationIndex) => {
-          if (quantitie > 0) {
+    //Se añaden las entradas con allocation pero sin sitio
+    allocatedGeneralQuantities.map((zone, zoneIndex) => {
+      if (zone != "") {
+        zone.map((quantity, allocationIndex) => {
+          quantity > 0 &&
             orderData.items.push({
               eventId: event.eventId,
               eventDateId: selectedData.eventDateId,
@@ -247,15 +269,31 @@ export default function SelectAllocationModal({
               eventDateZoneAllocationId:
                 selectedData.zoneDates[zoneIndex].allocations[allocationIndex]
                   .eventDateZoneAllocationId,
-              quantity: quantitie,
+              quantity: quantity,
             });
-          }
+          shoppingCart[
+            selectedData.zoneDates[zoneIndex].name +
+              " - " +
+              selectedData.zoneDates[zoneIndex].allocations[allocationIndex]
+                .audienceName
+          ] = {
+            quantity: quantity,
+            price:
+              parseInt(quantity) *
+              parseInt(selectedData.zoneDates[zoneIndex].basePrice) *
+              (1 -
+                parseInt(
+                  selectedData.zoneDates[zoneIndex].allocations[allocationIndex]
+                    .discountPercent
+                ) /
+                  100),
+          };
         });
       }
     });
 
-    // Entradas con allocation y con sitio
-    allocatedSeatedQuantities.forEach((seats, zoneIndex) => {
+    //Se añaden las entradas con allocation y con sitio
+    allocatedSeatedQuantities.map((seats, zoneIndex) => {
       for (const seatId in seats) {
         orderData.items.push({
           eventId: event.eventId,
@@ -267,6 +305,27 @@ export default function SelectAllocationModal({
           quantity: 1,
           seatId: seatId,
         });
+        //Calcular cantidades y precios para el carrito de compras
+        selectedData.zoneDates[zoneIndex].allocations.map(
+          (allocation, index) => {
+            const quantity = Object.values(
+              allocatedSeatedQuantities[zoneIndex]
+            ).filter((value) => value === index).length;
+            if (quantity) {
+              shoppingCart[
+                selectedData.zoneDates[zoneIndex].name +
+                  " - " +
+                  allocation.audienceName
+              ] = {
+                quantity: quantity,
+                price:
+                  parseInt(quantity) *
+                  parseInt(selectedData.zoneDates[zoneIndex].basePrice) *
+                  (1 - parseInt(allocation.discountPercent) / 100),
+              };
+            }
+          }
+        );
       }
     });
 
@@ -284,15 +343,23 @@ export default function SelectAllocationModal({
       console.error("Error al consultar disponbilidad:", err);
       throw err;
     }
-
+    console.log(shoppingCart);
+    setEvent({
+      ...event,
+      selectedDate: selectedData.formattedStartDate,
+      selectedSchedule:
+        selectedData.formattedStartHour + " - " + selectedData.formattedEndHour,
+      shoppingCart: shoppingCart,
+    });
+    //Avanza a la siguiente página
     navigate(paymentPage);
   };
 
   return (
     <>
       <BaseModal>
-        <div className="flex flex-col rounded-xl justify-between w-full max-w-6xl h-[65vh] bg-white shadow-2xs ">
-          <div className="flex flex-row h-[60vh]">
+        <div className="flex flex-col rounded-xl justify-between w-full max-w-6xl h-[75vh] sm:h-[70vh] md:h-[65vh] lg:h-[65vh]  bg-white shadow-2xs ">
+          <div className="flex flex-wrap h-[60vh]">
             <div className="flex flex-[4] items-stretch h-full flex-col border-r border-gray-300/60">
               {/* Header del modal */}
               <div className="flex flex-row justify-start gap-4 items-center py-4 px-4 border-b border-b-gray-300 bg-gray-200">
@@ -305,7 +372,7 @@ export default function SelectAllocationModal({
                 </span>
               </div>
               {/* Sección donde se muestran las entradas */}
-              <div className="flex flex-col h-full w-full py-7 px-7 gap-2.5">
+              <div className="flex overflow-auto flex-col h-full w-full py-7 px-7 gap-2.5">
                 {selectedData &&
                   selectedData.zoneDates.map((zone, zoneIndex) => (
                     <div key={zoneIndex} className="gap-none">
@@ -427,8 +494,7 @@ export default function SelectAllocationModal({
                                           Object.values(
                                             allocatedSeatedQuantities[zoneIndex]
                                           ).filter(
-                                            (value) =>
-                                              value === allocationIndex
+                                            (value) => value === allocationIndex
                                           ).length
                                         }
                                         )
@@ -445,8 +511,8 @@ export default function SelectAllocationModal({
               </div>
             </div>
             {/* Sección de información del evento */}
-            <div className="flex-[2]">
-              <div className="flex flex-col py-6 px-6 gap-3 justify-start">
+            <div className="flex-[2] overflow-auto">
+              <div className="flex flex-col py-6 px-6 gap-3 justify-start ">
                 <img src={event?.image} className="rounded-lg"></img>
                 <span className="inline-block text-start font-semibold text-2xl">
                   {event?.title}
@@ -469,7 +535,7 @@ export default function SelectAllocationModal({
             </div>
           </div>
           {/* Subtotal seleccionado */}
-          <div className="flex flex-row justify-between gap-4 px-5 py-3 border-t border-gray-300/60 items-center">
+          <div className="flex flex-row py-3 px-2.5 justify-between gap-4 border-t border-gray-300/60 items-center">
             <div className="flex flex-row gap-4">
               <span className="inline-block font-semibold">Subtotal: </span>
               <span className="inline-block font-semibold">

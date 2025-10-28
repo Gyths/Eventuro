@@ -31,6 +31,7 @@ export function AuthProvider({ children }) {
         if (!res.ok) throw new Error("Token inválido o expirado");
 
         const data = await res.json();
+
         setSession({ token: s.token, user: data.user });
       } catch {
         localStorage.removeItem("session");

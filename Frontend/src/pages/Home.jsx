@@ -7,7 +7,11 @@ import EventCard from "../components/EventCard.jsx";
 import { v4 as uuidv4 } from "uuid";
 import { BASE_URL } from "../config.js";
 
-const imagesDemo = ["/banners/banner1.jpg", "/banners/banner2.jpg", "/banners/banner3.jpg"];
+const imagesDemo = [
+  "/banners/banner1.jpg",
+  "/banners/banner2.jpg",
+  "/banners/banner3.jpg",
+];
 
 /** Intenta convertir una URL de Google Maps a texto legible */
 function humanizeAddress(venue) {
@@ -32,7 +36,9 @@ function humanizeAddress(venue) {
   }
 
   const rightPart = addr || reference || "";
-  return [city, rightPart].filter(Boolean).join(" — ") || "Ubicación del evento";
+  return (
+    [city, rightPart].filter(Boolean).join(" — ") || "Ubicación del evento"
+  );
 }
 
 export default function Home() {
@@ -50,7 +56,9 @@ export default function Home() {
         setErr(null);
 
         const res = await fetch(`${BASE_URL}/eventuro/api/event/list`);
-        const isJson = res.headers.get("content-type")?.includes("application/json");
+        const isJson = res.headers
+          .get("content-type")
+          ?.includes("application/json");
         const payload = isJson ? await res.json().catch(() => null) : null;
         if (!res.ok) throw new Error(payload?.error || `HTTP ${res.status}`);
         if (abort) return;
@@ -77,7 +85,8 @@ export default function Home() {
             : null;
 
           // YYYY-MM-DD en UTC (evita “correr” el día por TZ)
-          const toYMD = (d) => (d ? new Date(d).toISOString().slice(0, 10) : null);
+          const toYMD = (d) =>
+            d ? new Date(d).toISOString().slice(0, 10) : null;
           const startDate = toYMD(minStart);
           const endDate = toYMD(maxEnd);
 
@@ -98,7 +107,7 @@ export default function Home() {
             titulo: ev.title ?? "Evento",
             description: ev.description,
             startDate, // rango real
-            endDate,   // rango real
+            endDate, // rango real
             hour,
             location,
             locationUrl: ev.venue?.addressUrl,
@@ -139,14 +148,20 @@ export default function Home() {
       }
 
       if (filters.location) {
-        ok = ok && e.location.toLowerCase().includes(filters.location.toLowerCase());
+        ok =
+          ok &&
+          e.location.toLowerCase().includes(filters.location.toLowerCase());
       }
 
       // Comparaciones de fecha usando strings YYYY-MM-DD (seguros)
       if (filters.dateFrom)
-        ok = ok && new Date(e.startDate ?? e.endDate ?? 0) >= new Date(filters.dateFrom);
+        ok =
+          ok &&
+          new Date(e.startDate ?? e.endDate ?? 0) >= new Date(filters.dateFrom);
       if (filters.dateTo)
-        ok = ok && new Date(e.endDate ?? e.startDate ?? 0) <= new Date(filters.dateTo);
+        ok =
+          ok &&
+          new Date(e.endDate ?? e.startDate ?? 0) <= new Date(filters.dateTo);
 
       return ok;
     });
@@ -157,24 +172,27 @@ export default function Home() {
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {/* Banner */}
         <div className="lg:col-span-4">
-          {/*<BannerCarousel
+          <BannerCarousel
             images={imagesDemo}
             interval={5000}
             showArrows={false}
             heightClass="h-48 md:h-64 lg:h-72"
             className="rounded-2xl shadow-lg"
-          />*/}
+          />
         </div>
 
         {loading && (
-          <p className="col-span-4 text-center text-gray-500">Cargando eventos…</p>
+          <p className="col-span-4 text-center text-gray-500">
+            Cargando eventos…
+          </p>
         )}
         {err && (
           <p className="col-span-4 text-center text-red-600">Error: {err}</p>
         )}
 
-        {!loading && !err && (
-          filteredEvents.length > 0 ? (
+        {!loading &&
+          !err &&
+          (filteredEvents.length > 0 ? (
             filteredEvents.map((e) => (
               <div key={e.id} className="col-span-1">
                 <EventCard
@@ -185,7 +203,7 @@ export default function Home() {
                   location={e.location}
                   locationUrl={e.locationUrl}
                   startDate={e.startDate} // YYYY-MM-DD (minStart)
-                  endDate={e.endDate}     // YYYY-MM-DD (maxEnd)
+                  endDate={e.endDate} // YYYY-MM-DD (maxEnd)
                   hour={e.hour}
                   categories={e.categories}
                   accessPolicy={e.accessPolicy}
@@ -197,8 +215,7 @@ export default function Home() {
             <p className="col-span-4 text-center text-gray-500">
               No hay eventos que coincidan con los filtros seleccionados.
             </p>
-          )
-        )}
+          ))}
       </div>
     </section>
   );

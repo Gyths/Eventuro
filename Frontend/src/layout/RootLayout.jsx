@@ -5,6 +5,7 @@ import TopBar from "../components/topbar/TopBar";
 import UserVariant from "../components/topbar/variants/UserVariant";
 import OrganizerVariant from "../components/topbar/variants/OrganizerVariant";
 import PaymentVariant from "../components/topbar/variants/PaymentVariant";
+import AdminVariant from "../components/topbar/variants/AdminVariant";
 import { useAuth } from "../services/auth/AuthContext";
 
 export default function RootLayout() {
@@ -32,22 +33,31 @@ export default function RootLayout() {
 
   //useEffect que decide que tipo de topbar utilizar
   useEffect(() => {
-    //Si esto no funciona, modificar para adpatar a la lógica de gestión de tipos de usuario
-    switch (user?.userType) {
-      case "O":
-        setVariant("organizer");
-        break;
-      default:
-        setVariant("client");
-        break;
+    const roles = user?.roles || [];
+
+    // Prioridad 1: Rutas especiales (como Pago)
+    if (pathname === "/pago") {
+      //
+      setVariant("payment");
     }
-
-    //Borrar esto cuando haya lógica para usuario administrador
-    pathname === "/crearEvento" && setVariant("organizer");
-
-    //No borrar esto
-    pathname === "/pago" && setVariant("payment");
-  }, [user, pathname, isAuthenticated]);
+    // Prioridad 2: Rutas de Administrador
+    // (Solo muestra 'admin' SI la ruta empieza con /admin)
+    else if (pathname.startsWith("/admin") && roles.includes("ADMIN")) {
+      setVariant("admin");
+    }
+    // Prioridad 3: Rutas de Organizador
+    // (Solo muestra 'organizer' SI la ruta es de organizador)
+    else if (
+      pathname.startsWith("/crearEvento") &&
+      roles.includes("ORGANIZER")
+    ) {
+      setVariant("organizer");
+    }
+    // Por defecto: Cliente/Comprador
+    else {
+      setVariant("client");
+    }
+  }, [user, pathname, isAuthenticated]); //
 
   let layout_type = new Map();
   layout_type.set(
@@ -56,6 +66,7 @@ export default function RootLayout() {
   );
   layout_type.set("organizer", <OrganizerVariant></OrganizerVariant>);
   layout_type.set("payment", <PaymentVariant></PaymentVariant>);
+  layout_type.set("admin", <AdminVariant></AdminVariant>);
 
   return (
     <>
