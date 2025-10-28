@@ -333,8 +333,6 @@ model EventDateZoneAllocation {
   audienceName              String
   discountType              DISCOUNT_TYPE
   discountValue             Decimal       @db.Decimal(5, 2)
-  allocatedQuantity         Int
-  remainingQuantity         Int?
 
   // relaciones
   zone      EventDateZone @relation(fields: [eventDateZoneId], references: [eventDateZoneId], onDelete: Cascade)

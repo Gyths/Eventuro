@@ -7,6 +7,7 @@ export default function DiscountCode({ userId, eventId, order, setOrder }) {
   const endpoint = "/discount/validate";
   const method = "POST";
 
+  const [errorCode, setErrorCode] = React.useState(0);
   const [discountCode, setDiscountCode] = React.useState("");
   const [appliedCodes, setAppliedCodes] = React.useState([]);
   const [showDiscountCodeAlert, setShowDiscountCodeAlert] =
@@ -14,7 +15,6 @@ export default function DiscountCode({ userId, eventId, order, setOrder }) {
   const handleChange = (event) => {
     setDiscountCode(event.target.value);
   };
-  const [errorCode, setErrorCode] = React.useState();
 
   const handleDiscount = () => {
     if (discountCode === "") {
@@ -49,10 +49,6 @@ export default function DiscountCode({ userId, eventId, order, setOrder }) {
 
       setAppliedCodes(...appliedCodes, response.discount.code);
       if (response.discount.type === "PERCENTAGE") {
-        order_placeholder.total =
-          parseInt(order_placeholder.total) *
-          (1 - parseInt(response.discount.value));
-        setOrder(order_placeholder);
       }
     } catch (e) {
       console.log(e);

@@ -33,5 +33,7 @@ export const PAYMENT_OPTION_TEXTS = {
 
 export const DISCOUNT_CODE_TEXTS = {
   title: "¿Tienes algún código de descuento?",
-  alerts: { 0: "Mensaje de alerta de prueba" },
+  alerts: {
+    0: "Mensaje de alerta de prueba",
+  },
 };

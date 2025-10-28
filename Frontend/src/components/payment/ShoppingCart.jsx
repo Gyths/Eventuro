@@ -36,7 +36,7 @@ export default function ShoppingCart({
 
   return (
     <div className="flex flex-col w-auto h-auto bg-white rounded-xl shadow-lg px-11 py-7">
-      <h2 className="text-2xl font-bold text-gray-800">Compras</h2>
+      <h2 className="text-2xl font-bold text-gray-800">Resumen de compra</h2>
       <hr className="my-4 border-gray-300 mx-2 min-w-60" />
       {/*Acá se muestran los tickets a comprar*/}
       <div className="space-y-3"></div>
