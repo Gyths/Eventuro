@@ -7,11 +7,15 @@ export async function getAuditLogs(limit = 50) {
     take: limit,
     orderBy: { createdAt: "desc" },
     include: {
-      user: {
-        select: {
-          name: true,
-          lastName: true,
-          email: true,
+      administrator: {
+        include: {
+          user: {
+            select: {
+              name: true,
+              lastName: true,
+              email: true,
+            },
+          },
         },
       },
     },
