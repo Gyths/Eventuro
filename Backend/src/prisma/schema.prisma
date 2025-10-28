@@ -86,6 +86,21 @@ enum REFUND_STATUS {
   REQUESTED
   APPROVED
   REJECTED
+enum DISCOUNT_TYPE {
+  CASH
+  PERCENTAGE
+}
+
+enum DISCOUNT_SCOPE {
+  GLOBAL
+  EVENT
+  USER
+  EVENT_USER
+}
+
+enum STATUS_DISCOUNT {
+  A
+  I
 }
 
 // ====================== Models ======================
@@ -107,6 +122,7 @@ model User {
   organizer Organizer?
   administrator Administrator? // NUEVO: relación 1:1 con Administrator
   Ticket    Ticket[]      @relation("TicketOwner")
+  Discount  Discount[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -237,6 +253,7 @@ model Event {
   categories  EventToCategory[]
   dates       EventDate[]
   salesPhases EventSalesPhase[]
+  Discount    Discount[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -320,10 +337,14 @@ model Seat {
 }
 
 model EventDateZoneAllocation {
-  eventDateZoneAllocationId BigInt  @id @default(autoincrement()) @db.BigInt
-  eventDateZoneId           BigInt  @db.BigInt
+  eventDateZoneAllocationId BigInt        @id @default(autoincrement()) @db.BigInt
+  eventDateZoneId           BigInt        @db.BigInt
   audienceName              String
   discountPercent           Decimal @db.Decimal(5, 2)
+  discountType              DISCOUNT_TYPE
+  discountValue             Decimal       @db.Decimal(5, 2)
+  allocatedQuantity         Int
+  remainingQuantity         Int?
 
   // relaciones
   zone      EventDateZone @relation(fields: [eventDateZoneId], references: [eventDateZoneId], onDelete: Cascade)
@@ -343,6 +364,7 @@ model EventSalesPhase {
   name              String
   startAt           DateTime?
   endAt             DateTime?
+  ticketLimit       Int?
   percentage        Decimal   @db.Decimal(10, 2)
   active            Boolean   @default(false)
 
@@ -460,3 +482,29 @@ model AuditLog {
   @@index([createdAt])
 }
 
+model Discount {
+  discountId   BigInt          @id @default(autoincrement()) @db.BigInt
+  scope        DISCOUNT_SCOPE
+  eventId      BigInt?         @db.BigInt
+  userId       BigInt?         @db.BigInt
+  code         String
+  percentage   Decimal         @db.Decimal(5, 2)
+  stackable    Boolean         @default(false)
+  startAt      DateTime
+  endAt        DateTime
+  status       STATUS_DISCOUNT @default(A)
+  availableQty Int?
+  appliesTo    String?
+
+  // Relaciones
+  event Event? @relation(fields: [eventId], references: [eventId], onDelete: Cascade)
+  user  User?  @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([code, scope, eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+  @@index([startAt, endAt])
+}
