@@ -1,4 +1,4 @@
-import { PrismaClient } from "../generated/prisma/index.js";
+import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export function auditMiddleware() {
@@ -8,6 +8,11 @@ export function auditMiddleware() {
 
     // Verificar si es una acción y modelo relevantes
     if (!actionsToLog.includes(params.action) || !modelsToLog.includes(params.model)) {
+      return next(params);
+    }
+
+    // Evitar auditar los logs de auditoría (previene bucles)
+    if (params.model === "AuditLog") {
       return next(params);
     }
 
