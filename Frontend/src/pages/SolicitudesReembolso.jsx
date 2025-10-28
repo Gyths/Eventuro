@@ -1,38 +1,18 @@
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect, useMemo } from "react";
+// import { Link } from "react-router-dom"; // No se está usando, se puede quitar
 import {
   ArrowUturnLeftIcon,
   CheckIcon,
   XMarkIcon,
+  MagnifyingGlassIcon, // --- NUEVO: Ícono para la barra de búsqueda
 } from "@heroicons/react/24/outline";
 import Swal from "sweetalert2";
 
-const DUMMY_REQUESTS = [
-  {
-    id: 1,
-    eventName: "Concierto de Rock Sinfónico",
-    customerName: "Ana García",
-    requestDate: "2025-10-26T14:30:00Z",
-    tickets: ["A-101", "A-102"],
-    status: "Pendiente", // 'Pendiente', 'Aceptado', 'Rechazado'
-  },
-  {
-    id: 2,
-    eventName: "Obra de Teatro: El Fantasma",
-    customerName: "Carlos Mendoza",
-    requestDate: "2025-10-25T09:15:00Z",
-    tickets: ["VIP-03"],
-    status: "Pendiente",
-  },
-  {
-    id: 3,
-    eventName: "Concierto de Rock Sinfónico",
-    customerName: "Lucía Fernández",
-    requestDate: "2025-10-24T18:00:00Z",
-    tickets: ["G-501", "G-502", "G-503"],
-    status: "Aceptado",
-  },
-];
+// --- NUEVO: Asumimos que tienes estos imports como en tu otro componente ---
+import { useAuth } from "../services/auth/AuthContext"; // Para obtener el organizerId
+import { BASE_URL } from "../config.js"; // Para la URL de la API
+
+// --- DUMMY_REQUESTS ya no es necesario, lo eliminamos ---
 
 const formatRequestDate = (isoString) => {
   const date = new Date(isoString);
@@ -49,41 +29,128 @@ const formatRequestDate = (isoString) => {
 export default function SolicitudesReembolso() {
   const [requests, setRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState(""); // --- NUEVO: Estado para la búsqueda
+  const { user } = useAuth(); // --- NUEVO: Hook para obtener datos del usuario
 
+  // --- MODIFICADO: useEffect para cargar datos reales ---
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setRequests(DUMMY_REQUESTS);
-      setIsLoading(false);
-    }, 500);
+    const fetchRequests = async () => {
+      const organizerId = user?.organizer?.organizerId;
+      if (!organizerId) {
+        // Si no hay organizerId, no podemos buscar
+        setIsLoading(false);
+        console.warn("No se encontró organizerId para cargar reembolsos.");
+        return;
+      }
 
-    return () => clearTimeout(timer);
-  }, []);
+      setIsLoading(true);
+      try {
+        const response = await fetch(
+          `${BASE_URL}/eventuro/api/tickets/refund-requests/${organizerId}`
+        );
+        if (!response.ok) {
+          throw new Error("Error al cargar las solicitudes de reembolso.");
+        }
+        const data = await response.json();
 
-  const handleRequest = (id, newStatus) => {
+        // Mapeamos los datos de la API al formato que espera el estado
+        const mappedRequests = data.map((item) => ({
+          id: item.ticketId, // Usamos ticketId como el ID único
+          eventName: item.eventDate.event.title,
+          customerName: `${item.owner.name} ${item.owner.lastName}`,
+          requestDate: item.refundRequestedAt,
+          tickets: [item.ticketId.toString()], // La API devuelve por ticket, así que mostramos el ID
+          status: "Pendiente", // La API solo devuelve solicitudes pendientes
+        }));
+
+        setRequests(mappedRequests);
+      } catch (error) {
+        console.error(error);
+        Swal.fire({
+          icon: "error",
+          title: "Error de Carga",
+          text: error.message || "No se pudo conectar con el servidor.",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Solo ejecutamos si 'user' ya cargó
+    if (user) {
+      fetchRequests();
+    }
+  }, [user]); // Dependemos de 'user' para que se ejecute cuando esté listo
+
+  // --- MODIFICADO: handleRequest ahora usa async/await y llama a la API ---
+  const handleRequest = async (id, newStatus) => {
     const actionText = newStatus === "Aceptado" ? "aceptar" : "rechazar";
+    const ticketId = id; // El 'id' en nuestro estado es el 'ticketId'
 
-    Swal.fire({
+    const result = await Swal.fire({
       title: `¿Estás seguro de ${actionText} este reembolso?`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: newStatus === "Aceptado" ? "#10B981" : "#EF4444",
       confirmButtonText: `Sí, ${actionText}`,
       cancelButtonText: "Cancelar",
-    }).then((result) => {
-      if (result.isConfirmed) {
+    });
+
+    if (result.isConfirmed) {
+      // Definimos el endpoint y método correctos
+      const endpoint =
+        newStatus === "Aceptado"
+          ? `${BASE_URL}/eventuro/api/tickets/${ticketId}/approve-refund`
+          : `${BASE_URL}/eventuro/api/tickets/${ticketId}/reject-refund`;
+
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            // Aquí iría tu token de autenticación si es necesario
+            // "Authorization": `Bearer ${token}`
+          },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(
+            errorData.message || `Error al ${actionText} la solicitud.`
+          );
+        }
+
+        // Si la API responde OK, actualizamos el estado local
         setRequests((currentRequests) =>
           currentRequests.map((req) =>
-            req.id === id ? { ...req, status: newStatus } : req
+            req.id === ticketId ? { ...req, status: newStatus } : req
           )
         );
+
         Swal.fire(
           `¡${newStatus}!`,
           `La solicitud ha sido marcada como "${newStatus}".`,
           "success"
         );
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Error en la operación",
+          text: error.message,
+        });
       }
-    });
+    }
   };
+
+  // --- NUEVO: Lógica de filtrado para la búsqueda ---
+  const filteredRequests = useMemo(() => {
+    if (!searchTerm) {
+      return requests;
+    }
+    return requests.filter((req) =>
+      req.eventName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [requests, searchTerm]);
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
@@ -99,13 +166,42 @@ export default function SolicitudesReembolso() {
           </p>
         </div>
 
+        {/* --- NUEVO: Barra de Búsqueda --- */}
+        <div className="p-4 sm:p-6 border-b border-gray-200">
+          <div className="relative max-w-md">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              name="search-event"
+              id="search-event"
+              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg shadow-sm leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
+              placeholder="Buscar por nombre de evento..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+
         {/* Contenedor de la tabla */}
         <div className="p-0 sm:p-0">
           {isLoading && (
-            <div className="text-center p-12">Cargando solicitudes...</div>
+            <div className="text-center p-12 text-gray-600">
+              Cargando solicitudes...
+            </div>
           )}
 
-          {!isLoading && (
+          {!isLoading && filteredRequests.length === 0 && (
+            <div className="text-center p-12 text-gray-500">
+              {/* --- NUEVO: Mensaje para "No hay resultados" --- */}
+              {requests.length === 0
+                ? "No hay solicitudes de reembolso pendientes."
+                : "No se encontraron eventos con ese nombre."}
+            </div>
+          )}
+
+          {!isLoading && filteredRequests.length > 0 && (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -132,7 +228,8 @@ export default function SolicitudesReembolso() {
                       scope="col"
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
-                      Tickets
+                      {/* --- MODIFICADO: Título de la columna --- */}
+                      Ticket ID
                     </th>
                     <th
                       scope="col"
@@ -146,7 +243,8 @@ export default function SolicitudesReembolso() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {requests.map((req) => (
+                  {/* --- MODIFICADO: Mapeamos sobre filteredRequests --- */}
+                  {filteredRequests.map((req) => (
                     <tr
                       key={req.id}
                       className="transition-colors duration-150 hover:bg-purple-50/50"
@@ -167,11 +265,12 @@ export default function SolicitudesReembolso() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
+                        {/* Esto mostrará el único ID de ticket que viene de la API */}
                         <div className="flex flex-wrap gap-1">
                           {req.tickets.map((ticketId) => (
                             <span
                               key={ticketId}
-                              className="px-2 py-0.5 text-xs rounded-full bg-gray-200 text-gray-800"
+                              className="px-2 py-0.5 text-xs rounded-full bg-gray-200 text-gray-800 font-mono"
                             >
                               {ticketId}
                             </span>
@@ -192,36 +291,46 @@ export default function SolicitudesReembolso() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                        {/* Botones de Acción (solo si está pendiente) */}
-                        {req.status === "Pendiente" ? (
-                          <>
-                            <button
-                              onClick={() => handleRequest(req.id, "Aceptado")}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-green-100 text-green-700 hover:bg-green-200"
-                              title="Aceptar"
-                            >
-                              <CheckIcon className="h-4 w-4" />
-                              Aceptar
-                            </button>
-                            <button
-                              onClick={() => handleRequest(req.id, "Rechazado")}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-red-100 text-red-700 hover:bg-red-200"
-                              title="Rechazar"
-                            >
-                              <XMarkIcon className="h-4 w-4" />
-                              Rechazar
-                            </button>
-                          </>
-                        ) : (
-                          <span className="text-gray-400 text-xs italic">
-                            Decidido
-                          </span>
+                        {/* --- MODIFICADO: Lógica para "Deshacer" (cambiar de opinión) --- */}
+                        {/* Si el estado NO es "Aceptado", muestra el botón Aceptar.
+                          Esto permite aceptarlo si está Pendiente o Rechazado.
+                        */}
+                        {req.status !== "Aceptado" && (
+                          <button
+                            onClick={() => handleRequest(req.id, "Aceptado")}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-green-100 text-green-700 hover:bg-green-200"
+                            title="Aceptar"
+                          >
+                            <CheckIcon className="h-4 w-4" />
+                            Aceptar
+                          </button>
+                        )}
+                        {/* Si el estado NO es "Rechazado", muestra el botón Rechazar.
+                          Esto permite rechazarlo si está Pendiente o Aceptado.
+                        */}
+                        {req.status !== "Rechazado" && (
+                          <button
+                            onClick={() => handleRequest(req.id, "Rechazado")}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-red-100 text-red-700 hover:bg-red-200"
+                            title="Rechazar"
+                          >
+                            <XMarkIcon className="h-4 w-4" />
+                            Rechazar
+                          </button>
                         )}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {/* --- NUEVO: Footer para mostrar conteo --- */}
+          {!isLoading && requests.length > 0 && (
+            <div className="p-4 border-t border-gray-200 bg-gray-50 text-xs text-gray-600 text-right">
+              Mostrando {filteredRequests.length} de {requests.length}{" "}
+              solicitudes.
             </div>
           )}
         </div>
