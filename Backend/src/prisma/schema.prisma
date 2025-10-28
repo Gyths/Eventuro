@@ -29,8 +29,8 @@ enum ID_TYPE {
 }
 
 enum ACCESS_POLICY {
-  E  // everyone: todo el mundo
-  T  // teenagers: mayores a 14 con compañia adulta
+  E // everyone: todo el mundo
+  T // teenagers: mayores a 14 con compañia adulta
   AO // adults only: mayores a 18
 }
 
@@ -42,7 +42,7 @@ enum EVENT_STATUS {
 
 enum ZONE_KIND {
   GENERAL // aforo
-  SEATED  // asientos numerados
+  SEATED // asientos numerados
 }
 
 enum CURRENCY {
@@ -71,7 +71,9 @@ enum TICKET_STATUS {
   EXPIRED
 }
 
-/** NUEVO: estado del perfil de organizador */
+/**
+ * NUEVO: estado del perfil de organizador
+ */
 enum ORGANIZER_STATUS {
   DRAFT
   SUBMITTED
@@ -96,8 +98,8 @@ model User {
   password      PasswordUser?
   oauths        OAuthUser[]
   organizer     Organizer?
-  administrator Administrator?   // NUEVO: relación 1:1 con Administrator
-  Ticket        Ticket[]         @relation("TicketOwner")
+  administrator Administrator? // NUEVO: relación 1:1 con Administrator
+  Ticket        Ticket[]       @relation("TicketOwner")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -124,7 +126,9 @@ model OAuthUser {
   @@index([userId])
 }
 
-/** NUEVO: perfil de administrador (1:1 con User) */
+/**
+ * NUEVO: perfil de administrador (1:1 con User)
+ */
 model Administrator {
   administratorId BigInt @id @default(autoincrement()) @db.BigInt
   userId          BigInt @unique @db.BigInt
@@ -208,6 +212,8 @@ model Event {
   organizerId             BigInt        @db.BigInt
   feeId                   BigInt?       @db.BigInt
   title                   String
+  imagePrincipalKey       String
+  imageBannerKey          String
   status                  EVENT_STATUS  @default(P)
   inPerson                Boolean
   description             String
@@ -308,8 +314,6 @@ model EventDateZoneAllocation {
   eventDateZoneId           BigInt  @db.BigInt
   audienceName              String
   discountPercent           Decimal @db.Decimal(5, 2)
-  allocatedQuantity         Int
-  remainingQuantity         Int?
 
   // relaciones
   zone      EventDateZone @relation(fields: [eventDateZoneId], references: [eventDateZoneId], onDelete: Cascade)
