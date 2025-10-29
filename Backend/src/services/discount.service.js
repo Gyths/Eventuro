@@ -4,6 +4,7 @@ import { pickBestScopeMatch } from "../utils/discount.util.js";
 import { evaluateStacking } from "../utils/discount.util.js";
 import { isItemEligibleByAppliesTo } from "../utils/discount.util.js";
 import { toDate } from "../utils/serialize.js";
+import { toJSONSafe } from "../utils/serialize.js";
 
 export async function validateDiscountSvc(input) {
 
@@ -17,7 +18,8 @@ export async function validateDiscountSvc(input) {
         return { valid: false, code: 1, reason: "Missing code" };
     }
 
-    const discounts = await listDiscountByCode(code);
+    const d = await listDiscountByCode(code);
+    const discounts = toJSONSafe(d);
 
     if (!Array.isArray(discounts) || discounts.length === 0) {
         return { valid: false, code: 2, reason: "Code not found" };
@@ -49,7 +51,8 @@ export async function validateDiscountSvc(input) {
     }
 
     if (appliedCodes.length > 0) {
-        const existing = await listDiscountsByCodes(appliedCodes); // => [{ code, stackable, ... }]
+        const e = await listDiscountsByCodes(appliedCodes); // => [{ code, stackable, ... }]
+        const existing = toJSONSafe(e);
         const cannotStackReason = evaluateStacking(discount, Array.isArray(existing) ? existing : []);
         if (cannotStackReason) {
             return { valid: false, code: 7, reason: cannotStackReason };
