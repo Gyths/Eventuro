@@ -42,19 +42,50 @@ export function auditMiddleware() {
       const model = getModel(prisma, params.model);
       if (!model) return next(params); // si no existe el modelo, salir
 
+      // --- INICIO MEJORA: Obtener entityId ANTES de la acción (para update/delete) ---
+      // Es más seguro obtener el ID desde los 'args' para update/delete
+      // ya que 'result' podría no tenerlo (ej. deleteMany).
+      if (params.action === "update" || params.action === "delete") {
+        const where = params.args.where;
+        if (where) {
+          // Busca la llave primaria (ej. 'id', 'feeId', 'eventCategoryId')
+          const idKey = Object.keys(where).find((k) =>
+            k.toLowerCase().endsWith("id")
+          );
+          if (idKey) {
+            entityId = where[idKey];
+          }
+        }
+      }
+      // --- FIN MEJORA ---
+
       // Si es UPDATE, obtener datos previos
       if (params.action === "update") {
-        before = await model.findUnique({
-          where: params.args.where,
-        });
+        // Asegurarnos que 'where' exista antes de buscar
+        if (params.args.where) {
+          before = await model.findUnique({
+            where: params.args.where,
+          });
+        }
       }
 
       // Ejecutar acción principal
       result = await next(params);
 
-      // Identificar ID de entidad afectada
-      const idField = Object.keys(result).find(k => k.toLowerCase().endsWith("id"));
-      if (idField) entityId = result[idField];
+      // --- INICIO MEJORA: Obtener entityId DESPUÉS (para create) ---
+      // Si es 'create', el ID solo existe en el 'result'
+      if (params.action === "create" && result) {
+        const idField = Object.keys(result).find((k) =>
+          k.toLowerCase().endsWith("id")
+        );
+        if (idField) entityId = result[idField];
+      }
+      // Fallback para update/delete si no se encontró antes
+      if (!entityId && result && (params.action === "update" || params.action === "delete")) {
+         const idField = Object.keys(result).find(k => k.toLowerCase().endsWith("id"));
+         if (idField) entityId = result[idField];
+      }
+      // --- FIN MEJORA ---
 
       // === Descripciones personalizadas ===
       switch (params.model) {
@@ -139,6 +170,7 @@ export function auditMiddleware() {
 
     } catch (error) {
       console.error("Error en middleware de auditoría:", error);
+      throw error;
     }
 
     return result;

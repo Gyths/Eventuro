@@ -1,18 +1,15 @@
 import React, { useState, useEffect, useMemo } from "react";
-// import { Link } from "react-router-dom"; // No se está usando, se puede quitar
+
 import {
   ArrowUturnLeftIcon,
   CheckIcon,
   XMarkIcon,
-  MagnifyingGlassIcon, // --- NUEVO: Ícono para la barra de búsqueda
+  MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import Swal from "sweetalert2";
 
-// --- NUEVO: Asumimos que tienes estos imports como en tu otro componente ---
-import { useAuth } from "../services/auth/AuthContext"; // Para obtener el organizerId
-import { BASE_URL } from "../config.js"; // Para la URL de la API
-
-// --- DUMMY_REQUESTS ya no es necesario, lo eliminamos ---
+import { useAuth } from "../services/auth/AuthContext";
+import { BASE_URL } from "../config.js";
 
 const formatRequestDate = (isoString) => {
   const date = new Date(isoString);
@@ -29,15 +26,13 @@ const formatRequestDate = (isoString) => {
 export default function SolicitudesReembolso() {
   const [requests, setRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState(""); // --- NUEVO: Estado para la búsqueda
-  const { user } = useAuth(); // --- NUEVO: Hook para obtener datos del usuario
+  const [searchTerm, setSearchTerm] = useState("");
+  const { user } = useAuth();
 
-  // --- MODIFICADO: useEffect para cargar datos reales ---
   useEffect(() => {
     const fetchRequests = async () => {
       const organizerId = user?.organizer?.organizerId;
       if (!organizerId) {
-        // Si no hay organizerId, no podemos buscar
         setIsLoading(false);
         console.warn("No se encontró organizerId para cargar reembolsos.");
         return;
@@ -53,14 +48,13 @@ export default function SolicitudesReembolso() {
         }
         const data = await response.json();
 
-        // Mapeamos los datos de la API al formato que espera el estado
         const mappedRequests = data.map((item) => ({
-          id: item.ticketId, // Usamos ticketId como el ID único
+          id: item.ticketId,
           eventName: item.eventDate.event.title,
           customerName: `${item.owner.name} ${item.owner.lastName}`,
           requestDate: item.refundRequestedAt,
-          tickets: [item.ticketId.toString()], // La API devuelve por ticket, así que mostramos el ID
-          status: "Pendiente", // La API solo devuelve solicitudes pendientes
+          tickets: [item.ticketId.toString()],
+          status: "Pendiente",
         }));
 
         setRequests(mappedRequests);
@@ -76,16 +70,14 @@ export default function SolicitudesReembolso() {
       }
     };
 
-    // Solo ejecutamos si 'user' ya cargó
     if (user) {
       fetchRequests();
     }
-  }, [user]); // Dependemos de 'user' para que se ejecute cuando esté listo
+  }, [user]);
 
-  // --- MODIFICADO: handleRequest ahora usa async/await y llama a la API ---
   const handleRequest = async (id, newStatus) => {
     const actionText = newStatus === "Aceptado" ? "aceptar" : "rechazar";
-    const ticketId = id; // El 'id' en nuestro estado es el 'ticketId'
+    const ticketId = id;
 
     const result = await Swal.fire({
       title: `¿Estás seguro de ${actionText} este reembolso?`,
@@ -97,7 +89,6 @@ export default function SolicitudesReembolso() {
     });
 
     if (result.isConfirmed) {
-      // Definimos el endpoint y método correctos
       const endpoint =
         newStatus === "Aceptado"
           ? `${BASE_URL}/eventuro/api/tickets/${ticketId}/approve-refund`
@@ -108,8 +99,6 @@ export default function SolicitudesReembolso() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            // Aquí iría tu token de autenticación si es necesario
-            // "Authorization": `Bearer ${token}`
           },
         });
 
@@ -120,7 +109,6 @@ export default function SolicitudesReembolso() {
           );
         }
 
-        // Si la API responde OK, actualizamos el estado local
         setRequests((currentRequests) =>
           currentRequests.map((req) =>
             req.id === ticketId ? { ...req, status: newStatus } : req
@@ -142,7 +130,6 @@ export default function SolicitudesReembolso() {
     }
   };
 
-  // --- NUEVO: Lógica de filtrado para la búsqueda ---
   const filteredRequests = useMemo(() => {
     if (!searchTerm) {
       return requests;
@@ -166,7 +153,6 @@ export default function SolicitudesReembolso() {
           </p>
         </div>
 
-        {/* --- NUEVO: Barra de Búsqueda --- */}
         <div className="p-4 sm:p-6 border-b border-gray-200">
           <div className="relative max-w-md">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -194,7 +180,6 @@ export default function SolicitudesReembolso() {
 
           {!isLoading && filteredRequests.length === 0 && (
             <div className="text-center p-12 text-gray-500">
-              {/* --- NUEVO: Mensaje para "No hay resultados" --- */}
               {requests.length === 0
                 ? "No hay solicitudes de reembolso pendientes."
                 : "No se encontraron eventos con ese nombre."}
@@ -228,7 +213,6 @@ export default function SolicitudesReembolso() {
                       scope="col"
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
-                      {/* --- MODIFICADO: Título de la columna --- */}
                       Ticket ID
                     </th>
                     <th
@@ -243,7 +227,6 @@ export default function SolicitudesReembolso() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {/* --- MODIFICADO: Mapeamos sobre filteredRequests --- */}
                   {filteredRequests.map((req) => (
                     <tr
                       key={req.id}
@@ -265,7 +248,6 @@ export default function SolicitudesReembolso() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {/* Esto mostrará el único ID de ticket que viene de la API */}
                         <div className="flex flex-wrap gap-1">
                           {req.tickets.map((ticketId) => (
                             <span
@@ -291,10 +273,6 @@ export default function SolicitudesReembolso() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                        {/* --- MODIFICADO: Lógica para "Deshacer" (cambiar de opinión) --- */}
-                        {/* Si el estado NO es "Aceptado", muestra el botón Aceptar.
-                          Esto permite aceptarlo si está Pendiente o Rechazado.
-                        */}
                         {req.status !== "Aceptado" && (
                           <button
                             onClick={() => handleRequest(req.id, "Aceptado")}
@@ -305,9 +283,7 @@ export default function SolicitudesReembolso() {
                             Aceptar
                           </button>
                         )}
-                        {/* Si el estado NO es "Rechazado", muestra el botón Rechazar.
-                          Esto permite rechazarlo si está Pendiente o Aceptado.
-                        */}
+
                         {req.status !== "Rechazado" && (
                           <button
                             onClick={() => handleRequest(req.id, "Rechazado")}
@@ -326,7 +302,6 @@ export default function SolicitudesReembolso() {
             </div>
           )}
 
-          {/* --- NUEVO: Footer para mostrar conteo --- */}
           {!isLoading && requests.length > 0 && (
             <div className="p-4 border-t border-gray-200 bg-gray-50 text-xs text-gray-600 text-right">
               Mostrando {filteredRequests.length} de {requests.length}{" "}
