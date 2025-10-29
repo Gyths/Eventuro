@@ -46,14 +46,15 @@ function normalize(s) {
 }
 
 export function isItemEligibleByAppliesTo(spec, item) {
-  if (!spec) return true;
-  if (spec.all) return true;
-
   const zone = normalize(item?.zone);
-  if (!zone || !spec.zoneBase) return false;
+  if (!zone) return false;
 
-  if (zone === spec.zoneBase) return true;
-  if (zone.startsWith(spec.zoneBase + " ")) return true;
+  if (typeof spec === "string") {
+    const at = normalize(spec);
+    if (!at) return false;
+    if (at === "ALL") return true;
+    return zone === at || zone.startsWith(at + " ");
+  }
 
   return false;
 }
