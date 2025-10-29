@@ -20,7 +20,7 @@ export default function DiscountCode({ userId, eventId, order, setOrder }) {
     PEN: "S/.",
   };
 
-  const handleDiscount = () => {
+  const handleDiscount = async () => {
     if (discountCode === "") {
       setErrorCode(1);
       setShowDiscountCodeAlert(true);
@@ -40,14 +40,15 @@ export default function DiscountCode({ userId, eventId, order, setOrder }) {
 
     try {
       console.log(discountCode);
-      const response = EventuroApi({
+      const response = await EventuroApi({
         endpoint: endpoint,
         method: method,
         data: data,
       });
-      if (response.success != "true") {
-        setErrorCode(response.code);
-        setShowDiscountCodeAlert(false);
+
+      if (!response.success) {
+        setErrorCode(0);
+        setShowDiscountCodeAlert(true);
         return;
       }
 
@@ -64,8 +65,14 @@ export default function DiscountCode({ userId, eventId, order, setOrder }) {
       });
       if (response.discount.type === "PERCENTAGE") {
       }
-    } catch (e) {
-      console.log(e);
+    } catch (err) {
+      try {
+        const error = JSON.parse(err.message.split(": ")[1]);
+        setShowDiscountCodeAlert(true);
+        setErrorCode(error.errorCode);
+      } catch {
+        console.warn("No se pudo parsear el JSON del error:", err.message);
+      }
     }
   };
 
@@ -76,6 +83,7 @@ export default function DiscountCode({ userId, eventId, order, setOrder }) {
           <p className="font-medium mb-2">{DISCOUNT_CODE_TEXTS.title}</p>
           <div className="flex gap-2">
             <input
+              id="discount-code-input"
               onChange={handleChange}
               type="text"
               placeholder="Código de descuento aquí"

@@ -19,8 +19,8 @@ export async function validateDiscountSvc(input) {
     return { valid: false, code: 1, reason: "Missing code" };
   }
 
-  const discounts = await listDiscountByCode(code);
-  console.log(discounts);
+  const d = await listDiscountByCode(code);
+  const discounts = toJSONSafe(d);
 
   if (!Array.isArray(discounts) || discounts.length === 0) {
     return { valid: false, code: 2, reason: "Code not found" };
@@ -56,7 +56,8 @@ export async function validateDiscountSvc(input) {
   }
 
   if (appliedCodes.length > 0) {
-    const existing = await toJSONSafe(listDiscountsByCodes(appliedCodes)); // => [{ code, stackable, ... }]
+    const e = await listDiscountsByCodes(appliedCodes); // => [{ code, stackable, ... }]
+    const existing = toJSONSafe(e);
     const cannotStackReason = evaluateStacking(
       discount,
       Array.isArray(existing) ? existing : []
