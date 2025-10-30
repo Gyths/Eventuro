@@ -271,6 +271,7 @@ export const findByUserId = async (userId) => {
     include: {
       items: {
         include: {
+          Ticket: true,
           eventDate: {
             include: {
               event: {

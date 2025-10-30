@@ -24,27 +24,27 @@ function describeItem(it) {
   return `${title} — ${start} — ${zone}`;
 }
 
-export default function RefundRequestModal({ isOpen, onClose, order, onSubmitted }) {
+export default function RefundRequestModal({
+  isOpen,
+  onClose,
+  order,
+  onSubmitted,
+}) {
   // Construye la lista mostrable de ítems reembolsables
   const refundableItems = useMemo(() => {
     const items = Array.isArray(order?.items) ? order.items : [];
     return items.map((it) => {
+      const ticket =
+        Array.isArray(it.Ticket) && it.Ticket.length > 0 ? it.Ticket[0] : null;
       // Intentamos leer el estado desde ticket o desde el propio item (ajusta a tu modelo)
-      const refundStatus =
-        it.ticket?.refundStatus ??
-        it.refundStatus ??
-        "NONE";
-
-      const refundRequestedAt =
-        it.ticket?.refundRequestedAt ??
-        it.refundRequestedAt ??
-        null;
+      const refundStatus = ticket?.refundStatus ?? "NONE";
+      const refundRequestedAt = ticket?.refundRequestedAt ?? null;
 
       const requested = refundStatus === "REQUESTED";
 
       return {
         key: it.orderItemId,
-        ticketId: it.ticketId ?? it.orderItemId, // usa tu id real de ticket
+        ticketId: ticket?.ticketId ?? it.orderItemId,
         orderItemId: it.orderItemId,
         description: describeItem(it),
         maxQty: it.quantity ?? 1,
@@ -68,23 +68,32 @@ export default function RefundRequestModal({ isOpen, onClose, order, onSubmitted
   const [error, setError] = useState("");
   const [summary, setSummary] = useState(null);
 
+  console.log("DATOS RECIBIDOS POR EL MODAL:", JSON.stringify(order, null, 2));
+
   if (!isOpen) return null;
 
   const selectableItems = refundableItems.filter((it) => !it.requested);
 
   const chosen = selectableItems.filter(
-    (it) => selected[it.ticketId]?.checked && (selected[it.ticketId]?.qty ?? 0) > 0
+    (it) =>
+      selected[it.ticketId]?.checked && (selected[it.ticketId]?.qty ?? 0) > 0
   );
 
   const canSubmit = agree && chosen.length > 0 && !submitting;
 
   // Helpers de UI
   function setChecked(id, val) {
-    setSelected((prev) => ({ ...prev, [id]: { ...(prev[id] || { qty: 1 }), checked: val } }));
+    setSelected((prev) => ({
+      ...prev,
+      [id]: { ...(prev[id] || { qty: 1 }), checked: val },
+    }));
   }
   function setQty(id, val, max) {
     const n = Math.max(1, Math.min(Number(val) || 1, max));
-    setSelected((prev) => ({ ...prev, [id]: { ...(prev[id] || { checked: true }), qty: n } }));
+    setSelected((prev) => ({
+      ...prev,
+      [id]: { ...(prev[id] || { checked: true }), qty: n },
+    }));
   }
 
   // Envío: una llamada por cada ticket seleccionado (solo los no-REQUESTED)
@@ -96,9 +105,13 @@ export default function RefundRequestModal({ isOpen, onClose, order, onSubmitted
 
       const requests = chosen.map((it) =>
         EventuroApi({
-          endpoint: `/tickets/${encodeURIComponent(it.ticketId)}/request-refund`,
+          endpoint: `/tickets/${encodeURIComponent(
+            it.ticketId
+          )}/request-refund`,
           method: "POST",
-          data: { quantity: Math.min(selected[it.ticketId]?.qty ?? 1, it.maxQty) },
+          data: {
+            quantity: Math.min(selected[it.ticketId]?.qty ?? 1, it.maxQty),
+          },
         })
       );
 
@@ -138,14 +151,21 @@ export default function RefundRequestModal({ isOpen, onClose, order, onSubmitted
       <div className="absolute inset-0 grid place-items-center px-4">
         <div className="w-full max-w-2xl rounded-2xl bg-white shadow-xl border border-gray-200">
           <div className="flex items-center justify-between p-5 border-b">
-            <h3 className="text-xl font-bold text-gray-900">Solicitar devolución</h3>
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">✕</button>
+            <h3 className="text-xl font-bold text-gray-900">
+              Solicitar devolución
+            </h3>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </button>
           </div>
 
           <div className="p-5 space-y-5 max-h-[75vh] overflow-y-auto">
             <p className="text-sm text-gray-600">
-              Selecciona los tickets que deseas devolver. La elegibilidad depende de la
-              política del evento.
+              Selecciona los tickets que deseas devolver. La elegibilidad
+              depende de la política del evento.
             </p>
 
             {/* Lista de tickets */}
@@ -153,40 +173,63 @@ export default function RefundRequestModal({ isOpen, onClose, order, onSubmitted
               {refundableItems.map((it) => {
                 const disabled = it.requested;
                 return (
-                  <div key={it.key} className={`flex items-start gap-3 rounded-xl border p-3 ${disabled ? "border-gray-200 bg-gray-50" : "border-gray-200"}`}>
+                  <div
+                    key={it.key}
+                    className={`flex items-start gap-3 rounded-xl border p-3 ${
+                      disabled
+                        ? "border-gray-200 bg-gray-50"
+                        : "border-gray-200"
+                    }`}
+                  >
                     <input
                       type="checkbox"
                       className="mt-1 h-4 w-4"
                       checked={!!selected[it.ticketId]?.checked}
-                      onChange={(e) => setChecked(it.ticketId, e.target.checked)}
+                      onChange={(e) =>
+                        setChecked(it.ticketId, e.target.checked)
+                      }
                       disabled={disabled}
                     />
                     <div className="flex-1">
-                      <p className={`text-sm font-medium ${disabled ? "text-gray-500" : "text-gray-900"}`}>
+                      <p
+                        className={`text-sm font-medium ${
+                          disabled ? "text-gray-500" : "text-gray-900"
+                        }`}
+                      >
                         {it.description}
                       </p>
 
                       {/* Estado si ya fue solicitada la devolución */}
                       {disabled ? (
                         <div className="mt-1 inline-flex items-center gap-2 rounded-md bg-purple-50 px-2 py-1 text-[12px] text-purple-800">
-                          <span className="font-semibold">Solicitud ya enviada</span>
+                          <span className="font-semibold">
+                            Solicitud ya enviada
+                          </span>
                           {it.refundRequestedAt && (
-                            <span>({formatDateTime(it.refundRequestedAt)})</span>
+                            <span>
+                              ({formatDateTime(it.refundRequestedAt)})
+                            </span>
                           )}
                         </div>
                       ) : (
                         <div className="mt-2 flex items-center gap-2">
-                          <span className="text-xs text-gray-500">Cantidad a devolver</span>
+                          <span className="text-xs text-gray-500">
+                            Cantidad a devolver
+                          </span>
                           <input
                             type="number"
                             min={1}
                             max={it.maxQty}
                             value={selected[it.ticketId]?.qty ?? 1}
-                            onChange={(e) => setQty(it.ticketId, e.target.value, it.maxQty)}
+                            onChange={(e) =>
+                              setQty(it.ticketId, e.target.value, it.maxQty)
+                            }
                             className="w-20 rounded-lg border border-gray-300 px-2 py-1 text-sm"
                             disabled={!selected[it.ticketId]?.checked}
                           />
-                          <span className="text-xs text-gray-400">/ {it.maxQty} compradas</span>
+                          <span className="text-xs text-gray-400">
+                            / {it.maxQty} compradas
+                          </span>
                         </div>
                       )}
                     </div>
@@ -209,7 +252,8 @@ export default function RefundRequestModal({ isOpen, onClose, order, onSubmitted
                 checked={agree}
                 onChange={(e) => setAgree(e.target.checked)}
               />
-              Confirmo que he leído y acepto la política de devoluciones del evento.
+              Confirmo que he leído y acepto la política de devoluciones del
+              evento.
             </label>
 
             {/* Mensajes */}
@@ -223,13 +267,17 @@ export default function RefundRequestModal({ isOpen, onClose, order, onSubmitted
                 {summary.ok.length > 0 && (
                   <div className="rounded-lg border border-green-200 bg-green-50 p-2 text-green-800 text-sm">
                     <p className="font-semibold mb-1">Solicitudes enviadas:</p>
-                    {summary.ok.map((line, i) => <p key={i}>{line}</p>)}
+                    {summary.ok.map((line, i) => (
+                      <p key={i}>{line}</p>
+                    ))}
                   </div>
                 )}
                 {summary.fail.length > 0 && (
                   <div className="rounded-lg border border-red-200 bg-red-50 p-2 text-red-800 text-sm">
                     <p className="font-semibold mb-1">Solicitudes con error:</p>
-                    {summary.fail.map((line, i) => <p key={i}>{line}</p>)}
+                    {summary.fail.map((line, i) => (
+                      <p key={i}>{line}</p>
+                    ))}
                   </div>
                 )}
               </div>
@@ -246,7 +294,11 @@ export default function RefundRequestModal({ isOpen, onClose, order, onSubmitted
             <button
               onClick={handleSubmit}
               disabled={!canSubmit}
-              className={`px-4 py-2 rounded-xl font-semibold text-white ${canSubmit ? "bg-rose-600 hover:bg-rose-700" : "bg-rose-300 cursor-not-allowed"}`}
+              className={`px-4 py-2 rounded-xl font-semibold text-white ${
+                canSubmit
+                  ? "bg-rose-600 hover:bg-rose-700"
+                  : "bg-rose-300 cursor-not-allowed"
+              }`}
             >
               {submitting ? "Enviando…" : "Enviar solicitud"}
             </button>
