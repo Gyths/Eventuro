@@ -165,6 +165,67 @@ export async function updateTicketRepo(ticketId, payload, organizerUserId) {
     return updatedTicket;
   });
 }
+export const findTicketsByUser = async ({ where, skip, take, order = 'desc' }) => {
+  const [items, total] = await Promise.all([
+    prisma.ticket.findMany({
+      where,
+      skip,
+      take,
+      orderBy: { issuedAt: order === 'asc' ? 'asc' : 'desc' },
+      include: {
+        item: {
+          select: {
+            orderId: true,
+            finalPrice: true,
+            unitPrice: true,
+            discountAmount: true,
+          }
+        },
+        eventDate: {
+          select: {
+            eventDateId: true,
+            startAt: true,
+            endAt: true,
+            event: {
+              select: {
+                eventId: true,
+                title: true,
+                inPerson: true,
+              }
+            }
+          }
+        },
+        zone: {
+          select: {
+            eventDateZoneId: true,
+            name: true,
+            kind: true,
+            basePrice: true,
+            currency: true,
+          }
+        },
+        allocation: {
+          select: {
+            eventDateZoneAllocationId: true,
+            audienceName: true,
+            discountPercent: true,
+          }
+        },
+        seat: {
+          select: {
+            seatId: true,
+            rowNumber: true,
+            colNumber: true,
+            status: true,
+          }
+        }
+      }
+    }),
+    prisma.ticket.count({ where }),
+  ]);
+
+  return { items, total };
+};
 
 export async function setTicketToRefund(ticketid){
     return prisma.ticket.update({

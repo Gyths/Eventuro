@@ -1,5 +1,6 @@
 import { createTicketRepo } from '../repositories/ticket.repo.js';
 import { updateTicketRepo } from '../repositories/ticket.repo.js';
+import { findTicketsByUser } from '../repositories/ticket.repo.js';
 import { setTicketToRefund } from '../repositories/ticket.repo.js';
 import { getRefundList } from '../repositories/ticket.repo.js';
 import { approveTicketRefund } from '../repositories/ticket.repo.js';
@@ -30,6 +31,61 @@ export async function updateTicketSvc(ticketId, payload, organizerUserId) {
 
   return await updateTicketRepo(ticketId, payload, organizerUserId);
 }
+export const getTicketsByUser = async ({
+  userId,
+  page = 1,
+  pageSize = 20,
+  status,
+  upcoming = false,
+  from,
+  to,
+  order = 'desc',
+}) => {
+  const take = Math.min(Number(pageSize) || 20, 100);
+  const p = Math.max(Number(page) || 1, 1);
+  const skip = (p - 1) * take;
+
+  const ownerUserId = BigInt(userId);
+
+  // Construcción de filtros de dominio (no atados a Prisma aún)
+  const filters = {
+    ownerUserId,
+    ...(status ? { status } : {}),
+  };
+
+  // Rango de fechas por EventDate.startAt
+  const dateRange = {};
+  if (from) dateRange.gte = new Date(from);
+  if (to)   dateRange.lte = new Date(to);
+  if (Object.keys(dateRange).length > 0) {
+    filters.eventDate = { startAt: dateRange };
+  }
+
+  // Solo próximos
+  if (upcoming) {
+    filters.eventDate = {
+      ...(filters.eventDate || {}),
+      startAt: {
+        ...(filters.eventDate?.startAt || {}),
+        gte: new Date(),
+      },
+    };
+  }
+
+  const { items, total } = await findTicketsByUser({
+    where: filters,
+    skip,
+    take,
+    order,
+  });
+
+  return {
+    page: p,
+    pageSize: take,
+    total,
+    items,
+  };
+};
 
 export async function requestTicketRefundSvc(ticketId) {
   if (!ticketId) {

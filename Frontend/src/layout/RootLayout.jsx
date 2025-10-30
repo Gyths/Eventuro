@@ -1,19 +1,19 @@
 // src/layout/RootLayout.jsx
-import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { Outlet, useLocation } from "react-router-dom";
+import { useState, useEffect, useMemo } from "react";
 import TopBar from "../components/topbar/TopBar";
-import UserVariant from "../components/topbar/variants/UserVariant";
-import OrganizerVariant from "../components/topbar/variants/OrganizerVariant";
+import TopBarRoles from "../components/topbar/TopBarRoles";
 import PaymentVariant from "../components/topbar/variants/PaymentVariant";
-import AdminVariant from "../components/topbar/variants/AdminVariant";
 import { useAuth } from "../services/auth/AuthContext";
 
 export default function RootLayout() {
-  const { user, isAuthenticated, logout } = useAuth();
-  const navigate = useNavigate();
   const { pathname } = useLocation();
+  const { user } = useAuth();
 
+  // Oculta el topbar en login/registro
   const hideTop = pathname === "/login" || pathname === "/registro";
+
+  // Filtros globales de búsqueda
   const [filters, setFilters] = useState({
     category: null,
     dateFrom: null,
@@ -21,60 +21,29 @@ export default function RootLayout() {
     location: "",
   });
 
-  const [variant, setVariant] = useState("client");
-
+  // Scroll arriba al cambiar de ruta
   useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      left: 0,
-      behavior: "smooth", // o "auto" si prefieres sin animación
-    });
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
   }, [pathname]);
 
-  //useEffect que decide que tipo de topbar utilizar
-  useEffect(() => {
-    const roles = user?.roles || [];
+  // Solo conserva el topbar de pago como excepción
+  const variant = useMemo(() => {
+    return pathname === "/pago" ? "payment" : "roles";
+  }, [pathname]);
 
-    // Prioridad 1: Rutas especiales (como Pago)
-    if (pathname === "/pago") {
-      //
-      setVariant("payment");
-    }
-    // Prioridad 2: Rutas de Administrador
-    // (Solo muestra 'admin' SI la ruta empieza con /admin)
-    else if (pathname.startsWith("/admin") && roles.includes("ADMIN")) {
-      setVariant("admin");
-    }
-    // Prioridad 3: Rutas de Organizador
-    // (Solo muestra 'organizer' SI la ruta es de organizador)
-    else if (
-      pathname.startsWith("/crearEvento") &&
-      roles.includes("ORGANIZER")
-    ) {
-      setVariant("organizer");
-    }
-    // Por defecto: Cliente/Comprador
-    else {
-      setVariant("client");
-    }
-  }, [user, pathname, isAuthenticated]); //
-
-  let layout_type = new Map();
+  // Mapa de tipos de layout
+  const layout_type = new Map();
   layout_type.set(
-    "client",
-    <UserVariant filters={filters} setFilters={setFilters}></UserVariant>
+    "roles",
+    <TopBarRoles filters={filters} setFilters={setFilters} showLogo={false} />
   );
-  layout_type.set("organizer", <OrganizerVariant></OrganizerVariant>);
-  layout_type.set("payment", <PaymentVariant></PaymentVariant>);
-  layout_type.set("admin", <AdminVariant></AdminVariant>);
+  layout_type.set("payment", <PaymentVariant />);
 
   return (
     <>
       {!hideTop && <TopBar>{layout_type.get(variant)}</TopBar>}
 
-      {/* Si ocultas la TopBar, no pongas padding superior */}
       <main className={hideTop ? "" : "pt-14"}>
-        {/* carga de filtros */}
         <Outlet context={{ filters }} />
       </main>
     </>
