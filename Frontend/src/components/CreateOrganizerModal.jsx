@@ -1,7 +1,7 @@
 // src/components/modals/CreateOrganizerModal.jsx
 import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "../services/auth/AuthContext.jsx";
-
+import { BASE_URL } from "../config.js"
 /* ------- SELECT PERSONALIZADO (igual que tu versión) ------- */
 function FancySelect({ value, onChange, options, error }) {
   const [open, setOpen] = useState(false);
@@ -71,9 +71,8 @@ function FancySelect({ value, onChange, options, error }) {
                 onChange(opt.value);
                 setOpen(false);
               }}
-              className={`cursor-pointer px-4 py-2 text-sm ${
-                i === activeIndex ? "bg-purple-50 text-purple-700" : "hover:bg-gray-50"
-              }`}
+              className={`cursor-pointer px-4 py-2 text-sm ${i === activeIndex ? "bg-purple-50 text-purple-700" : "hover:bg-gray-50"
+                }`}
             >
               {opt.label}
             </li>
@@ -192,7 +191,7 @@ export default function CreateOrganizerModal({ open, onClose, onSuccess }) {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:4000/eventuro/api/organizers", {
+      const res = await fetch(`${BASE_URL}/eventuro/api/organizers`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -275,8 +274,7 @@ export default function CreateOrganizerModal({ open, onClose, onSuccess }) {
               // pattern ayuda si el form se valida por HTML; igual limpiamos nosotros
               pattern={idType === "DNI" ? "\\d{8}" : "\\d{11}"}
               className={`w-full rounded-2xl border bg-white/80 px-4 py-2.5 shadow-sm outline-none transition
-                focus:ring-2 focus:ring-purple-500/50 ${
-                  errors.idNumber ? "border-red-400" : "border-gray-200"
+                focus:ring-2 focus:ring-purple-500/50 ${errors.idNumber ? "border-red-400" : "border-gray-200"
                 }`}
               placeholder={idType === "DNI" ? "12345678" : "20123456789"}
             />
@@ -292,8 +290,7 @@ export default function CreateOrganizerModal({ open, onClose, onSuccess }) {
             </label>
             <input
               className={`w-full rounded-2xl border bg-white/80 px-4 py-2.5 shadow-sm outline-none transition
-                focus:ring-2 focus:ring-purple-500/50 ${
-                  errors.companyName ? "border-red-400" : "border-gray-200"
+                focus:ring-2 focus:ring-purple-500/50 ${errors.companyName ? "border-red-400" : "border-gray-200"
                 }`}
               value={companyName}
               onChange={(e) => setCompanyName(e.target.value)}

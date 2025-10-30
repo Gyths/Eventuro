@@ -1,7 +1,7 @@
-import { loginWithCredentials,generateToken }  from '../services/auth.js';
+import { loginWithCredentials, generateToken } from '../services/auth.js';
 import bcrypt from 'bcrypt'; // borrar
 import { Buffer } from "buffer";
-
+import { config } from "../config/env.js"
 export function home(req, res) {
   res.send('<a href="/auth/google">Authenticate with Google</a>');
 }
@@ -19,30 +19,30 @@ export function logout(req, res, next) {
 
 export const login = async (req, res) => {
   try {
-      const { email, password } = req.body;
-      const { token, user } = await loginWithCredentials(email, password);
-      res.json({ 
-        token, 
-        user: {
-          userId: user.userId.toString(),
-          name: user.name,
-          lastName: user.lastName,
-          phone: user.phone,
-          email: user.email,
-          birthdate: user.birthdate,
-          gender: user.gender,
-          status: user.status,
-          roles: [
-            user.administrator ? "ADMIN" : null,
-            user.organizer ? "ORGANIZER" : null
-          ].filter(Boolean),
-          createdAt: user.createdAt,
-          updatedAt: user.updatedAt
-        }
-      });
-    } catch (err) {
-      res.status(400).json({ error: err.message });
-    }
+    const { email, password } = req.body;
+    const { token, user } = await loginWithCredentials(email, password);
+    res.json({
+      token,
+      user: {
+        userId: user.userId.toString(),
+        name: user.name,
+        lastName: user.lastName,
+        phone: user.phone,
+        email: user.email,
+        birthdate: user.birthdate,
+        gender: user.gender,
+        status: user.status,
+        roles: [
+          user.administrator ? "ADMIN" : null,
+          user.organizer ? "ORGANIZER" : null
+        ].filter(Boolean),
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      }
+    });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 };
 
 export const googleCallback = async (req, res) => {
@@ -92,7 +92,7 @@ export const googleCallback = async (req, res) => {
     const encodedUser = encodeURIComponent(JSON.stringify(userSafe));
 
     // Redirigir al frontend con token + datos
-    const redirectUrl = `http://localhost:5173/auth/callback?token=${token}&user=${encodedUser}`;
+    const redirectUrl = `${config.frontInstance}/auth/callback?token=${token}&user=${encodedUser}`;
     return res.redirect(redirectUrl);
   } catch (err) {
     console.error(" Error en login con Google:", err);
