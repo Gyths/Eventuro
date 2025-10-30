@@ -3,6 +3,7 @@ import { dmmfToRuntimeDataModel } from "../generated/prisma/runtime/library.js";
 import { prisma } from "../utils/prisma.js";
 import { uploadFile, getSignedUrlForFile } from "../utils/s3.js";
 import { skip } from "@prisma/client/runtime/library";
+import { createManyEventSalesPhasesRepo } from "./eventSalesPhase.repo.js";
 
 export async function createEventRepo(input) {
   return prisma.$transaction(async (tx) => {
@@ -40,6 +41,7 @@ export async function createEventRepo(input) {
     const dates = input.dates ? JSON.parse(input.dates) : [];
     const zones = input.zones ? JSON.parse(input.zones) : [];
     const accessPolicyDescription = input.accessPolicyDescription ?? null;
+    const salePhases = input.salePhases ? JSON.parse(input.salePhases) : [];
 
     // --- Crear evento ---
     const event = await tx.event.create({
@@ -173,6 +175,23 @@ export async function createEventRepo(input) {
       }
 
       datesCreated.push({ eventDateId: Number(eventDateId), zones: zonesCreated });
+    }
+
+    if (Array.isArray(salePhases) && salePhases.length > 0) {
+      
+      
+      const phasesData = salePhases.map((phase) => ({
+        eventId: eventId, 
+        name: phase.name,
+        startAt: new Date(phase.startAt), 
+        endAt: new Date(phase.endAt),     
+        percentage: Number(phase.percentage),
+        ticketLimit: phase.ticketLimit ? Number(phase.ticketLimit) : null,
+        active: true 
+      }));
+
+      
+      await createManyEventSalesPhasesRepo(phasesData, tx);
     }
 
     return { eventId: Number(eventId), venueId: Number(venueId) ?? null, dates: datesCreated };

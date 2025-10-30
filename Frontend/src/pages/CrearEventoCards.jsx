@@ -197,6 +197,7 @@ export default function CrearEventoCards() {
           isIncrease: false,
           startDate: "",
           endDate: "",
+          ticketLimit: "",
         },
       ],
     });
@@ -408,6 +409,7 @@ export default function CrearEventoCards() {
             startAt: startDateISO,
             endAt: endDateISO,
             percentage: percentage,
+            ticketLimit: season.ticketLimit ? Number(season.ticketLimit) : null,
           };
         });
 
@@ -562,6 +564,7 @@ export default function CrearEventoCards() {
         isIncrease: false,
         startDate: "",
         endDate: "",
+        ticketLimit: "",
       },
     ],
   });
@@ -649,13 +652,15 @@ export default function CrearEventoCards() {
       quantity: String(zone.capacity),
       price: String(zone.basePrice),
       subtypes: zone.allocations.map((alloc) => {
-        const pricingMode = alloc.pricingMode; 
-        
+        const pricingMode = alloc.pricingMode;
+
         return {
           type: alloc.audienceName,
           pricingMode: pricingMode,
-          discount: pricingMode === 'percent' ? String(alloc.discountValue) : '',
-          newPrice: pricingMode === 'newPrice' ? String(alloc.discountValue) : '',
+          discount:
+            pricingMode === "percent" ? String(alloc.discountValue) : "",
+          newPrice:
+            pricingMode === "newPrice" ? String(alloc.discountValue) : "",
         };
       }),
     }));
@@ -687,6 +692,7 @@ export default function CrearEventoCards() {
           isIncrease: phase.percentage > 0,
           startDate: formatDate(startDate),
           endDate: formatDate(endDate),
+          ticketLimit: phase.ticketLimit ? String(phase.ticketLimit) : "",
         };
       });
 
@@ -706,6 +712,11 @@ export default function CrearEventoCards() {
   //Validaciones
   const validateStep = (stepIndex) => {
     const newErrors = {};
+
+    const totalTicketsInZones = (tickets.zones || []).reduce((sum, z) => {
+      const q = Number(z.quantity || 0);
+      return sum + (isNaN(q) ? 0 : q);
+    }, 0);
 
     if (stepIndex === 0) {
       const name = (form.name ?? "").trim(); // <-- usar form.name
@@ -880,6 +891,24 @@ export default function CrearEventoCards() {
         }
       }
 
+      const capacityNum = Number(location.capacity);
+
+      if (
+        !isVirtual &&
+        !isNaN(capacityNum) &&
+        capacityNum > 0 &&
+        !newErrors.tickets &&
+        !newErrors.capacity
+      ) {
+        if (totalTicketsInZones > capacityNum) {
+          newErrors.tickets = `La suma de entradas por zona (${totalTicketsInZones.toLocaleString(
+            "es-PE"
+          )}) no puede superar el aforo total del local (${capacityNum.toLocaleString(
+            "es-PE"
+          )}).`;
+        }
+      }
+
       if (tickets?.tier?.enabled) {
         const tierQty = Number(tickets.tier.qty || 0);
 
@@ -903,6 +932,28 @@ export default function CrearEventoCards() {
       if (!txt && !returnsPolicy?.file) {
         newErrors.returnsPolicy =
           "Debe escribir o subir una política de devoluciones.";
+      }
+
+      if (totalTicketsInZones > 0) {
+        const seasons = salesSeasons.seasons || [];
+        for (const season of seasons) {
+          const limitStr = (season.ticketLimit || "").trim();
+          // Solo validamos si el usuario ha puesto un límite
+          if (limitStr) {
+            const limit = Number(limitStr);
+            if (!isNaN(limit) && limit > 0 && limit > totalTicketsInZones) {
+              newErrors.salesSeasons = `El límite para la temporada "${
+                season.name || "sin nombre"
+              }" (${limit.toLocaleString(
+                "es-PE"
+              )}) no puede ser mayor que el total de entradas (${totalTicketsInZones.toLocaleString(
+                "es-PE"
+              )}).`;
+              // Detenemos la validación en el primer error encontrado
+              break;
+            }
+          }
+        }
       }
     }
 

@@ -1,8 +1,10 @@
 import { prisma } from '../utils/prisma.js';
 
-export async function createManyEventSalesPhasesRepo(phases) {
-    return prisma.$transaction(async (tx) => {
-        const rows = await tx.eventSalesPhase.createManyAndReturn({
+export async function createManyEventSalesPhasesRepo(phases, txClient) {
+
+    const client = txClient || prisma;
+    
+        const rows = await client.eventSalesPhase.createManyAndReturn({
             data: phases,
             skipDuplicates: true,
             select: {
@@ -11,10 +13,11 @@ export async function createManyEventSalesPhasesRepo(phases) {
                 name: true,
                 startAt: true,
                 endAt: true,
-                percentage: true, 
+                percentage: true,
+                ticketLimit: true,
             },
         });
 
         return rows;
-    });
+    
 }
