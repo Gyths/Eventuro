@@ -1,8 +1,8 @@
-// src/components/topbar/TopBarRoles.jsx
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../services/auth/AuthContext";
 
+import SearchBar from "./items/SearchBar";
 import CategorySelector from "./items/CategorySelector";
 import DateRangeSelector from "./items/DateRangeSelector";
 import LocationSelector from "./items/LocationSelector";
@@ -16,30 +16,29 @@ export default function TopBarRoles({ filters, setFilters }) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
-  // ---- Roles / estado de organizador
+  // ---- Roles / estado del usuario ----
   const roles = user?.roles || [];
-  const organizerStatus = user?.organizerStatus; // "APPROVED" | "PENDING" | "REJECTED" | undefined
+  const organizerStatus = user?.organizerStatus; // "APPROVED" | "PENDING" | "REJECTED"
   const isOrganizer = roles.includes("ORGANIZER") || roles.includes("ADMIN");
   const isOrganizerApproved = isOrganizer && organizerStatus === "APPROVED";
 
-  // ---- Buscador expandible tipo Joinnus
+  // ---- Panel de filtros (Joinnus style) ----
   const [expanded, setExpanded] = useState(false);
-  const [query, setQuery] = useState("");
 
-  // ---- Modal Solicitud de Organizador
+  // ---- Modal para solicitar rol de organizador ----
   const [openModal, setOpenModal] = useState(false);
   const handleOrganizerSuccess = () => {
     window.location.href = "/crearEvento";
   };
 
+  // ---- Funciones auxiliares ----
   function updateFilters(patch) {
-    const next = { ...(filters || {}), ...patch };
-    setFilters?.(next);
+    setFilters?.((prev) => ({ ...(prev ?? {}), ...patch }));
   }
 
   function handleBuscar() {
-    // Aquí puedes disparar navegación o levantar un evento al Home
-    // Ej.: navigate(`/buscar?q=${encodeURIComponent(query)}`)
+    // Si estás en otra ruta, te lleva a /home
+    if (pathname !== "/home") navigate("/home");
     setExpanded(false);
   }
 
@@ -52,59 +51,55 @@ export default function TopBarRoles({ filters, setFilters }) {
       alert("Tu perfil de organizador está en revisión.");
       return;
     }
-    // No es organizador (o rechazado): abrir el modal de solicitud
     setOpenModal(true);
   }
 
   return (
     <div className="flex w-full items-center justify-between px-6">
-      {/* ========= IZQUIERDA: BUSCADOR + FILTROS INTEGRADOS ========= */}
+      {/* ========= IZQUIERDA: BUSCADOR ========= */}
       <div className="relative flex-1 max-w-4xl mx-4">
         <div
-          className={`flex items-center bg-white/95 rounded-full px-4 py-2 shadow-md transition-all duration-200 ${
+          className={`flex items-center bg-white/95 rounded-full px-4 py-1.5 shadow-md transition-all duration-200 ${
             expanded ? "ring-2 ring-purple-300" : ""
           }`}
         >
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onFocus={() => setExpanded(true)}
+          <SearchBar
             placeholder="Buscar por eventos, artistas o lugares…"
-            className="flex-1 bg-transparent outline-none text-gray-800 placeholder-gray-400 text-sm"
+            onSearch={(q) => updateFilters({ query: q })}
+            onEnter={handleBuscar}
           />
 
-          {/* Botón para mostrar el panel de filtros (opcional) */}
           <button
             type="button"
             onClick={() => setExpanded((v) => !v)}
-            className="ml-2 text-xs rounded-full border border-gray-300 px-3 py-1.5 text-gray-700 hover:bg-gray-100"
-            title="Filtros"
+            className="ml-2 text-xs rounded-full border border-gray-300 px-3 py-1 text-gray-700 hover:bg-gray-100"
           >
             Filtros
           </button>
         </div>
 
-        {/* Panel “Joinnus-like” */}
+        {/* ========= PANEL DE FILTROS ========= */}
         {expanded && (
           <div className="absolute z-50 left-0 right-0 bg-white shadow-2xl rounded-2xl p-4 mt-2">
-            <div className="flex flex-wrap gap-3">
-              <div className="min-w-[180px]">
+            <div className="flex flex-wrap gap-4">
+              <div className="flex-1 min-w-[150px]">
                 <CategorySelector
                   value={filters?.category ?? null}
                   onChange={(category) => updateFilters({ category })}
                 />
               </div>
 
-              <div className="min-w-[260px]">
+              <div className="flex-1 min-w-[220px]">
                 <DateRangeSelector
                   from={filters?.dateFrom ?? null}
                   to={filters?.dateTo ?? null}
-                  onChange={({ from, to }) => updateFilters({ dateFrom: from, dateTo: to })}
+                  onChange={({ from, to }) =>
+                    updateFilters({ dateFrom: from, dateTo: to })
+                  }
                 />
               </div>
 
-              <div className="min-w-[220px]">
+              <div className="flex-1 min-w-[200px]">
                 <LocationSelector
                   value={filters?.location ?? ""}
                   onChange={(location) => updateFilters({ location })}
@@ -134,15 +129,25 @@ export default function TopBarRoles({ filters, setFilters }) {
 
       {/* ========= DERECHA: ACCIONES SEGÚN ROL ========= */}
       <div className="flex items-center gap-3">
-        {/* Bloque de acciones de organizador (solo si está aprobado) */}
+        {/* Opciones del organizador aprobado */}
         {isOrganizerApproved && (
           <div className="hidden md:flex items-center gap-2">
-            <Linker label="Reportes" icon="chart-bar" to="/reports" activeMatch="/reports" />
-            <Linker label="Mis Eventos" icon="calendar-days" to="/my-events" activeMatch="/my-events" />
+            <Linker
+              label="Reportes"
+              icon="chart-bar"
+              to="/reports"
+              activeMatch="/reports"
+            />
+            <Linker
+              label="Mis Eventos"
+              icon="calendar-days"
+              to="/my-events"
+              activeMatch="/my-events"
+            />
           </div>
         )}
 
-        {/* Crear evento (si organizador aprobado navega; si no, abre modal) */}
+        {/* Botón Crear Evento */}
         {isAuthenticated && (
           <button
             type="button"
@@ -157,11 +162,11 @@ export default function TopBarRoles({ filters, setFilters }) {
           </button>
         )}
 
-        {/* Menú usuario o botones de auth */}
+        {/* Menú usuario / auth */}
         <div>{isAuthenticated ? <UserMenu /> : <AuthButtons />}</div>
       </div>
 
-      {/* Modal de solicitud de organizador */}
+      {/* Modal para solicitud de organizador */}
       <CreateOrganizerModal
         open={openModal}
         onClose={() => setOpenModal(false)}
