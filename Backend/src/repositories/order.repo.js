@@ -160,6 +160,10 @@ export async function createOrderRepo(input) {
 }
 
 // Cancelar orden liberando solo zonas y asientos
+//Módulo para actualizar estados en caso de que un usuario cancele una orden al momento
+//que está realizando su compra (debería activarse al darle click en "Cancelar compra" en el frontend)
+//esto lo que hará es borrar las reservas (holds) y liberar asientos o capacidad reservada.
+//Aún faltan agregar automatizaciones con ayuda de cron jobs para liberar reservas expiradas.
 export async function cancelOrderRepo(orderId) {
   return prisma.$transaction(async (tx) => {
     const order = await tx.order.findUnique({

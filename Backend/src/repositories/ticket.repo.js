@@ -226,3 +226,97 @@ export const findTicketsByUser = async ({ where, skip, take, order = 'desc' }) =
 
   return { items, total };
 };
+
+export async function setTicketToRefund(ticketid){
+    return prisma.ticket.update({
+        where: { ticketId: ticketid },
+        data: {
+            refundStatus: 'REQUESTED',
+            refundRequestedAt: new Date()
+        }
+    });
+}
+
+export async function getRefundList(organizerId) {
+    return prisma.ticket.findMany({
+        where: {
+            eventDate: {
+                is: {
+                    event: {
+                        organizerId
+                    }
+                }
+            },
+            refundStatus: 'REQUESTED'
+        },
+        select: {
+            ticketId: true,
+            eventDate: {
+                select: {
+                    event: {
+                        select: {  title: true }
+                    }
+                }
+            },
+            owner: {
+                select: {
+                    name: true,
+                    lastName: true,
+                    email: true
+                }
+            },
+            refundRequestedAt: true
+        }
+    });
+}
+
+export async function approveTicketRefund(ticketId) {
+  return prisma.$transaction(async (tx) => {
+    // Buscar el ticket y su zona
+    const ticket = await tx.ticket.findUnique({
+      where: { ticketId },
+      include: { zone: true, seat: true },
+    });
+
+    if (!ticket) throw new Error("Ticket no encontrado.");
+
+    // 1. Marcar el ticket como reembolsado
+    await tx.ticket.update({
+      where: { ticketId },
+      data: {
+        refundStatus: "APPROVED",
+      },
+    });
+
+    // 2. Liberar capacidad o asiento
+    if (ticket.seatId) {
+      // Si es un asiento numerado, liberar el asiento
+      await tx.seat.update({
+        where: { seatId: ticket.seatId },
+        data: {
+          status: "AVAILABLE",
+          holdUntil: null,
+        },
+      });
+    } else {
+      // Si es zona general, devolver la capacidad
+      await tx.eventDateZone.update({
+        where: { eventDateZoneId: ticket.eventDateZoneId },
+        data: {
+          capacityRemaining: { increment: 1 },
+        },
+      });
+    }
+
+    return { success: true, ticketId: Number(ticketId) };
+  });
+}
+
+export async function rejectTicketRefund(ticketId) {
+    return prisma.ticket.update({
+        where: { ticketId },
+        data: {
+            refundStatus: 'REJECTED'
+        }
+    });
+}

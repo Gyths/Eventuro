@@ -28,3 +28,8 @@ export function toJSONSafe(value) {
 
     return value;
 }
+
+export function toDate(d) {
+  if (!d) return null;
+  return d instanceof Date ? d : new Date(d);
+}

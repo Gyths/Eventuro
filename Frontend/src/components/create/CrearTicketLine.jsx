@@ -1,5 +1,4 @@
-// src/components/create/CrearTicketLine.js (or CrearZonasTickets.js)
-
+// src/components/create/CrearTicketLine.jsx
 import React from "react";
 import BotonEliminar from "../BotonEliminar";
 import FormField from "./FormField";
@@ -54,6 +53,9 @@ export default function CrearTicketLine({ zones, onChange, currency = "PEN" }) {
       type: "",
       quantity: "",
       price: "",
+      pricingMode: "percent",
+      discount: "",
+      newPrice: "",
       ...presaleFields,
     });
     updateZones(newZones);
@@ -70,7 +72,7 @@ export default function CrearTicketLine({ zones, onChange, currency = "PEN" }) {
   const handleSubtypeChange = (zoneIndex, subtypeIndex, field, value) => {
     let newValue = value;
     const intFields = ["quantity", "presaleQuantity"];
-    const moneyFields = ["price", "presalePrice"];
+    const moneyFields = ["price", "presalePrice", "newPrice"];
 
     if (intFields.includes(field)) {
       newValue = value.replace(/\D/g, "").replace(/^0+/, "");
@@ -92,6 +94,14 @@ export default function CrearTicketLine({ zones, onChange, currency = "PEN" }) {
       if (Number(newValue) > 100) newValue = "100";
     }
 
+    if (field === "newPrice") {
+      const zonePrice = Number(zones[zoneIndex]?.price || 0);
+      const nextPrice = Number(newValue || 0);
+      if (zonePrice > 0 && nextPrice >= zonePrice) {
+        return; // bloquea si no es menor estrictamente
+      }
+    }
+
     const newZones = zones.map((zone, zIdx) => {
       if (zIdx === zoneIndex) {
         const newSubtypes = zone.subtypes.map((subtype, sIdx) => {
@@ -105,26 +115,15 @@ export default function CrearTicketLine({ zones, onChange, currency = "PEN" }) {
       return zone;
     });
 
-    // --- Sanitizers para campos de zona ---
-    const sanitizeZoneInt = (v) =>
-      String(v ?? "")
-        .replace(/\D/g, "")
-        .replace(/^0+/, (m, off, s) => (s && v !== "" ? "" : m));
-    const sanitizeZoneMoney = (v) =>
-      String(v ?? "")
-        .replace(/[^0-9.]/g, "")
-        .replace(/(\..*)\./g, "$1");
-
-    // --- Cambiar cantidad / precio de la zona ---
-    const handleZoneFieldChange = (zoneIndex, field, value) => {
-      const newZones = [...zones];
-      const z = { ...newZones[zoneIndex] };
-      if (field === "quantity") value = sanitizeZoneInt(value);
-      if (field === "price") value = sanitizeZoneMoney(value);
-      z[field] = value;
-      newZones[zoneIndex] = z;
-      updateZones(newZones);
-    };
+    if (field === "pricingMode") {
+      const z = newZones[zoneIndex];
+      const st = z.subtypes[subtypeIndex];
+      if (newValue === "percent") {
+        st.newPrice = "";
+      } else if (newValue === "newPrice") {
+        st.discount = "";
+      }
+    }
 
     if (field === "presaleQuantity") {
       const zoneToValidate = newZones[zoneIndex];
@@ -133,9 +132,8 @@ export default function CrearTicketLine({ zones, onChange, currency = "PEN" }) {
       const newPresaleQty = Number(newSubtype.presaleQuantity);
       const totalQty = Number(newSubtype.quantity);
 
-      // Si la cantidad de preventa es mayor a la cantidad de tickets bloquea el cambio
       if (newPresaleQty > totalQty) {
-        return; // Bloquea la salida
+        return;
       }
     }
     updateZones(newZones);
@@ -244,7 +242,13 @@ export default function CrearTicketLine({ zones, onChange, currency = "PEN" }) {
             <div className="space-y-5 pl-6 sm:pl-10 border-l-2 border-pink-200">
               {zone.subtypes.map((subtype, subtypeIndex) => {
                 const isLastSubtype = zone.subtypes.length === 1;
-
+                const mode = subtype.pricingMode || "percent";
+                const zonePriceNum = Number(zone.price || 0);
+                const newPriceNum = Number(subtype.newPrice || 0);
+                const violatesNewPrice =
+                  mode === "newPrice" &&
+                  zonePriceNum > 0 &&
+                  newPriceNum >= zonePriceNum;
                 // Determine which field is the LAST one to include the delete button
                 const isPriceFieldLast = !presaleIsActive;
 
@@ -272,21 +276,69 @@ export default function CrearTicketLine({ zones, onChange, currency = "PEN" }) {
                       />
                     </FormField>
 
-                    {/* % Descuento (aplicado al precio de la ZONA) */}
-                    <FormField label="% descuento" hint="0 - 100">
-                      <TextInput
-                        placeholder="0"
-                        value={subtype.discount || ""}
-                        onChange={(v) =>
+                    {/* Regla de precio */}
+                    <FormField label="Regla de precio*" hint={"\u00A0"}>
+                      <select
+                        className="w-full sm:w-64 min-w-[13rem] rounded-xl border border-gray-300 px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-pink-300"
+                        value={mode}
+                        onChange={(e) =>
                           handleSubtypeChange(
                             zoneIndex,
                             subtypeIndex,
-                            "discount",
-                            v
+                            "pricingMode",
+                            e.target.value
                           )
                         }
-                      />
+                      >
+                        <option value="newPrice">Nuevo precio</option>
+                        <option value="percent">% descuento</option>
+                      </select>
                     </FormField>
+
+                    {/* Campo según la regla elegida */}
+                    {mode === "newPrice" ? (
+                      <FormField
+                        label={`Nuevo precio (${currency})`}
+                        hint={
+                          zonePriceNum
+                            ? `Debe ser menor a ${zonePriceNum.toFixed(2)}`
+                            : "Primero define el precio general de la zona"
+                        }
+                      >
+                        <TextInput
+                          placeholder="0.00"
+                          value={subtype.newPrice || ""}
+                          onChange={(v) =>
+                            handleSubtypeChange(
+                              zoneIndex,
+                              subtypeIndex,
+                              "newPrice",
+                              v
+                            )
+                          }
+                          className={
+                            violatesNewPrice
+                              ? "border-red-400 focus:ring-red-300"
+                              : ""
+                          }
+                        />
+                      </FormField>
+                    ) : (
+                      <FormField label="% descuento" hint="0 - 100">
+                        <TextInput
+                          placeholder="0"
+                          value={subtype.discount || ""}
+                          onChange={(v) =>
+                            handleSubtypeChange(
+                              zoneIndex,
+                              subtypeIndex,
+                              "discount",
+                              v
+                            )
+                          }
+                        />
+                      </FormField>
+                    )}
 
                     {/* Botón eliminar cuando NO hay preventa */}
                     {!presaleIsActive && (

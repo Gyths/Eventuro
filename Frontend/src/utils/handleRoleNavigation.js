@@ -1,6 +1,6 @@
 export default function handleRoleNavigation(roles = [], organizerStatus, navigate) {
   if (roles.includes("ADMIN")) {
-    navigate("/");
+    navigate("/admin/dashboard");
   } else if (roles.includes("ORGANIZER")) {
     if (organizerStatus === "APPROVED") {
       navigate("/crearEvento");

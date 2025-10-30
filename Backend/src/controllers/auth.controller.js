@@ -37,7 +37,10 @@ export const login = async (req, res) => {
             user.organizer ? "ORGANIZER" : null
           ].filter(Boolean),
           createdAt: user.createdAt,
-          updatedAt: user.updatedAt
+          updatedAt: user.updatedAt,
+          organizer: user.organizer ? {
+            organizerId: user.organizer.organizerId.toString() // O el nombre del ID en tu BD (ej: 'id')
+          } : null
         }
       });
     } catch (err) {
@@ -87,6 +90,10 @@ export const googleCallback = async (req, res) => {
       ].filter(Boolean),
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
+      organizer: user.organizer ? {
+        // Usa el nombre del ID de tu tabla Organizer (ej: 'id' o 'organizerId')
+        organizerId: user.organizer.organizerId.toString() 
+      } : null
     };
 
     const encodedUser = encodeURIComponent(JSON.stringify(userSafe));
