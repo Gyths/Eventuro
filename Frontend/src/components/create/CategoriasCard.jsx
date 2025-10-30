@@ -88,7 +88,6 @@ export default function CategoriasCard() {
       setIsSaving(false);
     }
   };
-  // --- FIN DE LA LÓGICA ---
 
   return (
     <>
@@ -103,7 +102,7 @@ export default function CategoriasCard() {
           </p>
         </div>
 
-        {/* Cuerpo de la Tarjeta (Fondo blanco) */}
+        {/* Cuerpo de la Tarjeta*/}
         <div className="p-6 sm:p-8 pt-6 min-h-[150px] flex items-center justify-center">
           {isLoading && (
             <div className="text-center text-gray-500 py-10 w-full">

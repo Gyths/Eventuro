@@ -22,7 +22,6 @@ export default function ManageCategories() {
   const [editingCategory, setEditingCategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // --- (Toda tu lógica de fetch, update, delete, etc. no cambia) ---
   const fetchCategories = async () => {
     setIsLoading(true);
     setError(null);
@@ -128,7 +127,6 @@ export default function ManageCategories() {
       category.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [categories, searchQuery]);
-  // --- (Fin de la lógica) ---
 
   return (
     <>
@@ -172,7 +170,6 @@ export default function ManageCategories() {
                   <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 </div>
 
-                {/* Lógica de renderizado*/}
                 {categories.length === 0 ? (
                   <div className="text-center p-6 text-gray-500">
                     No hay categorías registradas.

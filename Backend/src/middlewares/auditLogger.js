@@ -40,15 +40,13 @@ export function auditMiddleware() {
 
     try {
       const model = getModel(prisma, params.model);
-      if (!model) return next(params); // si no existe el modelo, salir
+      if (!model) return next(params); 
 
-      // --- INICIO MEJORA: Obtener entityId ANTES de la acción (para update/delete) ---
-      // Es más seguro obtener el ID desde los 'args' para update/delete
-      // ya que 'result' podría no tenerlo (ej. deleteMany).
+      
       if (params.action === "update" || params.action === "delete") {
         const where = params.args.where;
         if (where) {
-          // Busca la llave primaria (ej. 'id', 'feeId', 'eventCategoryId')
+          
           const idKey = Object.keys(where).find((k) =>
             k.toLowerCase().endsWith("id")
           );
@@ -57,11 +55,9 @@ export function auditMiddleware() {
           }
         }
       }
-      // --- FIN MEJORA ---
-
-      // Si es UPDATE, obtener datos previos
+      
       if (params.action === "update") {
-        // Asegurarnos que 'where' exista antes de buscar
+        
         if (params.args.where) {
           before = await model.findUnique({
             where: params.args.where,
@@ -69,23 +65,22 @@ export function auditMiddleware() {
         }
       }
 
-      // Ejecutar acción principal
+      
       result = await next(params);
 
-      // --- INICIO MEJORA: Obtener entityId DESPUÉS (para create) ---
-      // Si es 'create', el ID solo existe en el 'result'
+      
       if (params.action === "create" && result) {
         const idField = Object.keys(result).find((k) =>
           k.toLowerCase().endsWith("id")
         );
         if (idField) entityId = result[idField];
       }
-      // Fallback para update/delete si no se encontró antes
+      
       if (!entityId && result && (params.action === "update" || params.action === "delete")) {
          const idField = Object.keys(result).find(k => k.toLowerCase().endsWith("id"));
          if (idField) entityId = result[idField];
       }
-      // --- FIN MEJORA ---
+      
 
       // === Descripciones personalizadas ===
       switch (params.model) {
