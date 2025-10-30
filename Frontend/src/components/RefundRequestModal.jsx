@@ -2,101 +2,131 @@
 import { useMemo, useState } from "react";
 import { EventuroApi } from "../api";
 
-function describeItem(it) {
-  const title = it?.eventDate?.event?.title ?? "Evento";
-  const start = it?.eventDate?.startAt ? new Date(it.eventDate.startAt).toLocaleString("es-PE", {
+function formatDateTime(d) {
+  if (!d) return "Fecha por confirmar";
+  const date = new Date(d);
+  return date.toLocaleString("es-PE", {
     weekday: "long",
     day: "2-digit",
     month: "long",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-  }) : "Fecha por confirmar";
+  });
+}
 
+function describeItem(it) {
+  const title = it?.eventDate?.event?.title ?? "Evento";
+  const start = formatDateTime(it?.eventDate?.startAt);
   const zone = it?.seat
-    ? `Palco • Fila ${it.seat.rowNumber} • Asiento ${it.seat.seatNumber ?? "-"}`
+    ? `Palco • Fila ${it.seat.rowNumber} • Asiento ${it.seat.seatNumber ?? "-"}` // ajusta si tu modelo usa colNumber
     : `Zona ${it?.zone?.name ?? "General"}`;
-
   return `${title} — ${start} — ${zone}`;
 }
 
 export default function RefundRequestModal({ isOpen, onClose, order, onSubmitted }) {
+  // Construye la lista mostrable de ítems reembolsables
   const refundableItems = useMemo(() => {
     const items = Array.isArray(order?.items) ? order.items : [];
-    // Si tu backend marca estados, aquí puedes filtrar por it.status === "PAID"/"CONFIRMED"
-    return items.map((it) => ({
-      key: it.orderItemId,
-      orderItemId: it.orderItemId,
-      description: describeItem(it),
-      maxQty: it.quantity ?? 1,
-    }));
+    return items.map((it) => {
+      // Intentamos leer el estado desde ticket o desde el propio item (ajusta a tu modelo)
+      const refundStatus =
+        it.ticket?.refundStatus ??
+        it.refundStatus ??
+        "NONE";
+
+      const refundRequestedAt =
+        it.ticket?.refundRequestedAt ??
+        it.refundRequestedAt ??
+        null;
+
+      const requested = refundStatus === "REQUESTED";
+
+      return {
+        key: it.orderItemId,
+        ticketId: it.ticketId ?? it.orderItemId, // usa tu id real de ticket
+        orderItemId: it.orderItemId,
+        description: describeItem(it),
+        maxQty: it.quantity ?? 1,
+        refundStatus,
+        refundRequestedAt,
+        requested,
+      };
+    });
   }, [order]);
 
+  // Solo inicializamos selección para los que SÍ son seleccionables
   const [selected, setSelected] = useState(() =>
     refundableItems.reduce((acc, it) => {
-      acc[it.orderItemId] = { checked: false, qty: 1 };
+      if (!it.requested) acc[it.ticketId] = { checked: false, qty: 1 };
       return acc;
     }, {})
   );
 
-  const [reason, setReason] = useState("");
-  const [comment, setComment] = useState("");
   const [agree, setAgree] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [summary, setSummary] = useState(null);
 
   if (!isOpen) return null;
 
-  const anySelected = Object.values(selected).some((s) => s.checked && s.qty > 0);
-  const canSubmit = anySelected && !!reason && agree && !submitting;
+  const selectableItems = refundableItems.filter((it) => !it.requested);
 
-  const payload = useMemo(() => {
-    const items = refundableItems
-      .filter((it) => selected[it.orderItemId]?.checked && selected[it.orderItemId].qty > 0)
-      .map((it) => ({
-        orderItemId: it.orderItemId,
-        quantity: Math.min(selected[it.orderItemId].qty, it.maxQty),
-      }));
-    return {
-      orderId: order?.orderId,
-      items,
-      reason,
-      comment: comment?.trim() || null,
-    };
-  }, [order, refundableItems, selected, reason, comment]);
+  const chosen = selectableItems.filter(
+    (it) => selected[it.ticketId]?.checked && (selected[it.ticketId]?.qty ?? 0) > 0
+  );
 
+  const canSubmit = agree && chosen.length > 0 && !submitting;
+
+  // Helpers de UI
+  function setChecked(id, val) {
+    setSelected((prev) => ({ ...prev, [id]: { ...(prev[id] || { qty: 1 }), checked: val } }));
+  }
+  function setQty(id, val, max) {
+    const n = Math.max(1, Math.min(Number(val) || 1, max));
+    setSelected((prev) => ({ ...prev, [id]: { ...(prev[id] || { checked: true }), qty: n } }));
+  }
+
+  // Envío: una llamada por cada ticket seleccionado (solo los no-REQUESTED)
   async function handleSubmit() {
     try {
       setSubmitting(true);
       setError("");
+      setSummary(null);
 
-      // Ajusta el endpoint a tu backend real:
-      // Ejemplos:
-      // 1) POST /orders/:orderId/refund-request
-      // 2) POST /refunds
-      const res = await EventuroApi({
-        endpoint: `/orders/${order.orderId}/refund-request`,
-        method: "POST",
-        data: payload,
+      const requests = chosen.map((it) =>
+        EventuroApi({
+          endpoint: `/tickets/${encodeURIComponent(it.ticketId)}/request-refund`,
+          method: "POST",
+          data: { quantity: Math.min(selected[it.ticketId]?.qty ?? 1, it.maxQty) },
+        })
+      );
+
+      const results = await Promise.allSettled(requests);
+
+      const ok = [];
+      const fail = [];
+      results.forEach((r, idx) => {
+        const it = chosen[idx];
+        if (r.status === "fulfilled") {
+          ok.push(`• ${it.description}`);
+        } else {
+          const msg = r.reason?.message || "Error desconocido";
+          fail.push(`• ${it.description} — ${msg}`);
+        }
       });
 
-      // Puedes mostrar un toast; por simplicidad: alert
-      alert("Solicitud enviada. Te notificaremos el estado de la devolución.");
-      onSubmitted?.();
-      onClose?.();
+      setSummary({ ok, fail });
+
+      if (fail.length === 0) {
+        onSubmitted?.();
+        onClose?.();
+      }
     } catch (e) {
       setError(e?.message || "No se pudo enviar la solicitud.");
     } finally {
       setSubmitting(false);
     }
-  }
-
-  function setChecked(id, val) {
-    setSelected((prev) => ({ ...prev, [id]: { ...prev[id], checked: val } }));
-  }
-  function setQty(id, val, max) {
-    const n = Math.max(1, Math.min(Number(val) || 1, max));
-    setSelected((prev) => ({ ...prev, [id]: { ...prev[id], qty: n } }));
   }
 
   return (
@@ -114,37 +144,55 @@ export default function RefundRequestModal({ isOpen, onClose, order, onSubmitted
 
           <div className="p-5 space-y-5 max-h-[75vh] overflow-y-auto">
             <p className="text-sm text-gray-600">
-              Selecciona los tickets que deseas devolver y cuéntanos el motivo. Ten en cuenta que la elegibilidad depende de la política del evento.
+              Selecciona los tickets que deseas devolver. La elegibilidad depende de la
+              política del evento.
             </p>
 
-            {/* Lista de items */}
+            {/* Lista de tickets */}
             <div className="space-y-3">
-              {refundableItems.map((it) => (
-                <div key={it.key} className="flex items-start gap-3 rounded-xl border border-gray-200 p-3">
-                  <input
-                    type="checkbox"
-                    className="mt-1 h-4 w-4"
-                    checked={!!selected[it.orderItemId]?.checked}
-                    onChange={(e) => setChecked(it.orderItemId, e.target.checked)}
-                  />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">{it.description}</p>
-                    <div className="mt-2 flex items-center gap-2">
-                      <span className="text-xs text-gray-500">Cantidad a devolver</span>
-                      <input
-                        type="number"
-                        min={1}
-                        max={it.maxQty}
-                        value={selected[it.orderItemId]?.qty ?? 1}
-                        onChange={(e) => setQty(it.orderItemId, e.target.value, it.maxQty)}
-                        className="w-20 rounded-lg border border-gray-300 px-2 py-1 text-sm"
-                        disabled={!selected[it.orderItemId]?.checked}
-                      />
-                      <span className="text-xs text-gray-400">/ {it.maxQty} compradas</span>
+              {refundableItems.map((it) => {
+                const disabled = it.requested;
+                return (
+                  <div key={it.key} className={`flex items-start gap-3 rounded-xl border p-3 ${disabled ? "border-gray-200 bg-gray-50" : "border-gray-200"}`}>
+                    <input
+                      type="checkbox"
+                      className="mt-1 h-4 w-4"
+                      checked={!!selected[it.ticketId]?.checked}
+                      onChange={(e) => setChecked(it.ticketId, e.target.checked)}
+                      disabled={disabled}
+                    />
+                    <div className="flex-1">
+                      <p className={`text-sm font-medium ${disabled ? "text-gray-500" : "text-gray-900"}`}>
+                        {it.description}
+                      </p>
+
+                      {/* Estado si ya fue solicitada la devolución */}
+                      {disabled ? (
+                        <div className="mt-1 inline-flex items-center gap-2 rounded-md bg-purple-50 px-2 py-1 text-[12px] text-purple-800">
+                          <span className="font-semibold">Solicitud ya enviada</span>
+                          {it.refundRequestedAt && (
+                            <span>({formatDateTime(it.refundRequestedAt)})</span>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="mt-2 flex items-center gap-2">
+                          <span className="text-xs text-gray-500">Cantidad a devolver</span>
+                          <input
+                            type="number"
+                            min={1}
+                            max={it.maxQty}
+                            value={selected[it.ticketId]?.qty ?? 1}
+                            onChange={(e) => setQty(it.ticketId, e.target.value, it.maxQty)}
+                            className="w-20 rounded-lg border border-gray-300 px-2 py-1 text-sm"
+                            disabled={!selected[it.ticketId]?.checked}
+                          />
+                          <span className="text-xs text-gray-400">/ {it.maxQty} compradas</span>
+                        </div>
+                      )}
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
 
               {refundableItems.length === 0 && (
                 <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-amber-800 text-sm">
@@ -153,35 +201,7 @@ export default function RefundRequestModal({ isOpen, onClose, order, onSubmitted
               )}
             </div>
 
-            {/* Motivo */}
-            <div className="grid gap-2">
-              <label className="text-sm font-medium text-gray-900">Motivo</label>
-              <select
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-              >
-                <option value="">Selecciona un motivo…</option>
-                <option value="NO_ASISTIRE">No podré asistir</option>
-                <option value="ERROR_COMPRA">Error en la compra</option>
-                <option value="EVENTO_CANCELADO">El evento fue cancelado</option>
-                <option value="OTRO">Otro</option>
-              </select>
-            </div>
-
-            {/* Comentario */}
-            <div className="grid gap-2">
-              <label className="text-sm font-medium text-gray-900">Comentario (opcional)</label>
-              <textarea
-                rows={3}
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
-                placeholder="Describe detalles que ayuden a evaluar tu solicitud…"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-              />
-            </div>
-
-            {/* Aceptación */}
+            {/* Aceptación de política */}
             <label className="flex items-start gap-2 text-sm text-gray-700">
               <input
                 type="checkbox"
@@ -192,9 +212,26 @@ export default function RefundRequestModal({ isOpen, onClose, order, onSubmitted
               Confirmo que he leído y acepto la política de devoluciones del evento.
             </label>
 
+            {/* Mensajes */}
             {error && (
               <div className="rounded-lg border border-red-200 bg-red-50 p-2 text-red-700 text-sm">
                 {error}
+              </div>
+            )}
+            {summary && (summary.ok.length > 0 || summary.fail.length > 0) && (
+              <div className="space-y-2">
+                {summary.ok.length > 0 && (
+                  <div className="rounded-lg border border-green-200 bg-green-50 p-2 text-green-800 text-sm">
+                    <p className="font-semibold mb-1">Solicitudes enviadas:</p>
+                    {summary.ok.map((line, i) => <p key={i}>{line}</p>)}
+                  </div>
+                )}
+                {summary.fail.length > 0 && (
+                  <div className="rounded-lg border border-red-200 bg-red-50 p-2 text-red-800 text-sm">
+                    <p className="font-semibold mb-1">Solicitudes con error:</p>
+                    {summary.fail.map((line, i) => <p key={i}>{line}</p>)}
+                  </div>
+                )}
               </div>
             )}
           </div>

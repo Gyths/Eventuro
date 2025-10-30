@@ -5,7 +5,7 @@ import { useOutletContext } from "react-router-dom";
 import EventCard from "../components/EventCard.jsx";
 import { v4 as uuidv4 } from "uuid";
 import { BASE_URL } from "../config.js";
-
+import BannerCarousel from "../components/BannerCarousel.jsx"
 const imagesDemo = [
   "/banners/banner1.jpg",
   "/banners/banner2.jpg",

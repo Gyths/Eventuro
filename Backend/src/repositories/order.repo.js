@@ -1,7 +1,8 @@
+// src/repositories/order.repo.js
 import { prisma } from "../utils/prisma.js";
 import { Prisma } from "../generated/prisma/index.js";
 
-// Crear una orden usando solo la capacidad de las zonas
+// Crear una orden con subcategorías (EventDateZoneAllocation)
 export async function createOrderRepo(input) {
   return prisma.$transaction(async (tx) => {
     const buyerUserId = BigInt(input.buyerUserId);
@@ -24,6 +25,9 @@ export async function createOrderRepo(input) {
       const eventId = BigInt(item.eventId);
       const eventDateId = BigInt(item.eventDateId);
       const eventDateZoneId = BigInt(item.eventDateZoneId);
+      const allocationId = item.eventDateZoneAllocationId
+        ? BigInt(item.eventDateZoneAllocationId)
+        : null;
       const quantity = parseInt(item.quantity || 0);
 
       if (!quantity || quantity <= 0)
@@ -44,13 +48,38 @@ export async function createOrderRepo(input) {
       });
       if (!zone) throw new Error("Zona no encontrada");
       if (BigInt(zone.eventDateId) !== eventDateId)
-        throw new Error(
-          "La zona seleccionada no pertenece a la fecha indicada."
-        );
+        throw new Error("La zona seleccionada no pertenece a la fecha indicada.");
       if (zone.currency !== "PEN")
         throw new Error("Solo se permiten órdenes en soles peruanos (PEN).");
       if ((zone.capacityRemaining ?? 0) < quantity)
         throw new Error("No hay suficiente capacidad en la zona seleccionada.");
+
+      // Validar subcategoría (allocation)
+      let allocation = null;
+      if (allocationId) {
+        allocation = await tx.eventDateZoneAllocation.findUnique({
+          where: { eventDateZoneAllocationId: allocationId },
+          select: {
+            eventDateZoneAllocationId: true,
+            eventDateZoneId: true,
+            audienceName: true,
+            discountType: true,
+            discountValue: true,
+            remainingQuantity: true,
+            allocatedQuantity: true,
+          },
+        });
+        if (!allocation)
+          throw new Error("Subcategoría no encontrada.");
+        if (BigInt(allocation.eventDateZoneId) !== eventDateZoneId)
+          throw new Error("La subcategoría no pertenece a la zona indicada.");
+        if (
+          allocation.remainingQuantity != null &&
+          allocation.remainingQuantity < quantity
+        ) {
+          throw new Error("No hay capacidad suficiente en la subcategoría seleccionada.");
+        }
+      }
 
       // Validar asientos si aplica
       let seat = null;
@@ -103,10 +132,7 @@ export async function createOrderRepo(input) {
 
       // Actualizar capacidad de zona
       const zoneUpdate = await tx.eventDateZone.updateMany({
-        where: {
-          eventDateZoneId,
-          capacityRemaining: zone.capacityRemaining,
-        },
+        where: { eventDateZoneId, capacityRemaining: zone.capacityRemaining },
         data: {
           capacityRemaining: zone.capacityRemaining - quantity,
           updatedAt: new Date(),
@@ -115,21 +141,49 @@ export async function createOrderRepo(input) {
       if (zoneUpdate.count === 0)
         throw new Error("Colisión: la zona fue modificada, reintente.");
 
-      // Calcular precio solo con basePrice
-      const unitPrice = Number(zone.basePrice);
-      const finalPrice = unitPrice * quantity;
+      // Actualizar subcategoría si aplica
+      if (allocation) {
+        await tx.eventDateZoneAllocation.update({
+          where: { eventDateZoneAllocationId: allocation.eventDateZoneAllocationId },
+          data: {
+            remainingQuantity:
+              allocation.remainingQuantity != null
+                ? allocation.remainingQuantity - quantity
+                : undefined,
+            allocatedQuantity:
+              allocation.allocatedQuantity != null
+                ? allocation.allocatedQuantity + quantity
+                : undefined,
+            updatedAt: new Date(),
+          },
+        });
+      }
 
-      // Crear orderItem
+      // Calcular precio con descuento (si aplica)
+      const unit = Number(zone.basePrice);
+      let discount = 0;
+      if (allocation?.discountType === "PERCENTAGE") {
+        discount = unit * Number(allocation.discountValue) / 100;
+      } else if (allocation?.discountType === "FIXED") {
+        discount = Number(allocation.discountValue);
+      }
+
+      const unitPrice = unit;
+      const finalUnit = Math.max(0, unit - discount);
+      const finalPrice = finalUnit * quantity;
+
+      // Crear orderItem con allocation
       const createdItem = await tx.orderItem.create({
         data: {
           orderId: order.orderId,
           eventId,
           eventDateId,
           eventDateZoneId,
+          eventDateZoneAllocationId: allocationId ?? undefined,
           quantity,
           seatId: item.seatId ? BigInt(item.seatId) : undefined,
           unitPrice: new Prisma.Decimal(unitPrice),
-          discountAmount: new Prisma.Decimal(0),
+          discountAmount: new Prisma.Decimal(discount * quantity),
           finalPrice: new Prisma.Decimal(finalPrice),
         },
       });
@@ -142,6 +196,7 @@ export async function createOrderRepo(input) {
       totalAmount += finalPrice;
     }
 
+    // Actualizar total
     await tx.order.update({
       where: { orderId: order.orderId },
       data: {
@@ -159,11 +214,7 @@ export async function createOrderRepo(input) {
   });
 }
 
-// Cancelar orden liberando solo zonas y asientos
-//Módulo para actualizar estados en caso de que un usuario cancele una orden al momento
-//que está realizando su compra (debería activarse al darle click en "Cancelar compra" en el frontend)
-//esto lo que hará es borrar las reservas (holds) y liberar asientos o capacidad reservada.
-//Aún faltan agregar automatizaciones con ayuda de cron jobs para liberar reservas expiradas.
+// Cancelar orden (igual que antes)
 export async function cancelOrderRepo(orderId) {
   return prisma.$transaction(async (tx) => {
     const order = await tx.order.findUnique({
@@ -172,9 +223,7 @@ export async function cancelOrderRepo(orderId) {
     });
     if (!order) throw new Error("Orden no encontrada.");
     if (!["CREATED", "PENDING_PAYMENT"].includes(order.status))
-      throw new Error(
-        "Solo pueden cancelarse órdenes pendientes o recién creadas."
-      );
+      throw new Error("Solo pueden cancelarse órdenes pendientes o recién creadas.");
 
     for (const item of order.items) {
       const { seatId, quantity, eventDateZoneId } = item;
@@ -213,6 +262,8 @@ export async function cancelOrderRepo(orderId) {
     return { orderId: Number(orderId), status: "CANCELLED" };
   });
 }
+
+// Buscar órdenes por usuario
 export const findByUserId = async (userId) => {
   return await prisma.order.findMany({
     where: { buyerUserId: userId },
@@ -244,7 +295,7 @@ export const findByUserId = async (userId) => {
             },
           },
           zone: { select: { name: true, kind: true } },
-          allocation: { select: { audienceName: true, discountPercent: true } },
+          allocation: { select: { audienceName: true } },
           seat: { select: { rowNumber: true, colNumber: true } },
         },
       },

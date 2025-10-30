@@ -5,6 +5,7 @@ import { EventuroApi } from "../api";
 import QRCode from "react-qr-code";
 import placeholder from "../assets/image-placeholder.svg";
 import RefundRequestModal from "../components/RefundRequestModal";
+import SuccessModal from "../components/SuccessModal";
 
 const CURRENCIES = { PEN: "S/.", USD: "$" };
 
@@ -38,7 +39,9 @@ function mapOrderToCard(order) {
     (order.items?.length ? `Compra de ${order.items.length} ítem(s)` : "Orden sin ítems");
 
   const image = firstItem?.eventDate?.event?.image || placeholder;
-  const when = firstItem?.eventDate?.startAt ? fmtDateTime(firstItem.eventDate.startAt) : fmtDateTime(order.createdAt);
+  const when = firstItem?.eventDate?.startAt
+    ? fmtDateTime(firstItem.eventDate.startAt)
+    : fmtDateTime(order.createdAt);
 
   return {
     id: Number(order.orderId),
@@ -120,7 +123,7 @@ export default function MisOrdenes() {
         </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_520px] gap-8">
-          {/* Lista de órdenes */}
+          {/* Lista de órdenes (izquierda) */}
           <div className="flex flex-col gap-5">
             {orders.length === 0 && (
               <div className="rounded-2xl bg-white p-6 text-gray-500 text-center">Aún no tienes órdenes.</div>
@@ -148,7 +151,7 @@ export default function MisOrdenes() {
             ))}
           </div>
 
-          {/* Detalle de la orden → estilo “ticket” */}
+          {/* Detalle de la orden (derecha) con desglose por subcategoría */}
           <div className="rounded-2xl bg-white shadow-lg border border-gray-100 p-6">
             {!selected ? (
               <p className="text-gray-400 text-center mt-20">Selecciona una orden para ver su detalle.</p>
@@ -166,11 +169,11 @@ export default function MisOrdenes() {
 function OrderDetail({ orderCard }) {
   const { user } = useAuth();
   const o = orderCard.raw;
-  const sym = orderCard.currencySymbol; // (reservado por si lo usas luego)
   const cardRef = useRef(null);
 
-  // Estado para abrir/cerrar el modal de devolución
+  // ► Estados de modales aquí (¡ANTES FALTABAN!)
   const [showRefund, setShowRefund] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   // Primer ítem como base del ticket
   const firstItem = Array.isArray(o.items) && o.items[0] ? o.items[0] : null;
@@ -184,13 +187,33 @@ function OrderDetail({ orderCard }) {
     ? "Evento presencial"
     : "Acceso virtual";
 
-  // Zona y cantidad
+  // Cantidad total & zona de referencia
   const totalQty = (o.items || []).reduce((acc, it) => acc + (it.quantity ?? 1), 0);
   const zoneText = firstItem?.seat
     ? `Palcos | Fila ${firstItem.seat.rowNumber}`
     : `Zona ${firstItem?.zone?.name ?? "General"}`;
 
-  // Valor del QR (ajústalo a tu validación real)
+  // === Desglose por Zona × Subcategoría ===
+  const pairs = (o.items || []).map((it) => ({
+    zone: it?.zone?.name ?? "General",
+    audience: it?.allocation?.audienceName ?? "General",
+    qty: it?.quantity ?? 1,
+  }));
+
+  const grouped = pairs.reduce((acc, { zone, audience, qty }) => {
+    const key = `${zone}||${audience}`;
+    acc[key] = (acc[key] || 0) + qty;
+    return acc;
+  }, {});
+
+  const breakdown = Object.entries(grouped)
+    .map(([k, q]) => {
+      const [zone, audience] = k.split("||");
+      return { zone, audience, qty: q };
+    })
+    .sort((a, b) => a.zone.localeCompare(b.zone) || a.audience.localeCompare(b.audience));
+
+  // Valor del QR
   const qrValue = `ORDER:${o.orderId};ITEM:${firstItem?.orderItemId ?? "NA"}`;
 
   // Imprimir sólo la tarjeta
@@ -204,16 +227,9 @@ function OrderDetail({ orderCard }) {
           <meta charset="utf-8"/>
           <title>Ticket</title>
           <style>
-            body{font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji","Segoe UI Emoji"; padding:16px;}
+            body{font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial; padding:16px;}
             .ticket{max-width:420px; margin:0 auto; border:1px solid #c7d2fe; border-radius:14px; padding:16px;}
             img{max-width:100%; border-radius:12px;}
-            .title{font-weight:800; font-size:22px; color:#4c1d95; margin:0 0 4px;}
-            .sub{color:#374151; font-size:13px; margin-bottom:10px;}
-            .row{display:flex; align-items:center; gap:8px; color:#111827; font-size:14px; margin:10px 0;}
-            .bold{font-weight:600;}
-            .data{font-size:14px; color:#374151;}
-            .grid{display:grid; grid-template-columns:1fr 180px; gap:16px; align-items:start; margin-top:10px;}
-            .btn{display:inline-block; margin-top:14px; background:#FACC15; color:#111827; border:0; padding:8px 14px; border-radius:10px; font-weight:600;}
           </style>
         </head>
         <body onload="window.print(); setTimeout(()=>window.close(), 50)">
@@ -243,17 +259,32 @@ function OrderDetail({ orderCard }) {
           <span className="text-sm">{location || "Ubicación"}</span>
         </div>
 
-        {/* Datos + QR */}
+        {/* Datos + QR + Desglose */}
         <div className="grid grid-cols-1 sm:grid-cols-[1fr_180px] gap-4 items-start">
           <div>
             <p className="text-sm font-semibold text-gray-900 mb-1">Datos</p>
             <p className="text-sm text-gray-700">Nombre: {user?.name || "—"}</p>
             <p className="text-sm text-gray-700">Documento: {user?.document || "—"}</p>
 
+            {/* Resumen general */}
             <div className="mt-4 text-sm text-gray-800">
               <p className="font-semibold">{zoneText}</p>
               <p>Cantidad: {totalQty}</p>
             </div>
+
+            {/* Desglose por subcategoría (DERECHA) */}
+            {breakdown.length > 0 && (
+              <div className="mt-2 text-sm text-gray-800">
+                <p className="font-semibold mb-1">Desglose por subcategoría</p>
+                <ul className="list-disc ml-5 space-y-0.5">
+                  {breakdown.map(({ zone, audience, qty }, i) => (
+                    <li key={i}>
+                      <span className="font-medium">{zone}</span> — {audience}: {qty}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
           <div className="flex sm:justify-end">
@@ -287,9 +318,21 @@ function OrderDetail({ orderCard }) {
           isOpen={showRefund}
           onClose={() => setShowRefund(false)}
           order={o}
-          onSubmitted={() => setShowRefund(false)}
+          onSubmitted={() => {
+            setShowRefund(false);
+            setShowSuccess(true); // abrir modal de éxito
+          }}
         />
       )}
+
+      {/* Modal de confirmación de envío */}
+      <SuccessModal
+        isOpen={showSuccess}
+        onClose={() => setShowSuccess(false)}
+        title="¡Solicitud enviada!"
+        message="Tu solicitud de devolución fue registrada correctamente. Te notificaremos cuando el organizador la evalúe."
+        confirmText="Entendido"
+      />
     </>
   );
 }
