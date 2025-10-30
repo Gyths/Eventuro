@@ -6,7 +6,7 @@ import {
   useLayoutEffect,
   useState,
 } from "react";
-
+import { BASE_URL } from "../../config";
 const AuthCtx = createContext();
 
 export function AuthProvider({ children }) {
@@ -24,7 +24,7 @@ export function AuthProvider({ children }) {
 
       const s = JSON.parse(raw);
       try {
-        const res = await fetch("http://localhost:4000/me", {
+        const res = await fetch(`${BASE_URL}/me`, {
           headers: { Authorization: `Bearer ${s.token}` },
         });
 

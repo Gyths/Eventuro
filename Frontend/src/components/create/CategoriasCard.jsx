@@ -7,8 +7,8 @@ import {
   ArrowRightIcon,
 } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
-
-const API_URL = "http://localhost:4000/eventuro/api/event-category";
+import { BASE_URL } from "../../config";
+const API_URL = `${BASE_URL}/eventuro/api/event-category`;
 
 export default function CategoriasCard() {
   const [categories, setCategories] = useState([]);
@@ -66,7 +66,7 @@ export default function CategoriasCard() {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
           errorData.message ||
-            `Error ${response.status}: ${response.statusText}`
+          `Error ${response.status}: ${response.statusText}`
         );
       }
       await Swal.fire({

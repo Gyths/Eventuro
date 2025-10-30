@@ -1,7 +1,7 @@
-import { loginWithCredentials,generateToken }  from '../services/auth.js';
+import { loginWithCredentials, generateToken } from '../services/auth.js';
 import bcrypt from 'bcrypt'; // borrar
 import { Buffer } from "buffer";
-
+import { config } from "../config/env.js"
 export function home(req, res) {
   res.send('<a href="/auth/google">Authenticate with Google</a>');
 }
@@ -99,7 +99,7 @@ export const googleCallback = async (req, res) => {
     const encodedUser = encodeURIComponent(JSON.stringify(userSafe));
 
     // Redirigir al frontend con token + datos
-    const redirectUrl = `http://localhost:5173/auth/callback?token=${token}&user=${encodedUser}`;
+    const redirectUrl = `${config.frontInstance}/auth/callback?token=${token}&user=${encodedUser}`;
     return res.redirect(redirectUrl);
   } catch (err) {
     console.error(" Error en login con Google:", err);
