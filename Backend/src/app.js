@@ -18,7 +18,6 @@ import ticket from "./routes/ticket.routes.js";
 import auditRoutes from "./routes/audit.routes.js";
 import discount from "./routes/discount.routes.js"
 
-
 import organizerRoutes from "./routes/organizer.routes.js";
 import defaultUserRoutes from "./routes/defaultUser.routes.js";
 
