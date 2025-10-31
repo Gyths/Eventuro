@@ -204,6 +204,7 @@ export default function DiscountCode() {
           zoneCart.totalZonePrice = zoneCart.price - totalDiscountAmount;
           zoneCart.discountsApplied = [
             {
+              discountId: discountId,
               code: code.code,
               percentage: code.value,
               discountedQty,
@@ -235,6 +236,7 @@ export default function DiscountCode() {
 
             if (discountedQty > 0) {
               discountsApplied.push({
+                discountId: code.discountId,
                 code: code.code,
                 percentage: code.value,
                 discountedQty,

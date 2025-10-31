@@ -66,21 +66,24 @@ export default function CardPaymentModal({ onClose, onSuccess, onFail }) {
 
     const form = e.target;
     !form.reportValidity();
+
+    let discountIds = [];
     if (event.shoppingCart) {
-      const items = Object.entries(event.shoppingCart).map(([zone]) => {
+      Object.entries(event.shoppingCart).map(([zoneName, zone]) => {
         if (zone.discountsApplied) {
           zone.discountsApplied.map((discount) => {
-            return discount.discountid;
+            !discountIds.includes(discount.discountId) &&
+              discountIds.push(discount.discountId);
           });
         }
       });
     }
-    console.log(items);
+    console.log(discountIds);
 
     const ticketData = {
       orderId: order.orderId,
       buyerUserId: user.userId,
-      items: items,
+      discountIds: discountIds,
     };
     console.log(ticketData);
 
@@ -92,12 +95,12 @@ export default function CardPaymentModal({ onClose, onSuccess, onFail }) {
         saveLocalStorage: true,
         storageName: "ticketData",
       });
+      console.log(response);
     } catch (err) {
       onFail();
       console.error("Error al crear al realizar la compra:", err);
       throw err;
     }
-
     onSuccess();
   }
 

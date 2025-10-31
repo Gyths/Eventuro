@@ -92,7 +92,13 @@ export default function ShoppingCart({
                                   key={discountIndex}
                                   className="grid grid-cols-[1fr_auto_auto] items-center text-black gap-4"
                                 >
-                                  <span>{"Dscto " + discount.allocation}</span>
+                                  <span>
+                                    {"Dscto " +
+                                      discount.allocation +
+                                      " (" +
+                                      discount.percentage +
+                                      "%)"}
+                                  </span>
                                   <span className="text-center">
                                     {"x" + discount.discountedQty}
                                   </span>

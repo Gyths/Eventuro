@@ -5,6 +5,7 @@ import { AnimatePresence } from "framer-motion";
 import useOrder from "../services/Order/OrderContext";
 import useEvent from "../services/Event/EventContext";
 import { useAuth } from "../services/auth/AuthContext";
+import { EventuroApi } from "../api";
 
 import ArrowButton from "../components/ArrowButton";
 import EventInfoCard from "../components/payment/EvenInfoCard";
@@ -56,6 +57,22 @@ export default function PaymentMethod() {
   const handleOptionChange = (selected) => {
     setOption(selected);
   };
+
+  //Sección para cancelar la orden de compra cuando el usuario salga de la página de compra
+  /*  async function cancelOrder() {
+    try {
+      const response = EventuroApi();
+    } catch (err) {
+      console.error("Error al crear al realizar la compra:", err);
+    }
+    console.log("Saliendo de la página de compra...");
+  }
+
+  React.useEffect(() => {
+    return () => {
+      cancelOrder(orderId);
+    };
+  }, [orderId]);*/
 
   return (
     <>
