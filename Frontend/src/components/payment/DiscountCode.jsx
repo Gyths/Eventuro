@@ -120,7 +120,7 @@ export default function DiscountCode({ userId, eventId, order, setOrder }) {
       }
     });
 
-    // Si no hay descuentos activos limpiar y restablecer totales
+    // 🧮 2️⃣ Si no hay descuentos activos → limpiar y restablecer totales
     if (appliedCodes.length === 0) {
       const restoredTotal = Object.values(updatedCart).reduce((sum, zone) => {
         if (typeof zone.totalZonePrice === "number")
