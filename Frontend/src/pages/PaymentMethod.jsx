@@ -5,7 +5,6 @@ import { AnimatePresence } from "framer-motion";
 import useOrder from "../services/Order/OrderContext";
 import useEvent from "../services/Event/EventContext";
 import { useAuth } from "../services/auth/AuthContext";
-import { EventuroApi } from "../api";
 
 import ArrowButton from "../components/ArrowButton";
 import EventInfoCard from "../components/payment/EvenInfoCard";
@@ -58,22 +57,6 @@ export default function PaymentMethod() {
     setOption(selected);
   };
 
-  //Sección para cancelar la orden de compra cuando el usuario salga de la página de compra
-  /*  async function cancelOrder() {
-    try {
-      const response = EventuroApi();
-    } catch (err) {
-      console.error("Error al crear al realizar la compra:", err);
-    }
-    console.log("Saliendo de la página de compra...");
-  }
-
-  React.useEffect(() => {
-    return () => {
-      cancelOrder(orderId);
-    };
-  }, [orderId]);*/
-
   return (
     <>
       <div className="flex flex-col bg-gray-100 min-h-screen px-10">
@@ -123,7 +106,12 @@ export default function PaymentMethod() {
               </AlertMessage>
             )}
             {/* TODO: Ingreso de código de descuento*/}
-            <DiscountCode />
+            <DiscountCode
+              userId={user.userId}
+              eventId={event.eventId}
+              order={order}
+              setOrder={setOrder}
+            />
           </div>
           {/* Carrito de compras*/}
           <div className="flex flex-col w-full lg:w-2/5 items-center sm:w-full">

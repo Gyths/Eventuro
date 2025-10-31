@@ -3,7 +3,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -342,9 +341,9 @@ model Seat {
 model EventDateZoneAllocation {
   eventDateZoneAllocationId BigInt        @id @default(autoincrement()) @db.BigInt
   eventDateZoneId           BigInt        @db.BigInt
-  audienceName              String
-  discountType              DISCOUNT_TYPE
-  discountValue             Decimal       @db.Decimal(5, 2)
+  audienceName              String 
+  discountType              DISCOUNT_TYPE @default(CASH)
+  discountValue             Decimal       @db.Decimal(5, 2) @default(0)
   allocatedQuantity         Int?
   remainingQuantity         Int?
 
@@ -414,7 +413,7 @@ model OrderItem {
   zone       EventDateZone            @relation(fields: [eventDateZoneId], references: [eventDateZoneId], onDelete: Restrict)
   seat       Seat?                    @relation(fields: [seatId], references: [seatId], onDelete: Restrict)
   allocation EventDateZoneAllocation? @relation(fields: [eventDateZoneAllocationId], references: [eventDateZoneAllocationId], onDelete: SetNull)
-  Ticket     Ticket[]
+  Ticket     Ticket[] 
 
   @@unique([seatId])
   @@index([orderId])

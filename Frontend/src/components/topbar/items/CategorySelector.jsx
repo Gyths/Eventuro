@@ -1,5 +1,4 @@
 import { useEffect, useState, useMemo } from "react";
-
 import { BASE_URL } from "../../../config.js";
 
 export default function CategorySelector({ value, onChange }) {
@@ -16,17 +15,10 @@ export default function CategorySelector({ value, onChange }) {
         setErr(null);
 
         const res = await fetch(`${BASE_URL}/eventuro/api/event-category/`);
-        const isJson = res.headers
-          .get("content-type")
-          ?.includes("application/json");
-        const payload = isJson ? await res.json().catch(() => null) : null;
-
+        const payload = (await res.json()) ?? [];
         if (!res.ok) throw new Error(payload?.error || `HTTP ${res.status}`);
         if (abort) return;
 
-        // Soporta los dos formatos:
-        // 1) [{ category: { eventCategoryId, initials, description }}, ...]
-        // 2) [{ eventCategoryId, initials, description }, ...]
         const parsed = (payload ?? [])
           .map((it) => (it?.category ? it.category : it))
           .filter(Boolean)
@@ -49,52 +41,34 @@ export default function CategorySelector({ value, onChange }) {
     };
   }, []);
 
-  const handlePick = (desc) => {
-    // toggle: si eliges la misma, limpia
-    onChange?.(value === desc ? null : desc);
-    console.log(desc);
-  };
-
-  const hasCats = cats.length > 0;
+  const handlePick = (desc) => onChange?.(value === desc ? null : desc);
   const sortedCats = useMemo(
-    () =>
-      [...cats].sort((a, b) =>
-        a.description.localeCompare(b.description, "es")
-      ),
+    () => [...cats].sort((a, b) => a.description.localeCompare(b.description, "es")),
     [cats]
   );
 
   return (
     <div className="space-y-2">
-      <p className="px-1 text-sm font-medium text-gray-700">Categorías</p>
+      <p className="text-xs font-semibold text-gray-600 mb-1">Categorías</p>
 
-      {/* estados */}
-      {loading && <div className="px-1 text-sm text-gray-500">Cargando…</div>}
-      {err && !loading && (
-        <div className="px-1 text-sm text-red-600">Error: {err}</div>
-      )}
+      {loading && <div className="text-xs text-gray-500 px-1">Cargando…</div>}
+      {err && !loading && <div className="text-xs text-red-600 px-1">Error: {err}</div>}
 
-      {/* listado */}
       {!loading && !err && (
         <>
-          {hasCats ? (
-            <div className="grid grid-cols-2 gap-2">
+          {cats.length ? (
+            <div className="flex flex-wrap gap-2">
               {sortedCats.map((c) => {
-                const active = value === c.description; // seguimos usando description como valor
+                const active = value === c.description;
                 return (
                   <button
                     key={c.id}
                     onClick={() => handlePick(c.description)}
-                    className={`rounded-xl px-3 py-2 text-sm shadow ${
+                    className={`px-3 py-1 text-xs rounded-full transition-all border ${
                       active
-                        ? "bg-violet-600 text-white"
-                        : "bg-gray-50 text-gray-800 hover:bg-gray-100"
+                        ? "bg-violet-600 text-white border-violet-600"
+                        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
                     }`}
-                    title={
-                      c.initials
-                        ? `${c.description} (${c.initials})`
-                        : c.description
-                    }
                   >
                     {c.description}
                   </button>
@@ -102,17 +76,14 @@ export default function CategorySelector({ value, onChange }) {
               })}
             </div>
           ) : (
-            <div className="px-1 text-sm text-gray-500">
-              No hay categorías disponibles.
-            </div>
+            <div className="text-xs text-gray-500">No hay categorías.</div>
           )}
 
-          {/* limpiar */}
-          <div className="pt-1 text-right">
+          <div className="text-right">
             <button
               type="button"
               onClick={() => onChange?.(null)}
-              className="text-xs text-gray-500 underline underline-offset-2 hover:text-gray-700"
+              className="text-xs text-gray-500 underline hover:text-gray-700"
             >
               Limpiar
             </button>

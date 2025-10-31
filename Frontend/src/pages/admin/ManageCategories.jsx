@@ -8,10 +8,10 @@ import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import Swal from "sweetalert2";
-import { BASE_URL } from "../../config";
+
 import AddCategoryModal from "../../components/create/AddCategoryModal";
 
-const API_URL = `${BASE_URL}/eventuro/api/event-category`;
+const API_URL = "http://localhost:4000/eventuro/api/event-category";
 
 export default function ManageCategories() {
   const [categories, setCategories] = useState([]);

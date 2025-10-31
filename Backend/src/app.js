@@ -18,6 +18,7 @@ import ticket from "./routes/ticket.routes.js";
 import auditRoutes from "./routes/audit.routes.js";
 import discount from "./routes/discount.routes.js"
 
+
 import organizerRoutes from "./routes/organizer.routes.js";
 import defaultUserRoutes from "./routes/defaultUser.routes.js";
 
@@ -31,7 +32,7 @@ const upload = multer({ storage: multer.memoryStorage() }); // memoria
 
 app.use(
   cors({
-    origin: `${config.frontInstance}`,
+    origin: `http://${config.frontInstance}:5173`,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true, // Permite el intercambio de cookies de sesión
   })
