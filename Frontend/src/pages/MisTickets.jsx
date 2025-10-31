@@ -5,7 +5,7 @@ import { EventuroApi } from "../api";
 import QRCode from "react-qr-code";
 import placeholder from "../assets/image-placeholder.svg";
 import RefundRequestModal from "../components/RefundRequestModal";
-
+import SuccessModal from "../components/SuccessModal";
 
 const CURRENCIES = { PEN: "S/.", USD: "$" };
 
