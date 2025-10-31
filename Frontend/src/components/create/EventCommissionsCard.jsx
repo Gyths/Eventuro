@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { BanknotesIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import Swal from "sweetalert2";
-
-const EVENTS_API_URL = "http://localhost:4000/eventuro/api/event/list";
-const FEE_API_URL = "http://localhost:4000/eventuro/api/event";
+import { BASE_URL } from "../../config";
+const EVENTS_API_URL = `${BASE_URL}/eventuro/api/event/list`;
+const FEE_API_URL = `${BASE_URL}/eventuro/api/event`;
 
 export default function EventCommissionsCard() {
   const [events, setEvents] = useState([]);

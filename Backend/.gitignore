@@ -12,3 +12,7 @@ src/generated/prisma
 
 /src/prisma/migrations/*
 !/src/prisma/migrations/*.toml
+
+log/
+/log/
+/*.log

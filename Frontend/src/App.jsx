@@ -10,7 +10,8 @@ import BannerCarousel from "./components/BannerCarousel";
 
 import { Routes, Route } from "react-router-dom";
 import RootLayout from "./layout/RootLayout";
-
+import HomePublic from "./pages/HomePublic";
+import HomePrivate from "./pages/HomePrivate";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import PaymentMethod from "./pages/PaymentMethod";

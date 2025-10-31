@@ -1,7 +1,11 @@
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 import { createEventSvc } from "../services/event.service.js";
 import { listEventSvc } from "../services/event.service.js";
 import { listAvailableTicketsSvc } from "../services/event.service.js";
-import { setEventFeeSvc } from '../services/event.service.js';
+import { setEventFeeSvc } from "../services/event.service.js";
 import { _getEventDetails } from "../services/event.service.js";
 import { _listEventsByOrganizer } from "../services/event.service.js";
 import { toJSONSafe } from "../utils/serialize.js";
@@ -34,12 +38,29 @@ export async function listEvent(req, res) {
 export async function listAvailableTickets(req, res) {
   try {
     const availableTickets = await listAvailableTicketsSvc(req.body);
+    for (const eventDate of availableTickets.dates) {
+      for (const zone of eventDate.zoneDates) {
+        for (const allocation of zone.allocations) {
+          if (allocation.discountType === "PERCENTAGE")
+            allocation.price =
+              parseInt(zone.basePrice) *
+              (1 - parseInt(allocation.discountValue) / 100);
+          if (allocation.discountType === "CASH")
+            allocation.price =
+              parseInt(zone.basePrice) - parseInt(allocation.discountValue);
+        }
+      }
+    }
     return res.status(201).json(toJSONSafe(availableTickets));
   } catch (err) {
     return res.status(400).json({ error: err.message });
   }
 }
 
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 export async function setEventFee(req, res, next) {
   try {
     const { id } = req.params;
@@ -47,8 +68,8 @@ export async function setEventFee(req, res, next) {
     const data = await setEventFeeSvc({ id, percentage });
     return res.status(200).json(toJSONSafe(data));
   } catch (err) {
-    if (err?.code === 'P2025') {
-      return res.status(404).json({ message: 'El evento no existe.' });
+    if (err?.code === "P2025") {
+      return res.status(404).json({ message: "El evento no existe." });
     }
     return next(err);
   }

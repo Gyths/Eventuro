@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -341,9 +342,9 @@ model Seat {
 model EventDateZoneAllocation {
   eventDateZoneAllocationId BigInt        @id @default(autoincrement()) @db.BigInt
   eventDateZoneId           BigInt        @db.BigInt
-  audienceName              String 
-  discountType              DISCOUNT_TYPE @default(CASH)
-  discountValue             Decimal       @db.Decimal(5, 2) @default(0)
+  audienceName              String
+  discountType              DISCOUNT_TYPE
+  discountValue             Decimal       @db.Decimal(5, 2)
   allocatedQuantity         Int?
   remainingQuantity         Int?
 
