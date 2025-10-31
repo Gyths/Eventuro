@@ -388,6 +388,7 @@ export default function CrearEventoCards() {
             startAt: startDateISO,
             endAt: endDateISO,
             percentage: percentage,
+            ticketLimit: season.ticketLimit ? Number(season.ticketLimit) : null,
           };
         });
 
@@ -519,6 +520,7 @@ export default function CrearEventoCards() {
         isIncrease: false,
         startDate: "",
         endDate: "",
+        ticketLimit: "",
       },
     ],
   });
@@ -646,6 +648,7 @@ export default function CrearEventoCards() {
           isIncrease: phase.percentage > 0,
           startDate: formatDate(startDate),
           endDate: formatDate(endDate),
+          ticketLimit: phase.ticketLimit ? String(phase.ticketLimit) : "",
         };
       });
 
