@@ -20,7 +20,8 @@ export async function createTicketCtrl(req, res) {
 
     const result = await createTicketSvc({
       orderId: BigInt(req.body.orderId),
-      buyerUserId: sessionUserId ? BigInt(sessionUserId) : BigInt(req.body.buyerUserId)
+      buyerUserId: sessionUserId ? BigInt(sessionUserId) : BigInt(req.body.buyerUserId),
+      discountIds: req.body.discountIds || []
     });
 
     return res.status(201).json(toJSONSafe(result));

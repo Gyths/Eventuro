@@ -839,6 +839,13 @@ export default function CrearEventoCards() {
           "El precio por zona debe ser un número mayor que 0.";
       }
 
+      // variable para comparar capacidad del recinto
+      const aforo = Number(location.capacity || 0);
+      // variable para comparar la cantidad total de tickets
+      const totalTickets = zones.reduce(
+        (sum, z) => sum + Number(z.quantity || 0),
+        0
+      );
       if (!newErrors.tickets) {
         const zones = tickets.zones || [];
         const pricingErrors = [];

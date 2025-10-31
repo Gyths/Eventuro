@@ -3,7 +3,6 @@ import { PrismaClient } from "@prisma/client";
 // Si usaras el default, sería: import { PrismaClient } from '@prisma/client';
 import { auditMiddleware } from "../middlewares/auditLogger.js";
 
-
 const globalForPrisma = globalThis;
 export const prisma =
   globalForPrisma.prisma ??
