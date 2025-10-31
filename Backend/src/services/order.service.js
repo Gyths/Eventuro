@@ -1,6 +1,6 @@
 import { createOrderRepo } from '../repositories/order.repo.js';
 import { cancelOrderRepo } from '../repositories/order.repo.js';
-import { findByUserId } from '../repositories/order.repo.js';
+
 export async function createOrderSvc(input, ctx = {}) {
 
   if (!input || !Array.isArray(input.items) || input.items.length === 0) {
@@ -26,6 +26,3 @@ export async function cancelOrderSvc(orderId) {
   }
   return await cancelOrderRepo(orderId);
 }
-export const getOrdersByUser = async (userId) => {
-  return await findByUserId(userId);
-};

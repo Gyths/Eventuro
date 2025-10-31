@@ -10,6 +10,7 @@ export async function validateDiscount(req, res) {
     if (!result.valid) {
       return res.status(400).json({
         success: false,
+        errorCode: result.code,
         message: result.reason,
         ...(result.eligibleDetail ? { eligibleDetail: result.eligibleDetail } : {}),
       });
