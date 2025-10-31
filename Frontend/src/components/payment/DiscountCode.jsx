@@ -216,22 +216,25 @@ export default function DiscountCode({ userId, eventId, order, setOrder }) {
   }, [appliedCodes, order?.subtotal]);
 
   return (
-    <div className="flex flex-col">
-      <div className="w-full max-w-lg mt-6 pb-2">
-        <p className="font-medium mb-2">{DISCOUNT_CODE_TEXTS.title}</p>
-        <div className="flex gap-2">
-          <input
-            onChange={handleChange}
-            type="text"
-            placeholder="Código de descuento aquí"
-            className="flex-1 border rounded px-3 py-2"
-          />
-          <button
-            onClick={handleDiscount}
-            className="bg-yellow-400 text-white px-4 rounded hover:bg-yellow-500 transition-transform duration-200 active:scale-102"
-          >
-            Agregar
-          </button>
+    <>
+      <div className="flex flex-col">
+        <div className="w-full max-w-lg mt-6 pb-2">
+          <p className="font-medium mb-2">{DISCOUNT_CODE_TEXTS.title}</p>
+          <div className="flex gap-2">
+            <input
+              id="discount-code-input"
+              onChange={handleChange}
+              type="text"
+              placeholder="Código de descuento aquí"
+              className="flex-1 border rounded px-3 py-2"
+            />
+            <button
+              onClick={handleDiscount}
+              className="bg-yellow-400 text-white px-4 rounded cursor-pointer hover:scale-103 hover:bg-yellow-500 transition-all duration-200 active:scale-102"
+            >
+              Agregar
+            </button>
+          </div>
         </div>
       </div>
       {showDiscountCodeAlert && (
@@ -239,6 +242,6 @@ export default function DiscountCode({ userId, eventId, order, setOrder }) {
           {DISCOUNT_CODE_TEXTS.alerts[0]}
         </AlertMessage>
       )}
-    </div>
+    </>
   );
 }
