@@ -26,9 +26,8 @@ export function upsertOrganizerRepo({ userId, idType, idNumber, companyName, sta
 
 export async function getUserAndAdminRepo(userId) {
   const [user, admin] = await Promise.all([
-    prisma.user.findUnique({ where: { userId: toBI(userId) }, select: { userId: true, name: true, lastName: true, email: true } }),
-    prisma.administrator.findUnique({ where: { userId: toBI(userId) }, select: { administratorId: true } }),
+    prisma.user.findUnique({ where: { userId: toBI(userId) }, select: { userId:true, name:true, lastName:true, email:true } }),
+    prisma.administrator.findUnique({ where: { userId: toBI(userId) }, select: { administratorId:true } }),
   ]);
   return { user, isAdmin: !!admin };
 }
-

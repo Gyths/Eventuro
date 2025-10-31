@@ -1,7 +1,8 @@
 // src/utils/prisma.js
-import { PrismaClient } from "../generated/prisma/index.js";
+import { PrismaClient } from "@prisma/client";
 // Si usaras el default, sería: import { PrismaClient } from '@prisma/client';
 import { auditMiddleware } from "../middlewares/auditLogger.js";
+
 
 const globalForPrisma = globalThis;
 export const prisma =

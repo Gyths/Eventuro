@@ -33,7 +33,7 @@ export default function UserMenu() {
   };
 
   return (
-    <div className="relative flex flex-row gap-2 items-center" ref={ref}>
+    <div className="relative flex flex-row gap-2 items-center z-[999]" ref={ref}>
       <button
         onClick={() => setOpen((o) => !o)}
         className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white hover:bg-white/15"
@@ -44,14 +44,12 @@ export default function UserMenu() {
       <span className="text-white">{user.name}</span>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white p-2 shadow-xl">
-          <MenuItem text="Configuración" onClick={() => go(profileRoute)} />
+        <div
+          className="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-white p-2 shadow-xl z-[9999]"
+        >
+          {/*<MenuItem text="Configuración" onClick={() => go(profileRoute)} />*/}
           <MenuItem text="Mis tickets" onClick={() => go(myTicketsRoute)} />
-          <MenuItem
-            text="Mi calendario"
-            onClick={() => go(calendarRoute)}
-          />{" "}
-          {/* NUEVO */}
+          <MenuItem text="Mi calendario" onClick={() => go(calendarRoute)} />
           <MenuItem text="Reclamos" onClick={() => go(claimsRoute)} />
           <div className="my-1 h-px bg-gray-100" />
           <MenuItem
