@@ -8,6 +8,7 @@ export default function SeatNumberSelectionModal({
   setModal,
   seatMap,
   zoneIndex,
+  capacityRemaining,
   allocationIndex = null,
   notAllocatedSeatedQuantities = [],
   setNotAllocatedSeatedQuantities,
@@ -34,7 +35,7 @@ export default function SeatNumberSelectionModal({
         let selectedPlaceholder = selectedSeats;
         if (selectedPlaceholder.includes(seatNum)) {
           return selectedPlaceholder.filter((s) => s !== seatNum);
-        } else {
+        } else if (selectedSeats.length + 1 <= capacityRemaining) {
           return [...selectedPlaceholder, seatNum];
         }
       });
