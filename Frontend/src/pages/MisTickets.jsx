@@ -5,7 +5,6 @@ import { EventuroApi } from "../api";
 import QRCode from "react-qr-code";
 import placeholder from "../assets/image-placeholder.svg";
 import RefundRequestModal from "../components/RefundRequestModal";
-import SuccessModal from "../components/SuccessModal";
 
 const CURRENCIES = { PEN: "S/.", USD: "$" };
 
@@ -502,15 +501,6 @@ function OrderDetail({ orderCard }) {
           }}
         />
       )}
-
-      {/* Modal de confirmación de envío */}
-      <SuccessModal
-        isOpen={showSuccess}
-        onClose={() => setShowSuccess(false)}
-        title="¡Solicitud enviada!"
-        message="Tu solicitud de devolución fue registrada correctamente. Te notificaremos cuando el organizador la evalúe."
-        confirmText="Entendido"
-      />
     </>
   );
 }
