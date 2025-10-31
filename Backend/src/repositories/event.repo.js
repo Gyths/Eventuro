@@ -2,7 +2,7 @@ import { create } from "domain";
 import { dmmfToRuntimeDataModel } from "../generated/prisma/runtime/library.js";
 import { prisma } from "../utils/prisma.js";
 import { uploadFile, getSignedUrlForFile } from "../utils/s3.js";
-import { skip } from "@prisma/client/runtime/library";
+import { skip } from "../generated/prisma/runtime/library.js";
 
 export async function createEventRepo(input) {
   return prisma.$transaction(async (tx) => {
