@@ -1,5 +1,5 @@
 // src/utils/prisma.js
-import { PrismaClient } from '../generated/prisma/index.js';
+import { PrismaClient } from "../generated/prisma/index.js";
 // Si usaras el default, sería: import { PrismaClient } from '@prisma/client';
 import { auditMiddleware } from "../middlewares/auditLogger.js";
 

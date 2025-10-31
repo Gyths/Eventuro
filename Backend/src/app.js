@@ -31,7 +31,7 @@ const upload = multer({ storage: multer.memoryStorage() }); // memoria
 
 app.use(
   cors({
-    origin: `http://${config.frontInstance}:5173`,
+    origin: `${config.frontInstance}`,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true, // Permite el intercambio de cookies de sesión
   })
