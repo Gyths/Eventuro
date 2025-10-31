@@ -574,7 +574,7 @@ export default function CrearEventoCards() {
 
     // Mapear ubicación
     setLocation({
-      inPerson: true,
+      inPerson: Boolean(eventData.in),
       city: eventData.venue.city,
       address: eventData.venue.address,
       reference: eventData.venue.reference,
@@ -608,15 +608,20 @@ export default function CrearEventoCards() {
     });
     setDates(mappedDates);
 
-    // Mapear tickets/zonas
     const mappedZones = eventData.zones.map((zone) => ({
       zoneName: zone.name,
       quantity: String(zone.capacity),
       price: String(zone.basePrice),
-      subtypes: zone.allocations.map((alloc) => ({
-        type: alloc.audienceName,
-        discount: String(alloc.discountPercent),
-      })),
+      subtypes: zone.allocations.map((alloc) => {
+        const pricingMode = alloc.pricingMode; 
+        
+        return {
+          type: alloc.audienceName,
+          pricingMode: pricingMode,
+          discount: pricingMode === 'percent' ? String(alloc.discountValue) : '',
+          newPrice: pricingMode === 'newPrice' ? String(alloc.discountValue) : '',
+        };
+      }),
     }));
 
     setTickets((prev) => ({

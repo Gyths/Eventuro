@@ -75,22 +75,18 @@ export default function CopyConfigModal({ isOpen, onClose, onSelectEvent, idOrga
     try {
       //Obtener el payload completo del backend
       const payload = await fetchEventDetails(selectedEventId);
-      
-      // Aplanamiento de Zonas
-      const allZones = payload.dates?.flatMap(date => 
-          date.zoneDates?.map(zoneDate => ({
-            name: zoneDate.name,
-            currency: zoneDate.currency,
-            basePrice: zoneDate.basePrice,
-            capacity: Number(zoneDate.capacity),
-            allocations: zoneDate.allocations?.map(alloc => ({
-                audienceName: alloc.audienceName,
-                discountPercent: alloc.discountPercent,
-                allocatedQuantity: alloc.allocatedQuantity,
-            })) || [],
-            // No se incluye seatMap aquí 
-          })) || []
-      ) || [];
+    
+      const allZones = payload.dates?.[0]?.zoneDates?.map(zoneDate => ({
+        name: zoneDate.name,
+        currency: zoneDate.currency,
+        basePrice: zoneDate.basePrice,
+        capacity: Number(zoneDate.capacity),
+        allocations: zoneDate.allocations?.map(alloc => ({
+            audienceName: alloc.audienceName,
+            pricingMode: alloc.discountType === 'CASH' ? 'newPrice' : 'percent',
+            discountValue: alloc.discountValue,
+        })) || [],
+      })) || [];
 
 
       // Construcción del objeto de configuración
