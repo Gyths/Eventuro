@@ -1,6 +1,7 @@
 import React from "react";
 import BaseModal from "../BaseModal";
 import { useNavigate } from "react-router-dom";
+import { TICKET_SELECTION_TEXTS } from "../payment/texts";
 
 import useEvent from "../../services/Event/EventContext";
 import useOrder from "../../services/Order/OrderContext";
@@ -60,6 +61,7 @@ export default function SelectAllocationModal({
   const [allocatedSeatedQuantities, setAllocatedSeatedQuantities] =
     React.useState(() => selectedData.zoneDates.map(() => ({})));
 
+  const [errorMessage, setErrorMessage] = React.useState("");
   const [subtotal, setSubtotal] = React.useState(0);
   const [seatMap, setSeatMap] = React.useState(null);
   const [zoneIndex, setZoneIndex] = React.useState(null);
@@ -399,7 +401,15 @@ export default function SelectAllocationModal({
       navigate(paymentPage);
     } catch (err) {
       console.error("Error al consultar disponibilidad:", err);
-      setShowAlertMessage(true);
+      try {
+        const error = JSON.parse(err.message.split(": ")[1]);
+        setErrorMessage(error.error);
+        setShowAlertMessage(true);
+        console.log(error.error);
+      } catch {
+        console.warn("No se pudo parsear el JSON del error:", err.message);
+      }
+
       throw err;
     }
   };
@@ -597,7 +607,7 @@ export default function SelectAllocationModal({
               </button>
               {showAlertMessage && (
                 <AlertMessage id={zoneIndex}>
-                  Ha ocurrido un error inesperado
+                  {TICKET_SELECTION_TEXTS.alerts[errorMessage]}
                 </AlertMessage>
               )}
             </div>
