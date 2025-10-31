@@ -272,7 +272,7 @@ export async function createOrderRepo(input) {
           endAt: { gte: now },
         },
       });
-      if (!phase) throw new Error("No hay fase de venta activa.");
+      //if (!phase) throw new Error("No hay fase de venta activa.");
 
       // Si tendrá allocation, calculamos el precio de la entrada para la allocation de dicha zona
       if (allocation) {
@@ -285,19 +285,19 @@ export async function createOrderRepo(input) {
           price = price * (1 - discountValue / 100);
         }
       }
+      if(phase){
+        // Validamos límite de entradas por usuario
+        if (quantity > phase.ticketLimit) {
+          throw new Error(
+            `Solo se cuentan con ${phase.ticketLimit} entradas para esta fase.`
+          );
+        }
 
-      // Validamos límite de entradas por usuario
-      if (quantity > phase.ticketLimit) {
-        throw new Error(
-          `Solo se cuentan con ${phase.ticketLimit} entradas para esta fase.`
-        );
+        // Aplicamos porcentaje de la fase que puede aumentar, disminuir el precio
+        if (phase.percentage !== 0) {
+          price = price * (1 + phase.percentage / 100);
+        }
       }
-
-      // Aplicamos porcentaje de la fase que puede aumentar, disminuir el precio
-      if (phase.percentage !== 0) {
-        price = price * (1 + phase.percentage / 100);
-      }
-
       // Calcular subtotal y total final para las ordenes de compra
       const subtotal = price * quantity;
       const discountAmount = (price * quantity) - subtotal;
