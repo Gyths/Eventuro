@@ -44,7 +44,7 @@ export default function UserMenu() {
       <span className="text-white">{user.name}</span>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white p-2 shadow-xl">
+        <div className="fixed right-2 top-[64px] w-36 rounded-2xl bg-white p-2 shadow-xl z-50">
           <MenuItem text="Configuración" onClick={() => go(profileRoute)} />
           <MenuItem text="Mis tickets" onClick={() => go(myTicketsRoute)} />
           <MenuItem
