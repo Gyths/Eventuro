@@ -2,10 +2,11 @@
 import placeholder from "../assets/DefaultEvent.webp";
 import { useEffect, useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
+import BannerCarousel from "../components/BannerCarousel.jsx";
 import EventCard from "../components/EventCard.jsx";
 import { v4 as uuidv4 } from "uuid";
 import { BASE_URL } from "../config.js";
-import BannerCarousel from "../components/BannerCarousel.jsx"
+
 const imagesDemo = [
   "/banners/banner1.jpg",
   "/banners/banner2.jpg",
@@ -40,17 +41,8 @@ function humanizeAddress(venue) {
   );
 }
 
-// Normaliza texto (minúsculas, sin acentos) para comparar
-function norm(s) {
-  return (s || "")
-    .toString()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "");
-}
-
 export default function Home() {
-  const { filters } = useOutletContext(); // { query, category, dateFrom, dateTo, location }
+  const { filters } = useOutletContext();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState(null);
@@ -72,16 +64,25 @@ export default function Home() {
         if (abort) return;
 
         const mapped = (payload ?? []).map((ev) => {
-          // Fechas (rango real a partir de todas las fechas)
+          // === Tomar TODAS las fechas y armar rango ===
           const all = (ev.dates ?? [])
             .map((d) => ({
               start: d.startAt ? new Date(d.startAt) : null,
-              end: d.endAt ? new Date(d.endAt) : d.startAt ? new Date(d.startAt) : null,
+              end: d.endAt
+                ? new Date(d.endAt)
+                : d.startAt
+                ? new Date(d.startAt)
+                : null,
             }))
             .filter((x) => x.start);
 
-          const minStart = all.length ? all.reduce((a, b) => (a.start < b.start ? a : b)).start : null;
-          const maxEnd = all.length ? all.reduce((a, b) => (a.end > b.end ? a : b)).end : null;
+          // Si no hay fechas válidas, evitar crashear
+          const minStart = all.length
+            ? all.reduce((a, b) => (a.start < b.start ? a : b)).start
+            : null;
+          const maxEnd = all.length
+            ? all.reduce((a, b) => (a.end > b.end ? a : b)).end
+            : null;
 
           // YYYY-MM-DD en UTC (evita “correr” el día por TZ)
           const toYMD = (d) =>
@@ -89,7 +90,7 @@ export default function Home() {
           const startDate = toYMD(minStart);
           const endDate = toYMD(maxEnd);
 
-          // Hora (de la primera fecha) en UTC para consistencia
+          // Hora de la PRIMERA fecha (minStart). Usa UTC para consistencia con toYMD.
           const hour = minStart
             ? new Date(minStart).toLocaleTimeString("es-PE", {
                 hour: "2-digit",
@@ -110,8 +111,8 @@ export default function Home() {
             hour,
             location,
             locationUrl: ev.venue?.addressUrl,
-            image: ev.imagePrincipalURLSigned ?? placeholder,
-            bannerEv: ev.imageBannerURLSigned ?? placeholder,
+            image: ev.imagePrincipalURLSigned ?? placeholder, //imagen principal evento
+            bannerEv: ev.imageBannerURLSigned ?? placeholder, //imagen banner evento
             categories: ev.categories,
             accessPolicy: ev.accessPolicy,
             accessPolicyDescription: ev.accessPolicyDescription,
@@ -131,37 +132,21 @@ export default function Home() {
     };
   }, []);
 
-  // === Filtros del TopBar + búsqueda ===
+  // === Filtros del TopBar ===
   const filteredEvents = useMemo(() => {
-    const q = norm(filters?.query || "");
-    const cat = norm(filters?.category || "");
-    const loc = norm(filters?.location || "");
-    const from = filters?.dateFrom || null; // YYYY-MM-DD
-    const to = filters?.dateTo || null;     // YYYY-MM-DD
-
     return events.filter((e) => {
-      // Búsqueda: por título, descripción y ciudad/ubicación
-      const matchQuery = q
-        ? norm(e.titulo).includes(q) ||
-          norm(e.description).includes(q) ||
-          norm(e.location).includes(q)
-        : true;
+      let ok = true;
 
-      // Categoría: alguna categoría con descripción exacta (case-insensitive)
-      const matchCat = cat
-        ? (e.categories || []).some(
-            (c) => norm(c?.category?.description) === cat
-          )
-        : true;
+      if (filters.category) {
+        ok =
+          ok &&
+          e.categories?.some(
+            (c) =>
+              c.category?.description?.toLowerCase() ===
+              filters.category.toLowerCase()
+          );
+      }
 
-      // Ubicación contiene
-      const matchLoc = loc ? norm(e.location).includes(loc) : true;
-
-      // Fechas: strings YYYY-MM-DD se pueden comparar lexicográficamente
-      const start = e.startDate || e.endDate || null;
-      const end = e.endDate || e.startDate || null;
-      const matchFrom = from ? (end && end >= from) : true;
-      const matchTo = to ? (start && start <= to) : true;
       if (filters.location) {
         ok =
           ok &&
@@ -178,7 +163,7 @@ export default function Home() {
           ok &&
           new Date(e.endDate ?? e.startDate ?? 0) <= new Date(filters.dateTo);
 
-      return matchQuery && matchCat && matchLoc && matchFrom && matchTo;
+      return ok;
     });
   }, [events, filters]);
 
@@ -217,8 +202,8 @@ export default function Home() {
                   description={e.description}
                   location={e.location}
                   locationUrl={e.locationUrl}
-                  startDate={e.startDate}
-                  endDate={e.endDate}
+                  startDate={e.startDate} // YYYY-MM-DD (minStart)
+                  endDate={e.endDate} // YYYY-MM-DD (maxEnd)
                   hour={e.hour}
                   categories={e.categories}
                   accessPolicy={e.accessPolicy}

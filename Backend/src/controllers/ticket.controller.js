@@ -1,7 +1,6 @@
 import { createTicketSvc } from '../services/ticket.service.js';
 import { updateTicketSvc } from '../services/ticket.service.js';
 import { toJSONSafe } from '../utils/serialize.js';
-import {getTicketsByUser} from '../services/ticket.service.js';
 import { requestTicketRefundSvc } from '../services/ticket.service.js';
 import { listRefundSolicitationsSvc } from '../services/ticket.service.js';
 import { approveRefundSvc, rejectRefundSvc } from '../services/ticket.service.js';
@@ -20,7 +19,8 @@ export async function createTicketCtrl(req, res) {
 
     const result = await createTicketSvc({
       orderId: BigInt(req.body.orderId),
-      buyerUserId: sessionUserId ? BigInt(sessionUserId) : BigInt(req.body.buyerUserId)
+      buyerUserId: sessionUserId ? BigInt(sessionUserId) : BigInt(req.body.buyerUserId),
+      discountIds: req.body.discountIds || []
     });
 
     return res.status(201).json(toJSONSafe(result));
@@ -54,41 +54,6 @@ export async function updateTicketCtrl(req, res) {
   }
 }
 
-if (!('toJSON' in BigInt.prototype)) {
-  // eslint-disable-next-line no-extend-native
-  BigInt.prototype.toJSON = function () { return this.toString(); };
-}
-
-export const getTicketsByUserCtrl = async (req, res, next) => {
-  try {
-    const { userId } = req.params;
-
-    const {
-      page = '1',
-      pageSize = '20',
-      status,        // TICKET_STATUS: PAID|CANCELLED|USED|EXPIRED
-      upcoming,      // 'true' => solo futuros
-      from,          // ISO date
-      to,            // ISO date
-      order = 'desc' // 'asc' | 'desc' por issuedAt
-    } = req.query;
-
-    const result = await getTicketsByUser({
-      userId,
-      page: Number(page),
-      pageSize: Number(pageSize),
-      status,
-      upcoming: upcoming === 'true',
-      from,
-      to,
-      order
-    });
-
-    return res.json(result);
-  } catch (err) {
-    next(err);
-  }
-};
 export async function requestTicketRefundCtrl(req, res) {
   try {
     const ticketId = BigInt(req.params.ticketId);

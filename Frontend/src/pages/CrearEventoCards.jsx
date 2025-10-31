@@ -26,8 +26,6 @@ import { BASE_URL } from "../config.js";
 //Copiar Configuracion
 import CopyConfigModal from "../components/create/CopyConfigModal";
 
-import { useAuth } from "../services/auth/AuthContext";
-
 function WizardCard({ title, subtitle, badge, children }) {
   return (
     <div className="relative rounded-[28px] bg-gray-100 p-6 sm:p-7 lg:p-10 shadow-[0_10px_30px_rgba(0,0,0,0.08)]">
@@ -120,9 +118,9 @@ export default function CrearEventoCards() {
   const { form, updateForm, updateRestrictions, imagePreview, bannerPreview } =
     useEventForm();
   const [dates, setDates] = useState([]); // [{id, date: Date|ISO, schedules:[{id,start,end}]}]
-  const { user } = useAuth();
   const handlePrev = () => setCurrent((c) => Math.max(0, c - 1));
   const isActive = (i) => current === i;
+  const user = JSON.parse(localStorage.getItem("userData"));
 
   // Paso 2 — Ubicación (estado en el padre)
   const [location, setLocation] = useState({
@@ -197,7 +195,6 @@ export default function CrearEventoCards() {
           isIncrease: false,
           startDate: "",
           endDate: "",
-          ticketLimit: "",
         },
       ],
     });
@@ -223,42 +220,8 @@ export default function CrearEventoCards() {
 
   //###### GENERADOR DEL JSON PARA POST A LA BD ##########
   const generateAndPostJson = async () => {
-    console.log(
-      "Datos COMPLETOS del usuario al publicar:",
-      JSON.stringify(user, null, 2)
-    );
-    console.log(
-      "IDs de categorías que se están enviando:",
-      JSON.stringify(form.categories, null, 2)
-    );
     try {
       setPosting(true);
-
-      const organizerId = user?.organizer?.organizerId;
-
-      if (!organizerId) {
-        await Swal.fire({
-          icon: "error",
-          title: "Error de Usuario",
-          text: "No se pudo leer el ID de Organizador (user.organizer.organizerId está nulo). Revisa la consola.",
-          confirmButtonText: "Entendido",
-        });
-        setPosting(false); // Detener el spinner
-        return; // Detener la función aquí
-      }
-
-      const numericOrganizerId = Number(organizerId);
-
-      if (isNaN(numericOrganizerId)) {
-        await Swal.fire({
-          icon: "error",
-          title: "Error de ID",
-          text: `Tu ID de organizador ("${organizerId}") no es un número válido.`,
-          confirmButtonText: "Entendido",
-        });
-        setPosting(false);
-        return;
-      }
 
       // ====== construir el JSON (tu mismo código adaptado) ======
       const toYMD = (d) => {
@@ -409,7 +372,6 @@ export default function CrearEventoCards() {
             startAt: startDateISO,
             endAt: endDateISO,
             percentage: percentage,
-            ticketLimit: season.ticketLimit ? Number(season.ticketLimit) : null,
           };
         });
 
@@ -432,7 +394,7 @@ export default function CrearEventoCards() {
       });
 
       const finalJson = {
-        organizerId: numericOrganizerId,
+        organizerId: 1,
         title: form.name,
         inPerson: location.inPerson === false ? false : true,
         description: form.description,
@@ -457,7 +419,7 @@ export default function CrearEventoCards() {
       const formData = new FormData();
 
       // Datos simples (texto)
-      formData.append("organizerId", numericOrganizerId);
+      formData.append("organizerId", 1);
       formData.append("title", form.name);
       formData.append("inPerson", String(location.inPerson === true));
       formData.append("description", form.description);
@@ -564,7 +526,6 @@ export default function CrearEventoCards() {
         isIncrease: false,
         startDate: "",
         endDate: "",
-        ticketLimit: "",
       },
     ],
   });
@@ -652,15 +613,13 @@ export default function CrearEventoCards() {
       quantity: String(zone.capacity),
       price: String(zone.basePrice),
       subtypes: zone.allocations.map((alloc) => {
-        const pricingMode = alloc.pricingMode;
-
+        const pricingMode = alloc.pricingMode; 
+        
         return {
           type: alloc.audienceName,
           pricingMode: pricingMode,
-          discount:
-            pricingMode === "percent" ? String(alloc.discountValue) : "",
-          newPrice:
-            pricingMode === "newPrice" ? String(alloc.discountValue) : "",
+          discount: pricingMode === 'percent' ? String(alloc.discountValue) : '',
+          newPrice: pricingMode === 'newPrice' ? String(alloc.discountValue) : '',
         };
       }),
     }));
@@ -692,7 +651,6 @@ export default function CrearEventoCards() {
           isIncrease: phase.percentage > 0,
           startDate: formatDate(startDate),
           endDate: formatDate(endDate),
-          ticketLimit: phase.ticketLimit ? String(phase.ticketLimit) : "",
         };
       });
 
@@ -712,11 +670,6 @@ export default function CrearEventoCards() {
   //Validaciones
   const validateStep = (stepIndex) => {
     const newErrors = {};
-
-    const totalTicketsInZones = (tickets.zones || []).reduce((sum, z) => {
-      const q = Number(z.quantity || 0);
-      return sum + (isNaN(q) ? 0 : q);
-    }, 0);
 
     if (stepIndex === 0) {
       const name = (form.name ?? "").trim(); // <-- usar form.name
@@ -797,11 +750,12 @@ export default function CrearEventoCards() {
           newErrors.address =
             "La dirección no puede tener más de 150 caracteres.";
         }
-        const capacityNum = Number(location.capacity);
-
-        if (isNaN(capacityNum) || capacityNum > 200000 || capacityNum <= 0) {
+        if (
+          Number(location.capacity) > 200000 ||
+          Number(location.capacity) <= 0
+        ) {
           newErrors.capacity =
-            "La capacidad debe ser un número válido (entre 1 y 200,000).";
+            "La capacidad debe ser un número válido (entre 0 y 200,000).";
         }
       }
 
@@ -839,6 +793,13 @@ export default function CrearEventoCards() {
           "El precio por zona debe ser un número mayor que 0.";
       }
 
+      // variable para comparar capacidad del recinto
+      const aforo = Number(location.capacity || 0);
+      // variable para comparar la cantidad total de tickets
+      const totalTickets = zones.reduce(
+        (sum, z) => sum + Number(z.quantity || 0),
+        0
+      );
       if (!newErrors.tickets) {
         const zones = tickets.zones || [];
         const pricingErrors = [];
@@ -891,24 +852,6 @@ export default function CrearEventoCards() {
         }
       }
 
-      const capacityNum = Number(location.capacity);
-
-      if (
-        !isVirtual &&
-        !isNaN(capacityNum) &&
-        capacityNum > 0 &&
-        !newErrors.tickets &&
-        !newErrors.capacity
-      ) {
-        if (totalTicketsInZones > capacityNum) {
-          newErrors.tickets = `La suma de entradas por zona (${totalTicketsInZones.toLocaleString(
-            "es-PE"
-          )}) no puede superar el aforo total del local (${capacityNum.toLocaleString(
-            "es-PE"
-          )}).`;
-        }
-      }
-
       if (tickets?.tier?.enabled) {
         const tierQty = Number(tickets.tier.qty || 0);
 
@@ -932,28 +875,6 @@ export default function CrearEventoCards() {
       if (!txt && !returnsPolicy?.file) {
         newErrors.returnsPolicy =
           "Debe escribir o subir una política de devoluciones.";
-      }
-
-      if (totalTicketsInZones > 0) {
-        const seasons = salesSeasons.seasons || [];
-        for (const season of seasons) {
-          const limitStr = (season.ticketLimit || "").trim();
-          // Solo validamos si el usuario ha puesto un límite
-          if (limitStr) {
-            const limit = Number(limitStr);
-            if (!isNaN(limit) && limit > 0 && limit > totalTicketsInZones) {
-              newErrors.salesSeasons = `El límite para la temporada "${
-                season.name || "sin nombre"
-              }" (${limit.toLocaleString(
-                "es-PE"
-              )}) no puede ser mayor que el total de entradas (${totalTicketsInZones.toLocaleString(
-                "es-PE"
-              )}).`;
-              // Detenemos la validación en el primer error encontrado
-              break;
-            }
-          }
-        }
       }
     }
 
