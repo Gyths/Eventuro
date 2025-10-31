@@ -240,6 +240,17 @@ export default function CrearEventoCards() {
 
       const numericOrganizerId = Number(organizerId);
 
+      if (isNaN(numericOrganizerId)) {
+        await Swal.fire({
+          icon: "error",
+          title: "Error de ID",
+          text: `Tu ID de organizador ("${organizerId}") no es un número válido.`,
+          confirmButtonText: "Entendido",
+        });
+        setPosting(false);
+        return;
+      }
+
       // ====== construir el JSON (tu mismo código adaptado) ======
       const toYMD = (d) => {
         if (!d) return "";
@@ -670,6 +681,11 @@ export default function CrearEventoCards() {
   const validateStep = (stepIndex) => {
     const newErrors = {};
 
+    const totalTicketsInZones = (tickets.zones || []).reduce((sum, z) => {
+      const q = Number(z.quantity || 0);
+      return sum + (isNaN(q) ? 0 : q);
+    }, 0);
+
     if (stepIndex === 0) {
       const name = (form.name ?? "").trim(); // <-- usar form.name
       if (!name) {
@@ -732,7 +748,9 @@ export default function CrearEventoCards() {
         if (invalidDate) {
           newErrors.dates = "Cada fecha debe tener al menos un horario válido.";
         }
-        const overlapDetected = dates.some((d) => hasOverlaps(d.schedules || []));
+        const overlapDetected = dates.some((d) =>
+          hasOverlaps(d.schedules || [])
+        );
         if (overlapDetected) {
           newErrors.dates =
             "Hay horarios cruzados en una o más fechas. Corrígelos antes de continuar.";
@@ -856,20 +874,38 @@ export default function CrearEventoCards() {
         }
       }
 
+      const capacityNum = Number(location.capacity);
+      // Solo validamos si: no es virtual, la capacidad es un número válido, y no hay errores previos en tickets o capacidad
+      if (
+        !isVirtual &&
+        !isNaN(capacityNum) &&
+        capacityNum > 0 &&
+        !newErrors.tickets &&
+        !newErrors.capacity
+      ) {
+        if (totalTicketsInZones > capacityNum) {
+          newErrors.tickets = `La suma de entradas por zona (${totalTicketsInZones.toLocaleString(
+            "es-PE"
+          )}) no puede superar el aforo total del local (${capacityNum.toLocaleString(
+            "es-PE"
+          )}).`;
+        }
+      }
+
       if (tickets?.tier?.enabled) {
         const tierQty = Number(tickets.tier.qty || 0);
 
         // Calcular cantidad total desde las ZONAS
-        const totalTickets = (tickets.zones || []).reduce((sum, z) => {
-          const q = Number(z.quantity || 0);
-          return sum + (isNaN(q) ? 0 : q);
-        }, 0);
+        // const totalTickets = (tickets.zones || []).reduce((sum, z) => {
+        //  const q = Number(z.quantity || 0);
+        //  return sum + (isNaN(q) ? 0 : q);
+        // }, 0);
 
         if (!Number.isInteger(tierQty) || tierQty <= 0) {
           newErrors.tierQty =
             "La cantidad habilitada para la venta escalonada debe ser un número mayor que 0.";
-        } else if (tierQty > totalTickets) {
-          newErrors.tierQty = `La cantidad habilitada para la venta escalonada (${tierQty}) debe ser menor que la cantidad total (${totalTickets}).`;
+        } else if (tierQty > totalTicketsInZones) {
+          newErrors.tierQty = `La cantidad habilitada para la venta escalonada (${tierQty}) debe ser menor que la cantidad total (${totalTicketsInZones}).`;
         }
       }
     }
@@ -879,6 +915,27 @@ export default function CrearEventoCards() {
       if (!txt && !returnsPolicy?.file) {
         newErrors.returnsPolicy =
           "Debe escribir o subir una política de devoluciones.";
+      }
+      if (totalTicketsInZones > 0) {
+        const seasons = salesSeasons.seasons || [];
+        for (const season of seasons) {
+          const limitStr = (season.ticketLimit || "").trim();
+          // Solo validamos si el usuario ha puesto un límite
+          if (limitStr) {
+            const limit = Number(limitStr);
+            if (!isNaN(limit) && limit > 0 && limit > totalTicketsInZones) {
+              newErrors.salesSeasons = `El límite para la temporada "${
+                season.name || "sin nombre"
+              }" (${limit.toLocaleString(
+                "es-PE"
+              )}) no puede ser mayor que el total de entradas (${totalTicketsInZones.toLocaleString(
+                "es-PE"
+              )}).`;
+              // Detenemos la validación en el primer error encontrado
+              break;
+            }
+          }
+        }
       }
     }
 
