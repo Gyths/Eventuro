@@ -433,3 +433,43 @@ export async function cancelOrderRepo(orderId) {
 }
 
 //Hola, este es un comentario de prueba para arreglar problema de pull request
+// Buscar órdenes por usuario (actualizado con Tickets)
+export const findByUserId = async (userId) => {
+  return await prisma.order.findMany({
+    where: { buyerUserId: userId },
+    orderBy: { createdAt: "desc" },
+    include: {
+      items: {
+        include: {
+          Ticket: true, 
+          eventDate: {
+            include: {
+              event: {
+                select: {
+                  title: true,
+                  description: true,
+                  inPerson: true,
+                  venue: {
+                    select: {
+                      city: true,
+                      address: true,
+                      addressUrl: true,
+                    },
+                  },
+                  categories: {
+                    include: {
+                      category: { select: { description: true } },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          zone: { select: { name: true, kind: true } },
+          allocation: { select: { audienceName: true } },
+          seat: { select: { rowNumber: true, colNumber: true } },
+        },
+      },
+    },
+  });
+};
