@@ -1,7 +1,7 @@
 import { createEventSvc } from "../services/event.service.js";
 import { listEventSvc } from "../services/event.service.js";
 import { listAvailableTicketsSvc } from "../services/event.service.js";
-import { setEventFeeSvc } from "../services/event.service.js";
+import { setEventFeeSvc } from '../services/event.service.js';
 import { _getEventDetails } from "../services/event.service.js";
 import { _listEventsByOrganizer } from "../services/event.service.js";
 import { toJSONSafe } from "../utils/serialize.js";
@@ -60,8 +60,8 @@ export async function setEventFee(req, res, next) {
     const data = await setEventFeeSvc({ id, percentage });
     return res.status(200).json(toJSONSafe(data));
   } catch (err) {
-    if (err?.code === "P2025") {
-      return res.status(404).json({ message: "El evento no existe." });
+    if (err?.code === 'P2025') {
+      return res.status(404).json({ message: 'El evento no existe.' });
     }
     return next(err);
   }

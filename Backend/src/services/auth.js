@@ -31,8 +31,6 @@ export function buildUserResponse(u) {
     email: u.email,
     roles,
     organizerStatus,
-
-    
     organizer: u.organizer
       ? {
           organizerId: u.organizer.organizerId.toString(),

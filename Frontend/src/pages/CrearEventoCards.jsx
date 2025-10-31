@@ -28,6 +28,8 @@ import { BASE_URL } from "../config.js";
 //Copiar Configuracion
 import CopyConfigModal from "../components/create/CopyConfigModal";
 
+import { useAuth } from "../services/auth/AuthContext";
+
 function WizardCard({ title, subtitle, badge, children }) {
   return (
     <div className="relative rounded-[28px] bg-gray-100 p-6 sm:p-7 lg:p-10 shadow-[0_10px_30px_rgba(0,0,0,0.08)]">
@@ -120,9 +122,9 @@ export default function CrearEventoCards() {
   const { form, updateForm, updateRestrictions, imagePreview, bannerPreview } =
     useEventForm();
   const [dates, setDates] = useState([]); // [{id, date: Date|ISO, schedules:[{id,start,end}]}]
+  const { user } = useAuth();
   const handlePrev = () => setCurrent((c) => Math.max(0, c - 1));
   const isActive = (i) => current === i;
-  const { user } = useAuth();
 
   // Paso 2 — Ubicación (estado en el padre)
   const [location, setLocation] = useState({
@@ -222,6 +224,14 @@ export default function CrearEventoCards() {
 
   //###### GENERADOR DEL JSON PARA POST A LA BD ##########
   const generateAndPostJson = async () => {
+    console.log(
+      "Datos COMPLETOS del usuario al publicar:",
+      JSON.stringify(user, null, 2)
+    );
+    console.log(
+      "IDs de categorías que se están enviando:",
+      JSON.stringify(form.categories, null, 2)
+    );
     try {
       setPosting(true);
 
@@ -570,7 +580,7 @@ export default function CrearEventoCards() {
 
     // Mapear ubicación
     setLocation({
-      inPerson: Boolean(eventData.in),
+      inPerson: true,
       city: eventData.venue.city,
       address: eventData.venue.address,
       reference: eventData.venue.reference,
@@ -604,6 +614,7 @@ export default function CrearEventoCards() {
     });
     setDates(mappedDates);
 
+    // Mapear tickets/zonas
     const mappedZones = eventData.zones.map((zone) => ({
       zoneName: zone.name,
       quantity: String(zone.capacity),
@@ -754,12 +765,11 @@ export default function CrearEventoCards() {
           newErrors.address =
             "La dirección no puede tener más de 150 caracteres.";
         }
-        if (
-          Number(location.capacity) > 200000 ||
-          Number(location.capacity) <= 0
-        ) {
+        const capacityNum = Number(location.capacity);
+
+        if (isNaN(capacityNum) || capacityNum > 200000 || capacityNum <= 0) {
           newErrors.capacity =
-            "La capacidad debe ser un número válido (entre 0 y 200,000).";
+            "La capacidad debe ser un número válido (entre 1 y 200,000).";
         }
       }
 
@@ -797,13 +807,6 @@ export default function CrearEventoCards() {
           "El precio por zona debe ser un número mayor que 0.";
       }
 
-      // variable para comparar capacidad del recinto
-      const aforo = Number(location.capacity || 0);
-      // variable para comparar la cantidad total de tickets
-      const totalTickets = zones.reduce(
-        (sum, z) => sum + Number(z.quantity || 0),
-        0
-      );
       if (!newErrors.tickets) {
         const zones = tickets.zones || [];
         const pricingErrors = [];

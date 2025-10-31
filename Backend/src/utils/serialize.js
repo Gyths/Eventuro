@@ -18,6 +18,7 @@ export function toJSONSafe(value) {
             return value.toJSON();
         }
 
+
         if (Array.isArray(value)) return value.map(toJSONSafe);
         return Object.fromEntries(
             Object.entries(value).map(([k, v]) => [k, toJSONSafe(v)])

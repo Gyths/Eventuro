@@ -152,10 +152,10 @@ export default function TicketSelection() {
         <div className="flex flex-col z-10 justify-center min-h-screen text-center gap-20">
           <div className="flex px-5 relative flex-col md:flex-row xl:flex-row justify-center gap-10 md:gap-0 xl:gap-0 items-stretch md:px-8">
             {/* Imagen */}
-            <div className="flex w-full md:max-w-[30vw] scale-y-110 xl:max-w-[30vw] rounded-lg">
+            <div className="flex w-full md:max-w-[30vw] scale-y-110 xl:max-w-[30vw] overflow-hidden rounded-lg">
               <img
                 src={event?.image}
-                className="w-full h-full object-cover rounded-lg"
+                className="w-full h-full object-cover"
                 alt="Imagen del evento"
               />
             </div>
@@ -202,14 +202,12 @@ export default function TicketSelection() {
                     {event?.accessPolicyDescription}
                   </p>
                 </div>
-                {event?.inPerson && (
-                  <div className="flex flex-1 flex-row justify-start items-center text-center gap-4">
-                    <MapPinIcon className="inline-block size-5"></MapPinIcon>
-                    <span className="flex text-start">
-                      {event?.venue?.address}
-                    </span>
-                  </div>
-                )}
+                <div className="flex flex-1 flex-row justify-start items-center text-center gap-4">
+                  <MapPinIcon className="inline-block size-5"></MapPinIcon>
+                  <span className="flex text-start">
+                    {event?.venue?.address}
+                  </span>
+                </div>
               </div>
               {/* ZONAS */}
               <div className="flex flex-row pl-10">
