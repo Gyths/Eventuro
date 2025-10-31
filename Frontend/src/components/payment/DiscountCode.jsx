@@ -278,7 +278,7 @@ export default function DiscountCode() {
             />
             <button
               onClick={handleDiscount}
-              className="bg-yellow-400 text-white px-4 rounded hover:bg-yellow-500 transition-transform duration-200 active:scale-102"
+              className="bg-yellow-400 text-white px-4 rounded cursor-pointer hover:scale-103 hover:bg-yellow-500 transition-all duration-200 active:scale-102"
             >
               Agregar
             </button>
