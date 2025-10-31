@@ -67,7 +67,9 @@ export default function MisTickets() {
                       </span>
                     ))}
                   </div>
-                  <h2 className="text-lg font-semibold text-gray-900">{t.title}</h2>
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    {t.title}
+                  </h2>
                   <p className="text-sm text-gray-500 mt-0.5">{t.address}</p>
                   <p className="text-xs text-gray-400">{t.date}</p>
                 </div>
