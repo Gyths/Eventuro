@@ -9,10 +9,14 @@ import SuccessModal from "../components/SuccessModal";
 
 const CURRENCIES = { PEN: "S/.", USD: "$" };
 
+/* ======================= Helpers de dinero/fechas ======================= */
 function fmtMoney(v) {
   if (v == null) return "0.00";
   const n = Number(v);
-  return n.toLocaleString("es-PE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return n.toLocaleString("es-PE", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 }
 
 function fmtDateTime(d) {
@@ -28,7 +32,27 @@ function fmtDateTime(d) {
   });
 }
 
-/** Mapea una orden del backend a lo que la lista necesita */
+/* ===================== Helpers de ESTADO de reembolso ==================== */
+// Lee un posible estado en el item (fallback cuando no hay tickets)
+function readRefundStatusFromItem(it) {
+  return it?.ticket?.refundStatus ?? it?.refundStatus ?? "NONE";
+}
+
+// Mapea el estado a UI
+function refundStatusUI(status) {
+  switch (status) {
+    case "REQUESTED":
+      return { label: "Pendiente de revisión", cls: "border-amber-200 bg-amber-50 text-amber-700" };
+    case "APPROVED":
+      return { label: "Cancelado / Reembolso aprobado", cls: "border-green-200 bg-green-50 text-green-700" };
+    case "REJECTED":
+      return { label: "Rechazado", cls: "border-red-200 bg-red-50 text-red-700" };
+    default:
+      return { label: "Vigente", cls: "border-gray-200 bg-gray-50 text-gray-600" };
+  }
+}
+
+/* ========== Mapea una orden del backend a lo que la lista necesita ========== */
 function mapOrderToCard(order) {
   const currency = order.currency || "PEN";
   const sym = CURRENCIES[currency] || currency;
@@ -54,6 +78,7 @@ function mapOrderToCard(order) {
   };
 }
 
+/* =============================== Página =============================== */
 export default function MisOrdenes() {
   const { user } = useAuth();
   const [orders, setOrders] = useState([]);
@@ -89,22 +114,14 @@ export default function MisOrdenes() {
     }
 
     if (user?.userId) load();
-    return () => {
-      abort = true;
-    };
+    return () => { abort = true; };
   }, [user?.userId]);
 
   const first = useMemo(() => orders[0] || null, [orders]);
-  useEffect(() => {
-    setSelected(first);
-  }, [first]);
+  useEffect(() => { setSelected(first); }, [first]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen grid place-items-center text-gray-500">
-        Cargando tus órdenes…
-      </div>
-    );
+    return <div className="min-h-screen grid place-items-center text-gray-500">Cargando tus órdenes…</div>;
   }
 
   if (error) {
@@ -151,7 +168,7 @@ export default function MisOrdenes() {
             ))}
           </div>
 
-          {/* Detalle de la orden (derecha) con desglose por subcategoría */}
+          {/* Detalle de la orden (derecha) con desglose y estados */}
           <div className="rounded-2xl bg-white shadow-lg border border-gray-100 p-6">
             {!selected ? (
               <p className="text-gray-400 text-center mt-20">Selecciona una orden para ver su detalle.</p>
@@ -165,13 +182,13 @@ export default function MisOrdenes() {
   );
 }
 
-/** Tarjeta de detalle tipo ticket con imagen + QR + botón Descargar + Devolución */
+/* ============================ Detalle de orden ============================ */
 function OrderDetail({ orderCard }) {
   const { user } = useAuth();
   const o = orderCard.raw;
   const cardRef = useRef(null);
 
-  // ► Estados de modales aquí (¡ANTES FALTABAN!)
+  // Estados de modales
   const [showRefund, setShowRefund] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -212,6 +229,51 @@ function OrderDetail({ orderCard }) {
       return { zone, audience, qty: q };
     })
     .sort((a, b) => a.zone.localeCompare(b.zone) || a.audience.localeCompare(b.audience));
+
+  // === Estados por TICKET (usando arreglo it.Ticket) ===
+  const items = Array.isArray(o.items) ? o.items : [];
+  const ticketsWithStatus = items.flatMap((it) => {
+    const labelBase = it?.seat
+      ? `Palco • Fila ${it.seat?.rowNumber} • Asiento ${it.seat?.seatNumber ?? "-"}`
+      : `Zona ${it?.zone?.name ?? "General"} — ${it?.allocation?.audienceName ?? "General"}`;
+
+    const tickets = Array.isArray(it.Ticket) ? it.Ticket : [];
+
+    // Si vienen tickets, listamos uno por ticket
+    if (tickets.length > 0) {
+      return tickets.map((tk, idx) => {
+        const status = tk?.refundStatus ?? "NONE";
+        const ui = refundStatusUI(status);
+        // id único estable
+        const id = tk?.ticketId != null ? String(tk.ticketId) : `${it.orderItemId}-${idx}`;
+        return {
+          id,
+          desc: labelBase, // puedes añadir `#${idx+1}` si quieres distinguir
+          status,
+          ui,
+          refundRequestedAt: tk?.refundRequestedAt ?? null,
+        };
+      });
+    }
+
+    // Fallback: sin tickets, usamos estado del item (si existiera)
+    const status = readRefundStatusFromItem(it);
+    const ui = refundStatusUI(status);
+    return [
+      {
+        id: String(it.orderItemId),
+        desc: labelBase,
+        status,
+        ui,
+        refundRequestedAt: it?.refundRequestedAt ?? null,
+      },
+    ];
+  });
+
+  // ¿Queda alguno elegible?
+  const hasRefundable = ticketsWithStatus.some(
+    (t) => !["REQUESTED", "APPROVED"].includes(t.status)
+  );
 
   // Valor del QR
   const qrValue = `ORDER:${o.orderId};ITEM:${firstItem?.orderItemId ?? "NA"}`;
@@ -272,7 +334,7 @@ function OrderDetail({ orderCard }) {
               <p>Cantidad: {totalQty}</p>
             </div>
 
-            {/* Desglose por subcategoría (DERECHA) */}
+            {/* Desglose por subcategoría */}
             {breakdown.length > 0 && (
               <div className="mt-2 text-sm text-gray-800">
                 <p className="font-semibold mb-1">Desglose por subcategoría</p>
@@ -280,6 +342,26 @@ function OrderDetail({ orderCard }) {
                   {breakdown.map(({ zone, audience, qty }, i) => (
                     <li key={i}>
                       <span className="font-medium">{zone}</span> — {audience}: {qty}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Estado de tickets */}
+            {ticketsWithStatus.length > 0 && (
+              <div className="mt-4 text-sm">
+                <p className="font-semibold mb-2 text-gray-900">Estado de tickets</p>
+                <ul className="space-y-2">
+                  {ticketsWithStatus.map((t) => (
+                    <li key={t.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                      <span className="text-gray-800">{t.desc}</span>
+                      <span className={`inline-flex items-center gap-2 rounded-md border px-2 py-1 text-[12px] ${t.ui.cls}`}>
+                        {t.ui.label}
+                        {t.status === "REQUESTED" && t.refundRequestedAt && (
+                          <em className="text-[11px] opacity-75">({fmtDateTime(t.refundRequestedAt)})</em>
+                        )}
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -305,7 +387,11 @@ function OrderDetail({ orderCard }) {
 
           <button
             onClick={() => setShowRefund(true)}
-            className="inline-block bg-rose-600 text-white font-semibold px-4 py-2 rounded-xl hover:bg-rose-700"
+            disabled={!hasRefundable}
+            className={`inline-block font-semibold px-4 py-2 rounded-xl text-white ${
+              hasRefundable ? "bg-rose-600 hover:bg-rose-700" : "bg-rose-300 cursor-not-allowed"
+            }`}
+            title={hasRefundable ? "Solicitar devolución" : "No hay tickets elegibles para devolución"}
           >
             Solicitar devolución
           </button>
@@ -320,7 +406,7 @@ function OrderDetail({ orderCard }) {
           order={o}
           onSubmitted={() => {
             setShowRefund(false);
-            setShowSuccess(true); // abrir modal de éxito
+            setShowSuccess(true);
           }}
         />
       )}

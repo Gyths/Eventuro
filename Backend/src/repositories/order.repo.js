@@ -33,7 +33,6 @@ export async function createOrderRepo(input) {
       if (!quantity || quantity <= 0)
         throw new Error("Quantity debe ser mayor a 0");
 
-      // Validar zona
       const zone = await tx.eventDateZone.findUnique({
         where: { eventDateZoneId },
         select: {
@@ -54,7 +53,6 @@ export async function createOrderRepo(input) {
       if ((zone.capacityRemaining ?? 0) < quantity)
         throw new Error("No hay suficiente capacidad en la zona seleccionada.");
 
-      // Validar subcategoría (allocation)
       let allocation = null;
       if (allocationId) {
         allocation = await tx.eventDateZoneAllocation.findUnique({
@@ -81,7 +79,6 @@ export async function createOrderRepo(input) {
         }
       }
 
-      // Validar asientos si aplica
       let seat = null;
       if (zone.kind === "SEATED") {
         if (!item.seatId) throw new Error("Debe especificar un asiento.");
@@ -97,7 +94,6 @@ export async function createOrderRepo(input) {
           throw new Error("El asiento no pertenece a la zona seleccionada.");
       }
 
-      // Control de concurrencia
       const holdExpiration = new Date(Date.now() + 5 * 60 * 1000);
 
       if (seat) {
@@ -130,7 +126,6 @@ export async function createOrderRepo(input) {
         });
       }
 
-      // Actualizar capacidad de zona
       const zoneUpdate = await tx.eventDateZone.updateMany({
         where: { eventDateZoneId, capacityRemaining: zone.capacityRemaining },
         data: {
@@ -141,7 +136,6 @@ export async function createOrderRepo(input) {
       if (zoneUpdate.count === 0)
         throw new Error("Colisión: la zona fue modificada, reintente.");
 
-      // Actualizar subcategoría si aplica
       if (allocation) {
         await tx.eventDateZoneAllocation.update({
           where: { eventDateZoneAllocationId: allocation.eventDateZoneAllocationId },
@@ -159,7 +153,6 @@ export async function createOrderRepo(input) {
         });
       }
 
-      // Calcular precio con descuento (si aplica)
       const unit = Number(zone.basePrice);
       let discount = 0;
       if (allocation?.discountType === "PERCENTAGE") {
@@ -172,7 +165,6 @@ export async function createOrderRepo(input) {
       const finalUnit = Math.max(0, unit - discount);
       const finalPrice = finalUnit * quantity;
 
-      // Crear orderItem con allocation
       const createdItem = await tx.orderItem.create({
         data: {
           orderId: order.orderId,
@@ -196,7 +188,6 @@ export async function createOrderRepo(input) {
       totalAmount += finalPrice;
     }
 
-    // Actualizar total
     await tx.order.update({
       where: { orderId: order.orderId },
       data: {
@@ -214,7 +205,7 @@ export async function createOrderRepo(input) {
   });
 }
 
-// Cancelar orden (igual que antes)
+// Cancelar orden
 export async function cancelOrderRepo(orderId) {
   return prisma.$transaction(async (tx) => {
     const order = await tx.order.findUnique({
@@ -263,7 +254,7 @@ export async function cancelOrderRepo(orderId) {
   });
 }
 
-// Buscar órdenes por usuario
+// Buscar órdenes por usuario (actualizado con Tickets)
 export const findByUserId = async (userId) => {
   return await prisma.order.findMany({
     where: { buyerUserId: userId },
@@ -271,6 +262,7 @@ export const findByUserId = async (userId) => {
     include: {
       items: {
         include: {
+          Ticket: true, 
           eventDate: {
             include: {
               event: {

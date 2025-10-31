@@ -413,7 +413,7 @@ model OrderItem {
   zone       EventDateZone            @relation(fields: [eventDateZoneId], references: [eventDateZoneId], onDelete: Restrict)
   seat       Seat?                    @relation(fields: [seatId], references: [seatId], onDelete: Restrict)
   allocation EventDateZoneAllocation? @relation(fields: [eventDateZoneAllocationId], references: [eventDateZoneAllocationId], onDelete: SetNull)
-  Ticket     Ticket[]
+  Ticket     Ticket[] 
 
   @@unique([seatId])
   @@index([orderId])

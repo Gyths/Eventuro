@@ -2,6 +2,7 @@
 import { useMemo, useState } from "react";
 import { EventuroApi } from "../api";
 
+/* ======================= Helpers de fecha/UI ======================= */
 function formatDateTime(d) {
   if (!d) return "Fecha por confirmar";
   const date = new Date(d);
@@ -15,50 +16,105 @@ function formatDateTime(d) {
   });
 }
 
+/**
+ * Construye la descripción legible para UI:
+ * Evento — fecha — Zona X — <audienceName>
+ * (sin mostrar “Ticket #id”)
+ */
 function describeItem(it) {
   const title = it?.eventDate?.event?.title ?? "Evento";
   const start = formatDateTime(it?.eventDate?.startAt);
+
   const zone = it?.seat
-    ? `Palco • Fila ${it.seat.rowNumber} • Asiento ${it.seat.seatNumber ?? "-"}` // ajusta si tu modelo usa colNumber
+    ? `Palco • Fila ${it.seat.rowNumber} • Asiento ${it.seat.seatNumber ?? "-"}`
     : `Zona ${it?.zone?.name ?? "General"}`;
-  return `${title} — ${start} — ${zone}`;
+
+  const audience = it?.allocation?.audienceName
+    ? ` — ${it.allocation.audienceName}`
+    : "";
+
+  return `${title} — ${start} — ${zone}${audience}`;
 }
 
+/* ==================== Helpers de ESTADO reembolso ==================== */
+function readRefundStatusFromItem(it) {
+  return it?.ticket?.refundStatus ?? it?.refundStatus ?? "NONE";
+}
+
+function refundStatusUI(status) {
+  switch (status) {
+    case "REQUESTED":
+      return { label: "Pendiente de revisión", cls: "border-amber-200 bg-amber-50 text-amber-700" };
+    case "APPROVED":
+      return { label: "Cancelado / Reembolso aprobado", cls: "border-green-200 bg-green-50 text-green-700" };
+    case "REJECTED":
+      return { label: "Rechazado", cls: "border-red-200 bg-red-50 text-red-700" };
+    default:
+      return { label: "Vigente", cls: "border-gray-200 bg-gray-50 text-gray-600" };
+  }
+}
+
+/* ========================= Componente principal ========================= */
 export default function RefundRequestModal({ isOpen, onClose, order, onSubmitted }) {
-  // Construye la lista mostrable de ítems reembolsables
+  // Construye la lista de TICKETS (y fallback por item) para el modal
   const refundableItems = useMemo(() => {
     const items = Array.isArray(order?.items) ? order.items : [];
-    return items.map((it) => {
-      // Intentamos leer el estado desde ticket o desde el propio item (ajusta a tu modelo)
-      const refundStatus =
-        it.ticket?.refundStatus ??
-        it.refundStatus ??
-        "NONE";
 
-      const refundRequestedAt =
-        it.ticket?.refundRequestedAt ??
-        it.refundRequestedAt ??
-        null;
+    return items.flatMap((it) => {
+      const tickets = Array.isArray(it.Ticket) ? it.Ticket : [];
 
+      // Si el item tiene tickets, listamos uno por ticket (pero sin mostrar el #id)
+      if (tickets.length > 0) {
+        return tickets.map((tk) => {
+          const refundStatus = tk?.refundStatus ?? "NONE";
+          const refundRequestedAt = tk?.refundRequestedAt ?? null;
+          const requested = refundStatus === "REQUESTED";
+          const approved = refundStatus === "APPROVED";
+          const ui = refundStatusUI(refundStatus);
+
+          return {
+            key: `${it.orderItemId}-${tk.ticketId}`,
+            ticketId: tk.ticketId,          // usado para la llamada al endpoint
+            orderItemId: it.orderItemId,
+            description: describeItem(it),  // 💡 sin “Ticket #…”, incluye allocation
+            refundStatus,
+            refundRequestedAt,
+            requested,
+            approved,
+            ui,
+            maxQty: 1,                      // un ticket = cantidad 1
+          };
+        });
+      }
+
+      // Fallback: sin tickets, usamos estado del item
+      const refundStatus = readRefundStatusFromItem(it);
+      const refundRequestedAt = it?.refundRequestedAt ?? null;
       const requested = refundStatus === "REQUESTED";
+      const approved = refundStatus === "APPROVED";
+      const ui = refundStatusUI(refundStatus);
 
-      return {
-        key: it.orderItemId,
-        ticketId: it.ticketId ?? it.orderItemId, // usa tu id real de ticket
-        orderItemId: it.orderItemId,
-        description: describeItem(it),
-        maxQty: it.quantity ?? 1,
-        refundStatus,
-        refundRequestedAt,
-        requested,
-      };
+      return [
+        {
+          key: `item-${it.orderItemId}`,
+          ticketId: it.ticketId ?? it.orderItemId,
+          orderItemId: it.orderItemId,
+          description: describeItem(it),   // 💡 también muestra allocation si existe
+          refundStatus,
+          refundRequestedAt,
+          requested,
+          approved,
+          ui,
+          maxQty: it.quantity ?? 1,
+        },
+      ];
     });
   }, [order]);
 
-  // Solo inicializamos selección para los que SÍ son seleccionables
+  // Estado de selección (solo para elegibles)
   const [selected, setSelected] = useState(() =>
     refundableItems.reduce((acc, it) => {
-      if (!it.requested) acc[it.ticketId] = { checked: false, qty: 1 };
+      if (!it.requested && !it.approved) acc[it.ticketId] = { checked: false, qty: 1 };
       return acc;
     }, {})
   );
@@ -70,15 +126,13 @@ export default function RefundRequestModal({ isOpen, onClose, order, onSubmitted
 
   if (!isOpen) return null;
 
-  const selectableItems = refundableItems.filter((it) => !it.requested);
-
+  const selectableItems = refundableItems.filter((it) => !it.requested && !it.approved);
   const chosen = selectableItems.filter(
     (it) => selected[it.ticketId]?.checked && (selected[it.ticketId]?.qty ?? 0) > 0
   );
-
   const canSubmit = agree && chosen.length > 0 && !submitting;
 
-  // Helpers de UI
+  /* ====================== Helpers de UI ====================== */
   function setChecked(id, val) {
     setSelected((prev) => ({ ...prev, [id]: { ...(prev[id] || { qty: 1 }), checked: val } }));
   }
@@ -87,7 +141,7 @@ export default function RefundRequestModal({ isOpen, onClose, order, onSubmitted
     setSelected((prev) => ({ ...prev, [id]: { ...(prev[id] || { checked: true }), qty: n } }));
   }
 
-  // Envío: una llamada por cada ticket seleccionado (solo los no-REQUESTED)
+  /* ========================= Envío ========================= */
   async function handleSubmit() {
     try {
       setSubmitting(true);
@@ -103,21 +157,19 @@ export default function RefundRequestModal({ isOpen, onClose, order, onSubmitted
       );
 
       const results = await Promise.allSettled(requests);
-
       const ok = [];
       const fail = [];
+
       results.forEach((r, idx) => {
         const it = chosen[idx];
-        if (r.status === "fulfilled") {
-          ok.push(`• ${it.description}`);
-        } else {
+        if (r.status === "fulfilled") ok.push(`• ${it.description}`);
+        else {
           const msg = r.reason?.message || "Error desconocido";
           fail.push(`• ${it.description} — ${msg}`);
         }
       });
 
       setSummary({ ok, fail });
-
       if (fail.length === 0) {
         onSubmitted?.();
         onClose?.();
@@ -129,6 +181,7 @@ export default function RefundRequestModal({ isOpen, onClose, order, onSubmitted
     }
   }
 
+  /* ========================= Render ========================= */
   return (
     <div className="fixed inset-0 z-[60]">
       {/* Backdrop */}
@@ -144,16 +197,20 @@ export default function RefundRequestModal({ isOpen, onClose, order, onSubmitted
 
           <div className="p-5 space-y-5 max-h-[75vh] overflow-y-auto">
             <p className="text-sm text-gray-600">
-              Selecciona los tickets que deseas devolver. La elegibilidad depende de la
-              política del evento.
+              Selecciona los tickets que deseas devolver. La elegibilidad depende de la política del evento.
             </p>
 
             {/* Lista de tickets */}
             <div className="space-y-3">
               {refundableItems.map((it) => {
-                const disabled = it.requested;
+                const disabled = it.requested || it.approved;
                 return (
-                  <div key={it.key} className={`flex items-start gap-3 rounded-xl border p-3 ${disabled ? "border-gray-200 bg-gray-50" : "border-gray-200"}`}>
+                  <div
+                    key={it.key}
+                    className={`flex items-start gap-3 rounded-xl border p-3 ${
+                      disabled ? "border-gray-200 bg-gray-50" : "border-gray-200"
+                    }`}
+                  >
                     <input
                       type="checkbox"
                       className="mt-1 h-4 w-4"
@@ -166,17 +223,16 @@ export default function RefundRequestModal({ isOpen, onClose, order, onSubmitted
                         {it.description}
                       </p>
 
-                      {/* Estado si ya fue solicitada la devolución */}
                       {disabled ? (
-                        <div className="mt-1 inline-flex items-center gap-2 rounded-md bg-purple-50 px-2 py-1 text-[12px] text-purple-800">
-                          <span className="font-semibold">Solicitud ya enviada</span>
-                          {it.refundRequestedAt && (
+                        <div className={`mt-1 inline-flex items-center gap-2 rounded-md border px-2 py-1 text-[12px] ${it.ui.cls}`}>
+                          <span className="font-semibold">{it.ui.label}</span>
+                          {it.refundRequestedAt && it.refundStatus === "REQUESTED" && (
                             <span>({formatDateTime(it.refundRequestedAt)})</span>
                           )}
                         </div>
                       ) : (
                         <div className="mt-2 flex items-center gap-2">
-                          <span className="text-xs text-gray-500">Cantidad a devolver</span>
+                          <span className="text-xs text-gray-500">Cantidad</span>
                           <input
                             type="number"
                             min={1}
@@ -186,7 +242,6 @@ export default function RefundRequestModal({ isOpen, onClose, order, onSubmitted
                             className="w-20 rounded-lg border border-gray-300 px-2 py-1 text-sm"
                             disabled={!selected[it.ticketId]?.checked}
                           />
-                          <span className="text-xs text-gray-400">/ {it.maxQty} compradas</span>
                         </div>
                       )}
                     </div>
@@ -196,7 +251,7 @@ export default function RefundRequestModal({ isOpen, onClose, order, onSubmitted
 
               {refundableItems.length === 0 && (
                 <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-amber-800 text-sm">
-                  No hay ítems reembolsables en esta orden.
+                  No hay tickets reembolsables en esta orden.
                 </div>
               )}
             </div>
@@ -236,6 +291,7 @@ export default function RefundRequestModal({ isOpen, onClose, order, onSubmitted
             )}
           </div>
 
+          {/* Acciones */}
           <div className="flex items-center justify-end gap-3 p-5 border-t">
             <button
               onClick={onClose}
@@ -246,7 +302,9 @@ export default function RefundRequestModal({ isOpen, onClose, order, onSubmitted
             <button
               onClick={handleSubmit}
               disabled={!canSubmit}
-              className={`px-4 py-2 rounded-xl font-semibold text-white ${canSubmit ? "bg-rose-600 hover:bg-rose-700" : "bg-rose-300 cursor-not-allowed"}`}
+              className={`px-4 py-2 rounded-xl font-semibold text-white ${
+                canSubmit ? "bg-rose-600 hover:bg-rose-700" : "bg-rose-300 cursor-not-allowed"
+              }`}
             >
               {submitting ? "Enviando…" : "Enviar solicitud"}
             </button>
