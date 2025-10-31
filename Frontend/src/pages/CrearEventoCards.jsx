@@ -6,6 +6,7 @@ import ImageRestrictionsPanel from "../components/create/ImageRestrictionsPanel"
 import DatesSection from "../components/create/DatesSection";
 import useEventForm from "../hooks/useEventForm";
 import SalesSeasonCard from "../components/create/SalesSeasonCard";
+import { hasOverlaps } from "../components/create/schedule";
 
 // Paso 2
 import CrearTicketCard from "../components/create/CrearTicketCard";
@@ -393,7 +394,7 @@ export default function CrearEventoCards() {
         };
       });
 
-      const finalJson = {
+      /*const finalJson = {
         organizerId: 1,
         title: form.name,
         inPerson: location.inPerson === false ? false : true,
@@ -414,7 +415,7 @@ export default function CrearEventoCards() {
         dates: eventDates,
         zones: eventZones,
         discounts: discounts,
-      };
+      };*/
 
       const formData = new FormData();
 
@@ -613,13 +614,15 @@ export default function CrearEventoCards() {
       quantity: String(zone.capacity),
       price: String(zone.basePrice),
       subtypes: zone.allocations.map((alloc) => {
-        const pricingMode = alloc.pricingMode; 
-        
+        const pricingMode = alloc.pricingMode;
+
         return {
           type: alloc.audienceName,
           pricingMode: pricingMode,
-          discount: pricingMode === 'percent' ? String(alloc.discountValue) : '',
-          newPrice: pricingMode === 'newPrice' ? String(alloc.discountValue) : '',
+          discount:
+            pricingMode === "percent" ? String(alloc.discountValue) : "",
+          newPrice:
+            pricingMode === "newPrice" ? String(alloc.discountValue) : "",
         };
       }),
     }));
@@ -733,6 +736,11 @@ export default function CrearEventoCards() {
         if (invalidDate) {
           newErrors.dates = "Cada fecha debe tener al menos un horario válido.";
         }
+        const overlapDetected = dates.some((d) => hasOverlaps(d.schedules || []));
+        if (overlapDetected) {
+          newErrors.dates =
+            "Hay horarios cruzados en una o más fechas. Corrígelos antes de continuar.";
+        }
       }
     }
 
@@ -761,7 +769,7 @@ export default function CrearEventoCards() {
 
       // === Validación de Tickets/Zonas ===
       const zones = tickets.zones || [];
-      const allSubtypes = zones.flatMap((z) => z.subtypes || []);
+      //const allSubtypes = zones.flatMap((z) => z.subtypes || []);
 
       if (zones.length === 0) {
         newErrors.tickets = "Debe crear al menos una zona de entrada.";
