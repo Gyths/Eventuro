@@ -1,4 +1,4 @@
-
+import { dmmfToRuntimeDataModel } from "../generated/prisma/runtime/library.js";
 import { prisma } from "../utils/prisma.js";
 
 export async function createEventRepo(input) {

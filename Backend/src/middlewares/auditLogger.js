@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../generated/prisma/index.js";
 const prisma = new PrismaClient();
 
 export function auditMiddleware() {
@@ -40,47 +40,21 @@ export function auditMiddleware() {
 
     try {
       const model = getModel(prisma, params.model);
-      if (!model) return next(params); 
+      if (!model) return next(params); // si no existe el modelo, salir
 
-      
-      if (params.action === "update" || params.action === "delete") {
-        const where = params.args.where;
-        if (where) {
-          
-          const idKey = Object.keys(where).find((k) =>
-            k.toLowerCase().endsWith("id")
-          );
-          if (idKey) {
-            entityId = where[idKey];
-          }
-        }
-      }
-      
+      // Si es UPDATE, obtener datos previos
       if (params.action === "update") {
-        
-        if (params.args.where) {
-          before = await model.findUnique({
-            where: params.args.where,
-          });
-        }
+        before = await model.findUnique({
+          where: params.args.where,
+        });
       }
 
-      
+      // Ejecutar acción principal
       result = await next(params);
 
-      
-      if (params.action === "create" && result) {
-        const idField = Object.keys(result).find((k) =>
-          k.toLowerCase().endsWith("id")
-        );
-        if (idField) entityId = result[idField];
-      }
-      
-      if (!entityId && result && (params.action === "update" || params.action === "delete")) {
-         const idField = Object.keys(result).find(k => k.toLowerCase().endsWith("id"));
-         if (idField) entityId = result[idField];
-      }
-      
+      // Identificar ID de entidad afectada
+      const idField = Object.keys(result).find(k => k.toLowerCase().endsWith("id"));
+      if (idField) entityId = result[idField];
 
       // === Descripciones personalizadas ===
       switch (params.model) {
@@ -165,7 +139,6 @@ export function auditMiddleware() {
 
     } catch (error) {
       console.error("Error en middleware de auditoría:", error);
-      throw error;
     }
 
     return result;
