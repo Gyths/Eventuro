@@ -1,7 +1,3 @@
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
 import { createEventSvc } from "../services/event.service.js";
 import { listEventSvc } from "../services/event.service.js";
 import { listAvailableTicketsSvc } from "../services/event.service.js";
@@ -57,10 +53,6 @@ export async function listAvailableTickets(req, res) {
   }
 }
 
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
 export async function setEventFee(req, res, next) {
   try {
     const { id } = req.params;
