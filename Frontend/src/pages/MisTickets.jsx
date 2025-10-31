@@ -8,7 +8,6 @@ import RefundRequestModal from "../components/RefundRequestModal";
 
 const CURRENCIES = { PEN: "S/.", USD: "$" };
 
-/* ======================= Helpers de dinero/fechas ======================= */
 function fmtMoney(v) {
   if (v == null) return "0.00";
   const n = Number(v);
@@ -92,7 +91,6 @@ function mapOrderToCard(order) {
   };
 }
 
-/* =============================== Página =============================== */
 export default function MisOrdenes() {
   const { user } = useAuth();
   const [orders, setOrders] = useState([]);
@@ -202,7 +200,7 @@ export default function MisOrdenes() {
             ))}
           </div>
 
-          {/* Detalle de la orden (derecha) con desglose y estados */}
+          {/* Detalle de la orden (derecha) con desglose por subcategoría */}
           <div className="rounded-2xl bg-white shadow-lg border border-gray-100 p-6">
             {!selected ? (
               <p className="text-gray-400 text-center mt-20">
@@ -218,13 +216,13 @@ export default function MisOrdenes() {
   );
 }
 
-/* ============================ Detalle de orden ============================ */
+/** Tarjeta de detalle tipo ticket con imagen + QR + botón Descargar + Devolución */
 function OrderDetail({ orderCard }) {
   const { user } = useAuth();
   const o = orderCard.raw;
   const cardRef = useRef(null);
 
-  // Estados de modales
+  // ► Estados de modales aquí (¡ANTES FALTABAN!)
   const [showRefund, setShowRefund] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -404,7 +402,7 @@ function OrderDetail({ orderCard }) {
               <p>Cantidad: {totalQty}</p>
             </div>
 
-            {/* Desglose por subcategoría */}
+            {/* Desglose por subcategoría (DERECHA) */}
             {breakdown.length > 0 && (
               <div className="mt-2 text-sm text-gray-800">
                 <p className="font-semibold mb-1">Desglose por subcategoría</p>
@@ -497,7 +495,7 @@ function OrderDetail({ orderCard }) {
           order={o}
           onSubmitted={() => {
             setShowRefund(false);
-            setShowSuccess(true);
+            setShowSuccess(true); // abrir modal de éxito
           }}
         />
       )}
