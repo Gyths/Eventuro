@@ -3,8 +3,10 @@ import payMeLogo from "../../../assets/pay-me.svg";
 import React from "react";
 import { EventuroApi } from "../../../api";
 import useOrder from "../../../services/Order/OrderContext";
+import useEvent from "../../../services/Event/EventContext";
 import { useAuth } from "../../../services/auth/AuthContext";
 import BaseModal from "../../BaseModal";
+import { jsx } from "react/jsx-runtime";
 
 const inputField =
   "flex rounded-sm p-1.5 bg-gray-100 ring ring-gray-200 hover:ring-gray-300 focus:ring-gray-400 focus:outline-none transform-transition";
@@ -13,6 +15,7 @@ export default function YapePlinPaymentModal({ onClose, onSuccess, onFail }) {
   const ticketEnpoint = "/tickets";
   const apiMethod = "POST";
 
+  const { event } = useEvent();
   const { order } = useOrder();
   const { user } = useAuth();
   const [code, setCode] = React.useState(["", "", "", "", "", ""]);
@@ -73,9 +76,23 @@ export default function YapePlinPaymentModal({ onClose, onSuccess, onFail }) {
     const form = e.target;
     !form.reportValidity();
 
+    let discountIds = [];
+    if (event.shoppingCart) {
+      Object.entries(event.shoppingCart).map(([zoneName, zone]) => {
+        if (zone.discountsApplied) {
+          zone.discountsApplied.map((discount) => {
+            !discountIds.includes(discount.discountId) &&
+              discountIds.push(discount.discountId);
+          });
+        }
+      });
+    }
+    console.log(discountIds);
+
     const ticketData = {
       orderId: order.orderId,
       buyerUserId: parseInt(user.userId),
+      discountIds: discountIds,
     };
     console.log(ticketData);
     try {
