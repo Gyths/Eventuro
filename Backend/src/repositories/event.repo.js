@@ -3,6 +3,8 @@ import { dmmfToRuntimeDataModel } from "../generated/prisma/runtime/library.js";
 import { prisma } from "../utils/prisma.js";
 import { uploadFile, getSignedUrlForFile } from "../utils/s3.js";
 import { skip } from "../generated/prisma/runtime/library.js";
+import fs from "fs";
+import path from "path";
 
 export async function createEventRepo(input) {
   return prisma.$transaction(async (tx) => {
@@ -55,6 +57,34 @@ export async function createEventRepo(input) {
       },
       select: { eventId: true },
     });
+
+
+
+    //Auditoria o Logs:
+
+    //Dirección Carpeta Log
+    const logDir = path.join(process.cwd(), "log");
+    if (!fs.existsSync(logDir)) {
+      fs.mkdirSync(logDir, { recursive: true });
+    }
+
+    // Fecha actual
+    const now = new Date();
+    const fecha = now.toISOString().split("T")[0]; // formato YYYY-MM-DD
+    const hora = now.toTimeString().split(" ")[0]; // formato HH:MM:SS
+
+    // Archivo de log para el día actual
+    const logFile = path.join(logDir, `${fecha}.log`);
+
+    // Línea de log
+    const logLine = `${hora} Se creó evento "${input.title}" de organizador con ID ${input.organizerId}\n`;
+
+    // Escribir o añadir al archivo
+    fs.appendFileSync(logFile, logLine, "utf8");
+
+
+
+
 
     const eventId = event.eventId;
     let venueId = null;
