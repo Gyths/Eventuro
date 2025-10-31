@@ -372,6 +372,7 @@ export default function CrearEventoCards() {
             startAt: startDateISO,
             endAt: endDateISO,
             percentage: percentage,
+            ticketLimit: season.ticketLimit ? Number(season.ticketLimit) : null,
           };
         });
 
@@ -526,6 +527,7 @@ export default function CrearEventoCards() {
         isIncrease: false,
         startDate: "",
         endDate: "",
+        ticketLimit: "",
       },
     ],
   });
@@ -613,13 +615,15 @@ export default function CrearEventoCards() {
       quantity: String(zone.capacity),
       price: String(zone.basePrice),
       subtypes: zone.allocations.map((alloc) => {
-        const pricingMode = alloc.pricingMode; 
-        
+        const pricingMode = alloc.pricingMode;
+
         return {
           type: alloc.audienceName,
           pricingMode: pricingMode,
-          discount: pricingMode === 'percent' ? String(alloc.discountValue) : '',
-          newPrice: pricingMode === 'newPrice' ? String(alloc.discountValue) : '',
+          discount:
+            pricingMode === "percent" ? String(alloc.discountValue) : "",
+          newPrice:
+            pricingMode === "newPrice" ? String(alloc.discountValue) : "",
         };
       }),
     }));
@@ -651,6 +655,7 @@ export default function CrearEventoCards() {
           isIncrease: phase.percentage > 0,
           startDate: formatDate(startDate),
           endDate: formatDate(endDate),
+          ticketLimit: phase.ticketLimit ? String(phase.ticketLimit) : "",
         };
       });
 
