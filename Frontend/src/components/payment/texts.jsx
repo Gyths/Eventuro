@@ -46,12 +46,3 @@ export const DISCOUNT_CODE_TEXTS = {
     9: "El código ya ha sido aplicado",
   },
 };
-
-export const TICKET_SELECTION_TEXTS = {
-  alerts: {
-    "": "Ha ocurrido un error inesperado",
-    "La orden debe contener al menos un item.":
-      "Debe seleccionar al menos un ticket",
-    "No hay fase de venta activa.": "Este evento no se encuentra activo",
-  },
-};
