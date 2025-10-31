@@ -1,6 +1,7 @@
 import React from "react";
 import BaseModal from "../BaseModal";
 import { useNavigate } from "react-router-dom";
+import { TICKET_SELECTION_TEXTS } from "../payment/texts";
 
 import useEvent from "../../services/Event/EventContext";
 import useOrder from "../../services/Order/OrderContext";
@@ -57,6 +58,7 @@ export default function SelectAllocationModal({
   const [allocatedSeatedQuantities, setAllocatedSeatedQuantities] =
     React.useState(() => selectedData.zoneDates.map(() => ({})));
 
+  const [errorMessage, setErrorMessage] = React.useState("");
   const [subtotal, setSubtotal] = React.useState(0);
   const [seatMap, setSeatMap] = React.useState(null);
   const [zoneIndex, setZoneIndex] = React.useState(null);
@@ -210,7 +212,17 @@ export default function SelectAllocationModal({
 
   // Función para manejar enviar la orden a la bd
   const onContinue = async () => {
-    //Se establece la información de la orden
+    if (
+      !notAllocatedGeneralQuantities.length &&
+      !allocatedSeatedQuantities.length &&
+      !notAllocatedGeneralQuantities.length &&
+      !notAllocatedSeatedQuantities.length
+    ) {
+      setShowAlertMessage(true);
+      return;
+    }
+    setShowAlertMessage(false);
+
     let shoppingCart = {};
     const orderData = {};
     orderData.buyerUserId = user.userId;
@@ -340,7 +352,16 @@ export default function SelectAllocationModal({
       console.log(response);
       setOrder(response);
     } catch (err) {
-      console.error("Error al consultar disponbilidad:", err);
+      console.error("Error al consultar disponibilidad:", err);
+      try {
+        const error = JSON.parse(err.message.split(": ")[1]);
+        setErrorMessage(error.error);
+        setShowAlertMessage(true);
+        console.log(error.error);
+      } catch {
+        console.warn("No se pudo parsear el JSON del error:", err.message);
+      }
+
       throw err;
     }
     console.log(shoppingCart);
@@ -358,11 +379,11 @@ export default function SelectAllocationModal({
   return (
     <>
       <BaseModal>
-        <div className="flex flex-col rounded-xl justify-between w-full max-w-6xl h-[75vh] sm:h-[70vh] md:h-[65vh] lg:h-[65vh]  bg-white shadow-2xs ">
-          <div className="flex flex-wrap h-[60vh]">
-            <div className="flex flex-[4] items-stretch h-full flex-col border-r border-gray-300/60">
+        <div className="flex flex-col rounded-xl justify-between w-full max-w-6xl h-auto  bg-white shadow-2xs ">
+          <div className="flex flex-wrap h-[60vh] rounded-xl">
+            <div className="flex flex-[4] rounded-xl items-stretch h-full flex-col border-r border-gray-300/60">
               {/* Header del modal */}
-              <div className="flex flex-row justify-start gap-4 items-center py-4 px-4 border-b border-b-gray-300 bg-gray-200">
+              <div className="flex flex-row rounded-l justify-start gap-4 items-center py-4 px-4 border-b border-b-gray-300 bg-gray-200">
                 <ChevronLeftIcon
                   onClick={onReturn}
                   className="fill-purple-700 shadow-2xl size-8 cursor-pointer hover:scale-105"
@@ -511,9 +532,9 @@ export default function SelectAllocationModal({
               </div>
             </div>
             {/* Sección de información del evento */}
-            <div className="flex-[2] overflow-auto">
-              <div className="flex flex-col py-6 px-6 gap-3 justify-start ">
-                <img src={event?.image} className="rounded-lg"></img>
+            <div className="flex-[2] rounded-r overflow-auto h-full">
+              <div className="flex flex-col rounded-r py-6 px-6 gap-3 justify-start">
+                <img src={event?.image} className="rounded-lg "></img>
                 <span className="inline-block text-start font-semibold text-2xl">
                   {event?.title}
                 </span>
@@ -535,7 +556,7 @@ export default function SelectAllocationModal({
             </div>
           </div>
           {/* Subtotal seleccionado */}
-          <div className="flex flex-row py-3 px-2.5 justify-between gap-4 border-t border-gray-300/60 items-center">
+          <div className="flex flex-row h-auto py-3 px-2.5 justify-between gap-4 border-t border-gray-300/60 items-center">
             <div className="flex flex-row gap-4">
               <span className="inline-block font-semibold">Subtotal: </span>
               <span className="inline-block font-semibold">
@@ -547,13 +568,17 @@ export default function SelectAllocationModal({
               className="inline-block bg-purple-600 rounded-lg text-white px-2.5 py-1 cursor-pointer"
             >
               Continuar
-            </button>
+              </button>
+              {showAlertMessage && (
+                <AlertMessage id={zoneIndex}>
+                  {TICKET_SELECTION_TEXTS.alerts[errorMessage]}
+                </AlertMessage>
+              )}
+            </div>
           </div>
-        </div>
       </BaseModal>
       {modal === "seats" && (
         <AnimatePresence>
-          <SeatNumberSelectionModal
             setModal={setModal}
             seatMap={seatMap}
             zoneIndex={zoneIndex}
@@ -562,7 +587,7 @@ export default function SelectAllocationModal({
             setNotAllocatedSeatedQuantities={setNotAllocatedSeatedQuantities}
             allocatedSeatedQuantities={allocatedSeatedQuantities}
             setAllocatedSeatedQuantities={setAllocatedSeatedQuantities}
-          />
+          
         </AnimatePresence>
       )}
     </>
