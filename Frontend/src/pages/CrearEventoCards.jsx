@@ -409,29 +409,6 @@ export default function CrearEventoCards() {
         };
       });
 
-      const finalJson = {
-        organizerId: numericOrganizerId,
-        title: form.name,
-        inPerson: location.inPerson === false ? false : true,
-        description: form.description,
-        accessPolicy: "E",
-        accessPolicyDescription: form.extraInfo,
-        venue: {
-          city: location.city,
-          address: location.address,
-          addressUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-          reference: location.reference,
-          capacity: Number(location.capacity),
-        },
-        eventCategories: Array.isArray(form.categories)
-          ? form.categories.map((id) => Number(id))
-          : [],
-        salePhases: salePhases,
-        dates: eventDates,
-        zones: eventZones,
-        discounts: discounts,
-      };
-
       const formData = new FormData();
 
       // Datos simples (texto)
@@ -1070,7 +1047,7 @@ export default function CrearEventoCards() {
         isOpen={showCopyModal}
         onClose={() => setShowCopyModal(false)}
         onSelectEvent={handleCopyEvent}
-        idOrganizer={user?.userId}
+        idOrganizer={user?.organizer?.organizerId}
       />
     </section>
   );
