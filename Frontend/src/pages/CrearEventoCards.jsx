@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { useAuth } from "../services/auth/AuthContext";
 
 import StepBadge from "../components/create/StepBadge";
 import EventBasicsForm from "../components/create/EventBasicsForm";
@@ -120,7 +121,7 @@ export default function CrearEventoCards() {
   const [dates, setDates] = useState([]); // [{id, date: Date|ISO, schedules:[{id,start,end}]}]
   const handlePrev = () => setCurrent((c) => Math.max(0, c - 1));
   const isActive = (i) => current === i;
-  const user = JSON.parse(localStorage.getItem("userData"));
+  const { user } = useAuth();
 
   // Paso 2 — Ubicación (estado en el padre)
   const [location, setLocation] = useState({
@@ -222,6 +223,21 @@ export default function CrearEventoCards() {
   const generateAndPostJson = async () => {
     try {
       setPosting(true);
+
+      const organizerId = user?.organizer?.organizerId;
+
+      if (!organizerId) {
+        await Swal.fire({
+          icon: "error",
+          title: "Error de Usuario",
+          text: "No se pudo identificar tu ID de organizador. Por favor, intenta iniciar sesión de nuevo.",
+          confirmButtonText: "Entendido",
+        });
+        setPosting(false);
+        return;
+      }
+
+      const numericOrganizerId = Number(organizerId);
 
       // ====== construir el JSON (tu mismo código adaptado) ======
       const toYMD = (d) => {
@@ -394,7 +410,7 @@ export default function CrearEventoCards() {
       });
 
       const finalJson = {
-        organizerId: 1,
+        organizerId: numericOrganizerId,
         title: form.name,
         inPerson: location.inPerson === false ? false : true,
         description: form.description,
@@ -419,7 +435,7 @@ export default function CrearEventoCards() {
       const formData = new FormData();
 
       // Datos simples (texto)
-      formData.append("organizerId", 1);
+      formData.append("organizerId", numericOrganizerId);
       formData.append("title", form.name);
       formData.append("inPerson", String(location.inPerson === true));
       formData.append("description", form.description);
@@ -613,13 +629,15 @@ export default function CrearEventoCards() {
       quantity: String(zone.capacity),
       price: String(zone.basePrice),
       subtypes: zone.allocations.map((alloc) => {
-        const pricingMode = alloc.pricingMode; 
-        
+        const pricingMode = alloc.pricingMode;
+
         return {
           type: alloc.audienceName,
           pricingMode: pricingMode,
-          discount: pricingMode === 'percent' ? String(alloc.discountValue) : '',
-          newPrice: pricingMode === 'newPrice' ? String(alloc.discountValue) : '',
+          discount:
+            pricingMode === "percent" ? String(alloc.discountValue) : "",
+          newPrice:
+            pricingMode === "newPrice" ? String(alloc.discountValue) : "",
         };
       }),
     }));
