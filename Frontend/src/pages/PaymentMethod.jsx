@@ -106,12 +106,7 @@ export default function PaymentMethod() {
               </AlertMessage>
             )}
             {/* TODO: Ingreso de código de descuento*/}
-            <DiscountCode
-              userId={user.userId}
-              eventId={event.eventId}
-              order={order}
-              setOrder={setOrder}
-            />
+            <DiscountCode />
           </div>
           {/* Carrito de compras*/}
           <div className="flex flex-col w-full lg:w-2/5 items-center sm:w-full">

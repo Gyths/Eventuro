@@ -153,7 +153,7 @@ export async function createOrderRepo(input) {
 
     return {
       orderId: Number(order.orderId),
-      totalAmount,
+      subtotal: totalAmount,
       items: createdOrderItems,
     };
   });

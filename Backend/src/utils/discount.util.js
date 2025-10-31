@@ -51,6 +51,7 @@ function normalize(s) {
 }
 
 export function isItemEligibleByAppliesTo(spec, item) {
+  console.log(item);
   const zone = normalize(item?.zone);
   if (!zone) return false;
 

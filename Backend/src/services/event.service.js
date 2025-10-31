@@ -16,7 +16,6 @@ export async function listEventSvc() {
 }
 
 export async function listAvailableTicketsSvc(input) {
-  console.log(listAvailableTicketsRepo(input));
   return listAvailableTicketsRepo(input);
 }
 

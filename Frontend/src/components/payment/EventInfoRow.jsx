@@ -5,7 +5,6 @@ import useEvent from "../../services/Event/EventContext";
 
 export default function EventInfoRow({ Event }) {
   const { event } = useEvent();
-  console.log(event);
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-start gap-3 text-gray-600 text-sm">
       <div className="flex items-center gap-1">
