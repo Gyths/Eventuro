@@ -45,6 +45,8 @@ function normalize(s) {
     .toUpperCase();
 }
 
+//Spec es la zona o ámbito al que aplica el descuento
+//item es la zona a comparar
 export function isItemEligibleByAppliesTo(spec, item) {
   const zone = normalize(item?.zone);
   if (!zone) return false;
