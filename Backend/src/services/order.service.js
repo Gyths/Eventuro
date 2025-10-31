@@ -1,5 +1,6 @@
 import { createOrderRepo } from '../repositories/order.repo.js';
 import { cancelOrderRepo } from '../repositories/order.repo.js';
+import { findByUserId } from '../repositories/order.repo.js';
 
 export async function createOrderSvc(input, ctx = {}) {
 
@@ -25,4 +26,8 @@ export async function cancelOrderSvc(orderId) {
     throw new Error('orderId requerido.');
   }
   return await cancelOrderRepo(orderId);
+}
+
+export const getOrdersByUser = async (userId) => {
+  return await findByUserId(userId);
 }
