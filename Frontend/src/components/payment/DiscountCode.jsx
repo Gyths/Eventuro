@@ -1,61 +1,109 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { EventuroApi } from "../../api";
+import { useAuth } from "../../services/auth/AuthContext";
+import { XCircleIcon } from "@heroicons/react/24/outline";
+import useEvent from "../../services/Event/EventContext";
+import useOrder from "../../services/Order/OrderContext";
 import AlertMessage from "../AlertMessage";
 import { DISCOUNT_CODE_TEXTS } from "./texts";
 
-export default function DiscountCode({ userId, eventId, order, setOrder }) {
+export default function DiscountCode() {
   const endpoint = "/discount/validate";
   const method = "POST";
 
+  const { user } = useAuth();
+  const { event, setEvent } = useEvent();
+  const { order, setOrder } = useOrder();
+
+  const [errorCode, setErrorCode] = React.useState(0);
   const [discountCode, setDiscountCode] = React.useState("");
   const [appliedCodes, setAppliedCodes] = React.useState([]);
   const [showDiscountCodeAlert, setShowDiscountCodeAlert] =
     React.useState(false);
-  const handleChange = (event) => {
-    setDiscountCode(event.target.value);
-  };
-  const [errorCode, setErrorCode] = React.useState();
 
-  const handleDiscount = () => {
+  const handleChange = (event) => {
+    setDiscountCode(event.target.value.trim());
+  };
+
+  const currencies = { PEN: "S/." };
+
+  // Remover un descuento existente
+  const handleRemove = (discountId) => {
+    setAppliedCodes(
+      appliedCodes.filter((code) => code.discountId !== discountId)
+    );
+  };
+
+  // Aplicar un nuevo descuento validado desde el backend
+  const handleDiscount = async () => {
     if (discountCode === "") {
+      setErrorCode(1);
       setShowDiscountCodeAlert(true);
       return;
-    } else {
-      setShowDiscountCodeAlert(false);
     }
+
+    const alreadyApplied = appliedCodes.some(
+      (applied) => applied.code.toUpperCase() === discountCode.toUpperCase()
+    );
+
+    if (alreadyApplied) {
+      setErrorCode(9);
+      setShowDiscountCodeAlert(true);
+      return;
+    }
+
+    setShowDiscountCodeAlert(false);
 
     const data = {
       code: discountCode,
-      eventId: eventId,
-      userId: userId,
-      appliedCodes: [],
-      items: [{}],
+      eventId: event.eventId,
+      userId: user.userId,
+      appliedCodes: appliedCodes.map((code) => {
+        return code.code;
+      }),
+      items: Object.entries(event.shoppingCart).map(([zone, zoneInf]) => {
+        let quantity = 0;
+        if (zoneInf.price && zoneInf.quantity)
+          quantity = parseInt(zoneInf.quantity);
+        else {
+          Object.entries(zoneInf).map(([_, allocationInf]) => {
+            quantity += parseInt(allocationInf.quantity || 0);
+          });
+        }
+        return { zone, quantity };
+      }),
     };
 
     try {
-      console.log(discountCode);
-      const response = EventuroApi({
-        endpoint: endpoint,
-        method: method,
-        data: data,
-      });
-      if (response.success != "true") {
-        setErrorCode(response.code);
-        setShowDiscountCodeAlert(false);
+      const response = await EventuroApi({ endpoint, method, data });
+
+      if (!response.success) {
+        setErrorCode(0);
+        setShowDiscountCodeAlert(true);
         return;
       }
 
-      let order_placeholder = order;
+      const newCode = {
+        discountId: response.discount.discountId,
+        code: response.discount.code,
+        value: parseFloat(response.discount.percentage),
+        eligibleZones: response.eligibleDetail
+          .filter((item) => item.eligible)
+          .map((item) => ({
+            zone: item.zone,
+            quantity: item.quantity,
+          })),
+      };
 
-      setAppliedCodes(...appliedCodes, response.discount.code);
-      if (response.discount.type === "PERCENTAGE") {
-        order_placeholder.total =
-          parseInt(order_placeholder.total) *
-          (1 - parseInt(response.discount.value));
-        setOrder(order_placeholder);
+      setAppliedCodes((prev) => [...prev, newCode]);
+    } catch (err) {
+      try {
+        const error = JSON.parse(err.message.split(": ")[1]);
+        setShowDiscountCodeAlert(true);
+        setErrorCode(error.errorCode);
+      } catch {
+        console.warn("No se pudo parsear el JSON del error:", err.message);
       }
-    } catch (e) {
-      console.log(e);
     }
   };
 
@@ -236,11 +284,46 @@ export default function DiscountCode({ userId, eventId, order, setOrder }) {
             </button>
           </div>
         </div>
+        {showDiscountCodeAlert && (
+          <AlertMessage id="discount-code-alert">
+            {DISCOUNT_CODE_TEXTS.alerts[errorCode]}
+          </AlertMessage>
+        )}
       </div>
-      {showDiscountCodeAlert && (
-        <AlertMessage id="discount-code-alert">
-          {DISCOUNT_CODE_TEXTS.alerts[0]}
-        </AlertMessage>
+      {/* Mostrar códigos aplicados */}
+      {appliedCodes.length > 0 && (
+        <div className="flex w-auto">
+          <div className="flex flex-col gap-2">
+            {appliedCodes.map((code) => (
+              <div
+                key={code.discountId}
+                className="flex flex-row w-auto rounded-2xl border justify-between border-gray-300 bg-white shadow-2xs"
+              >
+                <div className="flex flex-col p-4">
+                  <span className="text-3xl font-bold text-center">
+                    {code.code}
+                  </span>
+                  {code.eligibleZones.map((item, idx) => (
+                    <span key={idx}>
+                      {item.zone} x{item.quantity}
+                    </span>
+                  ))}
+                </div>
+                <div className="flex border-l border-gray-300">
+                  <div className="flex px-4 text-5xl font-bold text-center items-center justify-center">
+                    {code.value + "%"}
+                  </div>
+                </div>
+                <div
+                  onClick={() => handleRemove(code.discountId)}
+                  className="flex items-center px-2 cursor-pointer hover:bg-gray-100 transition-all duration-300 rounded-r-2xl"
+                >
+                  <XCircleIcon className="size-5 text-red-500" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
     </>
   );

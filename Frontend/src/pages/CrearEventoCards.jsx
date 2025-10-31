@@ -28,7 +28,6 @@ import { BASE_URL } from "../config.js";
 //Copiar Configuracion
 import CopyConfigModal from "../components/create/CopyConfigModal";
 
-import { useAuth } from "../services/auth/AuthContext";
 
 function WizardCard({ title, subtitle, badge, children }) {
   return (
