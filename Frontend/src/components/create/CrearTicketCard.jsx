@@ -3,19 +3,19 @@ import BotonCTA from "../BotonCTA";
 import FormField from "./FormField";
 import SelectInput from "./SelectInput";
 import TextInput from "./TextInput";
-import CrearTicketLine from "./CrearTicketLine"; 
+import CrearTicketLine from "./CrearTicketLine";
 
 export default function CrearTicketCard({ value, onChange }) {
   const controlled = !!value;
-  
+
   const [state, setState] = useState(
     value ?? {
       currency: "PEN",
       zones: [
-        { 
-          zoneName: "", 
-          subtypes: [{ type: "", quantity: "", price: "" }] 
-        }
+        {
+          zoneName: "",
+          subtypes: [{ type: "", quantity: "", price: "" }],
+        },
       ],
       endSaleWhen: "termino",
       maxPerUser: "10",
@@ -24,37 +24,43 @@ export default function CrearTicketCard({ value, onChange }) {
   );
 
   // Sync with parent component
-  useEffect(() => { if (controlled) setState(value); }, [controlled, value]);
+  useEffect(() => {
+    if (controlled) setState(value);
+  }, [controlled, value]);
 
-  // Generic update handler 
+  // Generic update handler
   const set = (patch) => {
-    const next = typeof patch === "function" ? patch(state) : { ...state, ...patch };
+    const next =
+      typeof patch === "function" ? patch(state) : { ...state, ...patch };
     if (!controlled) setState(next);
     onChange?.(next);
   };
 
   const sanitizeInt = (v) => v.replace(/\D+/g, "");
 
-  const toggleTier = () => set({
-    ...state,
-    tier: { ...state.tier, enabled: !state.tier.enabled }
-  });
+  const toggleTier = () =>
+    set({
+      ...state,
+      tier: { ...state.tier, enabled: !state.tier.enabled },
+    });
 
   // Add new zone card.
   const handleAddZone = () => {
-    const newZone = { 
-      zoneName: "", 
-      subtypes: [{ type: "", quantity: "", price: "" }] 
+    const newZone = {
+      zoneName: "",
+      subtypes: [{ type: "", quantity: "", price: "" }],
     };
-    set(currentState => ({
+    set((currentState) => ({
       ...currentState,
-      zones: [...currentState.zones, newZone]
+      zones: [...currentState.zones, newZone],
     }));
   };
 
   return (
     <section className="rounded-[28px] bg-white p-5 sm:p-6 lg:p-7 shadow-sm border border-gray-200">
-      <h3 className="text-lg font-semibold text-gray-800 mb-4">Crear Entradas por Zona</h3>
+      <h3 className="text-lg font-semibold text-gray-800 mb-4">
+        Crear Entradas por Zona
+      </h3>
 
       {/* Currency selection + Crear entrada button*/}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-5">
@@ -128,13 +134,20 @@ export default function CrearTicketCard({ value, onChange }) {
               <TextInput
                 placeholder="Ej. 50"
                 value={state.tier.qty}
-                onChange={(v) => set(s => ({ ...s, tier: { ...s.tier, qty: sanitizeInt(v) } }))}
+                onChange={(v) =>
+                  set((s) => ({
+                    ...s,
+                    tier: { ...s.tier, qty: sanitizeInt(v) },
+                  }))
+                }
               />
             </FormField>
             <FormField label="Periodo">
               <SelectInput
                 value={state.tier.period}
-                onChange={(v) => set(s => ({ ...s, tier: { ...s.tier, period: v } }))}
+                onChange={(v) =>
+                  set((s) => ({ ...s, tier: { ...s.tier, period: v } }))
+                }
                 options={[
                   { value: "diariamente", label: "Diariamente" },
                   { value: "semanalmente", label: "Semanalmente" },

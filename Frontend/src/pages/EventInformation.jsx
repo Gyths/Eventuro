@@ -1,7 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../services/auth/AuthContext";
-import { select_test } from "../components/payment/tests";
+
+import { useModal } from "../context/ModalContext";
 import useEvent from "../services/Event/EventContext";
 import useOrder from "../services/Order/OrderContext";
 import { EventuroApi } from "../api";
@@ -34,7 +35,7 @@ export default function TicketSelection() {
   //State para el manejo del scroll
   const [scrolled, setScrolled] = React.useState(false);
   //State para manejar modales
-  const [modal, setModal] = React.useState("");
+  const { modal, setModal } = useModal(null);
 
   const [selectedData, setSelectedData] = React.useState();
   const currencies = { PEN: "S/." };
@@ -151,10 +152,10 @@ export default function TicketSelection() {
         <div className="flex flex-col z-10 justify-center min-h-screen text-center gap-20">
           <div className="flex px-5 relative flex-col md:flex-row xl:flex-row justify-center gap-10 md:gap-0 xl:gap-0 items-stretch md:px-8">
             {/* Imagen */}
-            <div className="flex w-full md:max-w-[30vw] scale-y-110 xl:max-w-[30vw] overflow-hidden rounded-lg">
+            <div className="flex w-full md:max-w-[30vw] scale-y-110 xl:max-w-[30vw] rounded-lg">
               <img
                 src={event?.image}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover rounded-lg"
                 alt="Imagen del evento"
               />
             </div>
@@ -201,34 +202,59 @@ export default function TicketSelection() {
                     {event?.accessPolicyDescription}
                   </p>
                 </div>
-                <div className="flex flex-1 flex-row justify-start items-center text-center gap-4">
-                  <MapPinIcon className="inline-block size-5"></MapPinIcon>
-                  <span className="flex text-start">
-                    {event?.venue?.address}
-                  </span>
-                </div>
+                {event?.inPerson && (
+                  <div className="flex flex-1 flex-row justify-start items-center text-center gap-4">
+                    <MapPinIcon className="inline-block size-5"></MapPinIcon>
+                    <span className="flex text-start">
+                      {event?.venue?.address}
+                    </span>
+                  </div>
+                )}
               </div>
               {/* ZONAS */}
               <div className="flex flex-row pl-10">
-                <span className="flex font-semibold text-2xl justify-start items">
-                  Zonas
+                <span className="flex font-semibold text-2xl justify-start items py-1.5">
+                  Precios
                 </span>
               </div>
               <div className="flex w-4/5 flex-col pl-10">
-                {event?.dates &&
-                  event.dates[0]?.zoneDates.map((zone, index) => (
-                    <div
-                      key={index}
-                      className="flex flex-row w-full border justify-between border-gray-400 p-4"
-                    >
-                      <span className="inline-block font-semibold">
-                        {zone.name}
-                      </span>
-                      <span className="font-semibold justify-end">
-                        {currencies.PEN + " " + zone.basePrice}
-                      </span>
-                    </div>
-                  ))}
+                <div className="grid grid-cols-2 justify-between text-start py-3 px-5">
+                  <span className="flex w-1/2"></span>
+                  <div className="flex flex-row w-full justify-between">
+                    {event.dates &&
+                      event.dates[0].zoneDates[0].allocations &&
+                      event.dates[0].zoneDates[0].allocations.map(
+                        (allocation) => (
+                          <span className="inline-block">
+                            {allocation.audienceName}
+                          </span>
+                        )
+                      )}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 justify-between text-start py-3 border border-gray-400 shadow-2xs rounded-2xl px-5">
+                  {event?.dates &&
+                    event.dates[0]?.zoneDates.map((zone, index) => (
+                      <>
+                        <span className="inline-block justify-start w-auto font-semibold">
+                          {zone.name}
+                        </span>
+                        <div className="flex flex-row w-full justify-between">
+                          {zone.allocations &&
+                            zone.allocations.map((allocation) => (
+                              <span className="font-semibold justify-end">
+                                {currencies.PEN + " " + allocation.price}
+                              </span>
+                            ))}
+                          {!zone.allocations && (
+                            <span className="font-semibold justify-end">
+                              {currencies.PEN + " " + zone.basePrice}
+                            </span>
+                          )}
+                        </div>
+                      </>
+                    ))}
+                </div>
               </div>
               {/* Botón de compras */}
               <div className="flex flex-row w-full justify-center xl:justify-end px-5 items-center p-2.5">
@@ -246,24 +272,28 @@ export default function TicketSelection() {
             <span className="inline-block text-start font-bold text-4xl p-6">
               Información adicional
             </span>
-            <div className="flex flex-row">
-              <div className="flex flex-col gap-6">
-                <h2 className="font-bold text-2xl text-start">
-                  Ubicación en mapa :D
-                </h2>
-                <div className="flex size-auto border-2 h-[40vh] sm:h-[60vh] md:h-[60vh] lg:h-[60vh] sm:w-[40vw] md:w-[40vw] lg:w-[30vw] ">
-                  <iframe
-                    className="flex border-r-2 relative h-auto w-full"
-                    src={
-                      "https://www.google.com/maps?q=" +
-                      encodeURIComponent(event?.venue?.address) +
-                      "&output=embed"
-                    }
-                    allowFullScreen
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                  />
-                </div>
+            <div className="flex flex-row gap-10">
+              <div lassName="flex flex-col gap-10">
+                {event?.inPerson && (
+                  <>
+                    <h2 className="font-bold text-2xl w-full text-start">
+                      Ubicación en mapa
+                    </h2>
+                    <div className="flex size-auto border-2 h-[40vh] sm:h-[60vh] md:h-[30vh] lg:h-[40vh] sm:w-[60vw] md:w-[40vw] lg:w-[20vw]">
+                      <iframe
+                        className="flex relative h-autow-full"
+                        src={
+                          "https://www.google.com/maps?q=" +
+                          encodeURIComponent(event?.venue?.address) +
+                          "&output=embed"
+                        }
+                        allowFullScreen
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                      />
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>

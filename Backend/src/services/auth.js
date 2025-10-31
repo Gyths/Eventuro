@@ -23,7 +23,23 @@ export function buildUserResponse(u) {
   if (u.organizer) roles.push("ORGANIZER");
   if (u.administrator) roles.push("ADMIN");
   const organizerStatus = u.organizer?.status ?? null;
-  return { userId:String(u.userId), name:u.name, lastName:u.lastName, email:u.email, roles, organizerStatus };
+
+  return {
+    userId: String(u.userId),
+    name: u.name,
+    lastName: u.lastName,
+    email: u.email,
+    roles,
+    organizerStatus,
+
+    
+    organizer: u.organizer
+      ? {
+          organizerId: u.organizer.organizerId.toString(),
+        }
+      : null,
+    
+  };
 }
 
 /** Devuelve { roles, organizerStatus, user } desde BD */
