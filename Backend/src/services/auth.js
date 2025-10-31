@@ -23,7 +23,24 @@ export function buildUserResponse(u) {
   if (u.organizer) roles.push("ORGANIZER");
   if (u.administrator) roles.push("ADMIN");
   const organizerStatus = u.organizer?.status ?? null;
-  return { userId:String(u.userId), name:u.name, lastName:u.lastName, email:u.email, roles, organizerStatus };
+
+  return {
+    userId: String(u.userId),
+    name: u.name,
+    lastName: u.lastName,
+    email: u.email,
+    roles,
+    organizerStatus,
+
+    // --- ¡AÑADE ESTE BLOQUE! ---
+    // (Asegúrate de que el ID en tu BD se llame 'organizerId')
+    organizer: u.organizer
+      ? {
+          organizerId: u.organizer.organizerId.toString(),
+        }
+      : null,
+    // --- FIN DEL CAMBIO ---
+  };
 }
 
 /** Devuelve { roles, organizerStatus, user } desde BD */

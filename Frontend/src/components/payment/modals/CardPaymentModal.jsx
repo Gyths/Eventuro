@@ -2,7 +2,6 @@ import React from "react";
 import BaseModal from "../../BaseModal";
 
 import useOrder from "../../../services/Order/OrderContext";
-import useEvent from "../../../services/Event/EventContext";
 import { useAuth } from "../../../services/auth/AuthContext";
 
 import logo from "../../../assets/logo.svg";
@@ -18,7 +17,6 @@ export default function CardPaymentModal({ onClose, onSuccess, onFail }) {
     "flex p-1.5 bg-gray-50 border-b border-black outline-none focus:scale-101 transition-transform";
 
   const { order } = useOrder();
-  const { event } = useEvent();
   const { user } = useAuth();
 
   const ticketEnpoint = "/tickets";
@@ -67,23 +65,9 @@ export default function CardPaymentModal({ onClose, onSuccess, onFail }) {
     const form = e.target;
     !form.reportValidity();
 
-    let discountIds = [];
-    if (event.shoppingCart) {
-      Object.entries(event.shoppingCart).map(([zoneName, zone]) => {
-        if (zone.discountsApplied) {
-          zone.discountsApplied.map((discount) => {
-            !discountIds.includes(discount.discountId) &&
-              discountIds.push(discount.discountId);
-          });
-        }
-      });
-    }
-    console.log(discountIds);
-
     const ticketData = {
       orderId: order.orderId,
       buyerUserId: user.userId,
-      discountIds: discountIds,
     };
     console.log(ticketData);
 
@@ -95,12 +79,12 @@ export default function CardPaymentModal({ onClose, onSuccess, onFail }) {
         saveLocalStorage: true,
         storageName: "ticketData",
       });
-      console.log(response);
     } catch (err) {
       onFail();
       console.error("Error al crear al realizar la compra:", err);
       throw err;
     }
+
     onSuccess();
   }
 

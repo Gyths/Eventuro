@@ -6,30 +6,32 @@ import BotonEliminar from "../BotonEliminar";
 
 export default function SalesSeasonCard({ value, onChange }) {
   const controlled = !!value;
-  
+
   const [state, setState] = useState(
     value ?? {
       seasons: [
-        { 
+        {
           id: Date.now(),
-          name: "", 
+          name: "",
           percentage: "10",
           isIncrease: false, // false = descuento, true = aumento
           startDate: "",
-          endDate: ""
-        }
-      ]
+          endDate: "",
+          ticketLimit: "",
+        },
+      ],
     }
   );
 
   // Sync with parent component
-  useEffect(() => { 
-    if (controlled) setState(value); 
+  useEffect(() => {
+    if (controlled) setState(value);
   }, [controlled, value]);
 
-  // Generic update handler 
+  // Generic update handler
   const set = (patch) => {
-    const next = typeof patch === "function" ? patch(state) : { ...state, ...patch };
+    const next =
+      typeof patch === "function" ? patch(state) : { ...state, ...patch };
     if (!controlled) setState(next);
     onChange?.(next);
   };
@@ -38,63 +40,63 @@ export default function SalesSeasonCard({ value, onChange }) {
 
   // Add new season
   const handleAddSeason = () => {
-    const newSeason = { 
+    const newSeason = {
       id: Date.now(),
-      name: "", 
+      name: "",
       percentage: "10",
       isIncrease: false,
       startDate: "",
-      endDate: ""
+      endDate: "",
+      ticketLimit: "",
     };
-    set(currentState => ({
+    set((currentState) => ({
       ...currentState,
-      seasons: [...currentState.seasons, newSeason]
+      seasons: [...currentState.seasons, newSeason],
     }));
   };
 
   // Delete season
   const handleDeleteSeason = (id) => {
-    set(currentState => ({
+    set((currentState) => ({
       ...currentState,
-      seasons: currentState.seasons.filter(s => s.id !== id)
+      seasons: currentState.seasons.filter((s) => s.id !== id),
     }));
   };
 
   // Update specific season
   const updateSeason = (id, field, value) => {
-    set(currentState => ({
+    set((currentState) => ({
       ...currentState,
-      seasons: currentState.seasons.map(s => 
+      seasons: currentState.seasons.map((s) =>
         s.id === id ? { ...s, [field]: value } : s
-      )
+      ),
     }));
   };
 
   // Toggle between increase/decrease
   const toggleSeasonType = (id) => {
-    set(currentState => ({
+    set((currentState) => ({
       ...currentState,
-      seasons: currentState.seasons.map(s => 
+      seasons: currentState.seasons.map((s) =>
         s.id === id ? { ...s, isIncrease: !s.isIncrease } : s
-      )
+      ),
     }));
   };
 
   return (
     <section className="rounded-[28px] bg-white p-5 sm:p-6 lg:p-7 shadow-sm border border-gray-200">
       <div className="flex items-center justify-between mb-5">
-        <h3 className="text-lg font-semibold text-gray-800">Temporadas de Venta</h3>
-        <BotonCTA
-          onClick={handleAddSeason}
-          variant="primary"
-        >
+        <h3 className="text-lg font-semibold text-gray-800">
+          Temporadas de Venta
+        </h3>
+        <BotonCTA onClick={handleAddSeason} variant="primary">
           + Nueva Temporada
         </BotonCTA>
       </div>
 
       <div className="space-y-4">
         {state.seasons.map((season, idx) => (
-          <div 
+          <div
             key={season.id}
             className="rounded-2xl bg-white shadow-md p-4 sm:p-5 border border-gray-200"
           >
@@ -130,7 +132,9 @@ export default function SalesSeasonCard({ value, onChange }) {
                       <TextInput
                         placeholder="10"
                         value={season.percentage}
-                        onChange={(v) => updateSeason(season.id, "percentage", sanitizeInt(v))}
+                        onChange={(v) =>
+                          updateSeason(season.id, "percentage", sanitizeInt(v))
+                        }
                       />
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
                         %
@@ -146,7 +150,9 @@ export default function SalesSeasonCard({ value, onChange }) {
                   <input
                     type="date"
                     value={season.startDate}
-                    onChange={(e) => updateSeason(season.id, "startDate", e.target.value)}
+                    onChange={(e) =>
+                      updateSeason(season.id, "startDate", e.target.value)
+                    }
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
                   />
                 </FormField>
@@ -158,30 +164,51 @@ export default function SalesSeasonCard({ value, onChange }) {
                   <input
                     type="date"
                     value={season.endDate}
-                    onChange={(e) => updateSeason(season.id, "endDate", e.target.value)}
+                    onChange={(e) =>
+                      updateSeason(season.id, "endDate", e.target.value)
+                    }
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+                  />
+                </FormField>
+              </div>
+
+              {/* Límite de Tickets */}
+              <div className="lg:col-span-2">
+                <FormField label="Límite Tickets">
+                  <TextInput
+                    type="number"
+                    placeholder="Ej. 100"
+                    value={season.ticketLimit}
+                    onChange={(v) =>
+                      updateSeason(season.id, "ticketLimit", sanitizeInt(v))
+                    }
                   />
                 </FormField>
               </div>
 
               {/* Delete Button */}
               <div className="lg:col-span-2 flex items-end justify-center lg:justify-start pb-1.5">
-                <BotonEliminar
-                  onClick={() =>
-                  handleDeleteSeason(season.id)
-                  }
-                />
+                <BotonEliminar onClick={() => handleDeleteSeason(season.id)} />
               </div>
             </div>
 
             {/* Season indicator */}
             <div className="mt-3 text-xs text-gray-600">
               <span className="font-medium">Temporada {idx + 1}:</span>{" "}
-              <span className={season.isIncrease ? "text-red-600" : "text-green-600"}>
-                {season.isIncrease ? "+" : "-"}{season.percentage || "0"}%
-              </span>
-              {" "}
-              {season.name && `(${season.name})`}
+              <span
+                className={
+                  season.isIncrease ? "text-red-600" : "text-green-600"
+                }
+              >
+                {season.isIncrease ? "+" : "-"}
+                {season.percentage || "0"}%
+              </span>{" "}
+              {season.name && `(${season.name})`}{" "}
+              {season.ticketLimit && (
+                <span className="text-blue-600">
+                  (Límite: {season.ticketLimit} tickets)
+                </span>
+              )}
             </div>
           </div>
         ))}
@@ -189,7 +216,8 @@ export default function SalesSeasonCard({ value, onChange }) {
 
       {state.seasons.length === 0 && (
         <div className="text-center py-8 text-gray-500">
-          No hay temporadas configuradas. Haz clic en "+ Nueva Temporada" para agregar una.
+          No hay temporadas configuradas. Haz clic en "+ Nueva Temporada" para
+          agregar una.
         </div>
       )}
     </section>

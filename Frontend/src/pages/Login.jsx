@@ -19,7 +19,7 @@ export default function Login() {
       <LoginCard
         onSubmit={async ({ email, password }) => {
           try {
-            // 1️⃣ Llamada de login
+           
             const response = await fetch(`${BASE_URL}/login`, {
               method: "POST",
               headers: {

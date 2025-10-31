@@ -21,7 +21,7 @@ export default function AddCategoryModal({
       if (isEditing) {
         // Modo Edición: Rellena los campos
         setCategoryName(initialData.name || "");
-        setCategoryDescription(initialData.description || ""); // Asumo que quieres editar la descripción también
+        setCategoryDescription(initialData.description || "");
         setCategoryInitials(initialData.initials || "");
       } else {
         // Modo Creación: Limpia los campos
@@ -30,7 +30,7 @@ export default function AddCategoryModal({
         setCategoryInitials("");
       }
     }
-  }, [isOpen, initialData, isEditing]); // Dependencias del efecto
+  }, [isOpen, initialData, isEditing]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -40,7 +40,6 @@ export default function AddCategoryModal({
         description: categoryDescription.trim(),
         initials: categoryInitials.trim(),
       });
-      // El modal se cierra desde el 'onSave' (handleUpdateCategory)
     } else {
       alert(
         "El nombre y las iniciales de la categoría no pueden estar vacíos."
@@ -74,7 +73,7 @@ export default function AddCategoryModal({
           <img src={logo} alt="Eventuro" className="h-8 w-auto" />
 
           <button
-            onClick={onClose} // Llama a la función 'onClose' pasada por props
+            onClick={onClose}
             className="text-white p-1.5 rounded-lg border border-white/50 hover:bg-white/10 transition-colors"
             title="Cerrar"
           >
@@ -82,7 +81,6 @@ export default function AddCategoryModal({
           </button>
         </div>
 
-        {/* --- Contenido del Modal --- */}
         <div className="p-6">
           {/* TÍTULO */}
           <h2 className="text-3xl font-bold text-gray-900 mb-6">
@@ -92,7 +90,7 @@ export default function AddCategoryModal({
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Input para el nombre */}
             <div className="flex gap-4">
-              {/* Campo Nombre (ocupa más espacio) */}
+              {/* Campo Nombre */}
               <div className="flex-grow">
                 <label htmlFor="categoryName" className="sr-only">
                   Ingrese el nombre de la categoría
@@ -107,7 +105,7 @@ export default function AddCategoryModal({
                 />
               </div>
 
-              {/* Campo Iniciales (ocupa menos espacio) */}
+              {/* Campo Iniciales */}
               <div className="w-1/3">
                 <label htmlFor="categoryInitials" className="sr-only">
                   Iniciales de la categoría

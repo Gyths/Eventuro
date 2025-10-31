@@ -19,30 +19,33 @@ export function logout(req, res, next) {
 
 export const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const { token, user } = await loginWithCredentials(email, password);
-    res.json({
-      token,
-      user: {
-        userId: user.userId.toString(),
-        name: user.name,
-        lastName: user.lastName,
-        phone: user.phone,
-        email: user.email,
-        birthdate: user.birthdate,
-        gender: user.gender,
-        status: user.status,
-        roles: [
-          user.administrator ? "ADMIN" : null,
-          user.organizer ? "ORGANIZER" : null
-        ].filter(Boolean),
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt
-      }
-    });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
+      const { email, password } = req.body;
+      const { token, user } = await loginWithCredentials(email, password);
+      res.json({ 
+        token, 
+        user: {
+          userId: user.userId.toString(),
+          name: user.name,
+          lastName: user.lastName,
+          phone: user.phone,
+          email: user.email,
+          birthdate: user.birthdate,
+          gender: user.gender,
+          status: user.status,
+          roles: [
+            user.administrator ? "ADMIN" : null,
+            user.organizer ? "ORGANIZER" : null
+          ].filter(Boolean),
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+          organizer: user.organizer ? {
+            organizerId: user.organizer.organizerId.toString() // O el nombre del ID en tu BD (ej: 'id')
+          } : null
+        }
+      });
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
 };
 
 export const googleCallback = async (req, res) => {
@@ -87,6 +90,10 @@ export const googleCallback = async (req, res) => {
       ].filter(Boolean),
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
+      organizer: user.organizer ? {
+        // Usa el nombre del ID de tu tabla Organizer (ej: 'id' o 'organizerId')
+        organizerId: user.organizer.organizerId.toString() 
+      } : null
     };
 
     const encodedUser = encodeURIComponent(JSON.stringify(userSafe));

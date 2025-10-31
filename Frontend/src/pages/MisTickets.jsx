@@ -1,143 +1,338 @@
-import { useState } from "react";
+// src/pages/MisOrdenes.jsx
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useAuth } from "../services/auth/AuthContext";
+import { EventuroApi } from "../api";
 import QRCode from "react-qr-code";
+import placeholder from "../assets/image-placeholder.svg";
+import RefundRequestModal from "../components/RefundRequestModal";
+import SuccessModal from "../components/SuccessModal";
 
-const ticketsDemo = [
-  {
-    id: 1,
-    title: "Chocolatada 3.0",
-    date: "Lunes, 17 octubre 2025 · 16:00 pm",
-    address: "C. José Díaz s/n Lima 15046",
-    image: "/demo/chocolatada.jpg",
-    tags: ["Estudiante", "General"],
-    qrValue: "TICKET-123456",
-    user: { name: "Juan Pérez", document: "12.345.678" },
-    zone: "Palcos | Fila 2",
-    quantity: 2,
-  },
-  {
-    id: 2,
-    title: "Concierto Sinfónico PUCP",
-    date: "Viernes, 20 noviembre 2025 · 19:00 pm",
-    address: "Av. Universitaria 1801, San Miguel",
-    image: "/demo/sinfonico.jpg",
-    tags: ["General"],
-    qrValue: "TICKET-654321",
-    user: { name: "María López", document: "45.678.912" },
-    zone: "Zona A | Asiento 45",
-    quantity: 1,
-  },
-];
+const CURRENCIES = { PEN: "S/.", USD: "$" };
 
-export default function MisTickets() {
-  const [selected, setSelected] = useState(ticketsDemo[0]);
+function fmtMoney(v) {
+  if (v == null) return "0.00";
+  const n = Number(v);
+  return n.toLocaleString("es-PE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function fmtDateTime(d) {
+  if (!d) return "";
+  const date = new Date(d);
+  return date.toLocaleString("es-PE", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+/** Mapea una orden del backend a lo que la lista necesita */
+function mapOrderToCard(order) {
+  const currency = order.currency || "PEN";
+  const sym = CURRENCIES[currency] || currency;
+  const firstItem = Array.isArray(order.items) && order.items[0] ? order.items[0] : null;
+
+  const title =
+    firstItem?.eventDate?.event?.title ||
+    (order.items?.length ? `Compra de ${order.items.length} ítem(s)` : "Orden sin ítems");
+
+  const image = firstItem?.eventDate?.event?.image || placeholder;
+  const when = firstItem?.eventDate?.startAt
+    ? fmtDateTime(firstItem.eventDate.startAt)
+    : fmtDateTime(order.createdAt);
+
+  return {
+    id: Number(order.orderId),
+    title,
+    subtitle: when,
+    image,
+    totalLabel: `${sym} ${fmtMoney(order.totalAmount)}`,
+    currencySymbol: sym,
+    raw: order,
+  };
+}
+
+export default function MisOrdenes() {
+  const { user } = useAuth();
+  const [orders, setOrders] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let abort = false;
+
+    async function load() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const res = await EventuroApi({
+          endpoint: `/orders/byUser/${user.userId}?pageSize=100`,
+          method: "GET",
+        });
+
+        const items = Array.isArray(res?.items) ? res.items : [];
+        const mapped = items.map(mapOrderToCard);
+
+        if (!abort) {
+          setOrders(mapped);
+          setSelected(mapped[0] ?? null);
+        }
+      } catch (e) {
+        if (!abort) setError(e?.message || "Error cargando órdenes");
+      } finally {
+        if (!abort) setLoading(false);
+      }
+    }
+
+    if (user?.userId) load();
+    return () => {
+      abort = true;
+    };
+  }, [user?.userId]);
+
+  const first = useMemo(() => orders[0] || null, [orders]);
+  useEffect(() => {
+    setSelected(first);
+  }, [first]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen grid place-items-center text-gray-500">
+        Cargando tus órdenes…
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen grid place-items-center">
+        <div className="rounded-xl bg-red-50 text-red-700 px-4 py-3">{error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pb-10">
-      {/* Título */}
       <div className="max-w-7xl mx-auto px-6 pt-10">
         <h1 className="text-3xl font-bold text-gray-800 mb-8">
-          Cuenta <span className="text-gray-400">{">"}</span> Mis Entradas
+          Cuenta <span className="text-gray-400">{">"}</span> Mis Tickets
         </h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8">
-          {/* Lista de tickets */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_520px] gap-8">
+          {/* Lista de órdenes (izquierda) */}
           <div className="flex flex-col gap-5">
-            {ticketsDemo.map((t) => (
+            {orders.length === 0 && (
+              <div className="rounded-2xl bg-white p-6 text-gray-500 text-center">Aún no tienes órdenes.</div>
+            )}
+
+            {orders.map((o) => (
               <div
-                key={t.id}
-                onClick={() => setSelected(t)}
+                key={o.id}
+                onClick={() => setSelected(o)}
                 className={`flex cursor-pointer gap-4 rounded-2xl bg-white p-4 shadow-md transition hover:shadow-lg ${
-                  selected?.id === t.id ? "ring-2 ring-purple-400" : ""
+                  selected?.id === o.id ? "ring-2 ring-purple-400" : ""
                 }`}
               >
-                <img
-                  src={t.image}
-                  alt={t.title}
-                  className="h-24 w-40 rounded-lg object-cover"
-                />
+                <img src={o.image} alt={o.title} className="h-24 w-40 rounded-lg object-cover" />
 
                 <div className="flex flex-col justify-center flex-1">
-                  <div className="flex gap-2 mb-1">
-                    {t.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="rounded-full bg-purple-100 text-purple-700 px-3 py-0.5 text-xs font-medium"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                  <h2 className="text-lg font-semibold text-gray-900">{t.title}</h2>
-                  <p className="text-sm text-gray-500 mt-0.5">{t.address}</p>
-                  <p className="text-xs text-gray-400">{t.date}</p>
+                  <h2 className="text-lg font-semibold text-gray-900">{o.title}</h2>
+                  <p className="text-xs text-gray-500 mt-0.5">{o.subtitle}</p>
+                </div>
+
+                <div className="flex items-center">
+                  <span className="text-sm font-semibold text-gray-900">{o.totalLabel}</span>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Detalle del ticket */}
-          <div className="rounded-2xl bg-white shadow-lg border border-gray-100 p-6 flex flex-col">
-            {selected ? (
-              <>
-                <h3 className="text-xl font-semibold text-purple-900 mb-1">
-                  {selected.title}
-                </h3>
-                <p className="text-sm text-gray-600 mb-3">{selected.date}</p>
-
-                <img
-                  src={selected.image}
-                  alt={selected.title}
-                  className="rounded-xl w-full object-cover h-48 mb-4"
-                />
-
-                <div className="flex items-center gap-2 text-gray-700 mb-3">
-                  <svg
-                    width="18"
-                    height="18"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M12 2C8 2 4 5 4 10c0 6 8 12 8 12s8-6 8-12c0-5-4-8-8-8z" />
-                    <circle cx="12" cy="10" r="3" />
-                  </svg>
-                  <span className="text-sm">{selected.address}</span>
-                </div>
-
-                <div className="text-sm text-gray-700 mb-3">
-                  <p className="font-semibold text-gray-900 mb-1">Datos</p>
-                  <p>Nombre: {selected.user.name}</p>
-                  <p>Documento: {selected.user.document}</p>
-                </div>
-
-                <div className="text-sm text-gray-700 mb-4">
-                  <p className="font-semibold text-gray-900 mb-1">Zona</p>
-                  <p>{selected.zone}</p>
-                  <p>Cantidad: {selected.quantity}</p>
-                </div>
-
-                <div className="flex justify-center mb-5">
-                  <QRCode
-                    value={selected.qrValue}
-                    size={140}
-                    bgColor="#ffffff"
-                    fgColor="#000000"
-                  />
-                </div>
-
-                <button className="rounded-xl bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 transition">
-                  Descargar
-                </button>
-              </>
+          {/* Detalle de la orden (derecha) con desglose por subcategoría */}
+          <div className="rounded-2xl bg-white shadow-lg border border-gray-100 p-6">
+            {!selected ? (
+              <p className="text-gray-400 text-center mt-20">Selecciona una orden para ver su detalle.</p>
             ) : (
-              <p className="text-gray-400 text-center mt-20">
-                Selecciona un ticket para ver su información.
-              </p>
+              <OrderDetail orderCard={selected} />
             )}
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+/** Tarjeta de detalle tipo ticket con imagen + QR + botón Descargar + Devolución */
+function OrderDetail({ orderCard }) {
+  const { user } = useAuth();
+  const o = orderCard.raw;
+  const cardRef = useRef(null);
+
+  // ► Estados de modales aquí (¡ANTES FALTABAN!)
+  const [showRefund, setShowRefund] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  // Primer ítem como base del ticket
+  const firstItem = Array.isArray(o.items) && o.items[0] ? o.items[0] : null;
+  const ev = firstItem?.eventDate?.event;
+  const title = ev?.title || "Evento";
+  const when = firstItem?.eventDate?.startAt ? fmtDateTime(firstItem.eventDate.startAt) : "";
+  const image = ev?.image || orderCard.image || placeholder;
+  const location = ev?.venue
+    ? [ev.venue.city, ev.venue.address || ev.venue.reference].filter(Boolean).join(" ")
+    : ev?.inPerson
+    ? "Evento presencial"
+    : "Acceso virtual";
+
+  // Cantidad total & zona de referencia
+  const totalQty = (o.items || []).reduce((acc, it) => acc + (it.quantity ?? 1), 0);
+  const zoneText = firstItem?.seat
+    ? `Palcos | Fila ${firstItem.seat.rowNumber}`
+    : `Zona ${firstItem?.zone?.name ?? "General"}`;
+
+  // === Desglose por Zona × Subcategoría ===
+  const pairs = (o.items || []).map((it) => ({
+    zone: it?.zone?.name ?? "General",
+    audience: it?.allocation?.audienceName ?? "General",
+    qty: it?.quantity ?? 1,
+  }));
+
+  const grouped = pairs.reduce((acc, { zone, audience, qty }) => {
+    const key = `${zone}||${audience}`;
+    acc[key] = (acc[key] || 0) + qty;
+    return acc;
+  }, {});
+
+  const breakdown = Object.entries(grouped)
+    .map(([k, q]) => {
+      const [zone, audience] = k.split("||");
+      return { zone, audience, qty: q };
+    })
+    .sort((a, b) => a.zone.localeCompare(b.zone) || a.audience.localeCompare(b.audience));
+
+  // Valor del QR
+  const qrValue = `ORDER:${o.orderId};ITEM:${firstItem?.orderItemId ?? "NA"}`;
+
+  // Imprimir sólo la tarjeta
+  function handleDownload() {
+    if (!cardRef.current) return;
+    const win = window.open("", "_blank", "noopener,noreferrer");
+    if (!win) return;
+    const html = `
+      <html>
+        <head>
+          <meta charset="utf-8"/>
+          <title>Ticket</title>
+          <style>
+            body{font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial; padding:16px;}
+            .ticket{max-width:420px; margin:0 auto; border:1px solid #c7d2fe; border-radius:14px; padding:16px;}
+            img{max-width:100%; border-radius:12px;}
+          </style>
+        </head>
+        <body onload="window.print(); setTimeout(()=>window.close(), 50)">
+          <div class="ticket">${cardRef.current.innerHTML}</div>
+        </body>
+      </html>`;
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+  }
+
+  return (
+    <>
+      <div ref={cardRef} className="rounded-2xl border border-blue-300 p-4 sm:p-5">
+        {/* Título y fecha */}
+        <h3 className="text-2xl font-extrabold text-purple-900 mb-1">{title}</h3>
+        <p className="text-sm text-gray-700 mb-3">{when}</p>
+
+        {/* Imagen grande */}
+        <img src={image} alt={title} className="w-full h-52 object-cover rounded-xl mb-3" />
+
+        {/* Ubicación */}
+        <div className="flex items-center gap-2 text-gray-800 mb-4">
+          <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24" className="text-purple-600">
+            <path d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z" />
+          </svg>
+          <span className="text-sm">{location || "Ubicación"}</span>
+        </div>
+
+        {/* Datos + QR + Desglose */}
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_180px] gap-4 items-start">
+          <div>
+            <p className="text-sm font-semibold text-gray-900 mb-1">Datos</p>
+            <p className="text-sm text-gray-700">Nombre: {user?.name || "—"}</p>
+            <p className="text-sm text-gray-700">Documento: {user?.document || "—"}</p>
+
+            {/* Resumen general */}
+            <div className="mt-4 text-sm text-gray-800">
+              <p className="font-semibold">{zoneText}</p>
+              <p>Cantidad: {totalQty}</p>
+            </div>
+
+            {/* Desglose por subcategoría (DERECHA) */}
+            {breakdown.length > 0 && (
+              <div className="mt-2 text-sm text-gray-800">
+                <p className="font-semibold mb-1">Desglose por subcategoría</p>
+                <ul className="list-disc ml-5 space-y-0.5">
+                  {breakdown.map(({ zone, audience, qty }, i) => (
+                    <li key={i}>
+                      <span className="font-medium">{zone}</span> — {audience}: {qty}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+
+          <div className="flex sm:justify-end">
+            <div className="bg-white p-2 rounded-xl border border-gray-200">
+              <QRCode value={qrValue} size={150} bgColor="#ffffff" fgColor="#000000" />
+            </div>
+          </div>
+        </div>
+
+        {/* Acciones */}
+        <div className="mt-4 flex flex-col sm:flex-row gap-3">
+          <button
+            onClick={handleDownload}
+            className="inline-block bg-yellow-300 text-gray-700 font-semibold px-4 py-2 rounded-xl hover:brightness-95"
+          >
+            Imprimir / Descargar
+          </button>
+
+          <button
+            onClick={() => setShowRefund(true)}
+            className="inline-block bg-rose-600 text-white font-semibold px-4 py-2 rounded-xl hover:bg-rose-700"
+          >
+            Solicitar devolución
+          </button>
+        </div>
+      </div>
+
+      {/* Modal de solicitud de devolución */}
+      {showRefund && (
+        <RefundRequestModal
+          isOpen={showRefund}
+          onClose={() => setShowRefund(false)}
+          order={o}
+          onSubmitted={() => {
+            setShowRefund(false);
+            setShowSuccess(true); // abrir modal de éxito
+          }}
+        />
+      )}
+
+      {/* Modal de confirmación de envío */}
+      <SuccessModal
+        isOpen={showSuccess}
+        onClose={() => setShowSuccess(false)}
+        title="¡Solicitud enviada!"
+        message="Tu solicitud de devolución fue registrada correctamente. Te notificaremos cuando el organizador la evalúe."
+        confirmText="Entendido"
+      />
+    </>
   );
 }
