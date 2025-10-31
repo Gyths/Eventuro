@@ -23,7 +23,7 @@ export async function setEventFeeSvc({ id, percentage }) {
   return setEventFeeRepo({ eventId: id, percentage: percentage });
 }
 
-export async function _getEventDetails(id) {
+export async function _getEventDetails(id){
   return eventDetails(id);
 }
 
