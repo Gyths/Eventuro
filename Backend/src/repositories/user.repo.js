@@ -1,7 +1,14 @@
 import { prisma } from '../utils/prisma.js';
+import fs from "fs";
+import path from "path";
 
 export async function upsertUserWithGoogle({ email, googleId, name, lastName }) {
   return prisma.$transaction(async (tx) => {
+    
+    const existingUser = await tx.user.findUnique({
+      where: { email },
+    }); 
+    
     const user = await tx.user.upsert({
       where: { email },
       update: { name: name ?? undefined, lastName: lastName ?? undefined },
@@ -13,6 +20,22 @@ export async function upsertUserWithGoogle({ email, googleId, name, lastName }) 
       update: { userId: user.userId },
       create: { provider: 'google', providerUserId: googleId, userId: user.userId },
     });
+
+
+    // Solo log si antes no existía
+    if (!existingUser) {
+      const logDir = path.join(process.cwd(), "log");
+      if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
+
+      const now = new Date();
+      const fecha = now.toISOString().split("T")[0];
+      const hora = now.toTimeString().split(" ")[0];
+      const logFile = path.join(logDir, `${fecha}.log`);
+
+      const logLine = `${hora} Se creó usuario "${user.name}" con email ${user.email}\n`;
+      fs.appendFileSync(logFile, logLine, "utf8");
+    }
+
 
     return user;
   });
