@@ -1,5 +1,6 @@
 import { prisma } from "../utils/prisma.js";
 import { Prisma } from "../generated/prisma/index.js";
+import { uploadFile, getSignedUrlForFile } from "../utils/s3.js";
 
 //Módulo para crear una orden de compra
 export async function createOrderRepo(input) {
@@ -433,15 +434,14 @@ export async function cancelOrderRepo(orderId) {
   
 }
 
-// Buscar órdenes por usuario (actualizado con Tickets)
 export const findByUserId = async (userId) => {
-  return await prisma.order.findMany({
+  const orders = await prisma.order.findMany({
     where: { buyerUserId: userId },
     orderBy: { createdAt: "desc" },
     include: {
       items: {
         include: {
-          Ticket: true, 
+          Ticket: true,
           eventDate: {
             include: {
               event: {
@@ -449,6 +449,8 @@ export const findByUserId = async (userId) => {
                   title: true,
                   description: true,
                   inPerson: true,
+                  imagePrincipalKey: true,  // 🔹 necesario
+                  imageBannerKey: true,      // 🔹 necesario
                   venue: {
                     select: {
                       city: true,
@@ -472,4 +474,42 @@ export const findByUserId = async (userId) => {
       },
     },
   });
+
+  // 🔹 Enriquecer con signed URLs (igual que en listEventRepo)
+  const enrichedOrders = await Promise.all(
+    orders.map(async (order) => {
+      for (const item of order.items) {
+        const event = item.eventDate?.event;
+        if (!event) continue;
+
+        // Imagen principal
+        if (event.imagePrincipalKey) {
+          try {
+            event.imagePrincipalURLSigned = await getSignedUrlForFile(
+              event.imagePrincipalKey
+            );
+          } catch (err) {
+            console.error("Error generando signed URL (principal):", err);
+            event.imagePrincipalURLSigned = null;
+          }
+        }
+
+        // Imagen banner
+        if (event.imageBannerKey) {
+          try {
+            event.imageBannerURLSigned = await getSignedUrlForFile(
+              event.imageBannerKey
+            );
+          } catch (err) {
+            console.error("Error generando signed URL (banner):", err);
+            event.imageBannerURLSigned = null;
+          }
+        }
+      }
+
+      return order;
+    })
+  );
+
+  return enrichedOrders;
 };
