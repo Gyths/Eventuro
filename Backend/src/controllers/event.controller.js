@@ -8,8 +8,11 @@ import { toJSONSafe } from "../utils/serialize.js";
 
 export async function createEvent(req, res) {
   try {
+    
+    const userId = req.auth?.user?.userId ?? null;
+
     // Pasa el archivo con el mismo nombre que espera el repo
-    const data = await createEventSvc({
+    const data = await createEventSvc(userId, {
       ...req.body,
       imagenPrincipal: req.files?.imagenPrincipal?.[0] || null,
       imagenBanner: req.files?.imagenBanner?.[0] || null,
