@@ -13,7 +13,6 @@ export default function ShoppingCart({
 
   const { order } = useOrder();
   const { event } = useEvent();
-  console.log(event);
 
   const currencies = { PEN: "S/." };
 
@@ -30,7 +29,6 @@ export default function ShoppingCart({
     //El flujo continua de ser posible
     if (valido) {
       openModal(selectedOption);
-      console.log("Procesando compra con el método de pago:", selectedOption);
     }
   };
 

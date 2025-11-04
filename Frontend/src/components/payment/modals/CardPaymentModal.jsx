@@ -78,14 +78,12 @@ export default function CardPaymentModal({ onClose, onSuccess, onFail }) {
         }
       });
     }
-    console.log(discountIds);
 
     const ticketData = {
       orderId: order.orderId,
       buyerUserId: user.userId,
       discountIds: discountIds,
     };
-    console.log(ticketData);
 
     try {
       const response = await EventuroApi({
@@ -95,7 +93,6 @@ export default function CardPaymentModal({ onClose, onSuccess, onFail }) {
         saveLocalStorage: true,
         storageName: "ticketData",
       });
-      console.log(response);
     } catch (err) {
       onFail();
       console.error("Error al crear al realizar la compra:", err);

@@ -6,6 +6,7 @@ import useEvent from "../../services/Event/EventContext";
 import useOrder from "../../services/Order/OrderContext";
 import AlertMessage from "../AlertMessage";
 import { DISCOUNT_CODE_TEXTS } from "./texts";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function DiscountCode() {
   const endpoint = "/discount/validate";
@@ -264,9 +265,9 @@ export default function DiscountCode() {
   }, [appliedCodes, order?.subtotal]);
 
   return (
-    <>
+    <div className="flex flex-col pb-[10vh] gap-4">
       <div className="flex flex-col">
-        <div className="w-full max-w-lg mt-6 pb-2">
+        <div className=" max-w-lg mt-6 pb-2">
           <p className="font-medium mb-2">{DISCOUNT_CODE_TEXTS.title}</p>
           <div className="flex gap-2">
             <input
@@ -278,7 +279,7 @@ export default function DiscountCode() {
             />
             <button
               onClick={handleDiscount}
-              className="bg-yellow-400 text-white px-4 rounded cursor-pointer hover:scale-103 hover:bg-yellow-500 transition-all duration-200 active:scale-102"
+              className="bg-yellow-400 text-white px-4 rounded-lg cursor-pointer hover:scale-103 hover:bg-yellow-500/90 transition-all duration-200 active:scale-102"
             >
               Agregar
             </button>
@@ -291,26 +292,36 @@ export default function DiscountCode() {
         )}
       </div>
       {/* Mostrar códigos aplicados */}
-      {appliedCodes.length > 0 && (
-        <div className="flex w-auto">
-          <div className="flex flex-col gap-2">
-            {appliedCodes.map((code) => (
-              <div
-                key={code.discountId}
-                className="flex flex-row w-auto rounded-2xl border justify-between border-gray-300 bg-white shadow-2xs"
-              >
-                <div className="flex flex-col p-4">
-                  <span className="text-3xl font-bold text-center">
-                    {code.code}
+      <AnimatePresence mode="sync">
+        {appliedCodes.length > 0 &&
+          appliedCodes.map((code) => (
+            <motion.div
+              key={code.discountId}
+              initial={{ opacity: 0, rotateX: -90, y: -50 }}
+              animate={{ opacity: 1, rotateX: 0, y: 0 }}
+              exit={{ opacity: 0, rotateX: 90, y: 50 }}
+              transition={{
+                duration: 0.6,
+                type: "spring",
+                stiffness: 100,
+                damping: 12,
+              }}
+              layout
+              className="flex max-w-lg flex-row w-auto rounded-2xl border justify-between border-gray-300 bg-white shadow-md"
+            >
+              <div className="flex flex-col p-4">
+                <span className="text-3xl font-bold text-start">
+                  {code.code}
+                </span>
+                {code.eligibleZones.map((item, idx) => (
+                  <span key={idx}>
+                    {item.zone} x{item.quantity}
                   </span>
-                  {code.eligibleZones.map((item, idx) => (
-                    <span key={idx}>
-                      {item.zone} x{item.quantity}
-                    </span>
-                  ))}
-                </div>
+                ))}
+              </div>
+              <div className="flex flex-row">
                 <div className="flex border-l border-gray-300">
-                  <div className="flex px-4 text-5xl font-bold text-center items-center justify-center">
+                  <div className="flex pl-4 pr-1 text-5xl font-bold text-center items-center justify-center">
                     {code.value + "%"}
                   </div>
                 </div>
@@ -318,13 +329,12 @@ export default function DiscountCode() {
                   onClick={() => handleRemove(code.discountId)}
                   className="flex items-center px-2 cursor-pointer hover:bg-gray-100 transition-all duration-300 rounded-r-2xl"
                 >
-                  <XCircleIcon className="size-5 text-red-500" />
+                  <XCircleIcon className="size-5 text-red-500 hover:scale-110 transition-all" />
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </>
+            </motion.div>
+          ))}
+      </AnimatePresence>
+    </div>
   );
 }

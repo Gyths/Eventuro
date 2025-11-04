@@ -4,7 +4,6 @@ import { useAuth } from "../services/auth/AuthContext";
 
 import { useModal } from "../context/ModalContext";
 import useEvent from "../services/Event/EventContext";
-import useOrder from "../services/Order/OrderContext";
 import { EventuroApi } from "../api";
 
 import ArrowButton from "../components/ArrowButton";
@@ -13,7 +12,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import SelectDateModal from "../components/selection/SelectDateModal";
 import SelectTicketModal from "../components/selection/SelectTicketModal";
 import placeholder from "../assets/DefaultEvent.webp";
-import SeatNumberSelectionModal from "../components/selection/SeatNumberSelectionModal";
 
 import {
   ChatBubbleBottomCenterTextIcon,
@@ -33,7 +31,7 @@ export default function TicketSelection() {
   const { event, setEvent } = useEvent();
   const [dates, setDates] = React.useState(null);
   //State para el manejo del scroll
-  const [scrolled, setScrolled] = React.useState(false);
+  const [bluredBackgrund, setBluredBackgrund] = React.useState(false);
   //State para manejar modales
   const { modal, setModal } = useModal(null);
 
@@ -107,12 +105,12 @@ export default function TicketSelection() {
       const height = window.innerHeight;
 
       // Fondo: se activa al 25% del viewport
-      setScrolled(scrollY > height * 0.25);
+      setBluredBackgrund(scrollY > height * 0.2);
 
       // Contenido animado: aparece después del 50%
-      if (scrollY > height * 0.25 && !showContent) {
+      if (scrollY > height * 0.1 && !showContent) {
         setShowContent(true);
-      } else if (scrollY <= height * 0.25 && showContent) {
+      } else if (scrollY <= height * 0.2 && showContent) {
         setShowContent(false);
       }
     };
@@ -148,14 +146,13 @@ export default function TicketSelection() {
             alt="Fondo del evento"
             className={`w-full h-full object-cover transition-all duration-700 ease-in-out
           ${
-            scrolled
+            bluredBackgrund
               ? "blur-2xl brightness-75 scale-105"
               : "blur-0 brightness-100 scale-100"
           }`}
           />
         </div>
-
-        <div className="flex h-screen"></div>
+        <div className="h-[50vh]"></div>
         {/* Contenido */}
         <motion.div
           className="flex flex-col z-10 justify-center min-h-screen text-center gap-20"
@@ -163,9 +160,9 @@ export default function TicketSelection() {
           animate={showContent ? { opacity: 1, y: 0 } : { opacity: 0, y: 100 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
-          <div className="flex px-5 relative flex-col md:flex-row xl:flex-row justify-center gap-10 md:gap-0 xl:gap-0 items-stretch md:px-8">
+          <div className="flex px-5 relative flex-wrap xl:flex-row justify-center gap-10 md:gap-20 xl:gap-0 items-stretch">
             {/* Imagen */}
-            <div className="flex w-full md:max-w-[30vw] scale-y-110 xl:max-w-[30vw] rounded-lg">
+            <div className="flex w-full scale-y-110 xl:max-w-[30vw] rounded-lg">
               <img
                 src={event?.image}
                 className="w-full h-full object-cover rounded-lg"
@@ -174,8 +171,8 @@ export default function TicketSelection() {
             </div>
 
             {/* Card de Información y entradas*/}
-            <div className="flex w-full md:w-auto xl:w-auto justify-center items-center ">
-              <div className="flex flex-col items-start xl:pl-5 xl:py-5 justify-start gap-3 w-[95vw] xl:w-[60vw] rounded-lg md:rounded-none md:rounded-r-lg xl:rounded-none xl:rounded-r-lg bg-white">
+            <div className="flex w-full lg:auto xl:w-1/2 justify-center items-center ">
+              <div className="flex flex-col items-start xl:pl-5 xl:py-5 justify-start gap-3 w-[95vw] xl:w-[60vw] rounded-lg md:rounded-lg xl:rounded-none xl:rounded-r-lg bg-white">
                 <div className="flex flex-row justify-start items-center lg gap-2">
                   <ArrowButton
                     onClick={() => navigate(homeRoute)}
@@ -192,7 +189,7 @@ export default function TicketSelection() {
                   {event?.categories?.map((category, index) => (
                     <div
                       key={index}
-                      className="flex rounded-4xl bg-purple-700 text-white items-center justify-center p-1 px-2.5"
+                      className="flex rounded-4xl bg-purple-700 text-white items-center justify-center p-1 px-2.5 shadow-xl"
                     >
                       {category.category.description}
                     </div>
@@ -218,14 +215,16 @@ export default function TicketSelection() {
                       {event?.accessPolicyDescription}
                     </p>
                   </div>
-                  {event?.inPerson && (
-                    <div className="flex flex-1 flex-row justify-start items-center text-center gap-4">
-                      <MapPinIcon className="inline-block size-5"></MapPinIcon>
+                  <div className="flex flex-1 flex-row justify-start items-center text-center gap-4">
+                    <MapPinIcon className="inline-block size-5"></MapPinIcon>
+                    {event?.inPerson ? (
                       <span className="flex text-start">
                         {event?.venue?.address}
                       </span>
-                    </div>
-                  )}
+                    ) : (
+                      <span>Modalidad Virtual</span>
+                    )}
+                  </div>
                 </div>
                 {/* ZONAS */}
                 <div className="flex w-full flex-col">
@@ -249,7 +248,7 @@ export default function TicketSelection() {
                           )}
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 justify-between text-start py-3 border border-gray-400 shadow-2xs rounded-2xl px-5">
+                    <div className="grid grid-cols-2 justify-between text-start py-3 border border-gray-400 bg-gray-50 shadow-lg rounded-2xl px-5 gap-y-4 xl:ml-4">
                       {event?.dates &&
                         event.dates[0]?.zoneDates.map((zone, index) => (
                           <>

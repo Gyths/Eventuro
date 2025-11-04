@@ -59,7 +59,6 @@ export default function YapePlinPaymentModal({ onClose, onSuccess, onFail }) {
     }
 
     if (newCode.join("").length === 6) {
-      console.log("Código completo:", newCode.join(""));
     }
   };
 
@@ -87,14 +86,13 @@ export default function YapePlinPaymentModal({ onClose, onSuccess, onFail }) {
         }
       });
     }
-    console.log(discountIds);
 
     const ticketData = {
       orderId: order.orderId,
       buyerUserId: parseInt(user.userId),
       discountIds: discountIds,
     };
-    console.log(ticketData);
+
     try {
       const response = await EventuroApi({
         endpoint: ticketEnpoint,
