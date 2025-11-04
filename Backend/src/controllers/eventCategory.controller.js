@@ -7,18 +7,20 @@ import { toJSONSafe } from "../utils/serialize.js";
 
 export async function createEventCategory(req, res) {
     try {
-        const data = await createtEventCategorySvc(req.body);
+        const userId = req.auth?.user?.userId ?? null;
+        const data = await createtEventCategorySvc(userId, req.body);
         return res.status(201).json(toJSONSafe(data));
     } catch (err) {
         return res.status(400).json({ error: err.message });
     }
 }
 
-export async function updateEventCategory(req, res) {
+export async function updateEventCategory(req, res, next) {
     try {
         const { id } = req.params;
         const payload = req.body;
-        const data = await updateEventCategorySvc({ id, payload });
+        const userId = req.auth?.user?.userId ?? null;
+        const data = await updateEventCategorySvc(userId, { id, payload });
         res.status(200).json(toJSONSafe(data));
     } catch (err) {
         if (err?.code === 'P2025') {
@@ -37,7 +39,8 @@ export async function updateEventCategory(req, res) {
 export async function deleteEventCategory(req, res) {
     try {
         const { id } = req.params;
-        const data = await deleteEventCategorySvc(id);
+        const userId = req.auth?.user?.userId ?? null;
+        const data = await deleteEventCategorySvc(userId, id);
         return res.status(200).json(toJSONSafe(data));
     } catch (err) {
         if (err?.code === 'P2025') {
