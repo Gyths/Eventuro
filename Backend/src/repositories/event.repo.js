@@ -5,7 +5,6 @@ import { uploadFile, getSignedUrlForFile } from "../utils/s3.js";
 import { skip } from "../generated/prisma/runtime/library.js";
 import fs from "fs";
 import path from "path";
-import { createManyEventSalesPhasesRepo } from "./eventSalesPhase.repo.js";
 import { withAudit }from "../utils/audit.util.js"
 
 export async function createEventRepo(userId, input) {
@@ -250,7 +249,10 @@ export async function createEventRepo(userId, input) {
       }));
 
       
-      await createManyEventSalesPhasesRepo(phasesData, tx);
+      await tx.eventSalesPhase.createManyAndReturn({
+        data: phasesData,
+        skipDuplicates: true,
+      });
     }
 
     return {
