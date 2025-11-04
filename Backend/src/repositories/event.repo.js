@@ -5,7 +5,7 @@ import { uploadFile, getSignedUrlForFile } from "../utils/s3.js";
 import { skip } from "../generated/prisma/runtime/library.js";
 import fs from "fs";
 import path from "path";
-import { withAudit }from "../utils/audit.util.js"
+import { withAudit } from "../utils/audit.util.js"
 
 export async function createEventRepo(userId, input) {
   return withAudit(userId, async (tx) => {
@@ -14,9 +14,8 @@ export async function createEventRepo(userId, input) {
     if (input.imagenPrincipal) {
       // 1. Si se sube un nuevo archivo (Multer)
       const buffer = input.imagenPrincipal.buffer;
-      const fileName = `events/${Date.now()}_${
-        input.imagenPrincipal.originalname
-      }`;
+      const fileName = `events/${Date.now()}_${input.imagenPrincipal.originalname
+        }`;
       imagePrincipalKey = await uploadFile(
         fileName,
         buffer,
@@ -32,9 +31,8 @@ export async function createEventRepo(userId, input) {
     if (input.imagenBanner) {
       // 1. Si se sube un nuevo archivo (Multer)
       const buffer = input.imagenBanner.buffer;
-      const fileName = `events/${Date.now()}_${
-        input.imagenBanner.originalname
-      }`;
+      const fileName = `events/${Date.now()}_${input.imagenBanner.originalname
+        }`;
       imageBannerKey = await uploadFile(
         fileName,
         buffer,
@@ -236,19 +234,19 @@ export async function createEventRepo(userId, input) {
     }
 
     if (Array.isArray(salePhases) && salePhases.length > 0) {
-      
+
       // Prepara los datos para la función 'createMany'
       const phasesData = salePhases.map((phase) => ({
-        eventId: eventId, 
+        eventId: eventId,
         name: phase.name,
-        startAt: new Date(phase.startAt), 
-        endAt: new Date(phase.endAt),     
+        startAt: new Date(phase.startAt),
+        endAt: new Date(phase.endAt),
         percentage: Number(phase.percentage),
         ticketLimit: phase.ticketLimit ? Number(phase.ticketLimit) : null,
-        active: true 
+        active: true
       }));
 
-      
+
       await tx.eventSalesPhase.createManyAndReturn({
         data: phasesData,
         skipDuplicates: true,
@@ -552,38 +550,103 @@ export async function listAvailableTicketsRepo(input) {
   return event;
 }
 
-export async function setEventFeeRepo({ eventId, percentage }) {
-  const eventIdNormalized = BigInt(eventId);
-  const percentageNormalized = Number(percentage).toFixed(2);
+export async function setEventStatusRepo(userId, { eventId, status, percentage }) {
+  return withAudit(userId, async (tx) => {
+    const eventIdNormalized = BigInt(eventId);
 
-  return prisma.$transaction(async (tx) => {
-    let fee = await tx.fee.findFirst({
-      where: { percentage: percentageNormalized },
-      select: {
-        feeId: true,
-        percentage: true,
-      },
-    });
-
-    if (!fee) {
-      fee = await tx.fee.create({
-        data: { percentage: percentageNormalized },
-        select: {
-          feeId: true,
-          percentage: true,
-        },
+    const dataToUpdate = { status }; 
+    if (percentage !== undefined && percentage !== null) {
+      const pNum = Number(percentage);
+      if (!Number.isFinite(pNum)) {
+        throw new Error("percentage debe ser numérico");
+      }
+      const pNormalized = Number(pNum.toFixed(2));
+      const fee = await tx.fee.upsert({
+        where: { percentage: pNormalized },
+        create: { percentage: pNormalized },
+        update: {},
+        select: { feeId: true, percentage: true },
       });
+
+      dataToUpdate.feeId = fee.feeId;
     }
 
     const event = await tx.event.update({
       where: { eventId: eventIdNormalized },
-      data: { feeId: fee.feeId },
+      data: dataToUpdate,
       select: {
         eventId: true,
         title: true,
+        status: true,
         fee: { select: { feeId: true, percentage: true } },
       },
     });
+
     return event;
   });
+}
+
+export async function listEventstoApproveRepo({ page = 1, pageSize = 10 }) {
+  const take = Math.max(1, Math.min(Number(pageSize) || 10, 50));
+  const skip = Math.max(0, (Number(page) - 1) * take);
+
+  const [items, total] = await prisma.$transaction([
+    prisma.event.findMany({
+      skip,
+      take,
+      where: { status: 'P'},
+      orderBy: { createdAt: "desc" },
+      select: {
+        eventId: true,
+        title: true,
+        description: true,
+        imagePrincipalKey: true,
+        dates: {
+          orderBy: { startAt: "asc" },
+          select: {
+            eventDateId: true,
+            startAt: true,
+            endAt: true,
+          },
+        },
+      },
+    }),
+    prisma.event.count(),
+  ]);
+
+  const allDateIds = items.flatMap(ev => ev.dates.map(d => d.eventDateId));
+  let sumsByDateId = new Map();
+
+  if (allDateIds.length > 0) {
+    const grouped = await prisma.eventDateZone.groupBy({
+      by: ["eventDateId"],
+      where: { eventDateId: { in: allDateIds } },
+      _sum: { capacity: true },
+    });
+
+    sumsByDateId = new Map(
+      grouped.map(g => [
+        String(g.eventDateId),
+        {
+          totalTickets: g._sum.capacity ?? 0
+        },
+      ])
+    );
+  }
+
+  const enriched = items.map(ev => ({
+    ...ev,
+    dates: ev.dates.map(d => {
+      const sums = sumsByDateId.get(String(d.eventDateId)) ?? { totalTickets: 0, totalRemaining: 0 };
+      return { ...d, ...sums };
+    }),
+  }));
+
+  return {
+    page: Number(page),
+    pageSize: take,
+    total,
+    totalPages: Math.ceil(total / take),
+    items: enriched,
+  };
 }

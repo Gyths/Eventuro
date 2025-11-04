@@ -273,7 +273,7 @@ model Venue {
 // Tarifa
 model Fee {
   feeId      BigInt  @id @default(autoincrement()) @db.BigInt
-  percentage Decimal @db.Decimal(10, 2)
+  percentage Decimal @db.Decimal(10, 2) @unique
 
   // relación
   event Event[]
@@ -292,7 +292,7 @@ model Event {
   title                   String
   imagePrincipalKey       String
   imageBannerKey          String
-  status                  EVENT_STATUS  @default(A)
+  status                  EVENT_STATUS  @default(P)
   inPerson                Boolean
   description             String
   accessPolicy            ACCESS_POLICY
