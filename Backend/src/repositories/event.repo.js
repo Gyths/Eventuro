@@ -6,9 +6,10 @@ import { skip } from "../generated/prisma/runtime/library.js";
 import fs from "fs";
 import path from "path";
 import { createManyEventSalesPhasesRepo } from "./eventSalesPhase.repo.js";
+import { withAudit }from "../utils/audit.util.js"
 
-export async function createEventRepo(input) {
-  return prisma.$transaction(async (tx) => {
+export async function createEventRepo(userId, input) {
+  return withAudit(userId, async (tx) => {
     // --- Manejo del imagenPrincipal (multer) ---
     let imagePrincipalKey = null;
     if (input.imagenPrincipal) {

@@ -7,8 +7,8 @@ import {
   listEventsByOrganizerRepo,
 } from "../repositories/event.repo.js";
 
-export async function createEventSvc(input) {
-  return await createEventRepo(input);
+export async function createEventSvc(userId, input) {
+  return await createEventRepo(userId, input);
 }
 
 export async function listEventSvc() {

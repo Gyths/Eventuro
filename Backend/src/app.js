@@ -15,8 +15,9 @@ import eventSalesPhase from "./routes/eventSalesPhase.routes.js";
 import eventToCategory from "./routes/eventToCategory.routes.js";
 import order from "./routes/order.routes.js";
 import ticket from "./routes/ticket.routes.js";
-import auditRoutes from "./routes/audit.routes.js";
+import audit from "./routes/audit.routes.js";
 import discount from "./routes/discount.routes.js"
+
 
 import organizerRoutes from "./routes/organizer.routes.js";
 import defaultUserRoutes from "./routes/defaultUser.routes.js";
@@ -54,7 +55,7 @@ app.use(route + "/event-sales-phase", eventSalesPhase);
 app.use(route + "/event-to-category", eventToCategory);
 app.use(route + "/orders", order);
 app.use(route + "/tickets", ticket);
-app.use(route + "/audit", auditRoutes);
+app.use(route + "/audit", audit);
 
 app.use(route + "/discount", discount)
 
