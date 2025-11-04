@@ -1,9 +1,10 @@
 import { createEventSvc } from "../services/event.service.js";
 import { listEventSvc } from "../services/event.service.js";
 import { listAvailableTicketsSvc } from "../services/event.service.js";
-import { setEventFeeSvc } from "../services/event.service.js";
+import { setEventStatusSvc } from "../services/event.service.js";
 import { _getEventDetails } from "../services/event.service.js";
 import { _listEventsByOrganizer } from "../services/event.service.js";
+import { listEventstoApproveSvc } from "../services/event.service.js";
 import { toJSONSafe } from "../utils/serialize.js";
 
 export async function createEvent(req, res) {
@@ -56,11 +57,17 @@ export async function listAvailableTickets(req, res) {
   }
 }
 
-export async function setEventFee(req, res, next) {
+export async function setEventStatus(req, res, next) {
   try {
     const { id } = req.params;
-    const { percentage } = req.body;
-    const data = await setEventFeeSvc({ id, percentage });
+    const { status, percentage = null } = req.body ?? {};
+    const userId = req.auth?.user?.userId ?? null;
+
+    if (!status) {
+      return res.status(400).json({ message: "status es requerido" });
+    }
+
+    const data = await setEventStatusSvc(userId, { id, status, percentage });
     return res.status(200).json(toJSONSafe(data));
   } catch (err) {
     if (err?.code === "P2025") {
@@ -87,5 +94,16 @@ export async function listEventsByOrganizer(req, res) {
     return res.status(200).json(toJSONSafe(data));
   } catch (err) {
     return res.status(400).json({ error: err.message });
+  }
+}
+
+export async function listEventstoApprove(req, res, next) {
+  try {
+    const page = Number(req.query.page ?? 1);
+    const pageSize = Number(req.query.pageSize ?? 10);
+    const data = await listEventstoApproveSvc({ page, pageSize });
+    return res.status(200).json(toJSONSafe(data));
+  } catch (err) {
+    return next(err);
   }
 }
