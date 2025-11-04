@@ -1,6 +1,11 @@
 import React from "react";
 
-function Calendar({ month, year, selectableDays, handleSelectDate }) {
+export default function Calendar({
+  month,
+  year,
+  selectableDays,
+  handleSelectDate,
+}) {
   const daysOfWeek = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDayOfWeek = new Date(year, month, 1).getDay();
@@ -38,5 +43,3 @@ function Calendar({ month, year, selectableDays, handleSelectDate }) {
     </div>
   );
 }
-
-export default Calendar;
