@@ -7,15 +7,13 @@ import { passport } from "./services/passport.js";
 
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
-
+import user from "./routes/user2.routes.js"
 import eventCategory from "./routes/eventCategory.routes.js";
 import event from "./routes/event.routes.js";
 import order from "./routes/order.routes.js";
 import ticket from "./routes/ticket.routes.js";
 import audit from "./routes/audit.routes.js";
 import discount from "./routes/discount.routes.js"
-
-
 import organizerRoutes from "./routes/organizer.routes.js";
 import defaultUserRoutes from "./routes/defaultUser.routes.js";
 
@@ -50,7 +48,7 @@ app.use(route + "/event", event);
 app.use(route + "/orders", order);
 app.use(route + "/tickets", ticket);
 app.use(route + "/audit", audit);
-
+app.use(route + '/user', user);
 app.use(route + "/discount", discount)
 
 app.listen(4000, () =>
