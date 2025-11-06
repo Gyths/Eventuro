@@ -221,8 +221,19 @@ useEffect(() => {
 
       // === Ordenar categorías por cantidad comprada ===
       const sortedCategories = Array.from(categoryCount.entries())
-        .sort((a, b) => b[1] - a[1]) // más compradas primero
+        .sort((a, b) => {
+          const diff = b[1] - a[1];
+          // Si tienen la misma cantidad, decidir aleatoriamente el orden
+          if (diff === 0) return Math.random() - 0.5;
+          return diff;
+        })
         .map(([cat]) => cat);
+
+      console.log("📊 Ranking de categorías compradas:");
+      for (const [cat, count] of categoryCount.entries()) {
+        console.log(` - ${cat}: ${count} compras`);
+      }
+      console.log("➡️ Categorías ordenadas por preferencia:", sortedCategories);
 
       // === Buscar eventos en orden de categorías más compradas ===
       const selected = [];
@@ -239,6 +250,8 @@ useEffect(() => {
             !usedIds.has(e.id)
         );
 
+        console.log(`🎯 Eventos encontrados en la categoría '${cat}':`, catEvents.map(ev => ev.id));
+
         // mezclar aleatoriamente los eventos de esa categoría
         for (const ev of catEvents.sort(() => Math.random() - 0.5)) {
           if (selected.length < 3) {
@@ -250,6 +263,8 @@ useEffect(() => {
         if (selected.length >= 3) break; // ya completamos el carrusel
       }
 
+      console.log("✅ Eventos seleccionados (antes de rellenar):", selected.map(e => e.id));
+
       // === Si faltan, rellenar con eventos aleatorios no repetidos ===
       if (selected.length < 3) {
         const remaining = events
@@ -258,8 +273,13 @@ useEffect(() => {
           .slice(0, 3 - selected.length)
           .map((e) => ({ id: e.id, title: e.titulo, image: e.bannerEv }));
 
+        console.log("🎲 Eventos aleatorios usados para rellenar:", remaining.map(e => e.id));
+
         selected.push(...remaining);
       }
+
+console.log("🏁 Eventos finales del carrusel:", selected.map(e => e.id));
+
 
       // === Asignar finalmente el carrusel ===
       setCarouselImages(selected);
