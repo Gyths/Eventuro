@@ -238,6 +238,15 @@ useEffect(() => {
       // === Buscar eventos en orden de categorías más compradas ===
       const selected = [];
       const usedIds = new Set();
+      const boughtEventIds = new Set();
+
+      // === Marcar eventos ya comprados ===
+      for (const order of res.items ?? []) {
+        for (const item of order.items ?? []) {
+          const ev = item?.eventDate?.event;
+          if (ev?.eventId) boughtEventIds.add(ev.eventId);
+        }
+      }
 
       for (const cat of sortedCategories) {
         // filtrar eventos de esa categoría
@@ -247,7 +256,8 @@ useEffect(() => {
             e.categories?.some(
               (c) => c.category?.description?.toLowerCase() === cat.toLowerCase()
             ) &&
-            !usedIds.has(e.id)
+            !usedIds.has(e.id) &&
+            !boughtEventIds.has(e.id) // filtramos comprados
         );
 
         console.log(`🎯 Eventos encontrados en la categoría '${cat}':`, catEvents.map(ev => ev.id));
