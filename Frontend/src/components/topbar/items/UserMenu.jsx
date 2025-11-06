@@ -9,7 +9,7 @@ export default function UserMenu() {
   // Rutas
   const profileRoute = "/miPerfil";
   const myTicketsRoute = "/misTickets";
-  const claimsRoute = "/reclamos";
+  const claimsRoute = "/misReclamos";
   const calendarRoute = "/miCalendario";
   const loginRoute = "/";
 
