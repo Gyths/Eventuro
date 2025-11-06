@@ -252,7 +252,7 @@ export default function TopBarRoles({ filters, setFilters }) {
               onClick={() => setShowNotifications((v) => !v)}
               className={`px-4 py-2 rounded-xl font-semibold flex items-center justify-center transition-colors duration-200 ${
                 isOrganizerApproved
-                  ? "bg-white/10 border border-white/30 text-white hover:bg-white/20"
+                  ? "bg-amber-400/90 text-purple-900 border border-amber-400 hover:bg-amber-400"
                   : "bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:opacity-90"
               }`}
             >
@@ -312,7 +312,7 @@ export default function TopBarRoles({ filters, setFilters }) {
             onClick={handleCrearEvento}
             className={`px-4 py-2 rounded-xl font-semibold ${
               isOrganizerApproved
-                ? "bg-white/10 border border-white/30 text-white hover:bg-white/20"
+                ? "bg-amber-400/90 text-purple-900 border border-amber-400 hover:bg-amber-400"
                 : "bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:opacity-90"
             }`}
           >

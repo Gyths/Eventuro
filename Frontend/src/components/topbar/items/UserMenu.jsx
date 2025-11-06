@@ -38,14 +38,19 @@ export default function UserMenu({ isOrganizerApproved }) {
       onClick={() => setOpen((o) => !o)}
       className={`px-4 py-2 rounded-xl font-semibold flex items-center gap-2 justify-center transition-colors duration-200 ${
         isOrganizerApproved
-          ? "bg-white/10 border border-white/30 text-white hover:bg-white/20"
+          ? "bg-amber-400/90 text-purple-900 border border-amber-400 hover:bg-amber-400"
           : "bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:opacity-90"
       }`}
       aria-label="Abrir menú de usuario"
     >
       <UserIcon className="h-5 w-5" />
       <span>{user.name}</span>
-    </button>
+      {isOrganizerApproved && (
+        <span className="ml-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-yellow-300 text-purple-900">
+          Organizador
+        </span>
+      )}
+   </button>
 
 
       {open && (
