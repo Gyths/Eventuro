@@ -1,5 +1,7 @@
 // src/components/BannerCarousel.jsx
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import useEvent from "../services/Event/EventContext";
 
 export default function BannerCarousel({
   images = [],
@@ -61,6 +63,16 @@ export default function BannerCarousel({
 
   if (!images?.length) return null;
 
+  const navigate = useNavigate();
+  const ticketSelectionPage = "/seleccionTickets";
+  const { setEvent } = useEvent();
+  function onClick(itemId) {
+    setEvent({
+      eventId: itemId,
+    });
+    navigate(ticketSelectionPage);
+  }
+
   return (
     <section
       className={`relative w-full overflow-hidden ${heightClass} ${className}`}
@@ -74,10 +86,25 @@ export default function BannerCarousel({
         className="flex h-full w-full transition-transform duration-500 will-change-transform"
         style={{ transform: `translateX(-${idx * 100}%)` }}
       >
-        {images.map((src, i) => (
-          <div className="relative h-full w-full shrink-0" key={i} aria-hidden={i !== idx}>
-            <img src={src} alt={`Banner ${i + 1}`} className="h-full w-full object-cover" />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-black/10 to-transparent" />
+        {images.map((item, i) => (
+          <div
+            key={item.id || i}
+            className="relative h-full w-full shrink-0 cursor-pointer"
+            aria-hidden={i !== idx}
+            onClick={() => onClick(item.id)}
+          >
+            <img
+              src={item.image}
+              alt={item.title || `Banner ${i + 1}`}
+              className="h-full w-full object-cover"
+            />
+            {/* Capa oscura + texto */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+              <h3 className="text-lg font-semibold drop-shadow-md truncate">
+                {item.title || "Evento destacado"}
+              </h3>
+            </div>
           </div>
         ))}
       </div>

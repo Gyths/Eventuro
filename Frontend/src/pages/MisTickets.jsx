@@ -77,7 +77,8 @@ function mapOrderToCard(order) {
       ? `Compra de ${order.items.length} ítem(s)`
       : "Orden sin ítems");
 
-  const image = firstItem?.eventDate?.event?.image || placeholder;
+  const image =
+    firstItem?.eventDate?.event?.imagePrincipalURLSigned || placeholder;
   const when = firstItem?.eventDate?.startAt
     ? fmtDateTime(firstItem.eventDate.startAt)
     : fmtDateTime(order.createdAt);
@@ -236,7 +237,8 @@ function OrderDetail({ orderCard }) {
   const when = firstItem?.eventDate?.startAt
     ? fmtDateTime(firstItem.eventDate.startAt)
     : "";
-  const image = ev?.image || orderCard.image || placeholder;
+  const image =
+    ev?.imagePrincipalURLSigned || ev?.imageBannerURLSigned || placeholder;
   const location = ev?.venue
     ? [ev.venue.city, ev.venue.address || ev.venue.reference]
         .filter(Boolean)

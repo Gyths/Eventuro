@@ -8,10 +8,10 @@ export default function SelectDateModal({ dates, onClose, onContinue }) {
   //State para manejar las elecciones del usuario
   const [selectedDate, setSelectedDate] = React.useState(null);
   const [selectedSchedule, setSelectedSchedule] = React.useState(null);
-  selectedDate && console.log("Fecha seleccionada: ");
+  /*selectedDate && console.log("Fecha seleccionada: ");
   selectedDate && console.log(selectedDate);
   selectedDate && console.log("Horario seleccionada: ");
-  selectedDate && console.log(selectedSchedule);
+  selectedDate && console.log(selectedSchedule);*/
 
   const parsedDates = useMemo(
     () =>
@@ -83,7 +83,6 @@ export default function SelectDateModal({ dates, onClose, onContinue }) {
   const handleSelectDate = (day) => {
     setSelectedSchedule(null);
     setSelectedDate(new Date(year, month, day));
-    selectedDate && console.log(selectedDate);
   };
 
   const handleSelectSchedule = (horario, dateObj) => {
@@ -135,20 +134,20 @@ export default function SelectDateModal({ dates, onClose, onContinue }) {
             [months, selectableDays, currentDate]
           )}
         </div>
-
-        <div className="flex flex-col flex-[2] bg-white">
-          <div className="flex flex-row justify-between px-6 py-3 bg-gray-100 border-b border-gray-200">
+        {/* Columan derecha */}
+        <div className="flex flex-col flex-[2] bg-white rounded-md">
+          <div className="flex flex-row justify-between px-6 py-3 bg-gray-100 border-b border-gray-200 rounded-r rounded-t rounded-b-none">
             <span className="font-semibold">Seleccione un Horario</span>
             <div className="flex justify-center items-center">
               <XMarkIcon
                 onClick={onClose}
-                className="size-4 cursor-pointer"
+                className="size-4 cursor-pointer hover:scale-120 duration-200 transition-all"
               ></XMarkIcon>
             </div>
           </div>
-
+          {/* Fecha seleccionada */}
           <div className="flex flex-col flex-1 justify-between">
-            <div className="relative inline-box font-semibold pl-3.5 py-2 border-b border-gray-200">
+            <div className="relative inline-box font-semibold pl-3.5 py-2">
               {selectedDate &&
                 selectedDate.toLocaleDateString("es-PE", {
                   day: "2-digit",
@@ -156,7 +155,8 @@ export default function SelectDateModal({ dates, onClose, onContinue }) {
                   year: "numeric",
                 })}
             </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+            {/* Horario */}
+            <div className="flex-1 overflow-y-auto space-y-2 ">
               {selectedDate &&
                 parsedDates
                   .filter(
@@ -170,10 +170,10 @@ export default function SelectDateModal({ dates, onClose, onContinue }) {
                       <div
                         key={dateObj.eventDateId}
                         onClick={() => handleSelectSchedule(horario, dateObj)}
-                        className={`cursor-pointer rounded-md border p-2 hover:bg-purple-50 ${
+                        className={`cursor-pointer border-y py-3.5 px-4 hover:bg-purple-50 transition-all ${
                           selectedSchedule?.eventDateId === dateObj.eventDateId
-                            ? "bg-purple-100 border-purple-400"
-                            : "border-gray-200"
+                            ? "bg-purple-100 border-purple-400 "
+                            : "border-gray-200 hover:border-purple-400/60 mx-1 hover:scale-101"
                         }`}
                       >
                         {horario}
@@ -186,7 +186,10 @@ export default function SelectDateModal({ dates, onClose, onContinue }) {
               <button
                 disabled={!selectedSchedule}
                 onClick={handleContinue}
-                className="disabled:bg-purple-800  bg-purple-600 w-full text-white rounded-lg py-1.5 hover:bg-purple-700 transition enabled:cursor-pointer"
+                className={`disabled:bg-purple-800  bg-purple-600 w-full text-white rounded-lg py-1.5 ${
+                  selectedSchedule &&
+                  "hover:bg-yellow-500/70 hover:scale-101 transition-all enabled:cursor-pointer"
+                } `}
               >
                 Continuar
               </button>

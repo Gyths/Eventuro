@@ -67,3 +67,12 @@ export function requireOrganizerApproved(req, res, next) {
   if (roles.includes("ORGANIZER") && status === "APPROVED") return next();
   return res.status(403).json({ error: "Organizador no aprobado" });
 }
+
+export function requireAdmin(req, res, next) {
+  const roles = req.auth?.roles || [];
+
+  if (!roles.includes("ADMIN")) {
+    return res.status(403).json({ error: "Solo los administradores pueden acceder a esta ruta" });
+  }
+  next();
+}

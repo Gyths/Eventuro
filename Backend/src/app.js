@@ -7,17 +7,13 @@ import { passport } from "./services/passport.js";
 
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
-
+import user from "./routes/user2.routes.js"
 import eventCategory from "./routes/eventCategory.routes.js";
 import event from "./routes/event.routes.js";
-import venue from "./routes/venue.routes.js";
-import eventSalesPhase from "./routes/eventSalesPhase.routes.js";
-import eventToCategory from "./routes/eventToCategory.routes.js";
 import order from "./routes/order.routes.js";
 import ticket from "./routes/ticket.routes.js";
-import auditRoutes from "./routes/audit.routes.js";
+import audit from "./routes/audit.routes.js";
 import discount from "./routes/discount.routes.js"
-
 import organizerRoutes from "./routes/organizer.routes.js";
 import defaultUserRoutes from "./routes/defaultUser.routes.js";
 
@@ -49,13 +45,10 @@ app.use(authRoutes);
 app.use(userRoutes);
 app.use(route + "/event-category", eventCategory);
 app.use(route + "/event", event);
-app.use(route + "/venue", venue);
-app.use(route + "/event-sales-phase", eventSalesPhase);
-app.use(route + "/event-to-category", eventToCategory);
 app.use(route + "/orders", order);
 app.use(route + "/tickets", ticket);
-app.use(route + "/audit", auditRoutes);
-
+app.use(route + "/audit", audit);
+app.use(route + '/user', user);
 app.use(route + "/discount", discount)
 
 app.listen(4000, () =>

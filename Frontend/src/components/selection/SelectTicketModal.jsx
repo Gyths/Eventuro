@@ -2,6 +2,7 @@ import React from "react";
 import BaseModal from "../BaseModal";
 import { useNavigate } from "react-router-dom";
 import { TICKET_SELECTION_TEXTS } from "../payment/texts";
+import ArrowButton from "../../components/ArrowButton";
 
 import useEvent from "../../services/Event/EventContext";
 import useOrder from "../../services/Order/OrderContext";
@@ -13,11 +14,12 @@ import AlertMessage from "../AlertMessage";
 
 import { AnimatePresence } from "framer-motion";
 import {
-  ChevronLeftIcon,
   PlusIcon,
   MinusIcon,
   ClockIcon,
   CalendarIcon,
+  MapPinIcon,
+  UserGroupIcon,
 } from "@heroicons/react/24/solid";
 
 export default function SelectAllocationModal({
@@ -36,7 +38,7 @@ export default function SelectAllocationModal({
   const { user } = useAuth();
   const { setOrder } = useOrder();
 
-  console.log(selectedData);
+  //console.log(selectedData);
 
   const [showAlertMessage, setShowAlertMessage] = React.useState(false);
 
@@ -87,6 +89,7 @@ export default function SelectAllocationModal({
       index === zoneIndex && value < cap ? value + 1 : value
     );
     setNotAllocatedGeneralQuantities(newValues);
+    setShowAlertMessage(false);
   };
 
   // Manejo de entradas con sitio pero sin allocation
@@ -137,6 +140,7 @@ export default function SelectAllocationModal({
       }
     );
     setAllocatedGeneralQuantities(newValues);
+    setShowAlertMessage(false);
   };
 
   // Manejo de entradas con sitio y con allocation
@@ -313,10 +317,8 @@ export default function SelectAllocationModal({
             zonePrice += price;
           }
         });
-        console.log("Seteando total de zona: " + zonePrice);
         if (shoppingCart[zone.name])
           shoppingCart[zone.name].totalZonePrice = zonePrice;
-        console.log(shoppingCart);
       }
     });
 
@@ -366,7 +368,6 @@ export default function SelectAllocationModal({
         shoppingCart[zone.name].totalZonePrice += zoneTotalPrice;
       }
     });
-    console.log(orderData);
     try {
       const response = await EventuroApi({
         endpoint: orderEndpoint,
@@ -405,7 +406,6 @@ export default function SelectAllocationModal({
         const error = JSON.parse(err.message.split(": ")[1]);
         setErrorMessage(error.error);
         setShowAlertMessage(true);
-        console.log(error.error);
       } catch {
         console.warn("No se pudo parsear el JSON del error:", err.message);
       }
@@ -421,48 +421,56 @@ export default function SelectAllocationModal({
           <div className="flex flex-wrap h-[60vh] rounded-xl">
             <div className="flex flex-[4] rounded-xl items-stretch h-full flex-col border-r border-gray-300/60">
               {/* Header del modal */}
-              <div className="flex flex-row rounded-l justify-start gap-4 items-center py-4 px-4 border-b border-b-gray-300 bg-gray-200">
-                <ChevronLeftIcon
-                  onClick={onReturn}
-                  className="fill-purple-700 shadow-2xl size-8 cursor-pointer hover:scale-105"
-                ></ChevronLeftIcon>
+              <div className="flex flex-row rounded-l-xl rounded-b-none shadow-sm border-b justify-start gap-4 items-center py-4 px-4 border-b-gray-300 bg-gray-200">
+                <ArrowButton onClick={onReturn} />
                 <span className="inline-block font-semibold text-3xl">
                   Selecciona tus entradas
                 </span>
               </div>
+
               {/* Sección donde se muestran las entradas */}
-              <div className="flex overflow-auto flex-col h-full w-full py-7 px-7 gap-2.5">
+              <div className="flex overflow-auto flex-col h-full w-full px-7 pb-5 gap-2.5">
+                <div className="flex pt-3">
+                  {showAlertMessage && (
+                    <AlertMessage id={zoneIndex}>
+                      {TICKET_SELECTION_TEXTS.alerts[errorMessage]}
+                    </AlertMessage>
+                  )}
+                </div>
                 {selectedData &&
                   selectedData.zoneDates.map((zone, zoneIndex) => (
                     <div key={zoneIndex} className="gap-none">
-                      <div className="grid grid-cols-[1fr_auto_auto] justify-between items-center py-3 border border-gray-400 shadow-2xs rounded-lg px-5">
+                      <div className="grid grid-cols-[1fr_auto_auto] justify-between items-center py-3 border border-gray-400 shadow-xl rounded-lg px-5">
                         <span>{zone.name}</span>
                         {/* Zonas */}
                         {zone.allocations.length === 0 && (
                           <>
                             <span>{currencies.PEN + zone.basePrice}</span>
+
                             {zone.kind != "SEATED" ? (
                               <div
                                 key={zoneIndex}
-                                className="flex flex-row gap-4 items-center"
+                                className="select-none grid grid-cols-3 justify-between items-center"
                               >
-                                <MinusIcon
-                                  onClick={() =>
-                                    handleNoAllocationGeneralSubtraction(
-                                      zoneIndex
-                                    )
-                                  }
-                                  className="select-none size-3 cursor-pointer rounded-xl bg-gray-300"
-                                ></MinusIcon>
-                                <span>
-                                  {notAllocatedGeneralQuantities[zoneIndex]}
-                                </span>
-                                <PlusIcon
-                                  onClick={() =>
-                                    handleNoAllocationGeneralSum(zoneIndex)
-                                  }
-                                  className="select-none size-3 cursor-pointer rounded-xl bg-gray-300"
-                                ></PlusIcon>
+                                <div className="flex flex-row gap-4 items-center m-3">
+                                  <MinusIcon
+                                    onClick={() =>
+                                      handleNoAllocationGeneralSubtraction(
+                                        zoneIndex
+                                      )
+                                    }
+                                    className="select-none size-3 cursor-pointer rounded-xl bg-gray-300"
+                                  ></MinusIcon>
+                                  <span>
+                                    {notAllocatedGeneralQuantities[zoneIndex]}
+                                  </span>
+                                  <PlusIcon
+                                    onClick={() =>
+                                      handleNoAllocationGeneralSum(zoneIndex)
+                                    }
+                                    className="select-none size-3 cursor-pointer rounded-xl bg-gray-300"
+                                  ></PlusIcon>
+                                </div>
                               </div>
                             ) : (
                               <div className="flex flex-row gap-4">
@@ -484,7 +492,7 @@ export default function SelectAllocationModal({
                       </div>
                       {/* Allocations */}
                       <div className="px-2">
-                        <div className="rounded-b-2xl border-b border-x border-gray-300 bg-gray-100">
+                        <div className="rounded-b-2xl border-b border-x border-gray-300 bg-gray-100 shadow-md">
                           {zone.allocations.length > 0 &&
                             zone.allocations.map(
                               (allocation, allocationIndex) => (
@@ -492,8 +500,8 @@ export default function SelectAllocationModal({
                                   key={allocationIndex}
                                   className="flex flex-col rounded-2xl  bg-gray-100"
                                 >
-                                  <div className="grid grid-cols-[1fr_1fr_auto] gap-4 items-center bg-gray-100 py-2.5 pl-3.5 pr-2 rounded-2xl">
-                                    <span className="w-auto">
+                                  <div className="select-none grid grid-cols-[1fr_1fr_auto] gap-4 items-center bg-gray-100 py-2.5 pl-3.5 pr-2 rounded-2xl">
+                                    <span className=" w-auto">
                                       {allocation.audienceName}
                                     </span>
                                     <span>
@@ -504,33 +512,42 @@ export default function SelectAllocationModal({
                                     {zone.kind != "SEATED" ? (
                                       <div
                                         key={allocationIndex}
-                                        className="flex flex-row gap-4 items-center"
+                                        className="grid grid-cols-3 justify-between items-center gap-3.5"
                                       >
-                                        <MinusIcon
+                                        <div
                                           onClick={() =>
                                             handleAllocatedGeneralSubtraction(
                                               zoneIndex,
                                               allocationIndex
                                             )
                                           }
-                                          className="select-none size-3 cursor-pointer rounded-xl bg-gray-300"
-                                        ></MinusIcon>
-                                        <span>
+                                          className="flex select-none py-0.5 cursor-pointer transition-all hover:scale-110"
+                                        >
+                                          <div className="flex cursor-pointer rounded-xl bg-gray-300 justify-center items-center hover:bg-gray-400/60 transition-all hover:scale-101">
+                                            <MinusIcon className="select-none size-3.5 m-0.5" />
+                                          </div>
+                                        </div>
+
+                                        <span className="text-center">
                                           {
                                             allocatedGeneralQuantities[
                                               zoneIndex
                                             ][allocationIndex]
                                           }
                                         </span>
-                                        <PlusIcon
+                                        <div
                                           onClick={() =>
                                             handleAllocatedGeneralSum(
                                               zoneIndex,
                                               allocationIndex
                                             )
                                           }
-                                          className="select-none size-3 cursor-pointer rounded-xl bg-gray-300"
-                                        ></PlusIcon>
+                                          className="flex select-none py-0.5 cursor-pointer  transition-all hover:scale-110"
+                                        >
+                                          <div className="flex cursor-pointer rounded-xl bg-gray-300 justify-center items-center hover:bg-gray-400/60 transition-all hover:scale-101">
+                                            <PlusIcon className="select-none size-3.5 m-0.5 " />
+                                          </div>
+                                        </div>
                                       </div>
                                     ) : (
                                       <div className="flex flex-row gap-3">
@@ -573,14 +590,30 @@ export default function SelectAllocationModal({
                 <span className="inline-block text-start font-semibold text-2xl">
                   {event?.title}
                 </span>
-                <div className="flex flex-row gap-2 justify-start items-center">
-                  <CalendarIcon className="size-5"></CalendarIcon>
+                <div className="flex flex-1 flex-row justify-start items-center gap-2">
+                  <MapPinIcon className="inline-block size-5 text-purple-600"></MapPinIcon>
+                  {event?.inPerson ? (
+                    <span className="flex text-start">
+                      {event?.venue?.address}
+                    </span>
+                  ) : (
+                    <span>Modalidad Virtual</span>
+                  )}
+                </div>
+                <div className="flex flex-1 flex-row justify-start items-center gap-2">
+                  <UserGroupIcon className="flex size-5 text-purple-600"></UserGroupIcon>
+                  <p className="inline-block text-start">
+                    {event?.accessPolicyDescription}
+                  </p>
+                </div>
+                <div className="flex flex-1 flex-row  justify-start items-center gap-2">
+                  <CalendarIcon className="size-5 text-purple-600"></CalendarIcon>
                   <span className="inline-block">
                     {selectedData?.formattedStartDate}
                   </span>
                 </div>
-                <div className="flex flex-row gap-2 justify-start items-center">
-                  <ClockIcon className="size-5"></ClockIcon>
+                <div className="flex flex-1 flex-row  justify-start items-center gap-2">
+                  <ClockIcon className="size-5 text-purple-600"></ClockIcon>
                   <span className="inline-block">
                     {selectedData?.formattedStartHour +
                       " - " +
@@ -591,7 +624,7 @@ export default function SelectAllocationModal({
             </div>
           </div>
           {/* Subtotal seleccionado */}
-          <div className="flex flex-row h-auto py-3 px-2.5 justify-between gap-4 border-t border-gray-300/60 items-center">
+          <div className="flex flex-row h-auto py-3 px-3.5 justify-between gap-4 border-t border-gray-300/60 items-center">
             <div className="flex flex-row gap-4">
               <span className="inline-block font-semibold">Subtotal: </span>
               <span className="inline-block font-semibold">
@@ -601,15 +634,10 @@ export default function SelectAllocationModal({
             <div className="flex flex-col">
               <button
                 onClick={onContinue}
-                className="inline-block w-auto bg-purple-600 rounded-lg text-white px-2.5 py-1 cursor-pointer"
+                className="inline-block w-auto bg-purple-600 rounded-lg text-white px-2.5 py-1 hover:bg-yellow-500/70 hover:scale-103 cursor-pointer transition-all"
               >
                 Continuar
               </button>
-              {showAlertMessage && (
-                <AlertMessage id={zoneIndex}>
-                  {TICKET_SELECTION_TEXTS.alerts[errorMessage]}
-                </AlertMessage>
-              )}
             </div>
           </div>
         </div>

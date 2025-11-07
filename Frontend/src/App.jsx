@@ -68,10 +68,6 @@ function App() {
         <Route path="miCalendario" element={<MyCalendar />} />
         <Route path="misTickets" element={<MisTickets />} />
 
-        <Route element={<ProtectedRoute />}>
-          <Route path="pago" element={<PaymentMethod />} />
-        </Route>
-
         <Route element={<AdminRoute />}>
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/settings" element={<AdminSettings />} />

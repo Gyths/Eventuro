@@ -6,11 +6,14 @@ import BannerCarousel from "../components/BannerCarousel.jsx";
 import EventCard from "../components/EventCard.jsx";
 import { v4 as uuidv4 } from "uuid";
 import { BASE_URL } from "../config.js";
+import { useAuth } from "../services/auth/AuthContext";
+import { EventuroApi } from "../api";
+
 
 const imagesDemo = [
-  "/banners/banner1.jpg",
-  "/banners/banner2.jpg",
-  "/banners/banner3.jpg",
+  { id: "demo1", title: "Evento destacado 1", image: "/banners/banner1.jpg" },
+  { id: "demo2", title: "Evento destacado 2", image: "/banners/banner2.jpg" },
+  { id: "demo3", title: "Evento destacado 3", image: "/banners/banner3.jpg" },
 ];
 
 /** Intenta convertir una URL de Google Maps a texto legible */
@@ -46,6 +49,8 @@ export default function Home() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState(null);
+  const [carouselImages, setCarouselImages] = useState([]);
+  const { isAuthenticated, user } = useAuth();
 
   useEffect(() => {
     let abort = false;
@@ -167,15 +172,152 @@ export default function Home() {
     });
   }, [events, filters]);
 
+
+// === Cargar eventos comprados del usuario (si está logueado) ===
+useEffect(() => {
+  if (events.length === 0) return;
+
+  (async () => {
+    try {
+      // Si no está logueado, mostrar eventos random
+      if (!isAuthenticated || !user?.userId) {
+        const fallback = events
+          .filter((e) => e.bannerEv)
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 3)
+          .map((e) => ({ id: e.id, title: e.titulo, image: e.bannerEv }));
+        setCarouselImages(fallback);
+        return;
+      }
+
+      // === Obtener las órdenes del usuario ===
+      const res = await EventuroApi({
+        endpoint: `/orders/byUser/${user.userId}?pageSize=100`,
+        method: "GET",
+      });
+
+      // === Contar categorías compradas ===
+      const categoryCount = new Map();
+      for (const order of res.items ?? []) {
+        for (const item of order.items ?? []) {
+          const ev = item?.eventDate?.event;
+          for (const cat of ev?.categories ?? []) {
+            const name = cat?.category?.description ?? "Otros";
+            categoryCount.set(name, (categoryCount.get(name) || 0) + 1);
+          }
+        }
+      }
+
+      // === Si el usuario no compró nada, fallback random ===
+      if (categoryCount.size === 0) {
+        const fallback = events
+          .filter((e) => e.bannerEv)
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 3)
+          .map((e) => ({ id: e.id, title: e.titulo, image: e.bannerEv }));
+        setCarouselImages(fallback);
+        return;
+      }
+
+      // === Ordenar categorías por cantidad comprada ===
+      const sortedCategories = Array.from(categoryCount.entries())
+        .sort((a, b) => {
+          const diff = b[1] - a[1];
+          // Si tienen la misma cantidad, decidir aleatoriamente el orden
+          if (diff === 0) return Math.random() - 0.5;
+          return diff;
+        })
+        .map(([cat]) => cat);
+
+      console.log("📊 Ranking de categorías compradas:");
+      for (const [cat, count] of categoryCount.entries()) {
+        console.log(` - ${cat}: ${count} compras`);
+      }
+      console.log("➡️ Categorías ordenadas por preferencia:", sortedCategories);
+
+      // === Buscar eventos en orden de categorías más compradas ===
+      const selected = [];
+      const usedIds = new Set();
+      const boughtEventIds = new Set();
+
+      // === Marcar eventos ya comprados ===
+      for (const order of res.items ?? []) {
+        for (const item of order.items ?? []) {
+          const ev = item?.eventDate?.event;
+          if (ev?.eventId) boughtEventIds.add(ev.eventId);
+        }
+      }
+
+      for (const cat of sortedCategories) {
+        // filtrar eventos de esa categoría
+        const catEvents = events.filter(
+          (e) =>
+            e.bannerEv &&
+            e.categories?.some(
+              (c) => c.category?.description?.toLowerCase() === cat.toLowerCase()
+            ) &&
+            !usedIds.has(e.id) &&
+            !boughtEventIds.has(e.id) // filtramos comprados
+        );
+
+        console.log(`🎯 Eventos encontrados en la categoría '${cat}':`, catEvents.map(ev => ev.id));
+
+        // mezclar aleatoriamente los eventos de esa categoría
+        for (const ev of catEvents.sort(() => Math.random() - 0.5)) {
+          if (selected.length < 3) {
+            selected.push({ id: ev.id, title: ev.titulo, image: ev.bannerEv });
+            usedIds.add(ev.id);
+          }
+        }
+
+        if (selected.length >= 3) break; // ya completamos el carrusel
+      }
+
+      console.log("✅ Eventos seleccionados (antes de rellenar):", selected.map(e => e.id));
+
+      // === Si faltan, rellenar con eventos aleatorios no repetidos ===
+      if (selected.length < 3) {
+        const remaining = events
+          .filter((e) => e.bannerEv && !usedIds.has(e.id))
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 3 - selected.length)
+          .map((e) => ({ id: e.id, title: e.titulo, image: e.bannerEv }));
+
+        console.log("🎲 Eventos aleatorios usados para rellenar:", remaining.map(e => e.id));
+
+        selected.push(...remaining);
+      }
+
+console.log("🏁 Eventos finales del carrusel:", selected.map(e => e.id));
+
+
+      // === Asignar finalmente el carrusel ===
+      setCarouselImages(selected);
+    } catch (err) {
+      console.error("Error al obtener órdenes:", err);
+      // fallback random
+      const fallback = events
+        .filter((e) => e.bannerEv)
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 3)
+        .map((e) => ({ id: e.id, title: e.titulo, image: e.bannerEv }));
+      setCarouselImages(fallback);
+    }
+  })();
+}, [isAuthenticated, user?.userId, events]);
+
+
+
   return (
     <section className="mx-auto max-w-6xl px-4 py-8">
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {/* Banner */}
         <div className="lg:col-span-4">
           <BannerCarousel
-            images={imagesDemo}
+            key={isAuthenticated ? "auth-carousel" : "guest-carousel"} // fuerza re-render
+            images={carouselImages.length > 0 ? carouselImages : imagesDemo}
             interval={5000}
-            showArrows={false}
+            showArrows={true}
             heightClass="h-48 md:h-64 lg:h-72"
             className="rounded-2xl shadow-lg"
           />

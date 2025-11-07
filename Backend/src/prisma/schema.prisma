@@ -9,6 +9,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  schemas  = ["public", "app"]
 }
 
 // ====================== Enums ======================
@@ -16,39 +17,53 @@ enum GENDER {
   M // male
   F // female
   O // other
+
+  @@schema("public")
 }
 
 enum STATUS_USER {
   A // active
   S // suspended
   D // deleted
+
+  @@schema("public")
 }
 
 enum ID_TYPE {
   RUC
   DNI
+
+  @@schema("public")
 }
 
 enum ACCESS_POLICY {
   E // everyone: todo el mundo
   T // teenagers: mayores a 14 con compañia adulta
   AO // adults only: mayores a 18
+
+  @@schema("public")
 }
 
 enum EVENT_STATUS {
   P // pending: pendiente
   A // acepted: aceptado
   D // denied: denegado
+
+  @@schema("public")
 }
 
 enum ZONE_KIND {
   GENERAL // aforo
   SEATED // asientos numerados
+
+  @@schema("public")
 }
 
 enum CURRENCY {
   PEN
   USD
+
+  @@schema("public")
 }
 
 enum ORDER_STATUS {
@@ -57,12 +72,16 @@ enum ORDER_STATUS {
   PAID
   CANCELLED
   EXPIRED
+
+  @@schema("public")
 }
 
 enum SEAT_STATUS {
   AVAILABLE
   HELD
   SOLD
+
+  @@schema("public")
 }
 
 enum TICKET_STATUS {
@@ -70,6 +89,8 @@ enum TICKET_STATUS {
   CANCELLED
   USED
   EXPIRED
+
+  @@schema("public")
 }
 
 enum REFUND_STATUS {
@@ -77,11 +98,15 @@ enum REFUND_STATUS {
   REQUESTED
   APPROVED
   REJECTED
+
+  @@schema("public")
 }
 
 enum DISCOUNT_TYPE {
   CASH
   PERCENTAGE
+
+  @@schema("public")
 }
 
 enum DISCOUNT_SCOPE {
@@ -89,11 +114,15 @@ enum DISCOUNT_SCOPE {
   EVENT
   USER
   EVENT_USER
+
+  @@schema("public")
 }
 
 enum STATUS_DISCOUNT {
   A
   I
+
+  @@schema("public")
 }
 
 /**
@@ -104,6 +133,8 @@ enum ORGANIZER_STATUS {
   SUBMITTED
   APPROVED
   REJECTED
+
+  @@schema("public")
 }
 
 // ====================== Models ======================
@@ -129,6 +160,8 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@schema("public")
 }
 
 // Usuario con login por contraseña (1:1 con User)
@@ -137,6 +170,8 @@ model PasswordUser {
   hashedPassword String
 
   user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@schema("public")
 }
 
 // Usuario con login externo OAuth (Google, etc.)
@@ -150,6 +185,7 @@ model OAuthUser {
 
   @@unique([provider, providerUserId])
   @@index([userId])
+  @@schema("public")
 }
 
 /**
@@ -163,6 +199,8 @@ model Administrator {
   auditLogs AuditLog[]
 
   user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@schema("public")
 }
 
 // Organizador (1:1 con User)
@@ -176,6 +214,8 @@ model Organizer {
 
   user   User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
   events Event[]
+
+  @@schema("public")
 }
 
 // Categorías de un evento
@@ -189,6 +229,8 @@ model EventCategory {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@schema("public")
 }
 
 // Tabla intermedia entre Evento y Categorías
@@ -204,6 +246,7 @@ model EventToCategory {
   updatedAt DateTime @updatedAt
 
   @@id([eventId, eventCategoryId])
+  @@schema("public")
 }
 
 // Local de un evento
@@ -221,18 +264,22 @@ model Venue {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@schema("public")
 }
 
 // Tarifa
 model Fee {
   feeId      BigInt  @id @default(autoincrement()) @db.BigInt
-  percentage Decimal @db.Decimal(10, 2)
+  percentage Decimal @unique @db.Decimal(10, 2)
 
   // relación
   event Event[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@schema("public")
 }
 
 // Evento
@@ -243,7 +290,7 @@ model Event {
   title                   String
   imagePrincipalKey       String
   imageBannerKey          String
-  status                  EVENT_STATUS  @default(A) //DEBE SER P PARA QUE EL ADMIN APRUEBE EL EVENTO / PERO ESTA HARCODEADO A 
+  status                  EVENT_STATUS  @default(P)
   inPerson                Boolean
   description             String
   accessPolicy            ACCESS_POLICY
@@ -264,6 +311,7 @@ model Event {
   @@index([organizerId])
   @@index([feeId])
   @@index([title])
+  @@schema("public")
 }
 
 model EventDate {
@@ -280,6 +328,7 @@ model EventDate {
   Hold      Hold[]
 
   @@index([eventId, startAt])
+  @@schema("public")
 }
 
 model EventDateZone {
@@ -305,6 +354,7 @@ model EventDateZone {
   updatedAt DateTime @updatedAt
 
   @@index([eventDateId, name])
+  @@schema("public")
 }
 
 model SeatMap {
@@ -318,6 +368,8 @@ model SeatMap {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@schema("public")
 }
 
 model Seat {
@@ -337,6 +389,7 @@ model Seat {
   @@unique([seatMapId, rowNumber, colNumber])
   @@index([seatMapId])
   @@index([status])
+  @@schema("public")
 }
 
 model EventDateZoneAllocation {
@@ -357,6 +410,7 @@ model EventDateZoneAllocation {
   updatedAt DateTime @updatedAt
 
   @@index([eventDateZoneId, audienceName])
+  @@schema("public")
 }
 
 // Fases de venta
@@ -376,6 +430,7 @@ model EventSalesPhase {
   updatedAt DateTime @updatedAt
 
   @@index([eventId, startAt])
+  @@schema("public")
 }
 
 model Order {
@@ -393,6 +448,7 @@ model Order {
 
   @@index([buyerUserId])
   @@index([status, createdAt])
+  @@schema("public")
 }
 
 model OrderItem {
@@ -419,6 +475,7 @@ model OrderItem {
   @@unique([seatId])
   @@index([orderId])
   @@index([eventDateId, eventDateZoneId])
+  @@schema("public")
 }
 
 model Ticket {
@@ -447,6 +504,7 @@ model Ticket {
 
   @@unique([eventDateId, seatId])
   @@index([eventDateId, eventDateZoneId])
+  @@schema("public")
 }
 
 model Hold {
@@ -466,6 +524,7 @@ model Hold {
   @@unique([seatId])
   @@index([eventDateId, eventDateZoneId])
   @@index([expiresAt])
+  @@schema("public")
 }
 
 model AuditLog {
@@ -482,6 +541,7 @@ model AuditLog {
   @@index([administratorId])
   @@index([entityName, action])
   @@index([createdAt])
+  @@schema("public")
 }
 
 model Discount {
@@ -509,4 +569,36 @@ model Discount {
   @@index([eventId])
   @@index([userId])
   @@index([startAt, endAt])
+  @@schema("public")
+}
+
+model AuditTransaction {
+  auditTransactionId BigInt   @id @default(autoincrement())
+  targetTableName    String
+  operationType      String
+  primaryKeyJson     Json?
+  actorUserId        BigInt?
+  actorIpAddress     String?
+  createdAt          DateTime @default(now())
+
+  //Relaciones
+  changes AuditChange[]
+
+  @@map("AuditTransaction")
+  @@schema("app")
+}
+
+model AuditChange {
+  auditChangeId      BigInt   @id @default(autoincrement())
+  auditTransactionId BigInt
+  columnName         String
+  oldValueJson       Json?
+  newValueJson       Json?
+  isChanged          Boolean?
+
+  //Relaciones
+  transaction AuditTransaction @relation(fields: [auditTransactionId], references: [auditTransactionId], onDelete: Cascade)
+
+  @@map("AuditChange")
+  @@schema("app")
 }
