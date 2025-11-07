@@ -241,7 +241,7 @@ export default function TicketSelection() {
                           event.dates[0].zoneDates[0].allocations &&
                           event.dates[0].zoneDates[0].allocations.map(
                             (allocation) => (
-                              <span className="inline-block">
+                              <span key={allocation.id || allocation.audienceName} className="inline-block">
                                 {allocation.audienceName}
                               </span>
                             )
@@ -251,14 +251,14 @@ export default function TicketSelection() {
                     <div className="grid grid-cols-2 justify-between text-start py-3 border border-gray-400 bg-gray-50 shadow-lg rounded-2xl px-5 gap-y-4 xl:ml-4">
                       {event?.dates &&
                         event.dates[0]?.zoneDates.map((zone, index) => (
-                          <>
+                          <React.Fragment key={zone.id || index}>
                             <span className="inline-block justify-start w-auto font-semibold">
                               {zone.name}
                             </span>
                             <div className="flex flex-row w-full justify-between">
                               {zone.allocations &&
                                 zone.allocations.map((allocation) => (
-                                  <span className="flex font-semibold justify-end items-center">
+                                  <span key={allocation.id || allocation.audienceName} className="flex font-semibold justify-end items-center">
                                     {currencies.PEN + " " + allocation.price}
                                   </span>
                                 ))}
@@ -268,7 +268,7 @@ export default function TicketSelection() {
                                 </span>
                               )}
                             </div>
-                          </>
+                          </React.Fragment>
                         ))}
                     </div>
                   </div>
