@@ -225,23 +225,6 @@ export default function TopBarRoles({ filters, setFilters }) {
           </div>
         )}
 
-        {/* Opciones del organizador aprobado */}
-        {isOrganizerApproved && (
-          <div className="hidden md:flex items-center gap-2">
-            <Linker
-              label="Reportes"
-              icon="chart-bar"
-              to="/reports"
-              activeMatch="/reports"
-            />
-            <Linker
-              label="Mis Eventos"
-              icon="calendar-days"
-              to="/my-events"
-              activeMatch="/my-events"
-            />
-          </div>
-        )}
 
 
         {/* Notificaciones */}
@@ -250,13 +233,14 @@ export default function TopBarRoles({ filters, setFilters }) {
             <button
               type="button"
               onClick={() => setShowNotifications((v) => !v)}
-              className={`px-4 py-2 rounded-xl font-semibold flex items-center justify-center transition-colors duration-200 ${
+              className={`flex items-center justify-center rounded-full transition-colors duration-200 text-white/90 hover:bg-white/10 ${
                 isOrganizerApproved
-                  ? "bg-amber-400/90 text-purple-900 border border-amber-400 hover:bg-amber-400"
-                  : "bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:opacity-90"
+                  ? "border border-white/20 px-3 py-2 text-sm" 
+                  : "bg-gradient-to-r from-purple-600 to-pink-500 px-3 py-2 text-sm"
               }`}
+              style={{ height: "40px" }} // fuerza altura consistente con otros botones
             >
-              <BellIcon className="h-6 w-6" />
+              <BellIcon className="h-5 w-5" />
               {notifications.length > 0 && (
                 <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 text-xs flex items-center justify-center bg-red-500 text-white rounded-full">
                   {notifications.length}
@@ -300,6 +284,23 @@ export default function TopBarRoles({ filters, setFilters }) {
 
 
 
+        {/* Botón Reportes y mis eventos*/}
+        {isOrganizerApproved && (
+          <div className="hidden md:flex items-center gap-2">
+            <Linker
+              label="Reportes"
+              icon="chart-bar"
+              to="/reports"
+              activeMatch="/reports"
+            />
+            <Linker
+              label="Mis Eventos"
+              icon="calendar-days"
+              to="/my-events"
+              activeMatch="/my-events"
+            />
+          </div>
+        )}
 
 
 
@@ -312,7 +313,7 @@ export default function TopBarRoles({ filters, setFilters }) {
             onClick={handleCrearEvento}
             className={`px-4 py-2 rounded-xl font-semibold ${
               isOrganizerApproved
-                ? "bg-amber-400/90 text-purple-900 border border-amber-400 hover:bg-amber-400"
+                ? "flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm text-white/90 hover:bg-white/10"
                 : "bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:opacity-90"
             }`}
           >
