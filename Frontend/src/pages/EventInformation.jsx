@@ -301,7 +301,7 @@ export default function TicketSelection() {
                 <h1 className="font-bold text-3xl">Política de devoluciones</h1>
 
                 {event?.refundPolicy ? (
-                  <span>{event.refundPolicy.text}</span>
+                  <span>{event.refundPolicyText}</span>
                 ) : (
                   <span className="inline-block text-justify leading-relaxed text-gray-700">
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit.

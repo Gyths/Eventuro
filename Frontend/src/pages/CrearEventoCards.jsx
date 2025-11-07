@@ -457,6 +457,8 @@ export default function CrearEventoCards() {
         // Si hay key existente, enviarla para reutilizar
         formData.append("imageBannerKey", form.imageBannerKey);
       }
+      formData.append("refundPolicyFile", form.refundPolicyFile);
+      formData.append("refundPolicyText", returnsPolicy);
 
       // --- Enviar con fetch ---
       const res = await fetch(`${BASE_URL}/eventuro/api/event/`, {
@@ -732,7 +734,9 @@ export default function CrearEventoCards() {
         if (invalidDate) {
           newErrors.dates = "Cada fecha debe tener al menos un horario válido.";
         }
-        const overlapDetected = dates.some((d) => hasOverlaps(d.schedules || []));
+        const overlapDetected = dates.some((d) =>
+          hasOverlaps(d.schedules || [])
+        );
         if (overlapDetected) {
           newErrors.dates =
             "Hay horarios cruzados en una o más fechas. Corrígelos antes de continuar.";
@@ -798,16 +802,17 @@ export default function CrearEventoCards() {
       }
 
       // variable para comparar capacidad del recinto
-      const aforo = Number( location.capacity || 0 );
+      const aforo = Number(location.capacity || 0);
       // variable para comparar la cantidad total de tickets
-      const totalTickets = zones.reduce( (sum, z) => sum + Number(z.quantity || 0) , 0 );
+      const totalTickets = zones.reduce(
+        (sum, z) => sum + Number(z.quantity || 0),
+        0
+      );
 
       // comparación: la cantidad total de tickets deben ser menor al aforo
       if (aforo > 0 && totalTickets > 0 && totalTickets > aforo) {
         newErrors.capacity = `El total de tickets (${totalTickets}) debe ser menor al aforo (${aforo}).`;
       }
-
-
 
       if (!newErrors.tickets) {
         const zones = tickets.zones || [];
@@ -1010,7 +1015,11 @@ export default function CrearEventoCards() {
               value={discountCodes}
               onChange={setDiscountCodes}
             />
-            <ReturnsPolicy value={returnsPolicy} onChange={setReturnsPolicy} />
+            <ReturnsPolicy
+              form={form}
+              value={returnsPolicy}
+              onChange={setReturnsPolicy}
+            />
           </div>
         </WizardCard>
       </div>
