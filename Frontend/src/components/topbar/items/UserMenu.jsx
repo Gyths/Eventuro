@@ -38,7 +38,7 @@ export default function UserMenu({ isOrganizerApproved }) {
       onClick={() => setOpen((o) => !o)}
       className={`px-4 py-2 rounded-xl font-semibold flex items-center gap-2 justify-center transition-colors duration-200 ${
         isOrganizerApproved
-          ? "bg-amber-400/90 text-purple-900 border border-amber-400 hover:bg-amber-400"
+          ? "flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm text-white/90 hover:bg-white/10"
           : "bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:opacity-90"
       }`}
       aria-label="Abrir menú de usuario"
@@ -46,7 +46,7 @@ export default function UserMenu({ isOrganizerApproved }) {
       <UserIcon className="h-5 w-5" />
       <span>{user.name}</span>
       {isOrganizerApproved && (
-        <span className="ml-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-yellow-300 text-purple-900">
+        <span className="ml-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-purple-600 text-white">
           Organizador
         </span>
       )}
