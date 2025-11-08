@@ -290,8 +290,8 @@ export default function TopBarRoles({ filters, setFilters }) {
             <Linker
               label="Reportes"
               icon="chart-bar"
-              to="/reports"
-              activeMatch="/reports"
+              to="/reporteEventos"
+              activeMatch="/reporteEventos"
             />
             <Linker
               label="Mis Eventos"

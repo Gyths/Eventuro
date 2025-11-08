@@ -273,7 +273,7 @@ useEffect(() => {
         if (selected.length >= 3) break; // ya completamos el carrusel
       }
 
-      console.log("✅ Eventos seleccionados (antes de rellenar):", selected.map(e => e.id));
+      console.log("Eventos seleccionados (antes de rellenar):", selected.map(e => e.id));
 
       // === Si faltan, rellenar con eventos aleatorios no repetidos ===
       if (selected.length < 3) {
@@ -283,12 +283,12 @@ useEffect(() => {
           .slice(0, 3 - selected.length)
           .map((e) => ({ id: e.id, title: e.titulo, image: e.bannerEv }));
 
-        console.log("🎲 Eventos aleatorios usados para rellenar:", remaining.map(e => e.id));
+        console.log("Eventos aleatorios usados para rellenar:", remaining.map(e => e.id));
 
         selected.push(...remaining);
       }
 
-console.log("🏁 Eventos finales del carrusel:", selected.map(e => e.id));
+console.log("Eventos finales del carrusel:", selected.map(e => e.id));
 
 
       // === Asignar finalmente el carrusel ===
