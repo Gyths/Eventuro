@@ -49,7 +49,11 @@ const animationStyles = `
 
 const formatRequestDate = (isoString) => {
   if (!isoString) return "Fecha desconocida";
-  const date = new Date(isoString);
+
+  const localIsoString = isoString.slice(0, -1);
+
+  const date = new Date(localIsoString);
+
   return date.toLocaleString("es-PE", {
     day: "2-digit",
     month: "long",
@@ -241,11 +245,10 @@ export default function AdminLogs() {
           <div className="border-b border-gray-200 p-6 sm:p-8 bg-gray-50/70">
             <h3 className="text-3xl font-semibold text-gray-800 flex items-center gap-3">
               <ClipboardDocumentListIcon className="h-9 w-9 text-purple-600" />
-              Registro de Auditoría
+              Registro de auditoría
             </h3>
             <p className="mt-2 text-base text-gray-600">
-              Actividad reciente de administradores y organizadores en el
-              sistema.
+              Actividad reciente de usuarios en el sistema.
             </p>
           </div>
 
