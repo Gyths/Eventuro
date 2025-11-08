@@ -6,6 +6,6 @@ import { findUserByIdFull } from '../controllers/user.controller.js';
 
 const router = Router();
 
-router.get('/:id', /*verifyToken, attachUserContext, requireAdmin,*/ findUserByIdFull);
+router.get('/:id', verifyToken, attachUserContext, requireAdmin, findUserByIdFull);
 
 export default router;
