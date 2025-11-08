@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
-// --- CAMBIO ---
-// Importamos el EventuroApi que maneja el token
+
 import { EventuroApi } from "../../api";
 import { ClockIcon, CheckIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import Swal from "sweetalert2";
 
-// Helper para formatear la fecha
 const formatDate = (isoString) => {
   if (!isoString) return "Fecha desconocida";
   const date = new Date(isoString);
@@ -23,24 +21,18 @@ export default function AdminEvents() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // --- Lógica de Fetch ---
   const fetchPendingEvents = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      // Usamos EventuroApi (esto está bien)
       const data = await EventuroApi({
         endpoint: "/event/to-approve",
         method: "GET",
       });
 
-      // --- CAMBIO ---
-      // El backend devuelve un objeto { items: [...] }, no un array.
-      // Extraemos el array 'items' de la respuesta.
       setEvents(data && Array.isArray(data.items) ? data.items : []);
     } catch (err) {
       setError(err.message);
-      // ... (el resto del catch es igual)
       if (
         err.message.includes("401") ||
         err.message.toLowerCase().includes("token")
@@ -56,39 +48,91 @@ export default function AdminEvents() {
     }
   };
 
-  // Cargar eventos al montar el componente
   useEffect(() => {
     fetchPendingEvents();
   }, []);
 
-  // --- Handlers para Acciones (Aprobar/Rechazar) ---
-  const handleApprove = (eventId) => {
-    // TODO: Reemplazar con la lógica de API real
-    Swal.fire({
+  const handleApprove = async (eventId) => {
+    const { value: percentage } = await Swal.fire({
+      title: "Aprobar Evento",
+      text: "Ingresa el porcentaje de comisión (ej: 5.25) para este evento:",
+      input: "text",
+      inputPlaceholder: "5.25",
       icon: "info",
-      title: "Endpoint Necesario",
-      text: `Para aprobar, necesito el endpoint de TIPO POST (ej: /event/${eventId}/approve)`,
+      showCancelButton: true,
+      confirmButtonText: "Aprobar Evento",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#10B981",
+      inputValidator: (value) => {
+        if (!value) {
+          return "¡Necesitas ingresar un valor!";
+        }
+        const num = parseFloat(value);
+        if (isNaN(num) || num < 0) {
+          return "Por favor, ingresa un número válido (ej: 5.25)";
+        }
+      },
     });
-    // Lógica futura:
-    // 1. Mostrar confirmación con Swal.fire
-    // 2. Llamar a EventuroApi({ endpoint: `/event/${eventId}/approve`, method: 'POST' })
-    // 3. Si tiene éxito, llamar a fetchPendingEvents() para refrescar la lista.
+
+    if (percentage) {
+      const numPercentage = parseFloat(percentage);
+      try {
+        await EventuroApi({
+          endpoint: `/event/${eventId}/approve`,
+          method: "PUT",
+          data: {
+            status: "A",
+            percentage: numPercentage,
+          },
+        });
+
+        Swal.fire(
+          "¡Aprobado!",
+          "El evento ha sido aprobado y la comisión ha sido establecida.",
+          "success"
+        );
+
+        fetchPendingEvents();
+      } catch (err) {
+        Swal.fire("Error", err.message, "error");
+      }
+    }
   };
 
-  const handleReject = (eventId) => {
-    // TODO: Reemplazar con la lógica de API real
-    Swal.fire({
-      icon: "info",
-      title: "Endpoint Necesario",
-      text: `Para rechazar, necesito el endpoint de TIPO POST (ej: /event/${eventId}/reject)`,
+  const handleReject = async (eventId) => {
+    const result = await Swal.fire({
+      title: "¿Rechazar este evento?",
+      text: "Esta acción marcará el evento como 'Denegado' (D).",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#EF4444",
+      confirmButtonText: "Sí, rechazar",
+      cancelButtonText: "Cancelar",
     });
-    // Lógica futura:
-    // 1. Mostrar confirmación con Swal.fire
-    // 2. Llamar a EventuroApi({ endpoint: `/event/${eventId}/reject`, method: 'POST' })
-    // 3. Si tiene éxito, llamar a fetchPendingEvents() para refrescar la lista.
+
+    if (result.isConfirmed) {
+      try {
+        await EventuroApi({
+          endpoint: `/event/${eventId}/approve`,
+          method: "PUT",
+          data: {
+            status: "D",
+          },
+        });
+
+        Swal.fire(
+          "¡Rechazado!",
+          "El evento ha sido marcado como rechazado.",
+          "success"
+        );
+
+        fetchPendingEvents();
+      } catch (err) {
+        Swal.fire("Error", err.message, "error");
+      }
+    }
   };
 
-  // --- Lógica de Renderizado ---
   const renderContent = () => {
     if (isLoading) {
       return (
@@ -118,7 +162,7 @@ export default function AdminEvents() {
       <ul className="divide-y divide-gray-200">
         {events.map((event) => (
           <li
-            key={event.eventId} // Asumo que el ID se llama 'eventId'
+            key={event.eventId}
             className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between hover:bg-purple-50/50 transition-colors duration-150"
           >
             {/* Detalles del Evento */}

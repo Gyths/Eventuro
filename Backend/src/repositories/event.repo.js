@@ -617,7 +617,7 @@ export async function listEventstoApproveRepo({ page = 1, pageSize = 10 }) {
         },
       },
     }),
-    prisma.event.count(),
+    prisma.event.count({ where: { status: 'P' } }),
   ]);
 
   const allDateIds = items.flatMap(ev => ev.dates.map(d => d.eventDateId));
