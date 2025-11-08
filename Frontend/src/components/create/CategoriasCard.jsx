@@ -8,7 +8,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../../config";
-const API_URL = `${BASE_URL}/eventuro/api/event-category`;
+import { EventuroApi } from "../../api";
 
 export default function CategoriasCard() {
   const [categories, setCategories] = useState([]);
@@ -22,11 +22,11 @@ export default function CategoriasCard() {
     if (categories.length === 0) setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(API_URL);
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status} ${response.statusText}`);
-      }
-      const data = await response.json();
+      const data = await EventuroApi({
+        endpoint: "/event-category",
+        method: "GET",
+      });
+
       const parsedData = (data || []).map((item) => ({
         id: item.eventCategoryId,
         name: item.description || item.name,
@@ -54,21 +54,12 @@ export default function CategoriasCard() {
     };
     setIsSaving(true);
     try {
-      const response = await fetch(API_URL, {
+      await EventuroApi({
+        endpoint: "/event-category",
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(jsonBody),
+        data: jsonBody,
       });
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.message ||
-          `Error ${response.status}: ${response.statusText}`
-        );
-      }
+
       await Swal.fire({
         icon: "success",
         title: "¡Categoría Creada!",
@@ -88,7 +79,6 @@ export default function CategoriasCard() {
       setIsSaving(false);
     }
   };
-  // --- FIN DE LA LÓGICA ---
 
   return (
     <>
