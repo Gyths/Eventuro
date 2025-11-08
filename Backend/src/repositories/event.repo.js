@@ -601,6 +601,12 @@ export async function listEventstoApproveRepo({ page = 1, pageSize = 10 }) {
         title: true,
         description: true,
         imagePrincipalKey: true,
+        createdAt: true, 
+        organizer: {     
+          select: {
+            companyName: true 
+          }
+        },
         dates: {
           orderBy: { startAt: "asc" },
           select: {
