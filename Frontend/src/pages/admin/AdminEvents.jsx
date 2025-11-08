@@ -1,8 +1,23 @@
 import React, { useState, useEffect } from "react";
-
 import { EventuroApi } from "../../api";
 import { ClockIcon, CheckIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import Swal from "sweetalert2";
+
+const animationStyles = `
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-fade-in-up {
+    animation: fade-in-up 0.4s ease-out forwards;
+  }
+`;
 
 const formatDate = (isoString) => {
   if (!isoString) return "Fecha desconocida";
@@ -160,12 +175,15 @@ export default function AdminEvents() {
 
     return (
       <ul className="divide-y divide-gray-200">
-        {events.map((event) => (
+        {events.map((event, index) => (
           <li
             key={event.eventId}
-            className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between hover:bg-purple-50/50 transition-colors duration-150"
+            className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between hover:bg-purple-50/50 transition-colors duration-150 animate-fade-in-up"
+            style={{
+              animationFillMode: "both",
+              animationDelay: `${index * 100}ms`,
+            }}
           >
-            {/* Detalles del Evento */}
             <div className="flex-1 mb-4 sm:mb-0 pr-4">
               <h4 className="text-base font-semibold text-purple-800">
                 {event.title || "Evento sin título"}
@@ -181,7 +199,6 @@ export default function AdminEvents() {
               </p>
             </div>
 
-            {/* Botones de Acción */}
             <div className="flex-shrink-0 flex gap-2">
               <button
                 onClick={() => handleReject(event.eventId)}
@@ -207,22 +224,25 @@ export default function AdminEvents() {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm max-w-5xl mx-auto overflow-hidden transition-shadow duration-300 hover:shadow-md">
-        {/* Encabezado */}
-        <div className="border-b border-gray-200 p-6 sm:p-8 bg-gray-50/70">
-          <h3 className="text-3xl font-semibold text-gray-800 flex items-center gap-3">
-            <ClockIcon className="h-9 w-9 text-purple-600" />
-            Eventos Pendientes de Aprobación
-          </h3>
-          <p className="mt-2 text-base text-gray-600">
-            Revisa y aprueba los nuevos eventos enviados por los organizadores.
-          </p>
-        </div>
+    <>
+      <style>{animationStyles}</style>
 
-        {/* Contenido (Lista) */}
-        <div className="p-0">{renderContent()}</div>
+      <div className="p-4 sm:p-6 lg:p-8 flex items-center justify-center min-h-[calc(100vh-80px)]">
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm max-w-5xl mx-auto overflow-hidden transition-shadow duration-300 hover:shadow-md w-full">
+          <div className="border-b border-gray-200 p-6 sm:p-8 bg-gray-50/70">
+            <h3 className="text-3xl font-semibold text-gray-800 flex items-center gap-3">
+              <ClockIcon className="h-9 w-9 text-purple-600" />
+              Eventos pendientes de aprobación
+            </h3>
+            <p className="mt-2 text-base text-gray-600">
+              Revisa y aprueba los nuevos eventos enviados por los
+              organizadores.
+            </p>
+          </div>
+
+          <div className="p-0">{renderContent()}</div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

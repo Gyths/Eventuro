@@ -469,10 +469,20 @@ export default function CrearEventoCards() {
         formData.append("imageBannerKey", form.imageBannerKey);
       }
 
+      const session = localStorage.getItem("session");
+      const token = session ? JSON.parse(session)?.token : null;
+
+      const headers = new Headers();
+
+      if (token) {
+        headers.append("Authorization", `Bearer ${token}`);
+      }
+
       // --- Enviar con fetch ---
       const res = await fetch(`${BASE_URL}/eventuro/api/event/`, {
         method: "POST",
         body: formData, // ¡sin JSON.stringify!
+        headers: headers,
       });
 
       const raw = await res.text();
@@ -816,16 +826,17 @@ export default function CrearEventoCards() {
       }
 
       // variable para comparar capacidad del recinto
-      const aforo = Number( location.capacity || 0 );
+      const aforo = Number(location.capacity || 0);
       // variable para comparar la cantidad total de tickets
-      const totalTickets = zones.reduce( (sum, z) => sum + Number(z.quantity || 0) , 0 );
+      const totalTickets = zones.reduce(
+        (sum, z) => sum + Number(z.quantity || 0),
+        0
+      );
 
       // comparación: la cantidad total de tickets deben ser menor al aforo
       if (aforo > 0 && totalTickets > 0 && totalTickets > aforo) {
         newErrors.capacity = `El total de tickets (${totalTickets}) debe ser menor al aforo (${aforo}).`;
       }
-
-
 
       if (!newErrors.tickets) {
         const zones = tickets.zones || [];

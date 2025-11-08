@@ -4,7 +4,9 @@ export async function listAuditTransactionsRepo({take, skip, order}) {
     
     const transactions = await prisma.auditTransaction.findMany({
       where: {
-        actorUserId: !null,
+        actorUserId: { 
+          not: null 
+        },
       },
       select: {
         auditTransactionId: true,
