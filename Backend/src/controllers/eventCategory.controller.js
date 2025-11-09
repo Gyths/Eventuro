@@ -15,7 +15,7 @@ export async function createEventCategory(req, res) {
     }
 }
 
-export async function updateEventCategory(req, res, next) {
+export async function updateEventCategory(req, res) {
     try {
         const { id } = req.params;
         const payload = req.body;
@@ -29,10 +29,8 @@ export async function updateEventCategory(req, res, next) {
         if (err?.code === 'P2002') {
             return res.status(409).json({ message: 'Ya existe una categoría con esas iniciales (conflicto de unicidad).' });
         }
-        if (err?.status) {
-            return res.status(err.status).json({ message: err.message });
-        }
-        return next(err);
+        return res.status(400).json({ message: err.message });
+
     }
 }
 
@@ -51,10 +49,8 @@ export async function deleteEventCategory(req, res) {
                 message: 'No se puede eliminar: la categoría está siendo referenciada por otros registros.',
             });
         }
-        if (err?.status) {
-            return res.status(err.status).json({ message: err.message });
-        }
-        return next(err);
+        return res.status(400).json({ message: err.message });
+
     }
 }
 

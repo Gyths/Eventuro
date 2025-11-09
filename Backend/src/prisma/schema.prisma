@@ -24,6 +24,7 @@ enum GENDER {
 enum STATUS_USER {
   A // active
   S // suspended
+  B // Banned
   D // deleted
 
   @@schema("public")
@@ -141,22 +142,22 @@ enum ORGANIZER_STATUS {
 
 // Usuario general
 model User {
-  userId    BigInt      @id @default(autoincrement()) @db.BigInt
-  name      String
-  lastName  String
-  phone     String?
-  email     String      @unique
-  birthdate DateTime?
-  gender    GENDER?
-  status    STATUS_USER @default(A)
-
+  userId         BigInt         @id @default(autoincrement()) @db.BigInt
+  name           String
+  lastName       String
+  phone          String?
+  email          String         @unique
+  birthdate      DateTime?
+  gender         GENDER?
+  status         STATUS_USER    @default(A)
+  suspendedUntil DateTime?
   // Relaciones
-  password      PasswordUser?
-  oauths        OAuthUser[]
-  organizer     Organizer?
-  administrator Administrator? // NUEVO: relación 1:1 con Administrator
-  Ticket        Ticket[]       @relation("TicketOwner")
-  Discount      Discount[]
+  password       PasswordUser?
+  oauths         OAuthUser[]
+  organizer      Organizer?
+  administrator  Administrator? // NUEVO: relación 1:1 con Administrator
+  Ticket         Ticket[]       @relation("TicketOwner")
+  Discount       Discount[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -194,9 +195,6 @@ model OAuthUser {
 model Administrator {
   administratorId BigInt @id @default(autoincrement()) @db.BigInt
   userId          BigInt @unique @db.BigInt
-
-  //Relaciones
-  auditLogs AuditLog[]
 
   user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
@@ -524,23 +522,6 @@ model Hold {
   @@unique([seatId])
   @@index([eventDateId, eventDateZoneId])
   @@index([expiresAt])
-  @@schema("public")
-}
-
-model AuditLog {
-  auditLogId      BigInt   @id @default(autoincrement()) @db.BigInt
-  administratorId BigInt?  @db.BigInt // relación directa a Administrator                   
-  entityName      String // Ej: "Event", "Ticket", "User", etc.
-  entityId        BigInt?  @db.BigInt
-  action          String // "CREATE", "UPDATE", "DELETE"
-  description     String?
-  createdAt       DateTime @default(now())
-
-  administrator Administrator? @relation(fields: [administratorId], references: [administratorId], onDelete: SetNull)
-
-  @@index([administratorId])
-  @@index([entityName, action])
-  @@index([createdAt])
   @@schema("public")
 }
 
