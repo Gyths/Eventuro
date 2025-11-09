@@ -8,8 +8,8 @@ import { listUsers } from '../controllers/user.controller.js';
 
 const router = Router();
 
-router.get('/:id', /*verifyToken, attachUserContext, requireAdmin,*/ findUserByIdFull);
-router.put('/:id/status', /*verifyToken, attachUserContext, requireAdmin,*/ updateUserStatus);
-router.get('/', /*verifyToken, attachUserContext, requireAdmin,*/ listUsers)
+router.get('/:id', verifyToken, attachUserContext, requireAdmin, findUserByIdFull);
+router.put('/:id/status', verifyToken, attachUserContext, requireAdmin, updateUserStatus);
+router.get('/', verifyToken, attachUserContext, requireAdmin, listUsers)
 
 export default router;
