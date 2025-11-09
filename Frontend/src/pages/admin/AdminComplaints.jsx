@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from "react";
 import {
   ListBulletIcon,
-  EyeIcon, // Para "Ver detalle"
-  ChevronDownIcon, // Para el dropdown de estado
-  XMarkIcon, // Para cerrar el modal
+  EyeIcon,
+  ChevronDownIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import Swal from "sweetalert2";
 
 // --- DATOS SIMULADOS ---
-// Basados en la estructura de 'LibroReclamos.jsx'
 const DUMMY_COMPLAINTS = [
   {
     id: 1001,
-    estado: "Pendiente", // "Pendiente", "En revisión", "Resuelto"
+    estado: "Pendiente",
     fecha: "2025-11-08T10:30:00Z",
     cliente: {
       nombres: "Ana",
@@ -96,12 +95,9 @@ const DUMMY_COMPLAINTS = [
     },
   },
 ];
-// --- FIN DE DATOS SIMULADOS ---
 
-// Opciones de estado
 const RECLAMO_ESTADOS = ["Pendiente", "En revisión", "Resuelto"];
 
-// Helper para formatear la fecha
 const formatDate = (isoString) => {
   if (!isoString) return "Fecha desconocida";
   const date = new Date(isoString);
@@ -114,7 +110,6 @@ const formatDate = (isoString) => {
   });
 };
 
-// Helper para el badge de estado
 const StatusBadge = ({ estado }) => {
   let colorClasses = "";
   switch (estado) {
@@ -145,18 +140,13 @@ export default function AdminComplaints() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
 
-  // Simulación de carga de datos
   useEffect(() => {
     setTimeout(() => {
-      // Aquí también podrías leer desde localStorage
-      // const localData = JSON.parse(localStorage.getItem("reclamos_eventuro") || "[]");
-      // setComplaints(localData.length > 0 ? localData : DUMMY_COMPLAINTS);
       setComplaints(DUMMY_COMPLAINTS);
       setIsLoading(false);
-    }, 500); // Simula 0.5s de carga
+    }, 500);
   }, []);
 
-  // --- Handlers ---
   const handleViewDetails = (complaint) => {
     setSelectedComplaint(complaint);
     setIsModalOpen(true);
@@ -167,12 +157,10 @@ export default function AdminComplaints() {
     setSelectedComplaint(null);
   };
 
-  // Simulación de cambio de estado
   const handleChangeStatus = async (complaintId) => {
     const complaint = complaints.find((c) => c.id === complaintId);
     if (!complaint) return;
 
-    // Usamos Swal para pedir el nuevo estado
     const { value: newStatus } = await Swal.fire({
       title: "Actualizar Estado",
       text: `Selecciona el nuevo estado para el reclamo #${complaintId}:`,
@@ -182,17 +170,13 @@ export default function AdminComplaints() {
         "En revisión": "En revisión",
         Resuelto: "Resuelto",
       },
-      inputValue: complaint.estado, // Pre-selecciona el estado actual
+      inputValue: complaint.estado,
       showCancelButton: true,
       confirmButtonText: "Actualizar",
       cancelButtonText: "Cancelar",
     });
 
     if (newStatus && newStatus !== complaint.estado) {
-      // Aquí iría tu llamada a la API (fetch, EventuroApi)
-      // await EventuroApi({ endpoint: `/complaints/${complaintId}/status`, method: 'PUT', data: { status: newStatus } });
-
-      // Como es simulación, solo actualizamos el estado local
       setComplaints((currentComplaints) =>
         currentComplaints.map((c) =>
           c.id === complaintId ? { ...c, estado: newStatus } : c
@@ -206,7 +190,6 @@ export default function AdminComplaints() {
     }
   };
 
-  // --- Renderizado ---
   return (
     <>
       <div className="p-4 sm:p-6 lg:p-8 flex items-center justify-center min-h-[calc(100vh-80px)]">
@@ -322,9 +305,6 @@ export default function AdminComplaints() {
   );
 }
 
-// --- Componente Modal (puesto en el mismo archivo por simplicidad) ---
-
-// Helper para filas de detalle
 function DetailRow({ label, value, span = 1 }) {
   return (
     <div className={span === 2 ? "sm:col-span-2" : ""}>

@@ -52,17 +52,7 @@ export async function findUserByIdString(idStr) {
 export async function findByIdFull(userId) {
   return prisma.user.findUnique({
     where: { userId: Number(userId) },
-    select: {
-      userId: true,
-      name: true,
-      lastName: true,
-      phone: true,
-      email: true,
-      birthdate: true,
-      gender: true,
-      status: true,
-      suspendedUntil: true,
-    },
+    
     include: {
       organizer: true,
       administrator: true,
