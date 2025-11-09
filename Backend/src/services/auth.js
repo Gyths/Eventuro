@@ -29,6 +29,8 @@ export function buildUserResponse(u) {
     name: u.name,
     lastName: u.lastName,
     email: u.email,
+    status: u.status,
+    suspendedUntil: u.suspendedUntil,
     roles,
     organizerStatus,
 
