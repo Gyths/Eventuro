@@ -42,13 +42,25 @@ function readRefundStatusFromItem(it) {
 function refundStatusUI(status) {
   switch (status) {
     case "REQUESTED":
-      return { label: "Pendiente de revisión", cls: "border-amber-200 bg-amber-50 text-amber-700" };
+      return {
+        label: "Pendiente de revisión",
+        cls: "border-amber-200 bg-amber-50 text-amber-700",
+      };
     case "APPROVED":
-      return { label: "Cancelado / Reembolso aprobado", cls: "border-green-200 bg-green-50 text-green-700" };
+      return {
+        label: "Cancelado / Reembolso aprobado",
+        cls: "border-green-200 bg-green-50 text-green-700",
+      };
     case "REJECTED":
-      return { label: "Rechazado", cls: "border-red-200 bg-red-50 text-red-700" };
+      return {
+        label: "Rechazado",
+        cls: "border-red-200 bg-red-50 text-red-700",
+      };
     default:
-      return { label: "Vigente", cls: "border-gray-200 bg-gray-50 text-gray-600" };
+      return {
+        label: "Vigente",
+        cls: "border-gray-200 bg-gray-50 text-gray-600",
+      };
   }
 }
 
@@ -56,13 +68,17 @@ function refundStatusUI(status) {
 function mapOrderToCard(order) {
   const currency = order.currency || "PEN";
   const sym = CURRENCIES[currency] || currency;
-  const firstItem = Array.isArray(order.items) && order.items[0] ? order.items[0] : null;
+  const firstItem =
+    Array.isArray(order.items) && order.items[0] ? order.items[0] : null;
 
   const title =
     firstItem?.eventDate?.event?.title ||
-    (order.items?.length ? `Compra de ${order.items.length} ítem(s)` : "Orden sin ítems");
+    (order.items?.length
+      ? `Compra de ${order.items.length} ítem(s)`
+      : "Orden sin ítems");
 
-  const image = firstItem?.eventDate?.event?.imagePrincipalURLSigned || placeholder; 
+  const image =
+    firstItem?.eventDate?.event?.imagePrincipalURLSigned || placeholder;
   const when = firstItem?.eventDate?.startAt
     ? fmtDateTime(firstItem.eventDate.startAt)
     : fmtDateTime(order.createdAt);
@@ -114,20 +130,30 @@ export default function MisOrdenes() {
     }
 
     if (user?.userId) load();
-    return () => { abort = true; };
+    return () => {
+      abort = true;
+    };
   }, [user?.userId]);
 
   const first = useMemo(() => orders[0] || null, [orders]);
-  useEffect(() => { setSelected(first); }, [first]);
+  useEffect(() => {
+    setSelected(first);
+  }, [first]);
 
   if (loading) {
-    return <div className="min-h-screen grid place-items-center text-gray-500">Cargando tus órdenes…</div>;
+    return (
+      <div className="min-h-screen grid place-items-center text-gray-500">
+        Cargando tus órdenes…
+      </div>
+    );
   }
 
   if (error) {
     return (
       <div className="min-h-screen grid place-items-center">
-        <div className="rounded-xl bg-red-50 text-red-700 px-4 py-3">{error}</div>
+        <div className="rounded-xl bg-red-50 text-red-700 px-4 py-3">
+          {error}
+        </div>
       </div>
     );
   }
@@ -143,7 +169,9 @@ export default function MisOrdenes() {
           {/* Lista de órdenes (izquierda) */}
           <div className="flex flex-col gap-5">
             {orders.length === 0 && (
-              <div className="rounded-2xl bg-white p-6 text-gray-500 text-center">Aún no tienes órdenes.</div>
+              <div className="rounded-2xl bg-white p-6 text-gray-500 text-center">
+                Aún no tienes órdenes.
+              </div>
             )}
 
             {orders.map((o) => (
@@ -154,15 +182,23 @@ export default function MisOrdenes() {
                   selected?.id === o.id ? "ring-2 ring-purple-400" : ""
                 }`}
               >
-                <img src={o.image} alt={o.title} className="h-24 w-40 rounded-lg object-cover" />
+                <img
+                  src={o.image}
+                  alt={o.title}
+                  className="h-24 w-40 rounded-lg object-cover"
+                />
 
                 <div className="flex flex-col justify-center flex-1">
-                  <h2 className="text-lg font-semibold text-gray-900">{o.title}</h2>
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    {o.title}
+                  </h2>
                   <p className="text-xs text-gray-500 mt-0.5">{o.subtitle}</p>
                 </div>
 
                 <div className="flex items-center">
-                  <span className="text-sm font-semibold text-gray-900">{o.totalLabel}</span>
+                  <span className="text-sm font-semibold text-gray-900">
+                    {o.totalLabel}
+                  </span>
                 </div>
               </div>
             ))}
@@ -171,7 +207,9 @@ export default function MisOrdenes() {
           {/* Detalle de la orden (derecha) con desglose y estados */}
           <div className="rounded-2xl bg-white shadow-lg border border-gray-100 p-6">
             {!selected ? (
-              <p className="text-gray-400 text-center mt-20">Selecciona una orden para ver su detalle.</p>
+              <p className="text-gray-400 text-center mt-20">
+                Selecciona una orden para ver su detalle.
+              </p>
             ) : (
               <OrderDetail orderCard={selected} />
             )}
@@ -196,16 +234,24 @@ function OrderDetail({ orderCard }) {
   const firstItem = Array.isArray(o.items) && o.items[0] ? o.items[0] : null;
   const ev = firstItem?.eventDate?.event;
   const title = ev?.title || "Evento";
-  const when = firstItem?.eventDate?.startAt ? fmtDateTime(firstItem.eventDate.startAt) : "";
-  const image = ev?.imagePrincipalURLSigned || ev?.imageBannerURLSigned || placeholder;
+  const when = firstItem?.eventDate?.startAt
+    ? fmtDateTime(firstItem.eventDate.startAt)
+    : "";
+  const image =
+    ev?.imagePrincipalURLSigned || ev?.imageBannerURLSigned || placeholder;
   const location = ev?.venue
-    ? [ev.venue.city, ev.venue.address || ev.venue.reference].filter(Boolean).join(" ")
+    ? [ev.venue.city, ev.venue.address || ev.venue.reference]
+        .filter(Boolean)
+        .join(" ")
     : ev?.inPerson
     ? "Evento presencial"
     : "Acceso virtual";
 
   // Cantidad total & zona de referencia
-  const totalQty = (o.items || []).reduce((acc, it) => acc + (it.quantity ?? 1), 0);
+  const totalQty = (o.items || []).reduce(
+    (acc, it) => acc + (it.quantity ?? 1),
+    0
+  );
   const zoneText = firstItem?.seat
     ? `Palcos | Fila ${firstItem.seat.rowNumber}`
     : `Zona ${firstItem?.zone?.name ?? "General"}`;
@@ -228,14 +274,21 @@ function OrderDetail({ orderCard }) {
       const [zone, audience] = k.split("||");
       return { zone, audience, qty: q };
     })
-    .sort((a, b) => a.zone.localeCompare(b.zone) || a.audience.localeCompare(b.audience));
+    .sort(
+      (a, b) =>
+        a.zone.localeCompare(b.zone) || a.audience.localeCompare(b.audience)
+    );
 
   // === Estados por TICKET (usando arreglo it.Ticket) ===
   const items = Array.isArray(o.items) ? o.items : [];
   const ticketsWithStatus = items.flatMap((it) => {
     const labelBase = it?.seat
-      ? `Palco • Fila ${it.seat?.rowNumber} • Asiento ${it.seat?.seatNumber ?? "-"}`
-      : `Zona ${it?.zone?.name ?? "General"} — ${it?.allocation?.audienceName ?? "General"}`;
+      ? `Palco • Fila ${it.seat?.rowNumber} • Asiento ${
+          it.seat?.seatNumber ?? "-"
+        }`
+      : `Zona ${it?.zone?.name ?? "General"} — ${
+          it?.allocation?.audienceName ?? "General"
+        }`;
 
     const tickets = Array.isArray(it.Ticket) ? it.Ticket : [];
 
@@ -245,7 +298,10 @@ function OrderDetail({ orderCard }) {
         const status = tk?.refundStatus ?? "NONE";
         const ui = refundStatusUI(status);
         // id único estable
-        const id = tk?.ticketId != null ? String(tk.ticketId) : `${it.orderItemId}-${idx}`;
+        const id =
+          tk?.ticketId != null
+            ? String(tk.ticketId)
+            : `${it.orderItemId}-${idx}`;
         return {
           id,
           desc: labelBase, // puedes añadir `#${idx+1}` si quieres distinguir
@@ -305,17 +361,32 @@ function OrderDetail({ orderCard }) {
 
   return (
     <>
-      <div ref={cardRef} className="rounded-2xl border border-blue-300 p-4 sm:p-5">
+      <div
+        ref={cardRef}
+        className="rounded-2xl border border-blue-300 p-4 sm:p-5"
+      >
         {/* Título y fecha */}
-        <h3 className="text-2xl font-extrabold text-purple-900 mb-1">{title}</h3>
+        <h3 className="text-2xl font-extrabold text-purple-900 mb-1">
+          {title}
+        </h3>
         <p className="text-sm text-gray-700 mb-3">{when}</p>
 
         {/* Imagen grande */}
-        <img src={image} alt={title} className="w-full h-52 object-cover rounded-xl mb-3" />
+        <img
+          src={image}
+          alt={title}
+          className="w-full h-52 object-cover rounded-xl mb-3"
+        />
 
         {/* Ubicación */}
         <div className="flex items-center gap-2 text-gray-800 mb-4">
-          <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24" className="text-purple-600">
+          <svg
+            width="18"
+            height="18"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+            className="text-purple-600"
+          >
             <path d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z" />
           </svg>
           <span className="text-sm">{location || "Ubicación"}</span>
@@ -326,7 +397,9 @@ function OrderDetail({ orderCard }) {
           <div>
             <p className="text-sm font-semibold text-gray-900 mb-1">Datos</p>
             <p className="text-sm text-gray-700">Nombre: {user?.name || "—"}</p>
-            <p className="text-sm text-gray-700">Documento: {user?.document || "—"}</p>
+            <p className="text-sm text-gray-700">
+              Documento: {user?.document || "—"}
+            </p>
 
             {/* Resumen general */}
             <div className="mt-4 text-sm text-gray-800">
@@ -341,7 +414,8 @@ function OrderDetail({ orderCard }) {
                 <ul className="list-disc ml-5 space-y-0.5">
                   {breakdown.map(({ zone, audience, qty }, i) => (
                     <li key={i}>
-                      <span className="font-medium">{zone}</span> — {audience}: {qty}
+                      <span className="font-medium">{zone}</span> — {audience}:{" "}
+                      {qty}
                     </li>
                   ))}
                 </ul>
@@ -351,15 +425,24 @@ function OrderDetail({ orderCard }) {
             {/* Estado de tickets */}
             {ticketsWithStatus.length > 0 && (
               <div className="mt-4 text-sm">
-                <p className="font-semibold mb-2 text-gray-900">Estado de tickets</p>
+                <p className="font-semibold mb-2 text-gray-900">
+                  Estado de tickets
+                </p>
                 <ul className="space-y-2">
                   {ticketsWithStatus.map((t) => (
-                    <li key={t.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                    <li
+                      key={t.id}
+                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1"
+                    >
                       <span className="text-gray-800">{t.desc}</span>
-                      <span className={`inline-flex items-center gap-2 rounded-md border px-2 py-1 text-[12px] ${t.ui.cls}`}>
+                      <span
+                        className={`inline-flex items-center gap-2 rounded-md border px-2 py-1 text-[12px] ${t.ui.cls}`}
+                      >
                         {t.ui.label}
                         {t.status === "REQUESTED" && t.refundRequestedAt && (
-                          <em className="text-[11px] opacity-75">({fmtDateTime(t.refundRequestedAt)})</em>
+                          <em className="text-[11px] opacity-75">
+                            ({fmtDateTime(t.refundRequestedAt)})
+                          </em>
                         )}
                       </span>
                     </li>
@@ -371,7 +454,12 @@ function OrderDetail({ orderCard }) {
 
           <div className="flex sm:justify-end">
             <div className="bg-white p-2 rounded-xl border border-gray-200">
-              <QRCode value={qrValue} size={150} bgColor="#ffffff" fgColor="#000000" />
+              <QRCode
+                value={qrValue}
+                size={150}
+                bgColor="#ffffff"
+                fgColor="#000000"
+              />
             </div>
           </div>
         </div>
@@ -389,9 +477,15 @@ function OrderDetail({ orderCard }) {
             onClick={() => setShowRefund(true)}
             disabled={!hasRefundable}
             className={`inline-block font-semibold px-4 py-2 rounded-xl text-white ${
-              hasRefundable ? "bg-rose-600 hover:bg-rose-700" : "bg-rose-300 cursor-not-allowed"
+              hasRefundable
+                ? "bg-rose-600 hover:bg-rose-700"
+                : "bg-rose-300 cursor-not-allowed"
             }`}
-            title={hasRefundable ? "Solicitar devolución" : "No hay tickets elegibles para devolución"}
+            title={
+              hasRefundable
+                ? "Solicitar devolución"
+                : "No hay tickets elegibles para devolución"
+            }
           >
             Solicitar devolución
           </button>

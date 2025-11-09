@@ -4,9 +4,11 @@ const BASE_URL1 = `${BASE_URL}/eventuro/api`;
 
 export const EventuroApi = async ({ endpoint, method, data = null }) => {
   try {
+    const session = localStorage.getItem("session");
+    const token = session ? JSON.parse(session)?.token : null;
     const options = {
       method,
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", Accept: "application/json", ...(token ? {Authorization: `Bearer ${token}` } : {})},
     };
 
     if (method !== "GET" && data) {
