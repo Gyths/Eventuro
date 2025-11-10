@@ -7,7 +7,7 @@ export async function confirmationEmail(to, orderInfo) {
   // 2. Generar los QR codes para cada ticket
   const attachments = await Promise.all(
     tickets.map(async (ticket, i) => {
-      const qrData = `${orderId}_${ticket.ticketId}`; //Tiene que coincidir con el de front
+      const qrData = `${ticket.status}_${ticket.ticketId}`; //Tiene que coincidir con el de front
       const qrImage = await QRCode.toBuffer(qrData);
       return {
         filename: `ticket_${i + 1}.png`,
