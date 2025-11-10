@@ -8,6 +8,6 @@ import { requireAdmin } from "../middlewares/ensureAuth.js";
 const router = Router();
 
 router.get("/sales-tickets", /*verifyToken, attachUserContext, requireAdmin,*/ listReportSaleTicketsCtrl);
-router.get("/sales-tickets/export", /*verifyToken, attachUserContext, requireAdmin,*/ exportReportSaleTicketsCsvCtrl);
+router.get("/sales-tickets/export", /*verifyToken, attachUserContext, requireAdmin, */ exportReportSaleTicketsCsvCtrl);
 
 export default router;
