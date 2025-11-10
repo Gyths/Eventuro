@@ -9,7 +9,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas = ["public", "app"]
+  schemas  = ["public", "app"]
 }
 
 // ====================== Enums ======================
@@ -24,6 +24,7 @@ enum GENDER {
 enum STATUS_USER {
   A // active
   S // suspended
+  B // Banned
   D // deleted
 
   @@schema("public")
@@ -141,22 +142,22 @@ enum ORGANIZER_STATUS {
 
 // Usuario general
 model User {
-  userId    BigInt      @id @default(autoincrement()) @db.BigInt
-  name      String
-  lastName  String
-  phone     String?
-  email     String      @unique
-  birthdate DateTime?
-  gender    GENDER?
-  status    STATUS_USER @default(A)
-
+  userId         BigInt         @id @default(autoincrement()) @db.BigInt
+  name           String
+  lastName       String
+  phone          String?
+  email          String         @unique
+  birthdate      DateTime?
+  gender         GENDER?
+  status         STATUS_USER    @default(A)
+  suspendedUntil DateTime?
   // Relaciones
-  password      PasswordUser?
-  oauths        OAuthUser[]
-  organizer     Organizer?
-  administrator Administrator? // NUEVO: relación 1:1 con Administrator
-  Ticket        Ticket[]       @relation("TicketOwner")
-  Discount      Discount[]
+  password       PasswordUser?
+  oauths         OAuthUser[]
+  organizer      Organizer?
+  administrator  Administrator? // NUEVO: relación 1:1 con Administrator
+  Ticket         Ticket[]       @relation("TicketOwner")
+  Discount       Discount[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -185,7 +186,6 @@ model OAuthUser {
 
   @@unique([provider, providerUserId])
   @@index([userId])
-
   @@schema("public")
 }
 
@@ -195,9 +195,6 @@ model OAuthUser {
 model Administrator {
   administratorId BigInt @id @default(autoincrement()) @db.BigInt
   userId          BigInt @unique @db.BigInt
-
-  //Relaciones
-  auditLogs AuditLog[]
 
   user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
@@ -247,7 +244,6 @@ model EventToCategory {
   updatedAt DateTime @updatedAt
 
   @@id([eventId, eventCategoryId])
-
   @@schema("public")
 }
 
@@ -273,7 +269,7 @@ model Venue {
 // Tarifa
 model Fee {
   feeId      BigInt  @id @default(autoincrement()) @db.BigInt
-  percentage Decimal @db.Decimal(10, 2) @unique
+  percentage Decimal @unique @db.Decimal(10, 2)
 
   // relación
   event Event[]
@@ -297,6 +293,7 @@ model Event {
   description             String
   accessPolicy            ACCESS_POLICY
   accessPolicyDescription String?
+  ticketLimitPerUser      Int?          @default(10)
 
   // Relaciones
   organizer   Organizer         @relation(fields: [organizerId], references: [organizerId])
@@ -313,7 +310,6 @@ model Event {
   @@index([organizerId])
   @@index([feeId])
   @@index([title])
-
   @@schema("public")
 }
 
@@ -331,7 +327,6 @@ model EventDate {
   Hold      Hold[]
 
   @@index([eventId, startAt])
-
   @@schema("public")
 }
 
@@ -358,7 +353,6 @@ model EventDateZone {
   updatedAt DateTime @updatedAt
 
   @@index([eventDateId, name])
-
   @@schema("public")
 }
 
@@ -394,7 +388,6 @@ model Seat {
   @@unique([seatMapId, rowNumber, colNumber])
   @@index([seatMapId])
   @@index([status])
-
   @@schema("public")
 }
 
@@ -416,7 +409,6 @@ model EventDateZoneAllocation {
   updatedAt DateTime @updatedAt
 
   @@index([eventDateZoneId, audienceName])
-
   @@schema("public")
 }
 
@@ -437,7 +429,6 @@ model EventSalesPhase {
   updatedAt DateTime @updatedAt
 
   @@index([eventId, startAt])
-
   @@schema("public")
 }
 
@@ -456,7 +447,6 @@ model Order {
 
   @@index([buyerUserId])
   @@index([status, createdAt])
-
   @@schema("public")
 }
 
@@ -484,7 +474,6 @@ model OrderItem {
   @@unique([seatId])
   @@index([orderId])
   @@index([eventDateId, eventDateZoneId])
-
   @@schema("public")
 }
 
@@ -514,7 +503,6 @@ model Ticket {
 
   @@unique([eventDateId, seatId])
   @@index([eventDateId, eventDateZoneId])
-
   @@schema("public")
 }
 
@@ -522,6 +510,7 @@ model Hold {
   holdId          BigInt   @id @default(autoincrement()) @db.BigInt
   eventDateId     BigInt   @db.BigInt
   eventDateZoneId BigInt   @db.BigInt
+  eventDateZoneAllocationId BigInt?   @db.BigInt
   seatId          BigInt?  @db.BigInt
   quantity        Int?
   buyerUserId     BigInt?  @db.BigInt
@@ -535,25 +524,6 @@ model Hold {
   @@unique([seatId])
   @@index([eventDateId, eventDateZoneId])
   @@index([expiresAt])
-
-  @@schema("public")
-}
-
-model AuditLog {
-  auditLogId      BigInt   @id @default(autoincrement()) @db.BigInt
-  administratorId BigInt?  @db.BigInt // relación directa a Administrator                   
-  entityName      String // Ej: "Event", "Ticket", "User", etc.
-  entityId        BigInt?  @db.BigInt
-  action          String // "CREATE", "UPDATE", "DELETE"
-  description     String?
-  createdAt       DateTime @default(now())
-
-  administrator Administrator? @relation(fields: [administratorId], references: [administratorId], onDelete: SetNull)
-
-  @@index([administratorId])
-  @@index([entityName, action])
-  @@index([createdAt])
-
   @@schema("public")
 }
 
@@ -582,7 +552,6 @@ model Discount {
   @@index([eventId])
   @@index([userId])
   @@index([startAt, endAt])
-
   @@schema("public")
 }
 

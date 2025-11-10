@@ -24,16 +24,56 @@ export async function createOrderRepo(input) {
 
     // Recorrido de items de la orden (cada item puede ser zona general o numerada, con/sin allocation)
     for (const item of input.items) {
-
-      // Validar que el evento exista
+      // Validar que el evento exista y obtener el organizador y su userId
       const eventId = BigInt(item.eventId);
       const event = await tx.event.findUnique({
         where: { eventId },
-        select: { eventId: true, status: true },
+        select: {
+          eventId: true,
+          status: true,
+          ticketLimitPerUser: true,
+          organizer: {
+            select: { userId: true }, // <- del modelo Organizer
+          },
+        },
       });
-      if (!event) throw new Error("El evento indicado no existe.");
-      if (event.status !== 'A') throw new Error('El evento no está activo.');
 
+      if (!event) throw new Error("El evento indicado no existe.");
+      if (event.status !== "A") throw new Error("El evento no está activo.");
+
+      // Validar que el comprador no sea el organizador del evento
+      if (BigInt(event.organizer.userId) === buyerUserId)
+        throw new Error(
+          "Un organizador no puede comprar entradas de su propio evento."
+        );
+
+      // MODULO PARA CONTROLAR EL LIMITE DE ENTRADAS POR USUARIO:
+      // Obtener el límite del evento
+      const ticketLimitPerUser = event.ticketLimitPerUser ?? null;
+
+      if (ticketLimitPerUser !== null) {
+        // Calcular cuántas entradas del mismo evento ya tiene el usuario
+        const alreadyOwned = await tx.ticket.count({
+          where: {
+            eventId,
+            ownerUserId: buyerUserId,
+            status: { in: ["PAID", "USED", "EXPIRED"] },
+          },
+        });
+
+        // Calcular cuántas está intentando comprar ahora (sumar todas las quantities de los items)
+        const totalToBuyNow = input.items
+          .filter((i) => BigInt(i.eventId) === eventId) // solo del mismo evento
+          .reduce((sum, i) => sum + parseInt(i.quantity || 0), 0);
+
+        //  Comparar con el límite
+        const totalCombined = alreadyOwned + totalToBuyNow;
+        if (totalCombined > ticketLimitPerUser) {
+          throw new Error(
+            `Has alcanzado el límite de ${ticketLimitPerUser} entradas para este evento. Ya tienes ${alreadyOwned} y estás intentando comprar ${totalToBuyNow}.`
+          );
+        }
+      }
 
       // Validar que el evento tenga una fecha existente y que esta pertenezca al evento
       const eventDateId = BigInt(item.eventDateId);
@@ -42,13 +82,15 @@ export async function createOrderRepo(input) {
         select: { eventId: true },
       });
       if (!eventDate) throw new Error("La fecha de evento no existe.");
-      if (BigInt(eventDate.eventId) !== eventId) throw new Error("La fecha seleccionada no pertenece al evento indicado.");
-
+      if (BigInt(eventDate.eventId) !== eventId)
+        throw new Error(
+          "La fecha seleccionada no pertenece al evento indicado."
+        );
 
       // Validar que la cantidad de items a comprar sea mayor a 0
       const quantity = parseInt(item.quantity || 0);
-      if (!quantity || quantity <= 0) throw new Error("Quantity debe ser mayor a 0");
-
+      if (!quantity || quantity <= 0)
+        throw new Error("Quantity debe ser mayor a 0");
 
       // Validar que la zona exista y que esta pertenezca a la fecha del evento
       const eventDateZoneId = BigInt(item.eventDateZoneId);
@@ -62,12 +104,14 @@ export async function createOrderRepo(input) {
           currency: true,
           kind: true,
           seatMapId: true,
-          name: true,// agregado para validaciones en descuentos
+          name: true, // agregado para validaciones en descuentos
         },
       });
       if (!zone) throw new Error("Zona no encontrada");
-      if (BigInt(zone.eventDateId) !== eventDateId) throw new Error("La zona seleccionada no pertenece a la fecha indicada.");
-
+      if (BigInt(zone.eventDateId) !== eventDateId)
+        throw new Error(
+          "La zona seleccionada no pertenece a la fecha indicada."
+        );
 
       // Validar que el evento tenga una fase de venta activa y que el proceso de
       // compra se realiza durante el rango de fechas de la fase activa
@@ -95,15 +139,22 @@ export async function createOrderRepo(input) {
             */
 
       // Validar tipo de zona del evento
-      if (zone.kind === "SEATED" && !item.seatId) throw new Error(`La zona seleccionada (${zone.eventDateZoneId}) es numerada, se debe especificar un asiento.`);
-      if (zone.kind === "GENERAL" && item.seatId) throw new Error(`La zona seleccionada (${zone.eventDateZoneId}) es general (sin asientos), no debe incluir uno.`);
+      if (zone.kind === "SEATED" && !item.seatId)
+        throw new Error(
+          `La zona seleccionada (${zone.eventDateZoneId}) es numerada, se debe especificar un asiento.`
+        );
+      if (zone.kind === "GENERAL" && item.seatId)
+        throw new Error(
+          `La zona seleccionada (${zone.eventDateZoneId}) es general (sin asientos), no debe incluir uno.`
+        );
 
       // Forzar moneda PEN (si la zone.currency no es PEN, aborta la compra)
-      if (zone.currency !== "PEN") throw new Error("Solo se permiten órdenes en soles peruanos (PEN).");
+      if (zone.currency !== "PEN")
+        throw new Error("Solo se permiten órdenes en soles peruanos (PEN).");
 
       // Verificar capacityRemaining suficiente en la zona
-      if ((zone.capacityRemaining ?? 0) < quantity) throw new Error("No hay suficiente capacidad en la zona seleccionada.");
-
+      if ((zone.capacityRemaining ?? 0) < quantity)
+        throw new Error("No hay suficiente capacidad en la zona seleccionada.");
 
       // --- Allocation (si existe) ---Si se recibe un allocationId
       let allocation = null;
@@ -122,7 +173,8 @@ export async function createOrderRepo(input) {
         });
 
         if (!allocation) throw new Error("Allocation no encontrada");
-        if (BigInt(allocation.eventDateZoneId) !== eventDateZoneId) throw new Error("La allocation no pertenece a la zona seleccionada.");
+        if (BigInt(allocation.eventDateZoneId) !== eventDateZoneId)
+          throw new Error("La allocation no pertenece a la zona seleccionada.");
 
         // Esto ya no es necesario porque solo nos guiamos de la capacidad restante de la zona
         //if ((allocation.remainingQuantity ?? 0) < quantity) throw new Error("No hay suficiente disponibilidad en la allocation seleccionada.");
@@ -160,7 +212,7 @@ export async function createOrderRepo(input) {
         }
       }
 
-      const holdExpiration = new Date(Date.now() + 5 * 60 * 1000); // 5 minutos
+      const holdExpiration = new Date(Date.now() + 5 * 60 * 1000); // 5 minutos de tolerancia para realizar la compra
       // CONTROL DE CONCURRENCIA OCC (optimistic concurrency control):
       // Todo dentro de la transacción tx: si alguno falla se hace rollback.
 
@@ -190,6 +242,9 @@ export async function createOrderRepo(input) {
           data: {
             eventDateId,
             eventDateZoneId,
+            eventDateZoneAllocationId: allocation
+              ? BigInt(allocation.eventDateZoneAllocationId)
+              : null,
             seatId,
             quantity: 1,
             buyerUserId,
@@ -202,6 +257,9 @@ export async function createOrderRepo(input) {
           data: {
             eventDateId,
             eventDateZoneId,
+            eventDateZoneAllocationId: allocation
+              ? BigInt(allocation.eventDateZoneAllocationId)
+              : null,
             quantity,
             buyerUserId,
             expiresAt: holdExpiration,
@@ -250,7 +308,10 @@ export async function createOrderRepo(input) {
         },
       });
 
-      if (zoneUpdate.count === 0) throw new Error("Colisión: la cantidad de entradas de la zona fue modificada, reintente.");
+      if (zoneUpdate.count === 0)
+        throw new Error(
+          "Colisión: la cantidad de entradas de la zona fue modificada, reintente."
+        );
 
       // Forzar actualización de timestamp (updatedAt)
       await tx.eventDateZone.update({
@@ -259,12 +320,12 @@ export async function createOrderRepo(input) {
       });
 
       // Calcular precios (usa basePrice de zone y discountType y discountValue de cada allocation si es que tiene)
-      let price = Number(zone.basePrice);
+      let price = zone.basePrice;
       const now = new Date();
 
       // Evento activo (ya validado arriba)
 
-      // Obtener fase de venta activa (ya validada arriba)
+      // Obtener fase de venta activa si es que tiene (ya validada arriba)
       const phase = await tx.eventSalesPhase.findFirst({
         where: {
           eventId,
@@ -273,7 +334,6 @@ export async function createOrderRepo(input) {
           endAt: { gte: now },
         },
       });
-      //if (!phase) throw new Error("No hay fase de venta activa.");
 
       // Si tendrá allocation, calculamos el precio de la entrada para la allocation de dicha zona
       if (allocation) {
@@ -286,7 +346,8 @@ export async function createOrderRepo(input) {
           price = price * (1 - discountValue / 100);
         }
       }
-      if(phase){
+
+      if (phase) {
         // Validamos límite de entradas por usuario
         if (quantity > phase.ticketLimit) {
           throw new Error(
@@ -301,7 +362,8 @@ export async function createOrderRepo(input) {
       }
       // Calcular subtotal y total final para las ordenes de compra
       const subtotal = price * quantity;
-      const discountAmount = (price * quantity) - subtotal;
+      const discountAmount = 0; //este siempre va a ser 0 en primera instancia, porque lo que se calcula aqui es el precio base en sí
+      //el descuento vendría a ser incrementado unicamente por el uso de cupones de descuento en la generación de los tickets
       const finalPrice = subtotal; // por ahora no hay otros cargos como impuestos
 
       // Crear orderItem
@@ -348,14 +410,24 @@ export async function createOrderRepo(input) {
   });
 }
 
-//Módulo para actualizar estados en caso de que un usuario cancele una orden
+//Módulo para hacer rollback de la orden creada en caso de que un usuario cancele una orden
 //y a su vez, borrar las reservas (holds) y liberar asientos o capacidad reservada
 export async function cancelOrderRepo(orderId) {
   return prisma.$transaction(async (tx) => {
+    // buscamos la orden con items y createdAt para filtrar holds creados por la misma operación
     const order = await tx.order.findUnique({
-      where: { orderId },
+      where: { orderId: BigInt(orderId) },
       include: {
-        items: true,
+        items: {
+          select: {
+            orderItemId: true,
+            eventDateId: true,
+            eventDateZoneId: true,
+            eventDateZoneAllocationId: true,
+            seatId: true,
+            quantity: true,
+          },
+        },
       },
     });
 
@@ -363,75 +435,117 @@ export async function cancelOrderRepo(orderId) {
 
     if (order.status !== "CREATED" && order.status !== "PENDING_PAYMENT") {
       throw new Error(
-        "Solo pueden cancelarse órdenes pendientes o recién creadas."
+        "Solo pueden cancelarse órdenes en estado CREATED o PENDING_PAYMENT."
       );
     }
 
-    // Revertir los efectos de la reserva
+    // Para seguridad al filtrar holds: usamos la fecha de creación de la orden.
+    const orderCreatedAt = order.createdAt;
+
+    // Revertir efectos de la reserva por cada item
     for (const item of order.items) {
-      const { seatId, quantity, eventDateZoneId, eventDateZoneAllocationId } =
-        item;
+      const {
+        seatId,
+        quantity = 0,
+        eventDateId,
+        eventDateZoneId,
+        eventDateZoneAllocationId,
+      } = item;
 
-      // Liberar asiento si lo había
-      if (seatId) {
-        await tx.seat.updateMany({
-          where: {
-            seatId,
-            status: "HELD",
-          },
-          data: {
-            status: "AVAILABLE",
-            holdUntil: null,
-            updatedAt: new Date(),
-          },
-        });
+      // 1) Restaurar capacidad de zona (siempre)
+      const zone = await tx.eventDateZone.findUnique({
+        where: { eventDateZoneId },
+        select: { capacityRemaining: true },
+      });
 
-        await tx.hold.deleteMany({
-          where: { seatId: item.seatId },
-        });
-      } else {
-        // Restaurar capacidad de zona
+      if (zone) {
         await tx.eventDateZone.update({
           where: { eventDateZoneId },
           data: {
-            capacityRemaining: (zone.capacityRemaining ?? 0) + quantity,
+            capacityRemaining: zone.capacityRemaining + Number(quantity),
             updatedAt: new Date(),
           },
         });
+      }
 
-        // Restaurar allocation si aplica
-        if (eventDateZoneAllocationId) {
+      // 2) Restaurar allocation.remainingQuantity (si aplica) - siempre sumar quantity
+      if (eventDateZoneAllocationId) {
+        const alloc = await tx.eventDateZoneAllocation.findUnique({
+          where: { eventDateZoneAllocationId },
+          select: { remainingQuantity: true },
+        });
+
+        if (alloc) {
           await tx.eventDateZoneAllocation.update({
             where: { eventDateZoneAllocationId },
             data: {
-              remainingQuantity: (alloc.remainingQuantity ?? 0) + quantity,
+              remainingQuantity:
+                (alloc.remainingQuantity ?? 0) + Number(quantity),
               updatedAt: new Date(),
             },
           });
         }
+      }
 
-        // Borrar hold
+      // 3) Si hay asiento: liberarlo (status -> AVAILABLE) y borrar su hold creado por esta orden
+      if (seatId) {
+        // Liberar asiento solo si está HELD (no forzamos AVAILABLE si ya es SOLD)
+        await tx.seat.updateMany({
+          where: { seatId: BigInt(seatId), status: "HELD" },
+          data: { status: "AVAILABLE", holdUntil: null, updatedAt: new Date() },
+        });
+
+        // Borrar hold asociado al asiento creado a partir de esta orden:
+        // filtramos por buyerUserId + seatId + createdAt >= order.createdAt
         await tx.hold.deleteMany({
           where: {
-            eventDateZoneId: item.eventDateZoneId,
+            seatId: BigInt(seatId),
             buyerUserId: order.buyerUserId,
+            createdAt: { gte: orderCreatedAt },
+            eventDateZoneAllocationId: eventDateZoneAllocationId
+              ? BigInt(eventDateZoneAllocationId)
+              : null,
+          },
+        });
+      } else {
+        // 4) No hay asiento: borrar solo los holds del mismo eventDateId+zone y del mismo orden (buyer + createdAt)
+        await tx.hold.deleteMany({
+          where: {
+            eventDateId: eventDateId,
+            eventDateZoneId: eventDateZoneId,
+            eventDateZoneAllocationId: eventDateZoneAllocationId
+              ? BigInt(eventDateZoneAllocationId)
+              : null,
+            buyerUserId: order.buyerUserId,
+            createdAt: { gte: orderCreatedAt },
           },
         });
       }
     }
 
-    // Finalmente, actualizar la orden
-    await tx.order.update({
-      where: { orderId },
-      data: {
-        status: "CANCELLED",
-        updatedAt: new Date(),
+    // Borrar los orderItems de esta orden
+    await tx.orderItem.deleteMany({
+      where: { orderId: BigInt(orderId) },
+    });
+
+    // Finalmente borrar la orden (rollback total)
+    await tx.order.delete({
+      where: { orderId: BigInt(orderId) },
+    });
+
+    // Limpieza opcional adicional: borrar holds residuales creados por la misma orden (seguridad)
+    await tx.hold.deleteMany({
+      where: {
+        buyerUserId: order.buyerUserId,
+        createdAt: { gte: orderCreatedAt },
       },
     });
 
-    return { orderId: Number(orderId), status: "CANCELLED" };
+    return {
+      message: "Orden eliminada y recursos restaurados correctamente.",
+      orderId: Number(orderId),
+    };
   });
-  
 }
 
 export const findByUserId = async (userId) => {
@@ -450,8 +564,8 @@ export const findByUserId = async (userId) => {
                   title: true,
                   description: true,
                   inPerson: true,
-                  imagePrincipalKey: true,  // 🔹 necesario
-                  imageBannerKey: true,      // 🔹 necesario
+                  imagePrincipalKey: true,
+                  imageBannerKey: true,
                   venue: {
                     select: {
                       city: true,

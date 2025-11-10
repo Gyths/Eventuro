@@ -249,7 +249,7 @@ async function main() {
         imagePrincipalKey: "events/1761677737608_Evento_prueba.png",
         imageBannerKey: "events/1761677738279_Evento_prueba_banner.png",
         inPerson: false,
-        status: "A",
+        status: "P",
         description:
           "Evento virtual con 300 de capacidad y dos códigos de descuento",
         accessPolicy: "E",
@@ -262,7 +262,7 @@ async function main() {
         imagePrincipalKey: "events/1761677737608_Evento_prueba.png",
         imageBannerKey: "events/1761677738279_Evento_prueba_banner.png",
         inPerson: true,
-        status: "A",
+        status: "P",
         description:
           "Evento presencial con 500 de capacidad, segunda fase activa y descuentos.",
         accessPolicy: "E",
@@ -275,7 +275,7 @@ async function main() {
         imagePrincipalKey: "events/1761677737608_Evento_prueba.png",
         imageBannerKey: "events/1761677738279_Evento_prueba_banner.png",
         inPerson: true,
-        status: "A",
+        status: "P",
         description:
           "Evento presencial con poca capacidad restante en cada zona.",
         accessPolicy: "E",
