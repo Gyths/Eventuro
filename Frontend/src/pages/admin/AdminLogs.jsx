@@ -143,16 +143,36 @@ function ErrorMessage({ error }) {
 }
 
 function generateDescription(log) {
-  const adminId = log.actorUserId || "Sistema";
-  const action = log.operationType || "ACCIÓN";
-  const entity = log.targetTableName || "entidad";
+  const userId = log.actorUserId || "Sistema";
+  const op = log.operationType;
+  const table = log.targetTableName;
   const pk = extractId(log.primaryKeyJson);
 
-  return `Usuario (ID: ${adminId}) realizó [${action}] en ${entity} ${pk}.`;
+  let actionText = "";
+  let entityText = `un registro en ${table}`;
+
+  if (op === "INSERT") {
+    actionText = "creó";
+  } else if (op === "UPDATE") {
+    actionText = "actualizó";
+  } else if (op === "DELETE") {
+    actionText = "eliminó";
+  } else {
+    return `El usuario con (ID: ${userId}) realizó [${op}] en ${table} con ${pk}.`;
+  }
+
+  if (table === "EventCategory") {
+    entityText = "una categoría";
+  } else if (table === "Event") {
+    entityText = "un evento";
+  } else if (table === "User") {
+    entityText = "un usuario";
+  }
+
+  return `El usuario con (ID: ${userId}) ${actionText} ${entityText} con ${pk}.`;
 }
 
 function extractId(pkJson) {
-  // ...
   if (!pkJson) return "(ID: ?)";
   try {
     const obj = typeof pkJson === "string" ? JSON.parse(pkJson) : pkJson;
@@ -172,11 +192,9 @@ export default function AdminLogs() {
   const [logs, setLogs] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalLogs, setTotalLogs] = useState(0);
-
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedLogId, setSelectedLogId] = useState(null);
 
@@ -185,15 +203,12 @@ export default function AdminLogs() {
       try {
         setIsLoading(true);
         setError(null);
-
         const skip = (pageNum - 1) * LOGS_PER_PAGE;
         const endpoint = `/audit?take=${LOGS_PER_PAGE}&skip=${skip}&order=desc`;
-
         const data = await EventuroApi({
           endpoint: endpoint,
           method: "GET",
         });
-
         if (data && Array.isArray(data.items)) {
           setLogs(data.items || []);
           setTotalPages(data.totalPages || 0);
@@ -214,7 +229,6 @@ export default function AdminLogs() {
         setIsLoading(false);
       }
     };
-
     fetchLogs(page);
   }, [page]);
 
@@ -222,16 +236,13 @@ export default function AdminLogs() {
     setSelectedLogId(id);
     setIsDetailModalOpen(true);
   };
-
   const handleCloseDetails = () => {
     setIsDetailModalOpen(false);
     setSelectedLogId(null);
   };
-
   const handlePrevPage = () => {
     setPage((prev) => Math.max(1, prev - 1));
   };
-
   const handleNextPage = () => {
     setPage((prev) => Math.min(prev + 1, totalPages));
   };
@@ -239,23 +250,24 @@ export default function AdminLogs() {
   return (
     <>
       <style>{animationStyles}</style>
-
       <div className="p-4 sm:p-6 lg:p-8 flex items-center justify-center min-h-[calc(100vh-80px)]">
         <div className="bg-white border border-gray-200 rounded-2xl shadow-sm max-w-5xl mx-auto overflow-hidden transition-shadow duration-300 hover:shadow-md w-full">
+          {/* Encabezado */}
           <div className="border-b border-gray-200 p-6 sm:p-8 bg-gray-50/70">
             <h3 className="text-3xl font-semibold text-gray-800 flex items-center gap-3">
               <ClipboardDocumentListIcon className="h-9 w-9 text-purple-600" />
-              Registro de auditoría
+              Registro de Auditoría
             </h3>
             <p className="mt-2 text-base text-gray-600">
-              Actividad reciente de usuarios en el sistema.
+              Actividad reciente de administradores y organizadores en el
+              sistema.
             </p>
           </div>
 
+          {/* Cuerpo - Contenedor del Timeline */}
           <div className="p-6 sm:p-8">
             {isLoading && <LoadingSpinner />}
             {error && <ErrorMessage error={error} />}
-
             {!isLoading && !error && (
               <div className="flow-root">
                 {logs.length === 0 ? (
@@ -286,12 +298,10 @@ export default function AdminLogs() {
                               aria-hidden="true"
                             />
                           ) : null}
-
                           <div className="relative flex items-start space-x-3">
                             <div className="relative">
                               <ActionIcon action={log.operationType} />
                             </div>
-
                             <div className="min-w-0 flex-1">
                               <p className="text-sm font-medium text-gray-800">
                                 {generateDescription(log)}
@@ -312,7 +322,6 @@ export default function AdminLogs() {
                                   {formatRequestDate(log.createdAt)}
                                 </span>
                               </div>
-
                               <button
                                 onClick={() =>
                                   handleShowDetails(log.auditTransactionId)
@@ -333,6 +342,7 @@ export default function AdminLogs() {
             )}
           </div>
 
+          {/* Paginación */}
           {!isLoading && totalLogs > 0 && totalPages > 1 && (
             <div className="border-t border-gray-200 bg-gray-50/70 px-6 py-3 flex items-center justify-between text-sm">
               <p className="text-gray-600">
@@ -368,7 +378,6 @@ export default function AdminLogs() {
           )}
         </div>
       </div>
-
       <LogDetailModal
         isOpen={isDetailModalOpen}
         onClose={handleCloseDetails}
@@ -378,6 +387,7 @@ export default function AdminLogs() {
   );
 }
 
+// --- (Modal de Detalle) ---
 function LogDetailModal({ isOpen, onClose, auditTransactionId }) {
   const [changes, setChanges] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -388,7 +398,6 @@ function LogDetailModal({ isOpen, onClose, auditTransactionId }) {
       setChanges([]);
       return;
     }
-
     const fetchDetails = async () => {
       setIsLoading(true);
       setError(null);
@@ -404,7 +413,6 @@ function LogDetailModal({ isOpen, onClose, auditTransactionId }) {
         setIsLoading(false);
       }
     };
-
     fetchDetails();
   }, [isOpen, auditTransactionId]);
 
@@ -418,7 +426,6 @@ function LogDetailModal({ isOpen, onClose, auditTransactionId }) {
     } catch (e) {
       valToShow = value;
     }
-
     if (typeof valToShow === "object" && valToShow !== null) {
       return (
         <pre className="text-xs bg-gray-100 p-1 rounded overflow-x-auto">
@@ -426,7 +433,6 @@ function LogDetailModal({ isOpen, onClose, auditTransactionId }) {
         </pre>
       );
     }
-
     return <span className="text-gray-700">{String(valToShow)}</span>;
   };
 
@@ -454,7 +460,6 @@ function LogDetailModal({ isOpen, onClose, auditTransactionId }) {
             <XMarkIcon className="h-6 w-6" />
           </button>
         </div>
-
         <div className="p-5 overflow-y-auto">
           {isLoading && <LoadingSpinner />}
           {error && <ErrorMessage error={error} />}

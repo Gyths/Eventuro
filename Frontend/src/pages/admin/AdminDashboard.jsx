@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { ChartPieIcon, CurrencyDollarIcon } from "@heroicons/react/24/outline";
+import {
+  ChartPieIcon,
+  CurrencyDollarIcon,
+  ArrowDownOnSquareIcon,
+} from "@heroicons/react/24/outline";
 import {
   ResponsiveContainer,
   LineChart,
@@ -10,19 +14,14 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-// NOTA: Asegúrate de haber corrido 'npm install recharts'
+import Papa from "papaparse";
 
-/**
- * Función para parsear el texto CSV a un array de objetos.
- * (La volvemos a necesitar)
- */
 function parseCSV(csvText) {
   const lines = csvText.trim().split("\n");
   if (lines.length < 2) return [];
 
   const headers = lines[0].split(",");
 
-  // Encontrar los índices de las columnas que nos importan
   const dateIndex = headers.indexOf("issuedAt");
   const commissionIndex = headers.indexOf("platformCommissionAmount");
 
@@ -47,21 +46,15 @@ function parseCSV(csvText) {
   return data;
 }
 
-/**
- * Procesa los datos (ahora del CSV), los agrupa por día y suma las comisiones.
- */
 function processChartData(rawData) {
   const dailyTotals = new Map();
 
   rawData.forEach((row) => {
     try {
-      // El formato 'issuedAt' es: "Sun Nov 09 2025 15:58:10 GMT-0500 (hora estándar de Perú)"
-      const dateString = row.issuedAt.replace(/ \(.*\)/, ""); // Quita el texto entre paréntesis
+      const dateString = row.issuedAt.replace(/ \(.*\)/, "");
       const date = new Date(dateString);
-
-      // Formateamos a 'YYYY-MM-DD' para agrupar
       const dayKey = date.toISOString().split("T")[0];
-      const commission = row.platformCommissionAmount; // Ya es un float por parseCSV
+      const commission = row.platformCommissionAmount;
 
       if (dayKey && !isNaN(commission)) {
         const currentTotal = dailyTotals.get(dayKey) || 0;
@@ -72,11 +65,10 @@ function processChartData(rawData) {
     }
   });
 
-  // Convertir el Map a un array y ordenarlo por fecha
   const chartData = Array.from(dailyTotals.entries()).map(
     ([date, commission]) => ({
       date,
-      commission: parseFloat(commission.toFixed(2)), // Redondear a 2 decimales
+      commission: parseFloat(commission.toFixed(2)),
     })
   );
 
@@ -85,54 +77,22 @@ function processChartData(rawData) {
   return chartData;
 }
 
-/**
- * Componente del Gráfico de Líneas
- */
 function IncomeChartCard() {
-  const [timeFilter, setTimeFilter] = useState("7d"); // '7d', 'month', 'quarter'
+  const [timeFilter, setTimeFilter] = useState("7d");
 
-  // --- Estado para los datos ---
-  const [chartData, setChartData] = useState([]); // Almacenará los datos procesados
+  const [fullData, setFullData] = useState([]);
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // --- Lógica de Fetching (Actualizada para usar /export SIN TOKEN) ---
   useEffect(() => {
     const fetchReportData = async () => {
       setIsLoading(true);
       setError(null);
-
-      // 1. Calcular fechas de inicio y fin
-      const to = new Date(); // Hoy
-      let from = new Date();
-      to.setHours(23, 59, 59, 999); // Fin del día de hoy
-
-      switch (timeFilter) {
-        case "7d":
-          from.setDate(to.getDate() - 7);
-          break;
-        case "month":
-          from = new Date(to.getFullYear(), to.getMonth(), 1);
-          break;
-        case "quarter":
-          const currentMonth = to.getMonth(); // 0-11
-          const quarterStartMonth = Math.floor(currentMonth / 3) * 3;
-          from = new Date(to.getFullYear(), quarterStartMonth, 1);
-          break;
-        default:
-          from.setDate(to.getDate() - 7);
-      }
-      from.setHours(0, 0, 0, 0); // Inicio del día
-
-      // Convertir a ISO string para la URL
-      const fromISO = from.toISOString();
-      const toISO = to.toISOString();
-
-      // 2. Construir la URL con filtros, apuntando a /export
-      const url = `http://localhost:4000/eventuro/api/report/sales-tickets/export?from=${fromISO}&to=${toISO}`;
+      const url =
+        "http://localhost:4000/eventuro/api/report/sales-tickets/export";
 
       try {
-        // 3. Llamar a la API (SIN token, ya que comentaste la seguridad)
         const response = await fetch(url);
 
         if (!response.ok) {
@@ -141,13 +101,11 @@ function IncomeChartCard() {
           );
         }
 
-        // 4. Obtenemos TEXTO (CSV), no JSON
         const csvText = await response.text();
-
-        // 5. Procesar los datos CSV
         const rawData = parseCSV(csvText);
         const processedData = processChartData(rawData);
-        setChartData(processedData);
+
+        setFullData(processedData);
       } catch (err) {
         console.error(err);
         setError(err.message);
@@ -157,22 +115,121 @@ function IncomeChartCard() {
     };
 
     fetchReportData();
-  }, [timeFilter]); // Se ejecuta cada vez que 'timeFilter' cambia
+  }, []);
 
-  // Formateador para el Tooltip
-  const formatCurrency = (value) => `S/ ${value.toFixed(2)}`;
-  // Formateador para el Eje X
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    // Ajusta la zona horaria para evitar problemas de "un día antes"
-    date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
-    return date.toLocaleDateString("es-PE", { day: "2-digit", month: "short" });
+  const filteredData = useMemo(() => {
+    const dataMap = new Map(fullData.map((d) => [d.date, d.commission]));
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const monthNames = [
+      "Ene",
+      "Feb",
+      "Mar",
+      "Abr",
+      "May",
+      "Jun",
+      "Jul",
+      "Ago",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dic",
+    ];
+
+    if (timeFilter === "quarter") {
+      const monthlyTotals = new Map();
+      fullData.forEach((d) => {
+        const entryDate = new Date(d.date);
+        const monthIndex = entryDate.getMonth();
+        const currentTotal = monthlyTotals.get(monthIndex) || 0;
+        monthlyTotals.set(monthIndex, currentTotal + d.commission);
+      });
+
+      const result = [];
+      const currentMonthIndex = today.getMonth();
+      const quarterStartMonthIndex = Math.floor(currentMonthIndex / 3) * 3;
+
+      for (
+        let i = quarterStartMonthIndex;
+        i <= quarterStartMonthIndex + 2;
+        i++
+      ) {
+        if (i <= currentMonthIndex) {
+          result.push({
+            date: monthNames[i],
+            commission: parseFloat((monthlyTotals.get(i) || 0).toFixed(2)),
+          });
+        }
+      }
+      return result;
+    }
+
+    let startDate = new Date(today);
+    if (timeFilter === "7d") {
+      startDate.setDate(today.getDate() - 6);
+    } else if (timeFilter === "month") {
+      startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+    }
+
+    const dateRangeData = [];
+    let currentDate = new Date(startDate);
+
+    while (currentDate <= today) {
+      const dayKey = currentDate.toISOString().split("T")[0];
+      const commission = dataMap.get(dayKey) || 0;
+      dateRangeData.push({ date: dayKey, commission });
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return dateRangeData;
+  }, [fullData, timeFilter]);
+
+  const handleExportCSV = () => {
+    if (filteredData.length === 0) {
+      alert("No hay datos para exportar.");
+      return;
+    }
+
+    const csvString = Papa.unparse(filteredData, {
+      quotes: false,
+      header: true,
+    });
+    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `reporte_comisiones_${timeFilter}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
+
+  const formatDate = (value) => {
+    if (typeof value === "string" && value.length <= 3) {
+      return value;
+    }
+
+    try {
+      const date = new Date(value);
+      date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
+      return date.toLocaleDateString("es-PE", {
+        day: "2-digit",
+        month: "short",
+      });
+    } catch (e) {
+      return value;
+    }
+  };
+
+  const formatCurrency = (value) => `S/ ${value.toFixed(2)}`;
 
   return (
     <div className="bg-white shadow-lg rounded-xl border border-gray-200">
       {/* Encabezado de la Tarjeta */}
-      <div className="p-5 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      <div className="p-5 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h4 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
             <CurrencyDollarIcon className="h-6 w-6 text-purple-600" />
@@ -182,26 +239,39 @@ function IncomeChartCard() {
             Ganancias generadas por la comisión de tickets vendidos.
           </p>
         </div>
-        {/* Filtros de Tiempo */}
-        <div className="flex-shrink-0 mt-3 sm:mt-0 rounded-lg p-1 bg-gray-100 flex">
-          <FilterButton
-            label="7 días"
-            filter="7d"
-            activeFilter={timeFilter}
-            onClick={setTimeFilter}
-          />
-          <FilterButton
-            label="Este Mes"
-            filter="month"
-            activeFilter={timeFilter}
-            onClick={setTimeFilter}
-          />
-          <FilterButton
-            label="Este Trimestre"
-            filter="quarter"
-            activeFilter={timeFilter}
-            onClick={setTimeFilter}
-          />
+
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          {/* Filtros de Tiempo */}
+          <div className="flex-shrink-0 rounded-lg p-1 bg-gray-100 flex">
+            <FilterButton
+              label="7 días"
+              filter="7d"
+              activeFilter={timeFilter}
+              onClick={setTimeFilter}
+            />
+            <FilterButton
+              label="Este Mes"
+              filter="month"
+              activeFilter={timeFilter}
+              onClick={setTimeFilter}
+            />
+            <FilterButton
+              label="Este Trimestre"
+              filter="quarter"
+              activeFilter={timeFilter}
+              onClick={setTimeFilter}
+            />
+          </div>
+
+          {/* Botón Exportar */}
+          <button
+            onClick={handleExportCSV}
+            disabled={isLoading || filteredData.length === 0}
+            className="flex-shrink-0 px-3 py-2 text-sm font-medium text-purple-700 bg-purple-100 rounded-lg flex items-center gap-1.5 hover:bg-purple-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ArrowDownOnSquareIcon className="h-4 w-4" />
+            Exportar
+          </button>
         </div>
       </div>
 
@@ -218,16 +288,15 @@ function IncomeChartCard() {
             <p className="text-sm font-mono bg-red-50 p-2 rounded">{error}</p>
           </div>
         )}
-        {/* El gráfico ahora usa 'chartData' */}
-        {!isLoading && !error && chartData.length === 0 && (
+        {!isLoading && !error && filteredData.length === 0 && (
           <div className="flex h-full items-center justify-center text-gray-500">
             No se encontraron datos para el período seleccionado.
           </div>
         )}
-        {!isLoading && !error && chartData.length > 0 && (
+        {!isLoading && !error && filteredData.length > 0 && (
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
-              data={chartData}
+              data={filteredData}
               margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
@@ -256,7 +325,7 @@ function IncomeChartCard() {
                 type="monotone"
                 dataKey="commission"
                 name="Comisión"
-                stroke="#8b5cf6" // Color Púrpura
+                stroke="#8b5cf6"
                 strokeWidth={2}
                 dot={{ r: 4 }}
                 activeDot={{ r: 6 }}
@@ -269,7 +338,6 @@ function IncomeChartCard() {
   );
 }
 
-// Pequeño componente helper para los botones de filtro
 function FilterButton({ label, filter, activeFilter, onClick }) {
   const isActive = filter === activeFilter;
   return (
@@ -291,35 +359,38 @@ function FilterButton({ label, filter, activeFilter, onClick }) {
  */
 export default function AdminDashboard() {
   return (
-    <div className="p-4 sm:p-6 lg:p-8 min-h-[calc(100vh-80px)]">
-      {/* Encabezado de la Página */}
-      <div className="border-b border-gray-200 pb-5 mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h3 className="text-3xl font-semibold text-gray-800 flex items-center gap-3">
-            <ChartPieIcon className="h-9 w-9 text-purple-600" />
-            Dashboard
-          </h3>
-          <p className="mt-2 text-base text-gray-600">
-            Resumen de la actividad de la plataforma.
-          </p>
-        </div>
-      </div>
-
-      {/* Contenido del Dashboard */}
-      <div className="space-y-6">
-        {/* Fila 1: Gráfico de Ingresos */}
-        <IncomeChartCard />
-
-        {/* Próximos Gráficos (Barra y Pastel) irán aquí */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 bg-white shadow-lg rounded-xl border border-gray-200 h-96 p-5 flex items-center justify-center text-gray-400">
-            (Próximamente: Gráfico de Barras)
-          </div>
-          <div className="bg-white shadow-lg rounded-xl border border-gray-200 h-96 p-5 flex items-center justify-center text-gray-400">
-            (Próximamente: Gráfico de Pastel)
+    // --- Centrado vertical (flex) ---
+    <div className="p-4 sm:p-6 lg:p-8 min-h-[calc(100vh-80px)] flex flex-col">
+      <div className="w-full max-w-7xl mx-auto my-auto">
+        {/* Encabezado de la Página  */}
+        <div className="border-b border-gray-200 pb-5 mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h3 className="text-3xl font-semibold text-gray-800 flex items-center gap-3">
+              <ChartPieIcon className="h-9 w-9 text-purple-600" />
+              Dashboard
+            </h3>
+            <p className="mt-2 text-base text-gray-600">
+              Resumen de la actividad de la plataforma.
+            </p>
           </div>
         </div>
-      </div>
+
+        {/* Contenido del Dashboard */}
+        <div className="space-y-6">
+          {/* Fila 1: Gráfico de Ingresos */}
+          <IncomeChartCard />
+
+          {/* Próximos Gráficos (Barra y Pastel) irán aquí */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 bg-white shadow-lg rounded-xl border border-gray-200 h-96 p-5 flex items-center justify-center text-gray-400">
+              (Próximamente: Gráfico de Barras)
+            </div>
+            <div className="bg-white shadow-lg rounded-xl border border-gray-200 h-96 p-5 flex items-center justify-center text-gray-400">
+              (Próximamente: Gráfico de Pastel)
+            </div>
+          </div>
+        </div>
+      </div>{" "}
     </div>
   );
 }

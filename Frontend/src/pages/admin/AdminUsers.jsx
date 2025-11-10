@@ -60,27 +60,34 @@ const formatDateTime = (isoString) => {
 
 function StatusBadge({ status }) {
   let text, icon, classes;
+
   switch (status) {
-    case "A":
+    case "A": // Activo
       text = "Activo";
       icon = <CheckCircleIcon className="h-4 w-4" />;
       classes = "bg-green-100 text-green-800";
       break;
-    case "S":
+    case "S": // Suspendido
       text = "Suspendido";
       icon = <ExclamationTriangleIcon className="h-4 w-4" />;
       classes = "bg-yellow-100 text-yellow-800";
       break;
-    case "B":
+    case "B": // Baneado
       text = "Baneado";
       icon = <XCircleIcon className="h-4 w-4" />;
       classes = "bg-red-100 text-red-800";
+      break;
+    case "D": // Eliminado
+      text = "Eliminado";
+      icon = <UserCircleIcon className="h-4 w-4" />; // Icono neutral
+      classes = "bg-gray-100 text-gray-700"; // Color gris
       break;
     default:
       text = "Desconocido";
       icon = <UserCircleIcon className="h-4 w-4" />;
       classes = "bg-gray-100 text-gray-800";
   }
+
   return (
     <span
       className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${classes}`}
@@ -226,6 +233,7 @@ export default function AdminUsers() {
 
       <div className="p-4 sm:p-6 lg:p-8 min-h-[calc(100vh-80px)] flex flex-col">
         <div className="max-w-7xl mx-auto w-full my-auto">
+          {/* Encabezado */}
           <div className="border-b border-gray-200 pb-5 mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 className="text-3xl font-semibold text-gray-800 flex items-center gap-3">
@@ -238,6 +246,7 @@ export default function AdminUsers() {
             </div>
           </div>
 
+          {/* Barra de Búsqueda */}
           <div className="mb-6 relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
@@ -251,6 +260,7 @@ export default function AdminUsers() {
             />
           </div>
 
+          {/* Contenido*/}
           {isLoading && (
             <div className="text-center text-gray-500 py-12">
               Cargando usuarios...
@@ -269,6 +279,7 @@ export default function AdminUsers() {
             </div>
           )}
 
+          {/* (Animación de 'map'  */}
           {!isLoading && !error && users.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {users.map((user, index) => (
@@ -381,7 +392,6 @@ function UserDetailModal({ isOpen, onClose, user, onStatusUpdated }) {
         className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col animate-modal-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Encabezado del Modal */}
         <div className="flex justify-between items-center p-5 border-b">
           <div className="flex items-center gap-3">
             <UserCircleIcon className="h-10 w-10 text-purple-600" />
@@ -400,7 +410,6 @@ function UserDetailModal({ isOpen, onClose, user, onStatusUpdated }) {
           </button>
         </div>
 
-        {/* Cuerpo del Modal (sin cambios) */}
         <div className="p-6 overflow-y-auto space-y-6">
           <section>
             <h4 className="text-base font-semibold text-purple-700 mb-3">
