@@ -9,7 +9,7 @@ export async function createTicketRepo(input) {
     const now = new Date();
     // Buscar orden pendiente
     const order = await tx.order.findUnique({
-    
+
       // 1) Buscar orden pendiente con sus items
       where: { orderId },
       include: {
@@ -39,13 +39,13 @@ export async function createTicketRepo(input) {
     // 2) Traer descuentos (validos) que se enviaron: deben existir y estar activos
     const discounts = discountIds && discountIds.length
       ? await tx.discount.findMany({
-          where: {
-            discountId: { in: discountIds },
-            status: 'A',
-            startAt: { lte: now },
-            endAt: { gte: now },
-          },
-        })
+        where: {
+          discountId: { in: discountIds },
+          status: 'A',
+          startAt: { lte: now },
+          endAt: { gte: now },
+        },
+      })
       : [];
 
     // Si el front aseguró validez puede que no haga falta, pero validamos que se encontraron todos
@@ -189,12 +189,31 @@ export async function createTicketRepo(input) {
       }
     });
 
+    const ticketsWithInfo = await tx.ticket.findMany({
+      where: {
+        ticketId: { in: createdTickets.map(t => t.ticketId) },
+      },
+      include: {
+        eventDate: {
+          include: { event: true },
+        },
+        zone: true,
+        seat: true,
+      },
+    });
+
     return {
       orderId: Number(orderId),
       totalAmount: newOrderTotal,
-      tickets: createdTickets.map(t => ({
+      tickets: ticketsWithInfo.map(t => ({
         ticketId: Number(t.ticketId),
-        seatId: t.seatId ? Number(t.seatId) : null
+        eventName: t.eventDate.event.title,
+        eventDate: t.eventDate.startAt,
+        zoneName: t.zone?.name || 'No definida',
+        setRow: t.seat?.row,
+        setCol: t.seat?.col,
+        seatId: t.seatId ? Number(t.seatId) : null,
+        status: t.status
       }))
     };
   });
