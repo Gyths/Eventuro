@@ -39,6 +39,11 @@ import AdminLogs from "./pages/admin/AdminLogs.jsx";
 import ManageCategories from "./pages/admin/ManageCategories.jsx";
 import ReporteEventos from "./pages/ReporteEventos.jsx";
 
+import MiPerfil from "./pages/MiPerfil.jsx";
+
+import LibroReclamos from "./pages/LibroReclamos.jsx";
+import MisReclamos from "./pages/MisReclamos.jsx";
+
 function App() {
   return (
     <Routes>
@@ -68,7 +73,9 @@ function App() {
         <Route path="pago" element={<PaymentMethod />} />
         <Route path="miCalendario" element={<MyCalendar />} />
         <Route path="misTickets" element={<MisTickets />} />
-
+        <Route path="miPerfil" element={<MiPerfil />} />
+        <Route path="reclamos/nuevo" element={<LibroReclamos />} />
+        <Route path="misReclamos" element={<MisReclamos />} />
         <Route element={<AdminRoute />}>
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/settings" element={<AdminSettings />} />
