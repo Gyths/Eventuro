@@ -20,6 +20,8 @@ import {
   CalendarIcon,
   MapPinIcon,
   UserGroupIcon,
+  CheckCircleIcon,
+  XCircleIcon,
 } from "@heroicons/react/24/solid";
 
 export default function SelectAllocationModal({
@@ -82,9 +84,12 @@ export default function SelectAllocationModal({
 
   const handleNoAllocationGeneralSum = (zoneIndex) => {
     // CAMBIO: usar && y Number para límites
-    const cap = Number(
-      selectedData.zoneDates[zoneIndex].capacityRemaining || 0
-    );
+    const cap = () =>
+      event.limitPerUser &&
+      parseInt(zone.capacityRemaining) > parseInt(event.limitPerUser)
+        ? parseInt(event.limitPerUser)
+        : parseInt(zone.capacityRemaining);
+
     const newValues = notAllocatedGeneralQuantities.map((value, index) =>
       index === zoneIndex && value < cap ? value + 1 : value
     );
@@ -131,7 +136,21 @@ export default function SelectAllocationModal({
           (sum, q) => sum + parseInt(q || 0),
           0
         );
-        if (totalSelectedInZone >= parseInt(zone.capacityRemaining)) {
+
+        const getCap = () => {
+          if (!event.limitPerUser != null) {
+            return parseInt(event.limitPerUser) <
+              parseInt(zone.capacityRemaining)
+              ? parseInt(event.limitPerUser)
+              : parseInt(zone.capacityRemaining);
+          } else {
+            return zone.capacityRemaining;
+          }
+        };
+        const cap = getCap();
+
+        if (totalSelectedInZone >= cap) {
+          setShowAlertMessage(false);
           return allocation;
         }
         return allocation.map((quantity, allocationIndex) => {
@@ -140,7 +159,6 @@ export default function SelectAllocationModal({
       }
     );
     setAllocatedGeneralQuantities(newValues);
-    setShowAlertMessage(false);
   };
 
   // Manejo de entradas con sitio y con allocation
@@ -440,37 +458,54 @@ export default function SelectAllocationModal({
                 {selectedData &&
                   selectedData.zoneDates.map((zone, zoneIndex) => (
                     <div key={zoneIndex} className="gap-none">
-                      <div className="grid grid-cols-[1fr_auto_auto] justify-between items-center py-3 border border-gray-400 shadow-xl rounded-lg px-5">
+                      {zone.allocations.length === 0 && (
+                        <div className="flex flex-row gap-2 items-center mb-2">
+                          {zone.capacityRemaining > 0 ? (
+                            <CheckCircleIcon
+                              className={`size-5 ${
+                                parseFloat(
+                                  zone.capacityRemaining / zone.capacity
+                                ) > 0.5
+                                  ? "text-green-400"
+                                  : "text-orange-400"
+                              }`}
+                            ></CheckCircleIcon>
+                          ) : (
+                            <XCircleIcon className="size-5 text-red-500"></XCircleIcon>
+                          )}
+                          <span>Quedan {zone.capacityRemaining} entradas</span>
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-[1fr_1fr_auto] justify-between items-center py-3 border border-gray-400 shadow-xl rounded-lg px-5">
                         <span>{zone.name}</span>
                         {/* Zonas */}
-                        {zone.allocations.length === 0 && (
+                        {zone.allocations.length === 0 ? (
                           <>
                             <span>{currencies.PEN + zone.basePrice}</span>
 
                             {zone.kind != "SEATED" ? (
                               <div
                                 key={zoneIndex}
-                                className="select-none grid grid-cols-3 justify-between items-center"
+                                className="select-none grid grid-cols-[1fr_1fr_auto] justify-between items-center gap-4"
                               >
-                                <div className="flex flex-row gap-4 items-center m-3">
-                                  <MinusIcon
-                                    onClick={() =>
-                                      handleNoAllocationGeneralSubtraction(
-                                        zoneIndex
-                                      )
-                                    }
-                                    className="select-none size-3 cursor-pointer rounded-xl bg-gray-300"
-                                  ></MinusIcon>
-                                  <span>
-                                    {notAllocatedGeneralQuantities[zoneIndex]}
-                                  </span>
-                                  <PlusIcon
-                                    onClick={() =>
-                                      handleNoAllocationGeneralSum(zoneIndex)
-                                    }
-                                    className="select-none size-3 cursor-pointer rounded-xl bg-gray-300"
-                                  ></PlusIcon>
-                                </div>
+                                <MinusIcon
+                                  onClick={() =>
+                                    handleNoAllocationGeneralSubtraction(
+                                      zoneIndex
+                                    )
+                                  }
+                                  className="select-none size-3 cursor-pointer rounded-xl bg-gray-300"
+                                ></MinusIcon>
+                                <span>
+                                  {notAllocatedGeneralQuantities[zoneIndex]}
+                                </span>
+                                <PlusIcon
+                                  onClick={() =>
+                                    handleNoAllocationGeneralSum(zoneIndex)
+                                  }
+                                  className="select-none size-3 cursor-pointer rounded-xl bg-gray-300"
+                                ></PlusIcon>
                               </div>
                             ) : (
                               <div className="flex flex-row gap-4">
@@ -488,6 +523,25 @@ export default function SelectAllocationModal({
                               </div>
                             )}
                           </>
+                        ) : (
+                          <div className="flex flex-row gap-2 items-center">
+                            {zone.capacityRemaining > 0 ? (
+                              <CheckCircleIcon
+                                className={`size-5 ${
+                                  parseFloat(
+                                    zone.capacityRemaining / zone.capacity
+                                  ) > 0.5
+                                    ? "text-green-400"
+                                    : "text-orange-400"
+                                }`}
+                              ></CheckCircleIcon>
+                            ) : (
+                              <XCircleIcon className="size-5 text-red-500"></XCircleIcon>
+                            )}
+                            <span>
+                              Quedan {zone.capacityRemaining} entradas
+                            </span>
+                          </div>
                         )}
                       </div>
                       {/* Allocations */}
@@ -507,7 +561,7 @@ export default function SelectAllocationModal({
                                     <span>
                                       {currencies.PEN +
                                         " " +
-                                        parseFloat(allocation.price)}
+                                        parseInt(allocation.price)}
                                     </span>
                                     {zone.kind != "SEATED" ? (
                                       <div
