@@ -5,11 +5,11 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../services/auth/AuthContext";
 import { UserIcon } from "@heroicons/react/24/outline";
 
-export default function UserMenu({ isOrganizerApproved }) {
-  // Rutas (ajusta si usas otras)
-  const profileRoute = "/";
-  const myTicketsRoute = "/misTickets"; // estandariza a kebab-case si puedes
-  const claimsRoute = "/reclamos";
+export default function UserMenu(isOrganizerApproved ) {
+  // Rutas
+  const profileRoute = "/miPerfil";
+  const myTicketsRoute = "/misTickets";
+  const claimsRoute = "/misReclamos";
   const calendarRoute = "/miCalendario";
   const loginRoute = "/";
 
@@ -54,14 +54,10 @@ export default function UserMenu({ isOrganizerApproved }) {
 
 
       {open && (
-        <div className="fixed right-2 top-[64px] w-36 rounded-2xl bg-white p-2 shadow-xl z-50">
-          <MenuItem text="Configuración" onClick={() => go(profileRoute)} />
+        <div className="fixed right-2 top-[64px] w-44 rounded-2xl bg-white p-2 shadow-xl z-50">
+          <MenuItem text="Mi perfil" onClick={() => go(profileRoute)} />
           <MenuItem text="Mis tickets" onClick={() => go(myTicketsRoute)} />
-          <MenuItem
-            text="Mi calendario"
-            onClick={() => go(calendarRoute)}
-          />{" "}
-          {/* NUEVO */}
+          <MenuItem text="Mi calendario" onClick={() => go(calendarRoute)} />
           <MenuItem text="Reclamos" onClick={() => go(claimsRoute)} />
           <div className="my-1 h-px bg-gray-100" />
           <MenuItem

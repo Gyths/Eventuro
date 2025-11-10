@@ -48,7 +48,8 @@ export default function TopBarRoles({ filters, setFilters }) {
   const isAdmin = roles.includes("ADMIN");
   const isOrganizer = roles.includes("ORGANIZER") || isAdmin;
   const isOrganizerApproved = isOrganizer && organizerStatus === "APPROVED";
-
+  const onAdminArea = pathname.startsWith("/admin");  
+  const showAdminLinks = isAdmin && onAdminArea;  
   // ---- Panel de filtros (Joinnus style) ----
   const [expanded, setExpanded] = useState(false);
 
@@ -81,7 +82,7 @@ export default function TopBarRoles({ filters, setFilters }) {
   }
 
 
-  const showAdminLinks = isAdmin;
+ 
 
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);

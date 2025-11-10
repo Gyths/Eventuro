@@ -8,4 +8,7 @@ export const config = {
   googleCallbackURL:
     process.env.GOOGLE_CALLBACK_URL || "http://localhost:4000/google/callback",
   frontInstance: process.env.FRONT_IP || "http://localhost:5173",
+  emailUser: process.env.EMAIL_USER,
+  emailPass: process.env.EMAIL_PASS,
+  emailHost: process.env.EMAIL_HOST,
 };
