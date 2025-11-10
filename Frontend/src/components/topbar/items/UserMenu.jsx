@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../services/auth/AuthContext";
 import { UserIcon } from "@heroicons/react/24/outline";
 
-export default function UserMenu() {
+export default function UserMenu(isOrganizerApproved ) {
   // Rutas
   const profileRoute = "/miPerfil";
   const myTicketsRoute = "/misTickets";

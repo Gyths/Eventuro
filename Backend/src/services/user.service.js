@@ -32,9 +32,7 @@ export async function updateProfile(userId, payload = {}) {
 import { updateUserStatusRepo } from "../repositories/user.repo.js";
 import { searchUsersRepo } from "../repositories/user.repo.js";
 
-export async function findUserByIdFullSvc(userId) {
-    return findByIdFull(userId);
-}
+
 
 export async function updateUserStatusSvc(actorId, { userId, payload }) {
     if (!actorId) throw new Error("Actor no identificado.");
