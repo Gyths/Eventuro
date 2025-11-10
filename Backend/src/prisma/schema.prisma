@@ -509,6 +509,7 @@ model Hold {
   holdId          BigInt   @id @default(autoincrement()) @db.BigInt
   eventDateId     BigInt   @db.BigInt
   eventDateZoneId BigInt   @db.BigInt
+  eventDateZoneAllocationId BigInt?   @db.BigInt
   seatId          BigInt?  @db.BigInt
   quantity        Int?
   buyerUserId     BigInt?  @db.BigInt

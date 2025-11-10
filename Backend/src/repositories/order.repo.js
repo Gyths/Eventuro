@@ -213,6 +213,9 @@ export async function createOrderRepo(input) {
           data: {
             eventDateId,
             eventDateZoneId,
+            eventDateZoneAllocationId: allocation
+              ? BigInt(allocation.eventDateZoneAllocationId)
+              : null,
             seatId,
             quantity: 1,
             buyerUserId,
@@ -225,6 +228,9 @@ export async function createOrderRepo(input) {
           data: {
             eventDateId,
             eventDateZoneId,
+            eventDateZoneAllocationId: allocation
+              ? BigInt(allocation.eventDateZoneAllocationId)
+              : null,
             quantity,
             buyerUserId,
             expiresAt: holdExpiration,
@@ -285,7 +291,7 @@ export async function createOrderRepo(input) {
       });
 
       // Calcular precios (usa basePrice de zone y discountType y discountValue de cada allocation si es que tiene)
-      let price = Number(zone.basePrice);
+      let price = zone.basePrice;
       const now = new Date();
 
       // Evento activo (ya validado arriba)
@@ -327,7 +333,8 @@ export async function createOrderRepo(input) {
       }
       // Calcular subtotal y total final para las ordenes de compra
       const subtotal = price * quantity;
-      const discountAmount = price * quantity - subtotal;
+      const discountAmount = 0; //este siempre va a ser 0 en primera instancia, porque lo que se calcula aqui es el precio base en sí
+      //el descuento vendría a ser incrementado unicamente por el uso de cupones de descuento en la generación de los tickets
       const finalPrice = subtotal; // por ahora no hay otros cargos como impuestos
 
       // Crear orderItem
@@ -466,6 +473,9 @@ export async function cancelOrderRepo(orderId) {
             seatId: BigInt(seatId),
             buyerUserId: order.buyerUserId,
             createdAt: { gte: orderCreatedAt },
+            eventDateZoneAllocationId: eventDateZoneAllocationId
+              ? BigInt(eventDateZoneAllocationId)
+              : null,
           },
         });
       } else {
@@ -474,6 +484,9 @@ export async function cancelOrderRepo(orderId) {
           where: {
             eventDateId: eventDateId,
             eventDateZoneId: eventDateZoneId,
+            eventDateZoneAllocationId: eventDateZoneAllocationId
+              ? BigInt(eventDateZoneAllocationId)
+              : null,
             buyerUserId: order.buyerUserId,
             createdAt: { gte: orderCreatedAt },
           },

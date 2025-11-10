@@ -33,7 +33,7 @@ export async function createTicketRepo(input) {
       throw new Error("Solo se pueden confirmar órdenes pendientes de pago.");
     }
 
-    // 2) Traer descuentos (validos) que se enviaron: deben existir y estar activos
+    // Traer descuentos (validos) que se enviaron: deben existir y estar activos
     const discounts =
       discountIds && discountIds.length
         ? await tx.discount.findMany({
@@ -53,15 +53,7 @@ export async function createTicketRepo(input) {
       );
     }
 
-    // 3) Calcular porcentaje total (suma simple de percentages)
-    //    Si quieres aplicar reglas diferentes (p. ej. max cap), agrégalas aquí.
-    const totalPercent = discounts.reduce(
-      (acc, d) => acc + Number(d.percentage || 0),
-      0
-    );
-    const multiplier = 1 - totalPercent / 100; // ej. 0.70 para 30
-
-    // 4) Reducir availableQty por cada descuento (solo 1 unidad por orden, como pediste)
+    // Reducir availableQty por cada descuento (solo 1 unidad por orden, como pediste)
     for (const d of discounts) {
       if (d.availableQty !== null && d.availableQty !== undefined) {
         const dec = Number(d.availableQty) - 1; // solo 1 por orden
@@ -93,6 +85,45 @@ export async function createTicketRepo(input) {
         quantity,
       } = item;
 
+      // Incluye el nombre de la zona para poder validar appliesTo
+      const zone = await tx.eventDateZone.findUnique({
+        where: { eventDateZoneId },
+        select: { name: true },
+      });
+
+      // --- 1) Filtrar descuentos válidos para este item ---
+      const applicableDiscounts = discounts.filter((d) => {
+        if (d.status !== "A") return false;
+        if (d.availableQty !== null && d.availableQty <= 0) return false;
+
+        // Validar appliesTo
+        if (d.appliesTo && d.appliesTo !== zone.name) return false;
+
+        switch (d.scope) {
+          case "GLOBAL":
+            return true;
+          case "EVENT":
+            return d.eventId === eventId;
+          case "USER":
+            return d.userId === order.buyerUserId;
+          case "EVENT_USER":
+            return d.userId === order.buyerUserId && d.eventId === eventId;
+          default:
+            return false;
+        }
+      });
+
+      // --- 2) Calcular porcentaje total de los descuentos válidos ---
+      // Aqui se realiza la suma de todos los porcentajes de descuento que aplican para dicho ítem
+      // En caso se desee cambiar a calculo en cadena, se debe realizar aquí
+      let totalPercent = 0;
+      for (const d of applicableDiscounts) {
+        totalPercent += d.percentage;
+      }
+
+      const multiplier = 1 - totalPercent / 100;
+
+      // --- 3) Aplicar descuento al ítem ---
       const oldFinal = Number(item.finalPrice); // finalPrice guardado al crear la orden
       const newFinal = Number((oldFinal * multiplier).toFixed(2)); // aplicar totalPct al finalPrice del item
       const newDiscountAmount = Number((oldFinal - newFinal).toFixed(2)); // cuanto se descontó en este item
@@ -132,8 +163,11 @@ export async function createTicketRepo(input) {
             buyerUserId: order.buyerUserId,
             eventDateId,
             eventDateZoneId,
+            eventDateZoneAllocationId: eventDateZoneAllocationId
+              ? BigInt(eventDateZoneAllocationId)
+              : null,
             seatId,
-            createdAt: order.createdAt,
+            createdAt: { gte: order.createdAt },
           },
         });
 
@@ -172,6 +206,9 @@ export async function createTicketRepo(input) {
         //Eliminar cualquier hold asociado al asiento (Falta discutirlo)
         await tx.hold.deleteMany({
           where: { seatId: item.seatId },
+          eventDateZoneAllocationId: item.eventDateZoneAllocationId
+            ? BigInt(item.eventDateZoneAllocationId)
+            : null,
         });
       } else {
         // 2) Si no tiene seatId → crear quantity tickets sin asiento (zonas generales)
@@ -182,7 +219,10 @@ export async function createTicketRepo(input) {
             buyerUserId: order.buyerUserId,
             eventDateId,
             eventDateZoneId,
-            createdAt: order.createdAt,
+            eventDateZoneAllocationId: eventDateZoneAllocationId
+              ? BigInt(eventDateZoneAllocationId)
+              : null,
+            createdAt: { gte: order.createdAt },
             quantity: Number(quantity),
           },
         });
@@ -214,6 +254,9 @@ export async function createTicketRepo(input) {
         await tx.hold.deleteMany({
           where: {
             eventDateZoneId: item.eventDateZoneId,
+            eventDateZoneAllocationId: item.eventDateZoneAllocationId
+              ? BigInt(item.eventDateZoneAllocationId)
+              : null,
             buyerUserId: order.buyerUserId,
           },
         });
