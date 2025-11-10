@@ -189,11 +189,29 @@ export async function createTicketRepo(input) {
       }
     });
 
+    const ticketsWithInfo = await tx.ticket.findMany({
+      where: {
+        ticketId: { in: createdTickets.map(t => t.ticketId) },
+      },
+      include: {
+        eventDate: {
+          include: { event: true },
+        },
+        zone: true,
+        seat: true,
+      },
+    });
+
     return {
       orderId: Number(orderId),
       totalAmount: newOrderTotal,
-      tickets: createdTickets.map(t => ({
+      tickets: ticketsWithInfo.map(t => ({
         ticketId: Number(t.ticketId),
+        eventName: t.eventDate.event.title,
+        eventDate: t.eventDate.startAt,
+        zoneName: t.zone?.name || 'No definida',
+        setRow: t.seat?.row,
+        setCol: t.seat?.col,
         seatId: t.seatId ? Number(t.seatId) : null,
         status: t.status
       }))
