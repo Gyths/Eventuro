@@ -7,7 +7,7 @@ import { getAuditChanges } from "../controllers/audit.controller.js";
 
 const router = express.Router();
 
-router.get('/', /*verifyToken, attachUserContext, requireAdmin,*/ listAuditTransactions);
-router.get('/:id', /*verifyToken, attachUserContext, requireAdmin,*/ getAuditChanges);
+router.get('/', verifyToken, attachUserContext, requireAdmin, listAuditTransactions);
+router.get('/:id', verifyToken, attachUserContext, requireAdmin, getAuditChanges);
 
 export default router;

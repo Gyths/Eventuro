@@ -11,6 +11,8 @@ export const EventuroApi = async ({
   credentials = undefined // <- opcional: "include" si usas cookies/sesión
 }) => {
   try {
+    const session = localStorage.getItem("session");
+    const token = session ? JSON.parse(session)?.token : null;
     const options = {
       method,
       headers: { "Content-Type": "application/json", ...headers }, // <- merge headers

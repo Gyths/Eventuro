@@ -196,7 +196,9 @@ export default function MisOrdenes() {
   if (error) {
     return (
       <div className="min-h-screen grid place-items-center">
-        <div className="rounded-xl bg-red-50 text-red-700 px-4 py-3">{error}</div>
+        <div className="rounded-xl bg-red-50 text-red-700 px-4 py-3">
+          {error}
+        </div>
       </div>
     );
   }
@@ -359,9 +361,15 @@ function OrderBlock({ orderNode, onRefundSubmitted }) {
             onClick={() => setShowRefund(true)}
             disabled={!hasRefundable}
             className={`inline-block font-semibold px-4 py-2 rounded-xl text-white ${
-              hasRefundable ? "bg-rose-600 hover:bg-rose-700" : "bg-rose-300 cursor-not-allowed"
+              hasRefundable
+                ? "bg-rose-600 hover:bg-rose-700"
+                : "bg-rose-300 cursor-not-allowed"
             }`}
-            title={hasRefundable ? "Solicitar devolución" : "No hay tickets elegibles para devolución"}
+            title={
+              hasRefundable
+                ? "Solicitar devolución"
+                : "No hay tickets elegibles para devolución"
+            }
           >
             Solicitar devolución
           </button>

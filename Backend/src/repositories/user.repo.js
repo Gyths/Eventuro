@@ -2,6 +2,7 @@
 import { prisma } from "../utils/prisma.js";
 import fs from "fs";
 import path from "path";
+import { withAudit } from '../utils/audit.util.js';
 
 /** Normaliza cualquier id (string | number | bigint) a BigInt seguro para Prisma */
 function toBigIntId(x) {
@@ -132,4 +133,55 @@ export async function updateUserById(userIdLike, data) {
       administrator: true,
     },
   });
+}
+export async function updateUserStatusRepo(actorId, {userId, data}) {
+  return withAudit(actorId, async (tx) => { 
+    return await tx.user.update({
+      where: { userId: userId},
+      data: data,
+      select: {
+        userId: true,
+        status: true,
+        suspendedUntil: true,
+      }
+    });
+  });
+}
+
+export async function searchUsersRepo({ tokens, status, limit, cursor }) {
+  const where = {
+    ...(status ? { status } : {}),
+    AND: tokens.map((t) => ({
+      OR: [
+        { name: { contains: t, mode: "insensitive" } },
+        { lastName: { contains: t, mode: "insensitive" } },
+      ],
+    })),
+  };
+
+  const take = limit + 1;
+
+  const users = await prisma.user.findMany({
+    where,
+    orderBy: { userId: "asc" },
+    take,
+    ...(cursor ? { cursor: { userId: cursor }, skip: 1 } : {}),
+    select: {
+      userId: true,
+      name: true,
+      lastName: true,
+      email: true,
+      phone: true,
+      status: true,
+      suspendedUntil: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  const hasMore = users.length > limit;
+  const items = hasMore ? users.slice(0, limit) : users;
+  const nextCursor = hasMore ? String(items[items.length - 1].userId) : null;
+
+  return { items, nextCursor };
 }

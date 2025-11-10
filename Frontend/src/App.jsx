@@ -37,6 +37,7 @@ import AdminComplaints from "./pages/admin/AdminComplaints.jsx";
 import AdminUsers from "./pages/admin/AdminUsers.jsx";
 import AdminLogs from "./pages/admin/AdminLogs.jsx";
 import ManageCategories from "./pages/admin/ManageCategories.jsx";
+import ReporteEventos from "./pages/ReporteEventos.jsx";
 
 import MiPerfil from "./pages/MiPerfil.jsx";
 
@@ -59,9 +60,9 @@ function App() {
             path="/solicitudes-reembolso"
             element={<SolicitudesReembolso />}
           />
-
           {/*<Route> se comenta para evitar que la pagina dentro de ella esté restringida a una sesión autenticada*/}
           <Route element={<ProtectedRoute />}></Route>
+          <Route path="/reporteEventos" element={<ReporteEventos />} />
           <Route path="app/*" element={<Navigate to="/" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
