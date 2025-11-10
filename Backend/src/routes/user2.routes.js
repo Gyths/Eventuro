@@ -12,9 +12,9 @@ const router = Router();
 router.get('/:id', verifyToken, attachUserContext, requireAdmin, findUserByIdFull);
 router.put('/:id/status', verifyToken, attachUserContext, requireAdmin, updateUserStatus);
 router.get('/', verifyToken, attachUserContext, requireAdmin, listUsers)
-/*router.get('/Me', verifyToken, attachUserContext, getMe);
+router.get('/Me', verifyToken, attachUserContext, getMe);
 router.put('/Me', verifyToken, attachUserContext, putMe);
 router.put('/me/password', verifyToken, changeMyPassword);
-router.get('/:id', verifyToken, attachUserContext, findUserByIdFull);*/
+router.get('/:id', verifyToken, attachUserContext, findUserByIdFull);
 
 export default router;
