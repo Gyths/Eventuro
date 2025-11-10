@@ -24,14 +24,27 @@ export async function createOrderRepo(input) {
 
     // Recorrido de items de la orden (cada item puede ser zona general o numerada, con/sin allocation)
     for (const item of input.items) {
-      // Validar que el evento exista
+      // Validar que el evento exista y obtener el organizador y su userId
       const eventId = BigInt(item.eventId);
       const event = await tx.event.findUnique({
         where: { eventId },
-        select: { eventId: true, status: true },
+        select: {
+          eventId: true,
+          status: true,
+          organizer: {
+            select: { userId: true }, // <- del modelo Organizer
+          },
+        },
       });
+
       if (!event) throw new Error("El evento indicado no existe.");
       if (event.status !== "A") throw new Error("El evento no está activo.");
+
+      // Validar que el comprador no sea el organizador del evento
+      if (BigInt(event.organizer.userId) === buyerUserId)
+        throw new Error(
+          "Un organizador no puede comprar entradas de su propio evento."
+        );
 
       // Validar que el evento tenga una fecha existente y que esta pertenezca al evento
       const eventDateId = BigInt(item.eventDateId);
@@ -170,7 +183,7 @@ export async function createOrderRepo(input) {
         }
       }
 
-      const holdExpiration = new Date(Date.now() + 5 * 60 * 1000); // 5 minutos
+      const holdExpiration = new Date(Date.now() + 5 * 60 * 1000); // 5 minutos de tolerancia para realizar la compra
       // CONTROL DE CONCURRENCIA OCC (optimistic concurrency control):
       // Todo dentro de la transacción tx: si alguno falla se hace rollback.
 
@@ -456,20 +469,15 @@ export async function cancelOrderRepo(orderId) {
           },
         });
       } else {
-        // 4) No hay asiento: borrar holds del mismo eventDateId + zone (+ allocation si aplica)
-        const holdFilter = {
-          eventDateId: eventDateId,
-          eventDateZoneId: eventDateZoneId,
-          buyerUserId: order.buyerUserId,
-          createdAt: { gte: orderCreatedAt },
-        };
-
-        // Si tiene allocation, la incluimos en el filtro
-        if (eventDateZoneAllocationId) {
-          holdFilter.eventDateZoneAllocationId = eventDateZoneAllocationId;
-        }
-
-        await tx.hold.deleteMany({ where: holdFilter });
+        // 4) No hay asiento: borrar solo los holds del mismo eventDateId+zone y del mismo orden (buyer + createdAt)
+        await tx.hold.deleteMany({
+          where: {
+            eventDateId: eventDateId,
+            eventDateZoneId: eventDateZoneId,
+            buyerUserId: order.buyerUserId,
+            createdAt: { gte: orderCreatedAt },
+          },
+        });
       }
     }
 
