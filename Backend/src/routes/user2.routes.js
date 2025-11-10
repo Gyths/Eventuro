@@ -9,6 +9,8 @@ import {
   changeMyPassword,
 } from "../controllers/user.controller.js";
 import { ensureAuth } from "../middlewares/ensureAuth.js";
+import { updateUserStatus } from "../controllers/user.controller.js";
+import { listUsers } from "../controllers/user.controller.js";
 const router = Router();
 
 router.get(
@@ -18,8 +20,14 @@ router.get(
   requireAdmin,
   findUserByIdFull
 );
-//router.put('/:id/status', verifyToken, attachUserContext, requireAdmin, updateUserStatus);
-//router.get('/', verifyToken, attachUserContext, requireAdmin, listUsers)
+router.put(
+  "/:id/status",
+  verifyToken,
+  attachUserContext,
+  requireAdmin,
+  updateUserStatus
+);
+router.get("/", verifyToken, attachUserContext, requireAdmin, listUsers);
 router.get("/Me", verifyToken, attachUserContext, getMe);
 router.put("/Me", verifyToken, attachUserContext, putMe);
 router.put("/me/password", verifyToken, changeMyPassword);
