@@ -4,6 +4,7 @@ import { setTicketToRefund } from '../repositories/ticket.repo.js';
 import { getRefundList } from '../repositories/ticket.repo.js';
 import { approveTicketRefund } from '../repositories/ticket.repo.js';
 import { rejectTicketRefund } from '../repositories/ticket.repo.js';
+import { sendConfirmationEmailCtrl } from '../controllers/email.controller.js';
 
 export async function createTicketSvc(input, ctx = {}) {
   if (!input?.orderId) throw new Error('orderId es requerido para confirmar los tickets.');
@@ -11,8 +12,15 @@ export async function createTicketSvc(input, ctx = {}) {
   if (!input.buyerUserId) {
     throw new Error('buyerUserId requerido.');
   }
-  
-  return await createTicketRepo(input, ctx);
+
+  const tickets = await createTicketRepo(input, ctx);
+  try {
+    await sendConfirmationEmailCtrl(input.buyerUserId, tickets);
+  } catch (err) {
+    console.error('Error enviando correo de confirmación:', err);
+    // No abortes la compra por un error de email, solo lo registras
+  }
+  return tickets;
 }
 
 export async function updateTicketSvc(ticketId, payload, organizerUserId) {

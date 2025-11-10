@@ -11,7 +11,9 @@ export async function createTicketCtrl(req, res) {
     if (!sessionUserId && !req.body.buyerUserId) {
       return res.status(401).json({ error: 'Usuario no autenticado.' });
     }
-
+    //console.log("Holaaaa");
+    //console.log('Tickettttt: ', req);
+    //console.log("Id comprador:", req.body.buyerUserId);
     //con este orderId recibido recorreremos todos los items de dicha orden y generaremos un ticket por cada uno
     if (!req.body.orderId) {
       return res.status(400).json({ error: 'orderId es requerido.' });
