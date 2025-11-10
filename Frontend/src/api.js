@@ -1,4 +1,3 @@
-// src/api/index.js (o donde esté tu wrapper)
 import { BASE_URL } from "./config.js";
 
 const BASE_URL1 = `${BASE_URL}/eventuro/api`;
@@ -7,16 +6,27 @@ export const EventuroApi = async ({
   endpoint,
   method,
   data = null,
-  headers = {},          // <- NUEVO
-  credentials = undefined // <- opcional: "include" si usas cookies/sesión
+  headers = {},
+  credentials = undefined,
 }) => {
   try {
     const session = localStorage.getItem("session");
     const token = session ? JSON.parse(session)?.token : null;
+
+    const allHeaders = {
+      "Content-Type": "application/json",
+      ...headers,
+    };
+
+    if (token) {
+      allHeaders.Authorization = `Bearer ${token}`;
+    }
+
     const options = {
       method,
-      headers: { "Content-Type": "application/json", ...headers }, // <- merge headers
+      headers: allHeaders, 
     };
+
 
     if (credentials) options.credentials = credentials;
 
@@ -28,11 +38,22 @@ export const EventuroApi = async ({
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Error ${response.status}: ${errorText}`);
+      
+      try {
+        const errorJson = JSON.parse(errorText);
+        throw new Error(`Error ${response.status}: ${errorJson.message || errorText}`);
+      } catch (e) {
+        throw new Error(`Error ${response.status}: ${errorText}`);
+      }
     }
 
-    const result = await response.json();
-    return result;
+    const text = await response.text();
+    if (!text) {
+      return null; 
+    }
+    
+    return JSON.parse(text); 
+
   } catch (err) {
     console.error("Error en la consulta de la api " + endpoint + ": " + err);
     throw err;
