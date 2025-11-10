@@ -97,7 +97,8 @@ export async function createTicketRepo(input) {
         if (d.availableQty !== null && d.availableQty <= 0) return false;
 
         // Validar appliesTo
-        if (d.appliesTo && d.appliesTo !== zone.name) return false;
+        if (d.appliesTo && d.appliesTo !== "ALL" && d.appliesTo !== zone.name)
+          return false;
 
         switch (d.scope) {
           case "GLOBAL":
