@@ -20,41 +20,50 @@ function parseCSV(csvText) {
   const lines = csvText.trim().split("\n");
   if (lines.length < 2) return [];
 
-  const headers = lines[0].split(",");
-
-  const dateIndex = headers.indexOf("issuedAt");
-  const commissionIndex = headers.indexOf("platformCommissionAmount");
-
-  if (dateIndex === -1 || commissionIndex === -1) {
-    console.error(
-      "Columnas 'issuedAt' o 'platformCommissionAmount' no encontradas en el CSV"
-    );
-    return [];
-  }
+  const headers = lines[0].trim().split(",");
 
   const data = [];
   for (let i = 1; i < lines.length; i++) {
     const values = lines[i].split(",");
-
-    if (values.length > Math.max(dateIndex, commissionIndex)) {
-      data.push({
-        issuedAt: values[dateIndex],
-        platformCommissionAmount: parseFloat(values[commissionIndex]),
-      });
+    if (values.length < headers.length) {
+      continue;
     }
+
+    const row = {};
+    headers.forEach((header, index) => {
+      const cleanHeader = header.replace(/"/g, "").trim();
+
+      let value = values[index];
+      if (value) {
+        value = value.replace(/"/g, "").trim();
+      }
+
+      if (cleanHeader === "issuedAt") {
+        try {
+          const dateString = value.replace(/ \(.*\)/, "");
+          row[cleanHeader] = new Date(dateString);
+        } catch (e) {
+          row[cleanHeader] = null;
+        }
+      } else {
+        row[cleanHeader] = value;
+      }
+    });
+    data.push(row);
   }
   return data;
 }
 
-function processChartData(rawData) {
+function processChartData(rawTicketData) {
   const dailyTotals = new Map();
 
-  rawData.forEach((row) => {
+  rawTicketData.forEach((row) => {
     try {
-      const dateString = row.issuedAt.replace(/ \(.*\)/, "");
-      const date = new Date(dateString);
+      const date = row.issuedAt;
+      if (!date) return;
+
       const dayKey = date.toISOString().split("T")[0];
-      const commission = row.platformCommissionAmount;
+      const commission = parseFloat(row.platformCommissionAmount);
 
       if (dayKey && !isNaN(commission)) {
         const currentTotal = dailyTotals.get(dayKey) || 0;
@@ -80,7 +89,9 @@ function processChartData(rawData) {
 function IncomeChartCard() {
   const [timeFilter, setTimeFilter] = useState("7d");
 
-  const [fullData, setFullData] = useState([]);
+  const [fullRawData, setFullRawData] = useState([]);
+
+  const [chartData, setChartData] = useState([]);
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -94,7 +105,6 @@ function IncomeChartCard() {
 
       try {
         const response = await fetch(url);
-
         if (!response.ok) {
           throw new Error(
             `Error al obtener el reporte: ${response.statusText}`
@@ -102,10 +112,12 @@ function IncomeChartCard() {
         }
 
         const csvText = await response.text();
-        const rawData = parseCSV(csvText);
-        const processedData = processChartData(rawData);
 
-        setFullData(processedData);
+        const rawData = parseCSV(csvText);
+        setFullRawData(rawData);
+
+        const processedChartData = processChartData(rawData);
+        setChartData(processedChartData);
       } catch (err) {
         console.error(err);
         setError(err.message);
@@ -117,12 +129,10 @@ function IncomeChartCard() {
     fetchReportData();
   }, []);
 
-  const filteredData = useMemo(() => {
-    const dataMap = new Map(fullData.map((d) => [d.date, d.commission]));
-
+  const filteredChartData = useMemo(() => {
+    const dataMap = new Map(chartData.map((d) => [d.date, d.commission]));
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
     const monthNames = [
       "Ene",
       "Feb",
@@ -140,17 +150,15 @@ function IncomeChartCard() {
 
     if (timeFilter === "quarter") {
       const monthlyTotals = new Map();
-      fullData.forEach((d) => {
+      chartData.forEach((d) => {
         const entryDate = new Date(d.date);
         const monthIndex = entryDate.getMonth();
         const currentTotal = monthlyTotals.get(monthIndex) || 0;
         monthlyTotals.set(monthIndex, currentTotal + d.commission);
       });
-
       const result = [];
       const currentMonthIndex = today.getMonth();
       const quarterStartMonthIndex = Math.floor(currentMonthIndex / 3) * 3;
-
       for (
         let i = quarterStartMonthIndex;
         i <= quarterStartMonthIndex + 2;
@@ -172,46 +180,84 @@ function IncomeChartCard() {
     } else if (timeFilter === "month") {
       startDate = new Date(today.getFullYear(), today.getMonth(), 1);
     }
-
     const dateRangeData = [];
     let currentDate = new Date(startDate);
-
     while (currentDate <= today) {
       const dayKey = currentDate.toISOString().split("T")[0];
       const commission = dataMap.get(dayKey) || 0;
       dateRangeData.push({ date: dayKey, commission });
       currentDate.setDate(currentDate.getDate() + 1);
     }
-
     return dateRangeData;
-  }, [fullData, timeFilter]);
+  }, [chartData, timeFilter]);
+
+  const filteredRawData = useMemo(() => {
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+
+    let startDate = new Date();
+    startDate.setHours(0, 0, 0, 0);
+
+    switch (timeFilter) {
+      case "7d":
+        startDate.setDate(today.getDate() - 7);
+        break;
+      case "month":
+        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        break;
+      case "quarter":
+        const currentMonth = today.getMonth();
+        const quarterStartMonth = Math.floor(currentMonth / 3) * 3;
+        startDate = new Date(today.getFullYear(), quarterStartMonth, 1);
+        break;
+      default:
+        startDate.setDate(today.getDate() - 7);
+    }
+
+    return fullRawData.filter((ticket) => {
+      const ticketDate = ticket.issuedAt;
+      return ticketDate && ticketDate >= startDate && ticketDate <= today;
+    });
+  }, [fullRawData, timeFilter]);
 
   const handleExportCSV = () => {
-    if (filteredData.length === 0) {
+    if (filteredRawData.length === 0) {
       alert("No hay datos para exportar.");
       return;
     }
 
-    const csvString = Papa.unparse(filteredData, {
-      quotes: false,
-      header: true,
-    });
+    const csvString = Papa.unparse(
+      filteredRawData.map((ticket) => {
+        return {
+          ...ticket,
+          issuedAt: ticket.issuedAt ? ticket.issuedAt.toString() : "",
+        };
+      }),
+      {
+        quotes: true,
+        header: true,
+      }
+    );
+
     const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
+
     link.setAttribute("href", url);
-    link.setAttribute("download", `reporte_comisiones_${timeFilter}.csv`);
+    link.setAttribute("download", `reporte_detallado_${timeFilter}.csv`);
     document.body.appendChild(link);
+
     link.click();
+
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
 
+  const formatCurrency = (value) => `S/ ${value.toFixed(2)}`;
   const formatDate = (value) => {
     if (typeof value === "string" && value.length <= 3) {
       return value;
     }
-
     try {
       const date = new Date(value);
       date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
@@ -224,24 +270,19 @@ function IncomeChartCard() {
     }
   };
 
-  const formatCurrency = (value) => `S/ ${value.toFixed(2)}`;
-
   return (
     <div className="bg-white shadow-lg rounded-xl border border-gray-200">
-      {/* Encabezado de la Tarjeta */}
       <div className="p-5 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h4 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
             <CurrencyDollarIcon className="h-6 w-6 text-purple-600" />
-            Ingresos por Comisión
+            Ingresos por comisión
           </h4>
           <p className="text-sm text-gray-500 mt-1">
             Ganancias generadas por la comisión de tickets vendidos.
           </p>
         </div>
-
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-          {/* Filtros de Tiempo */}
           <div className="flex-shrink-0 rounded-lg p-1 bg-gray-100 flex">
             <FilterButton
               label="7 días"
@@ -262,20 +303,17 @@ function IncomeChartCard() {
               onClick={setTimeFilter}
             />
           </div>
-
-          {/* Botón Exportar */}
           <button
             onClick={handleExportCSV}
-            disabled={isLoading || filteredData.length === 0}
+            disabled={isLoading || filteredRawData.length === 0}
             className="flex-shrink-0 px-3 py-2 text-sm font-medium text-purple-700 bg-purple-100 rounded-lg flex items-center gap-1.5 hover:bg-purple-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ArrowDownOnSquareIcon className="h-4 w-4" />
-            Exportar
+            Exportar Detalle
           </button>
         </div>
       </div>
 
-      {/* Cuerpo de la Tarjeta (Gráfico) */}
       <div className="p-5 h-96">
         {isLoading && (
           <div className="flex h-full items-center justify-center text-gray-500">
@@ -288,15 +326,16 @@ function IncomeChartCard() {
             <p className="text-sm font-mono bg-red-50 p-2 rounded">{error}</p>
           </div>
         )}
-        {!isLoading && !error && filteredData.length === 0 && (
+
+        {!isLoading && !error && filteredChartData.length === 0 && (
           <div className="flex h-full items-center justify-center text-gray-500">
             No se encontraron datos para el período seleccionado.
           </div>
         )}
-        {!isLoading && !error && filteredData.length > 0 && (
+        {!isLoading && !error && filteredChartData.length > 0 && (
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
-              data={filteredData}
+              data={filteredChartData}
               margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
@@ -354,15 +393,12 @@ function FilterButton({ label, filter, activeFilter, onClick }) {
   );
 }
 
-/**
- * Página principal del Dashboard
- */
 export default function AdminDashboard() {
   return (
-    // --- Centrado vertical (flex) ---
+    // Centrado vertical
     <div className="p-4 sm:p-6 lg:p-8 min-h-[calc(100vh-80px)] flex flex-col">
       <div className="w-full max-w-7xl mx-auto my-auto">
-        {/* Encabezado de la Página  */}
+        {/* Encabezado de la Página */}
         <div className="border-b border-gray-200 pb-5 mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h3 className="text-3xl font-semibold text-gray-800 flex items-center gap-3">
@@ -390,7 +426,7 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
-      </div>{" "}
+      </div>
     </div>
   );
 }
