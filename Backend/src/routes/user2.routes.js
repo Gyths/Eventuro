@@ -7,6 +7,9 @@ import { getMe, putMe,changeMyPassword } from '../controllers/user.controller.js
 import { ensureAuth } from '../middlewares/ensureAuth.js';
 const router = Router();
 
+router.get('/:id', verifyToken, attachUserContext, requireAdmin, findUserByIdFull);
+router.put('/:id/status', verifyToken, attachUserContext, requireAdmin, updateUserStatus);
+router.get('/', verifyToken, attachUserContext, requireAdmin, listUsers)
 router.get('/Me', verifyToken, attachUserContext, getMe);
 router.put('/Me', verifyToken, attachUserContext, putMe);
 router.put('/me/password', verifyToken, changeMyPassword);
