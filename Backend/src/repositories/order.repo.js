@@ -31,6 +31,7 @@ export async function createOrderRepo(input) {
         select: {
           eventId: true,
           status: true,
+          ticketLimitPerUser: true,
           organizer: {
             select: { userId: true }, // <- del modelo Organizer
           },
@@ -45,6 +46,34 @@ export async function createOrderRepo(input) {
         throw new Error(
           "Un organizador no puede comprar entradas de su propio evento."
         );
+
+      // MODULO PARA CONTROLAR EL LIMITE DE ENTRADAS POR USUARIO:
+      // Obtener el límite del evento
+      const ticketLimitPerUser = event.ticketLimitPerUser ?? null;
+
+      if (ticketLimitPerUser !== null) {
+        // Calcular cuántas entradas del mismo evento ya tiene el usuario
+        const alreadyOwned = await tx.ticket.count({
+          where: {
+            eventId,
+            ownerUserId: buyerUserId,
+            status: { in: ["PAID", "USED", "EXPIRED"] },
+          },
+        });
+
+        // Calcular cuántas está intentando comprar ahora (sumar todas las quantities de los items)
+        const totalToBuyNow = input.items
+          .filter((i) => BigInt(i.eventId) === eventId) // solo del mismo evento
+          .reduce((sum, i) => sum + parseInt(i.quantity || 0), 0);
+
+        //  Comparar con el límite
+        const totalCombined = alreadyOwned + totalToBuyNow;
+        if (totalCombined > ticketLimitPerUser) {
+          throw new Error(
+            `Has alcanzado el límite de ${ticketLimitPerUser} entradas para este evento. Ya tienes ${alreadyOwned} y estás intentando comprar ${totalToBuyNow}.`
+          );
+        }
+      }
 
       // Validar que el evento tenga una fecha existente y que esta pertenezca al evento
       const eventDateId = BigInt(item.eventDateId);

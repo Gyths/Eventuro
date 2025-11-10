@@ -293,6 +293,7 @@ model Event {
   description             String
   accessPolicy            ACCESS_POLICY
   accessPolicyDescription String?
+  ticketLimitPerUser      Int?          @default(10)
 
   // Relaciones
   organizer   Organizer         @relation(fields: [organizerId], references: [organizerId])
