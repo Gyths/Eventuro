@@ -68,7 +68,7 @@ function buildEventTreeFromTickets(tickets) {
       desc,
       refundStatus: tk.refundStatus ?? "NONE",
       refundRequestedAt: tk.refundRequestedAt ?? null,
-      qrValue: tk.qrCodeUrl || tk.qrCodeURL || `TICKET:${tk.ticketId}`,
+      qrValue:  `${tk.status}_${tk.ticketId}`,
     };
 
     if (!events.has(evId)) {
@@ -283,7 +283,7 @@ function DateBlock({ dateNode, onRefundSubmitted }) {
     <div className="rounded-xl border border-gray-200">
       <div className="px-4 py-3 bg-gray-50 rounded-t-xl border-b border-gray-200">
         <h4 className="text-lg font-semibold text-gray-900">{title}</h4>
-        <p className="text-xs text-gray-500">Puede haber más de una compra (orden) para esta misma fecha.</p>
+        
       </div>
       <div className="p-4 space-y-5">
         {dateNode.orders.map((o) => (
