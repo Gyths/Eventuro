@@ -68,34 +68,24 @@ export default function Home() {
         if (!res.ok) throw new Error(payload?.error || `HTTP ${res.status}`);
         if (abort) return;
 
-        const mapped = (payload ?? []).map((ev) => {
-          // === Tomar TODAS las fechas y armar rango ===
+// Filtra primero por status "A" antes de mapear
+      const mapped = (payload ?? [])
+        .filter((ev) => ev.status === "A") // 👈 Solo eventos activos
+        .map((ev) => {
           const all = (ev.dates ?? [])
             .map((d) => ({
               start: d.startAt ? new Date(d.startAt) : null,
-              end: d.endAt
-                ? new Date(d.endAt)
-                : d.startAt
-                ? new Date(d.startAt)
-                : null,
+              end: d.endAt ? new Date(d.endAt) : d.startAt ? new Date(d.startAt) : null,
             }))
             .filter((x) => x.start);
 
-          // Si no hay fechas válidas, evitar crashear
-          const minStart = all.length
-            ? all.reduce((a, b) => (a.start < b.start ? a : b)).start
-            : null;
-          const maxEnd = all.length
-            ? all.reduce((a, b) => (a.end > b.end ? a : b)).end
-            : null;
+          const minStart = all.length ? all.reduce((a, b) => (a.start < b.start ? a : b)).start : null;
+          const maxEnd = all.length ? all.reduce((a, b) => (a.end > b.end ? a : b)).end : null;
 
-          // YYYY-MM-DD en UTC (evita “correr” el día por TZ)
-          const toYMD = (d) =>
-            d ? new Date(d).toISOString().slice(0, 10) : null;
+          const toYMD = (d) => (d ? new Date(d).toISOString().slice(0, 10) : null);
           const startDate = toYMD(minStart);
           const endDate = toYMD(maxEnd);
 
-          // Hora de la PRIMERA fecha (minStart). Usa UTC para consistencia con toYMD.
           const hour = minStart
             ? new Date(minStart).toLocaleTimeString("es-PE", {
                 hour: "2-digit",
@@ -111,20 +101,21 @@ export default function Home() {
             id: ev.eventId ?? uuidv4(),
             titulo: ev.title ?? "Evento",
             description: ev.description,
-            startDate, // rango real
-            endDate, // rango real
+            startDate,
+            endDate,
             hour,
             location,
             locationUrl: ev.venue?.addressUrl,
-            image: ev.imagePrincipalURLSigned ?? placeholder, //imagen principal evento
-            bannerEv: ev.imageBannerURLSigned ?? placeholder, //imagen banner evento
+            image: ev.imagePrincipalURLSigned ?? placeholder,
+            bannerEv: ev.imageBannerURLSigned ?? placeholder,
             categories: ev.categories,
             accessPolicy: ev.accessPolicy,
             accessPolicyDescription: ev.accessPolicyDescription,
           };
         });
 
-        setEvents(mapped);
+      setEvents(mapped);
+
       } catch (e) {
         if (!abort) setErr(e.message);
       } finally {

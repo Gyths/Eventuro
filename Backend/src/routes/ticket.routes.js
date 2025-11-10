@@ -5,7 +5,8 @@ import { requestTicketRefundCtrl } from '../controllers/ticket.controller.js';
 import { listRefundSolicitationsCtrl } from '../controllers/ticket.controller.js';
 import { approveRefundCtrl } from '../controllers/ticket.controller.js';
 import { rejectRefundCtrl } from '../controllers/ticket.controller.js';
-
+import { verifyToken, attachUserContext } from '../middlewares/ensureAuth.js';
+import { getMyTicketsController } from "../controllers/ticket.controller.js";
 const router = express.Router();
 
 router.post('/', createTicketCtrl);
@@ -14,5 +15,5 @@ router.post('/:ticketId/request-refund', requestTicketRefundCtrl);
 router.get('/refund-requests/:organizerId', listRefundSolicitationsCtrl);
 router.post('/:ticketId/approve-refund', approveRefundCtrl);
 router.post('/:ticketId/reject-refund', rejectRefundCtrl);
-
+router.get("/my", verifyToken, attachUserContext, getMyTicketsController);
 export default router;

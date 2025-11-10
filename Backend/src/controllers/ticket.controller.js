@@ -4,6 +4,7 @@ import { toJSONSafe } from '../utils/serialize.js';
 import { requestTicketRefundSvc } from '../services/ticket.service.js';
 import { listRefundSolicitationsSvc } from '../services/ticket.service.js';
 import { approveRefundSvc, rejectRefundSvc } from '../services/ticket.service.js';
+import { getMyTicketsService } from "../services/ticket.service.js";
 
 export async function createTicketCtrl(req, res) {
   try {
@@ -113,5 +114,26 @@ export async function rejectRefundCtrl(req, res) {
     return res.status(200).json(toJSONSafe(result));
   } catch (err) {
     return res.status(400).json({ error: err.message });
+  }
+}
+export async function getMyTicketsController(req, res) {
+  try {
+    const userId = BigInt(req.user.id); // viene del verifyToken
+
+    const eventId = req.query.eventId ? BigInt(req.query.eventId) : undefined;
+    const page = Math.max(1, Number(req.query.page ?? 1));
+    const pageSize = Math.min(200, Math.max(1, Number(req.query.pageSize ?? 50)));
+
+    const result = await getMyTicketsService({
+      userId,
+      eventId,
+      page,
+      pageSize,
+    });
+
+    return res.json(result);
+  } catch (err) {
+    console.error("[getMyTicketsController] Error:", err);
+    return res.status(500).json({ message: "Error al obtener tus tickets." });
   }
 }

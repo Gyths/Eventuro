@@ -19,30 +19,60 @@ function splitName(profile) {
 
 /** Construye objeto user que usará el front */
 export function buildUserResponse(u) {
-  let roles = ["USER"];
-  if (u.organizer) roles.push("ORGANIZER");
-  if (u.administrator) roles.push("ADMIN");
-  const organizerStatus = u.organizer?.status ?? null;
+  // Roles
+  const roles = ["USER"];
+  if (u?.organizer) roles.push("ORGANIZER");
+  if (u?.administrator) roles.push("ADMIN");
+
+  const organizerStatus = u?.organizer?.status ?? null;
+
+  // Nombre para mostrar: respeta fullName si existe;
+  // si no, intenta firstName+lastName; si no, name; si no, usuario del email.
+  const displayName =
+    u?.fullName ??
+    (
+      [u?.name, u?.lastName].filter(Boolean).join(" ") ||
+      u?.name ||
+      (u?.email ? String(u.email).split("@")[0] : "Usuario")
+    );
 
   return {
-    userId: String(u.userId),
-    name: u.name,
-    lastName: u.lastName,
-    email: u.email,
-    status: u.status,
-    suspendedUntil: u.suspendedUntil,
+    // Identificación
+    userId: u?.userId != null ? String(u.userId) : null,
+
+    // Nombre
+    name: u?.name ?? null,
+    firstName: u?.firstName ?? null,
+    lastName: u?.lastName ?? null,
+
+    // Contacto
+    email: u?.email ?? null,
+    phone: u?.phone ?? u?.phoneNumber ?? null,
+
+    // Documento (si lo usas)
+    document: u?.document ?? u?.documentNumber ?? null,
+
+    // Fechas
+    createdAt: u?.createdAt ? new Date(u.createdAt).toISOString() : null,
+    lastLoginAt: u?.lastLoginAt ? new Date(u.lastLoginAt).toISOString() : null,
+
+    // Roles/estado
     roles,
     organizerStatus,
 
-    
-    organizer: u.organizer
+    // Info mínima de organizador
+    organizer: u?.organizer
       ? {
-          organizerId: u.organizer.organizerId.toString(),
+          organizerId:
+            u.organizer?.organizerId != null
+              ? String(u.organizer.organizerId)
+              : null,
         }
       : null,
-    
   };
 }
+
+
 
 /** Devuelve { roles, organizerStatus, user } desde BD */
 export async function getUserRolesAndOrganizerStatus(userId) {

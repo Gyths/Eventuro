@@ -336,3 +336,170 @@ export async function rejectTicketRefund(ticketId) {
     }
   });
 }
+
+
+function toBigIntIfPossible(v) {
+  if (v === null || v === undefined) return v;
+  if (typeof v === "bigint") return v;
+  try { return BigInt(v); } catch { return v; }
+}
+
+/* ================= Where builder ================= */
+export function buildWhere(params) {
+  const { userId, eventId, status, refundStatus, search } = params;
+
+  const where = {
+    OR: [
+      { ownerUserId: toBigIntIfPossible(userId) },
+      {
+        item: {
+          is: {
+            order: {
+              is: {
+                buyerUserId: toBigIntIfPossible(userId),
+              },
+            },
+          },
+        },
+      },
+    ],
+  };
+
+  if (eventId != null) {
+    where.eventDate = { is: { eventId: toBigIntIfPossible(eventId) } };
+  }
+
+  if (status) where.status = status;
+  if (refundStatus) where.refundStatus = refundStatus;
+
+  if (search && search.trim()) {
+    const q = search.trim();
+    where.AND = [
+      {
+        OR: [
+          { eventDate: { is: { event: { is: { title: { contains: q, mode: "insensitive" } } } } } },
+          { zone: { is: { name: { contains: q, mode: "insensitive" } } } },
+          { allocation: { is: { audienceName: { contains: q, mode: "insensitive" } } } },
+        ],
+      },
+    ];
+  }
+
+  return where;
+}
+
+/* ================= Select alineado al schema ================= */
+const ticketSelect = {
+  ticketId: true,
+  status: true,
+  refundStatus: true,
+  refundRequestedAt: true,
+  pricePaid: true,
+  currency: true,
+  issuedAt: true,
+
+  eventDate: {
+    select: {
+      eventDateId: true,
+      startAt: true,
+      endAt: true,
+      event: {
+        select: {
+          eventId: true,
+          title: true,
+          imagePrincipalKey: true,
+          imageBannerKey: true,
+          inPerson: true,
+          imagePrincipalKey: true,   // <-- IMPORTANTE
+          imageBannerKey: true,
+          accessPolicy: true,
+          accessPolicyDescription: true,
+          venue: {
+            select: {
+              venueId: true,
+              city: true,
+              address: true,
+              addressUrl: true,
+              reference: true,
+              capacity: true,
+            },
+          },
+        },
+      },
+    },
+  },
+
+  zone: {
+    select: {
+      eventDateZoneId: true,
+      name: true,
+      kind: true,
+      currency: true,
+    },
+  },
+
+  allocation: {
+    select: {
+      eventDateZoneAllocationId: true,
+      audienceName: true,
+      discountType: true,
+      discountValue: true,
+    },
+  },
+
+  seat: {
+    select: {
+      seatId: true,
+      rowNumber: true,
+      colNumber: true,
+    },
+  },
+
+  item: {
+    select: {
+      order: {
+        select: {
+          orderId: true,
+          createdAt: true,
+          totalAmount: true,
+          currency: true,
+          buyerUserId: true,
+        },
+      },
+    },
+  },
+
+  owner: {
+    select: {
+      userId: true,
+      name: true,
+      lastName: true,
+    },
+  },
+
+  ownerUserId: true,
+};
+
+/* ================= Queries ================= */
+export async function getMyTicketsRepo(params) {
+  const { page = 1, pageSize = 50 } = params;
+  const where = buildWhere(params);
+
+  return prisma.ticket.findMany({
+    where,
+    select: ticketSelect,
+    skip: (page - 1) * pageSize,
+    take: pageSize,
+    // Orden “por evento”: título del evento ASC, luego fecha de inicio ASC, y estabilidad por issuedAt DESC
+    orderBy: [
+      { eventDate: { event: { title: "asc" } } },
+      { eventDate: { startAt: "asc" } },
+      { issuedAt: "desc" },
+    ],
+  });
+}
+
+export async function countMyTicketsRepo(params) {
+  const where = buildWhere(params);
+  return prisma.ticket.count({ where });
+}
