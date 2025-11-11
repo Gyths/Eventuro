@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { useAuth } from "../services/auth/AuthContext";
-
+import { EventuroApi } from "../api.js";
 import StepBadge from "../components/create/StepBadge";
 import EventBasicsForm from "../components/create/EventBasicsForm";
 import ImageRestrictionsPanel from "../components/create/ImageRestrictionsPanel";
@@ -240,7 +240,17 @@ export default function CrearEventoCards() {
 
       const numericOrganizerId = Number(organizerId);
 
-      // ====== construir el JSON (tu mismo código adaptado) ======
+      if (isNaN(numericOrganizerId)) {
+        await Swal.fire({
+          icon: "error",
+          title: "Error de ID",
+          text: `Tu ID de organizador ("${organizerId}") no es un número válido.`,
+          confirmButtonText: "Entendido",
+        });
+        setPosting(false);
+        return;
+      }
+
       const toYMD = (d) => {
         if (!d) return "";
         if (typeof d === "string") return d.slice(0, 10);
@@ -253,8 +263,10 @@ export default function CrearEventoCards() {
       const to24h = (raw) => {
         if (!raw) return "00:00";
         const s = String(raw).trim();
+
         const m24 = s.match(/^(\d{2}):(\d{2})$/);
         if (m24) return `${m24[1]}:${m24[2]}`;
+
         const m12 = s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
         if (m12) {
           let hh = parseInt(m12[1], 10);
@@ -267,6 +279,7 @@ export default function CrearEventoCards() {
           }
           return `${String(hh).padStart(2, "0")}:${mm}`;
         }
+
         return "00:00";
       };
 
@@ -285,11 +298,11 @@ export default function CrearEventoCards() {
         return `${yy}-${mm}-${dd}`;
       };
 
-      // suma/resta minutos a "HH:mm" devolviendo {hhmm, dayShift}
       const shiftHHMM = (hhmm, deltaMin) => {
         const [h, m] = hhmm.split(":").map(Number);
         let total = h * 60 + m + deltaMin;
         let dayShift = 0;
+
         while (total < 0) {
           total += 1440;
           dayShift -= 1;
@@ -298,29 +311,27 @@ export default function CrearEventoCards() {
           total -= 1440;
           dayShift += 1;
         }
+
         const hh = String(Math.floor(total / 60)).padStart(2, "0");
         const mm = String(total % 60).padStart(2, "0");
         return { hhmm: `${hh}:${mm}`, dayShift };
       };
 
-      // ---- CONSTRUCCIÓN (pre-compensación de -05:00 y rollover local) ----
-      const LIMA_OFFSET_MIN = 5 * 60; // America/Lima = UTC-05:00
+      // ===== Fechas del evento =====
+      const LIMA_OFFSET_MIN = 5 * 60; // UTC-05:00
 
       const eventDates = dates.flatMap((date) =>
         (date.schedules || []).map((s) => {
-          // 1) Hora local (según usuario)
           const ymdLocal = toYMD(date.date);
           const startLocal = to24h(s.start);
           const endLocal = to24h(s.end);
 
-          // 2) Rollover local: si start >= end, end es día siguiente (local)
           const endYMDLocal =
             toMin(endLocal) <= toMin(startLocal)
               ? addDaysYMD(ymdLocal, 1)
               : ymdLocal;
 
-          // 3) PRE-COMPENSAR: restamos 5h a ambas horas y ajustamos día si cruza medianoche
-          const sShift = shiftHHMM(startLocal, -LIMA_OFFSET_MIN); // -300 min
+          const sShift = shiftHHMM(startLocal, -LIMA_OFFSET_MIN);
           const eShift = shiftHHMM(endLocal, -LIMA_OFFSET_MIN);
 
           const ymdStartShift =
@@ -332,7 +343,6 @@ export default function CrearEventoCards() {
               ? addDaysYMD(endYMDLocal, eShift.dayShift)
               : endYMDLocal;
 
-          // 4) Enviamos con offset -05:00; el backend al convertir a UTC “deshará” nuestra pre-compensación
           return {
             startAt: `${ymdStartShift}T${sShift.hhmm}:00-05:00`,
             endAt: `${ymdEndShift}T${eShift.hhmm}:00-05:00`,
@@ -340,24 +350,22 @@ export default function CrearEventoCards() {
         })
       );
 
+      // ===== Zonas / Tickets =====
       const eventZones = (tickets.zones || []).map((zone) => {
         const basePrice = Number(zone.price) || 0;
 
         const allocations = (zone.subtypes || []).map((st) => {
           const mode = st.pricingMode || "percent";
 
-          const allocation = {
+          return {
             audienceName: st.type || "Entrada General",
             allocatedQuantity: Number(zone.quantity) || 0,
-
             discountType: mode === "percent" ? "PERCENTAGE" : "CASH",
             discountValue:
               mode === "percent"
                 ? Number(st.discount) || 0
                 : Number(st.newPrice) || 0,
           };
-
-          return allocation;
         });
 
         return {
@@ -372,15 +380,14 @@ export default function CrearEventoCards() {
         };
       });
 
+      // ===== Temporadas de venta =====
       const salePhases = (salesSeasons.seasons || [])
-        .filter((season) => season.name && season.startDate && season.endDate) // Solo incluir temporadas completas
+        .filter((season) => season.name && season.startDate && season.endDate)
         .map((season) => {
-          // Convertir porcentaje a número con signo según isIncrease
           const percentage = season.isIncrease
             ? Number(season.percentage) || 0
             : -(Number(season.percentage) || 0);
 
-          // Convertir fechas YYYY-MM-DD a ISO string válido para Date
           const startDateISO = `${season.startDate}T00:00:00.000Z`;
           const endDateISO = `${season.endDate}T23:59:59.999Z`;
 
@@ -388,11 +395,12 @@ export default function CrearEventoCards() {
             name: season.name,
             startAt: startDateISO,
             endAt: endDateISO,
-            percentage: percentage,
+            percentage,
             ticketLimit: season.ticketLimit ? Number(season.ticketLimit) : null,
           };
         });
 
+      // ===== Códigos de descuento =====
       const discounts = (discountCodes || []).map((code) => {
         const startAt = `${code.from}T00:00:00.000Z`;
         const endAt = `${code.to}T23:59:59.000Z`;
@@ -403,23 +411,24 @@ export default function CrearEventoCards() {
           code: code.code,
           percentage: Number(code.percent) || 0,
           stackable: false,
-          startAt: startAt,
-          endAt: endAt,
+          startAt,
+          endAt,
           status: "A",
           availableQty: Number(code.available) || 0,
           appliesTo: code.appliesToOne || "ALL",
         };
       });
 
+      // ===== FormData =====
       const formData = new FormData();
 
-      // Datos simples (texto)
       formData.append("organizerId", numericOrganizerId);
       formData.append("title", form.name);
       formData.append("inPerson", String(location.inPerson === true));
       formData.append("description", form.description);
       formData.append("accessPolicy", "E");
       formData.append("accessPolicyDescription", form.extraInfo);
+
       formData.append(
         "venue",
         JSON.stringify({
@@ -430,6 +439,7 @@ export default function CrearEventoCards() {
           capacity: Number(location.capacity),
         })
       );
+
       formData.append(
         "eventCategories",
         JSON.stringify(
@@ -438,70 +448,59 @@ export default function CrearEventoCards() {
             : []
         )
       );
+
       formData.append("salePhases", JSON.stringify(salePhases));
       formData.append("dates", JSON.stringify(eventDates));
       formData.append("zones", JSON.stringify(eventZones));
       formData.append("discounts", JSON.stringify(discounts));
 
-      // imagenPrincipal (archivo)
+      // Imagen principal
       if (form.imageFile) {
         formData.append("imagenPrincipal", form.imageFile);
       } else if (form.imagePrincipalKey) {
-        // Si hay key existente, enviarla para reutilizar
         formData.append("imagePrincipalKey", form.imagePrincipalKey);
       }
-      // ImagenBanner (archivo)
+
+      // Banner
       if (form.bannerFile) {
         formData.append("imagenBanner", form.bannerFile);
       } else if (form.imageBannerKey) {
-        // Si hay key existente, enviarla para reutilizar
         formData.append("imageBannerKey", form.imageBannerKey);
+      }
+      formData.append("refundPolicyFile", form.refundPolicyFile);
+      formData.append("refundPolicyText", returnsPolicy);
+
+      const session = localStorage.getItem("session");
+      const token = session ? JSON.parse(session)?.token : null;
+
+      const headers = new Headers();
+
+      if (token) {
+        headers.append("Authorization", `Bearer ${token}`);
       }
 
       // --- Enviar con fetch ---
       const res = await fetch(`${BASE_URL}/eventuro/api/event/`, {
         method: "POST",
         body: formData, // ¡sin JSON.stringify!
+        headers: headers,
       });
 
-      const raw = await res.text();
-      let payload = null;
-      try {
-        payload = raw ? JSON.parse(raw) : null;
-      } catch {
-        payload = raw;
-      }
+      await Swal.fire({
+        icon: "success",
+        title: "¡Evento publicado!",
+        text: "Tu evento se creó correctamente.",
+        confirmButtonText: "Aceptar",
+      });
 
-      if (res.ok) {
-        await Swal.fire({
-          icon: "success",
-          title: "¡Evento publicado!",
-          text: "Tu evento se creó correctamente.",
-          confirmButtonText: "Aceptar",
-        });
-        // Al cerrar el modal de éxito, reseteamos el formulario/wizard:
-        resetWizard();
-        return;
-      }
-
-      const backendMessage =
-        (payload && (payload.message || payload.error)) ||
-        (Array.isArray(payload?.errors) ? payload.errors.join("\n") : null) ||
-        (typeof payload === "string" ? payload : null) ||
-        `Código HTTP: ${res.status}`;
-
+      resetWizard();
+    } catch (err) {
+      console.error("Error al publicar evento:", err);
       await Swal.fire({
         icon: "error",
         title: "Error al publicar",
-        text: backendMessage,
+        text: err?.message || "Ocurrió un error al publicar el evento.",
         confirmButtonText: "Entendido",
-      });
-    } catch (err) {
-      await Swal.fire({
-        icon: "error",
-        title: "Error inesperado",
-        text: err?.message || String(err),
-        confirmButtonText: "Cerrar",
       });
     } finally {
       setPosting(false);
@@ -670,6 +669,11 @@ export default function CrearEventoCards() {
   const validateStep = (stepIndex) => {
     const newErrors = {};
 
+    const totalTicketsInZones = (tickets.zones || []).reduce((sum, z) => {
+      const q = Number(z.quantity || 0);
+      return sum + (isNaN(q) ? 0 : q);
+    }, 0);
+
     if (stepIndex === 0) {
       const name = (form.name ?? "").trim(); // <-- usar form.name
       if (!name) {
@@ -732,7 +736,9 @@ export default function CrearEventoCards() {
         if (invalidDate) {
           newErrors.dates = "Cada fecha debe tener al menos un horario válido.";
         }
-        const overlapDetected = dates.some((d) => hasOverlaps(d.schedules || []));
+        const overlapDetected = dates.some((d) =>
+          hasOverlaps(d.schedules || [])
+        );
         if (overlapDetected) {
           newErrors.dates =
             "Hay horarios cruzados en una o más fechas. Corrígelos antes de continuar.";
@@ -798,16 +804,17 @@ export default function CrearEventoCards() {
       }
 
       // variable para comparar capacidad del recinto
-      const aforo = Number( location.capacity || 0 );
+      const aforo = Number(location.capacity || 0);
       // variable para comparar la cantidad total de tickets
-      const totalTickets = zones.reduce( (sum, z) => sum + Number(z.quantity || 0) , 0 );
+      const totalTickets = zones.reduce(
+        (sum, z) => sum + Number(z.quantity || 0),
+        0
+      );
 
       // comparación: la cantidad total de tickets deben ser menor al aforo
       if (aforo > 0 && totalTickets > 0 && totalTickets > aforo) {
         newErrors.capacity = `El total de tickets (${totalTickets}) debe ser menor al aforo (${aforo}).`;
       }
-
-
 
       if (!newErrors.tickets) {
         const zones = tickets.zones || [];
@@ -861,20 +868,38 @@ export default function CrearEventoCards() {
         }
       }
 
+      const capacityNum = Number(location.capacity);
+      // Solo validamos si: no es virtual, la capacidad es un número válido, y no hay errores previos en tickets o capacidad
+      if (
+        !isVirtual &&
+        !isNaN(capacityNum) &&
+        capacityNum > 0 &&
+        !newErrors.tickets &&
+        !newErrors.capacity
+      ) {
+        if (totalTicketsInZones > capacityNum) {
+          newErrors.tickets = `La suma de entradas por zona (${totalTicketsInZones.toLocaleString(
+            "es-PE"
+          )}) no puede superar el aforo total del local (${capacityNum.toLocaleString(
+            "es-PE"
+          )}).`;
+        }
+      }
+
       if (tickets?.tier?.enabled) {
         const tierQty = Number(tickets.tier.qty || 0);
 
         // Calcular cantidad total desde las ZONAS
-        const totalTickets = (tickets.zones || []).reduce((sum, z) => {
-          const q = Number(z.quantity || 0);
-          return sum + (isNaN(q) ? 0 : q);
-        }, 0);
+        // const totalTickets = (tickets.zones || []).reduce((sum, z) => {
+        //  const q = Number(z.quantity || 0);
+        //  return sum + (isNaN(q) ? 0 : q);
+        // }, 0);
 
         if (!Number.isInteger(tierQty) || tierQty <= 0) {
           newErrors.tierQty =
             "La cantidad habilitada para la venta escalonada debe ser un número mayor que 0.";
-        } else if (tierQty > totalTickets) {
-          newErrors.tierQty = `La cantidad habilitada para la venta escalonada (${tierQty}) debe ser menor que la cantidad total (${totalTickets}).`;
+        } else if (tierQty > totalTicketsInZones) {
+          newErrors.tierQty = `La cantidad habilitada para la venta escalonada (${tierQty}) debe ser menor que la cantidad total (${totalTicketsInZones}).`;
         }
       }
     }
@@ -884,6 +909,27 @@ export default function CrearEventoCards() {
       if (!txt && !returnsPolicy?.file) {
         newErrors.returnsPolicy =
           "Debe escribir o subir una política de devoluciones.";
+      }
+      if (totalTicketsInZones > 0) {
+        const seasons = salesSeasons.seasons || [];
+        for (const season of seasons) {
+          const limitStr = (season.ticketLimit || "").trim();
+          // Solo validamos si el usuario ha puesto un límite
+          if (limitStr) {
+            const limit = Number(limitStr);
+            if (!isNaN(limit) && limit > 0 && limit > totalTicketsInZones) {
+              newErrors.salesSeasons = `El límite para la temporada "${
+                season.name || "sin nombre"
+              }" (${limit.toLocaleString(
+                "es-PE"
+              )}) no puede ser mayor que el total de entradas (${totalTicketsInZones.toLocaleString(
+                "es-PE"
+              )}).`;
+              // Detenemos la validación en el primer error encontrado
+              break;
+            }
+          }
+        }
       }
     }
 
@@ -1010,7 +1056,11 @@ export default function CrearEventoCards() {
               value={discountCodes}
               onChange={setDiscountCodes}
             />
-            <ReturnsPolicy value={returnsPolicy} onChange={setReturnsPolicy} />
+            <ReturnsPolicy
+              form={form}
+              value={returnsPolicy}
+              onChange={setReturnsPolicy}
+            />
           </div>
         </WizardCard>
       </div>

@@ -27,8 +27,8 @@ export function verifyToken(req, res, next) {
   } catch (err) {
     const msg =
       err.name === "TokenExpiredError" ? "Token expirado." :
-      err.name === "JsonWebTokenError" ? "Token inválido." :
-      "No autorizado.";
+        err.name === "JsonWebTokenError" ? "Token inválido." :
+          "No autorizado.";
     return res.status(401).json({ message: msg });
   }
 }
@@ -42,6 +42,17 @@ export async function attachUserContext(req, res, next) {
     global.currentUserId = Number(req.user.id);
 
     const ctx = await getUserRolesAndOrganizerStatus(req.user.id);
+
+    if (ctx.user?.status === "B") {
+      return res.status(403).json({ message: "Tu cuenta ha sido baneada permanentemente." });
+    }
+
+    if (ctx.user?.status === "S" && ctx.user.suspendedUntil && new Date() < new Date(ctx.user.suspendedUntil)) {
+      return res.status(403).json({
+        message: `Tu cuenta está suspendida hasta ${ctx.user.suspendedUntil.toLocaleString()}.`,
+      });
+    }
+
     req.auth = ctx;
     next();
   } catch (e) {
@@ -66,4 +77,14 @@ export function requireOrganizerApproved(req, res, next) {
   if (roles.includes("ADMIN")) return next();
   if (roles.includes("ORGANIZER") && status === "APPROVED") return next();
   return res.status(403).json({ error: "Organizador no aprobado" });
+}
+
+/** Requiere que sea ADMIN */
+export function requireAdmin(req, res, next) {
+  const roles = req.auth?.roles || [];
+
+  if (!roles.includes("ADMIN")) {
+    return res.status(403).json({ error: "Solo los administradores pueden acceder a esta ruta" });
+  }
+  next();
 }

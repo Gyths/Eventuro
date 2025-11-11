@@ -446,11 +446,12 @@ export const findByUserId = async (userId) => {
             include: {
               event: {
                 select: {
+                  eventId: true, //por si acaso
                   title: true,
                   description: true,
                   inPerson: true,
-                  imagePrincipalKey: true,  // 🔹 necesario
-                  imageBannerKey: true,      // 🔹 necesario
+                  imagePrincipalKey: true,  
+                  imageBannerKey: true,      
                   venue: {
                     select: {
                       city: true,

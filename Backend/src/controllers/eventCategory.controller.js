@@ -7,7 +7,8 @@ import { toJSONSafe } from "../utils/serialize.js";
 
 export async function createEventCategory(req, res) {
     try {
-        const data = await createtEventCategorySvc(req.body);
+        const userId = req.auth?.user?.userId ?? null;
+        const data = await createtEventCategorySvc(userId, req.body);
         return res.status(201).json(toJSONSafe(data));
     } catch (err) {
         return res.status(400).json({ error: err.message });
@@ -18,7 +19,8 @@ export async function updateEventCategory(req, res) {
     try {
         const { id } = req.params;
         const payload = req.body;
-        const data = await updateEventCategorySvc({ id, payload });
+        const userId = req.auth?.user?.userId ?? null;
+        const data = await updateEventCategorySvc(userId, { id, payload });
         res.status(200).json(toJSONSafe(data));
     } catch (err) {
         if (err?.code === 'P2025') {
@@ -27,17 +29,16 @@ export async function updateEventCategory(req, res) {
         if (err?.code === 'P2002') {
             return res.status(409).json({ message: 'Ya existe una categoría con esas iniciales (conflicto de unicidad).' });
         }
-        if (err?.status) {
-            return res.status(err.status).json({ message: err.message });
-        }
-        return next(err);
+        return res.status(400).json({ message: err.message });
+
     }
 }
 
 export async function deleteEventCategory(req, res) {
     try {
         const { id } = req.params;
-        const data = await deleteEventCategorySvc(id);
+        const userId = req.auth?.user?.userId ?? null;
+        const data = await deleteEventCategorySvc(userId, id);
         return res.status(200).json(toJSONSafe(data));
     } catch (err) {
         if (err?.code === 'P2025') {
@@ -48,10 +49,8 @@ export async function deleteEventCategory(req, res) {
                 message: 'No se puede eliminar: la categoría está siendo referenciada por otros registros.',
             });
         }
-        if (err?.status) {
-            return res.status(err.status).json({ message: err.message });
-        }
-        return next(err);
+        return res.status(400).json({ message: err.message });
+
     }
 }
 
