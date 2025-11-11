@@ -1,13 +1,15 @@
 import { createEventSvc } from "../services/event.service.js";
 import { listEventSvc } from "../services/event.service.js";
-import { listAvailableTicketsSvc } from "../services/event.service.js";
+import { listEventInfoSvc } from "../services/event.service.js";
 import { listEventDateByEventIdSvc } from "../services/event.service.js";
-import { listEventDateZoneByEventDateIdSvc } from "../services/event.service.js";
+import { listEventDateZonesByEventDateIdSvc } from "../services/event.service.js";
 import { setEventStatusSvc } from "../services/event.service.js";
 import { _getEventDetails } from "../services/event.service.js";
 import { _listEventsByOrganizer } from "../services/event.service.js";
 import { listEventstoApproveSvc } from "../services/event.service.js";
 import { toJSONSafe } from "../utils/serialize.js";
+
+import { setDiscountedPrices } from "../utils/event.util.js";
 
 export async function createEvent(req, res) {
   try {
@@ -36,23 +38,23 @@ export async function listEvent(req, res) {
   }
 }
 
-export async function listAvailableTickets(req, res) {
+export async function listEventInfo(req, res) {
   try {
-    const availableTickets = await listAvailableTicketsSvc(req.body);
-    for (const eventDate of availableTickets.dates) {
-      for (const zone of eventDate.zoneDates) {
-        for (const allocation of zone.allocations) {
-          if (allocation.discountType === "PERCENTAGE")
-            allocation.price =
-              parseInt(zone.basePrice) *
-              (1 - parseInt(allocation.discountValue) / 100);
-          if (allocation.discountType === "CASH")
-            allocation.price =
-              parseInt(zone.basePrice) - parseInt(allocation.discountValue);
-        }
-      }
+    const { eventId } = req.params;
+    const eventInfo = await listEventInfoSvc(eventId);
+
+    const activeSalePhaseDiscount = Number(
+      eventInfo?.salesPhases[0].percentage
+    );
+    //For each que recorre data fecha y modifica los precios con los descuentos de allocations y fases de venta
+    for (const date of eventInfo.dates) {
+      date.zoneDates = setDiscountedPrices(
+        date.zoneDates,
+        activeSalePhaseDiscount
+      );
     }
-    return res.status(201).json(toJSONSafe(availableTickets));
+
+    return res.status(201).json(toJSONSafe(eventInfo));
   } catch (err) {
     return res.status(400).json({ error: err.message });
   }
@@ -60,19 +62,31 @@ export async function listAvailableTickets(req, res) {
 
 export async function listEventDateByEventId(req, res) {
   try {
-    const eventDates = await listEventDateByEventIdSvc(req.body.eventId);
+    const { eventId } = req.params;
+    const eventDates = await listEventDateByEventIdSvc(eventId);
     return res.status(201).json(toJSONSafe(eventDates));
   } catch (err) {
     return res.status(400).json({ error: err.message });
   }
 }
 
-export async function listEventDateZoneByEventDateId(req, res) {
+export async function listEventDateZonesByEventDateId(req, res) {
   try {
-    const eventDateZones = await listEventDateZoneByEventDateIdSvc(
-      req.body.eventDateId
+    const { eventId, eventDateId } = req.params;
+    const eventDateZones = await listEventDateZonesByEventDateIdSvc(
+      eventId,
+      eventDateId
     );
-    return res.status(201).json(toJSONSafe(eventDateZones));
+    return res
+      .status(201)
+      .json(
+        toJSONSafe(
+          setDiscountedPrices(
+            eventDateZones.zones,
+            eventDateZones.activePhase.percentage
+          )
+        )
+      );
   } catch (err) {
     return res.status(400).json({ error: err.message });
   }

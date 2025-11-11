@@ -4,7 +4,7 @@ import {
   listEvent,
   listEventInfo,
   listEventDateByEventId,
-  listEventDateZoneByEventDateId,
+  listEventDateZonesByEventDateId,
   setEventStatus,
   getEventDetails,
   listEventsByOrganizer,
@@ -26,9 +26,9 @@ router.post(
   createEvent
 );
 router.get("/list", listEvent);
-router.get("/info", listEventInfo);
-router.get("/dates", listEventDateByEventId);
-router.get("/zones", listEventDateZoneByEventDateId);
+router.get("/:eventId/info", listEventInfo);
+router.get("/:eventId/dates", listEventDateByEventId);
+router.get("/:eventId/:eventDateId/zones", listEventDateZonesByEventDateId);
 router.put(
   "/:id/approve",
   verifyToken,

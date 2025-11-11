@@ -401,9 +401,9 @@ export async function listEventsByOrganizerRepo(idOrganizer) {
   });
 }
 
-export async function listAvailableTicketsRepo(input) {
+export async function listEventInfoRepo(eventId) {
   const event = await prisma.event.findUnique({
-    where: { eventId: BigInt(input.eventId) },
+    where: { eventId: BigInt(eventId) },
     select: {
       //Se consulta toda la información del evento en caso haya habido alguna actualización durante el tiempo que el usuario estuvo en la pantalla de inicio
       eventId: true,
@@ -444,6 +444,7 @@ export async function listAvailableTicketsRepo(input) {
 
       //Relación son SalesPhases
       salesPhases: {
+        where: { active: true },
         select: {
           eventSalesPhaseId: true,
           name: true,
@@ -487,28 +488,6 @@ export async function listAvailableTicketsRepo(input) {
                   audienceName: true,
                   discountType: true,
                   discountValue: true,
-                },
-              },
-
-              //SeatMaps relacionados al evento
-              seatMap: {
-                select: {
-                  seatMapId: true,
-                  rows: true,
-                  cols: true,
-
-                  //Asientos relacionados a cada seatMap
-                  occupiedSeats: {
-                    orderBy: {
-                      seatId: "asc",
-                    },
-                    select: {
-                      seatId: true,
-                      rowNumber: true,
-                      colNumber: true,
-                      status: true,
-                    },
-                  },
                 },
               },
             },
@@ -556,21 +535,42 @@ export async function listEventDateByEventIdRepo(eventId) {
   });
 }
 
-export async function listEventDateZoneByEventDateIdRepo(eventDateId) {
-  return prisma.eventDateZone.findMany({
-    where: { eventDateId: BigInt(eventDateId) },
-    select: {
-      eventDateZoneId: true,
-      eventDateId: true,
-      name: true,
-      kind: true,
-      basePrice: true,
-      capacity: true,
-      capacityRemaining: true,
-      seatMapId: true,
-      currency: true,
-    },
-  });
+export async function listEventDateZonesByEventDateIdRepo(
+  eventId,
+  eventDateId
+) {
+  const [zones, activePhase] = await Promise.all([
+    prisma.eventDateZone.findMany({
+      where: { eventDateId: BigInt(eventDateId) },
+      select: {
+        eventDateZoneId: true,
+        eventDateId: true,
+        name: true,
+        kind: true,
+        basePrice: true,
+        capacity: true,
+        capacityRemaining: true,
+        seatMapId: true,
+        currency: true,
+      },
+    }),
+
+    prisma.eventSalesPhase.findFirst({
+      where: {
+        eventId: BigInt(eventId),
+        active: true,
+      },
+      select: {
+        eventSalesPhaseId: true,
+        name: true,
+        startAt: true,
+        endAt: true,
+        percentage: true,
+      },
+    }),
+  ]);
+
+  return { zones, activePhase };
 }
 
 export async function setEventStatusRepo(

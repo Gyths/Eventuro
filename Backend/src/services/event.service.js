@@ -1,9 +1,9 @@
 import {
   createEventRepo,
   listEventRepo,
-  listAvailableTicketsRepo,
+  listEventInfoRepo,
   listEventDateByEventIdRepo,
-  listEventDateZoneByEventDateIdRepo,
+  listEventDateZonesByEventDateIdRepo,
   setEventStatusRepo,
   eventDetails,
   listEventsByOrganizerRepo,
@@ -18,16 +18,16 @@ export async function listEventSvc() {
   return listEventRepo();
 }
 
-export async function listAvailableTicketsSvc(input) {
-  return listAvailableTicketsRepo(input);
+export async function listEventInfoSvc(eventId) {
+  return listEventInfoRepo(eventId);
 }
 
-export async function listEventDateByEventIdSvc(input) {
-  return listEventDateByEventIdRepo(input);
+export async function listEventDateByEventIdSvc(eventId) {
+  return listEventDateByEventIdRepo(eventId);
 }
 
-export async function listEventDateZoneByEventDateIdSvc(input) {
-  return listEventDateZoneByEventDateIdRepo(input);
+export async function listEventDateZonesByEventDateIdSvc(eventId, eventDateId) {
+  return listEventDateZonesByEventDateIdRepo(eventId, eventDateId);
 }
 
 export async function setEventStatusSvc(userId, { id, status, percentage }) {
