@@ -1,6 +1,8 @@
 import { createEventSvc } from "../services/event.service.js";
 import { listEventSvc } from "../services/event.service.js";
 import { listAvailableTicketsSvc } from "../services/event.service.js";
+import { listEventDateByEventIdSvc } from "../services/event.service.js";
+import { listEventDateZoneByEventDateIdSvc } from "../services/event.service.js";
 import { setEventStatusSvc } from "../services/event.service.js";
 import { _getEventDetails } from "../services/event.service.js";
 import { _listEventsByOrganizer } from "../services/event.service.js";
@@ -9,7 +11,6 @@ import { toJSONSafe } from "../utils/serialize.js";
 
 export async function createEvent(req, res) {
   try {
-    
     const userId = req.auth?.user?.userId ?? null;
 
     // Pasa el archivo con el mismo nombre que espera el repo
@@ -52,6 +53,26 @@ export async function listAvailableTickets(req, res) {
       }
     }
     return res.status(201).json(toJSONSafe(availableTickets));
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
+}
+
+export async function listEventDateByEventId(req, res) {
+  try {
+    const eventDates = await listEventDateByEventIdSvc(req.body.eventId);
+    return res.status(201).json(toJSONSafe(eventDates));
+  } catch (err) {
+    return res.status(400).json({ error: err.message });
+  }
+}
+
+export async function listEventDateZoneByEventDateId(req, res) {
+  try {
+    const eventDateZones = await listEventDateZoneByEventDateIdSvc(
+      req.body.eventDateId
+    );
+    return res.status(201).json(toJSONSafe(eventDateZones));
   } catch (err) {
     return res.status(400).json({ error: err.message });
   }
