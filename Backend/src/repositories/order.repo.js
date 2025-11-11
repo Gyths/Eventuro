@@ -628,3 +628,47 @@ export const findByUserId = async (userId) => {
 
   return enrichedOrders;
 };
+
+export async function getPendingReminders() {
+  const now = new Date();
+  const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+  return prisma.order.findMany({
+    where: {
+      reminderSentAt: null,
+      status: "PAID",
+      items: {
+        some: {
+          eventDate: {
+            startAt: {
+              gte: now,
+              lte: in24h
+            }
+          }
+        }
+      }
+    },
+    include: {
+      items: {
+        include: {
+          eventDate: {
+            include: { event: true }
+          },
+          Ticket: {
+            take: 1,
+            include: {
+              owner: { select: { email: true, name: true } }
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+export async function markReminderSent(orderId) {
+  await prisma.order.update({
+    where: { orderId },
+    data: { reminderSentAt: new Date() }
+  });
+}
