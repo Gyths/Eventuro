@@ -36,7 +36,7 @@ export default function PaymentMethod() {
   const navigate = useNavigate();
   const ticketSelectionDest = "/seleccionTickets";
   const homeDest = "/home";
-  const viewTicketDest = "/entradas";
+  const viewTicketDest = "/misTickets";
 
   const { event } = useEvent();
   const { order, setOrder } = useOrder();

@@ -11,7 +11,7 @@ import Swal from "sweetalert2";
 import { BASE_URL } from "../../config";
 import AddCategoryModal from "../../components/create/AddCategoryModal";
 
-const API_URL = `${BASE_URL}/eventuro/api/event-category`;
+import { EventuroApi } from "../../api";
 
 export default function ManageCategories() {
   const [categories, setCategories] = useState([]);
@@ -22,16 +22,15 @@ export default function ManageCategories() {
   const [editingCategory, setEditingCategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // --- (Toda tu lógica de fetch, update, delete, etc. no cambia) ---
   const fetchCategories = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(API_URL);
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status} ${response.statusText}`);
-      }
-      const data = await response.json();
+      const data = await EventuroApi({
+        endpoint: "/event-category",
+        method: "GET",
+      });
+
       const parsedData = (data || []).map((item) => ({
         id: item.eventCategoryId,
         name: item.description || "Sin nombre",
@@ -62,18 +61,12 @@ export default function ManageCategories() {
       description: modalData.name,
     };
     try {
-      const response = await fetch(`${API_URL}/${editingCategory.id}`, {
+      await EventuroApi({
+        endpoint: `/event-category/${editingCategory.id}`,
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(jsonBody),
+        data: jsonBody,
       });
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Error ${response.status}`);
-      }
+
       await Swal.fire(
         "¡Actualizado!",
         "La categoría ha sido modificada.",
@@ -100,13 +93,11 @@ export default function ManageCategories() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const response = await fetch(`${API_URL}/${id}`, {
+          await EventuroApi({
+            endpoint: `/event-category/${id}`,
             method: "DELETE",
           });
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || `Error ${response.status}`);
-          }
+
           Swal.fire(
             "¡Eliminado!",
             "La categoría ha sido eliminada.",
@@ -128,7 +119,6 @@ export default function ManageCategories() {
       category.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [categories, searchQuery]);
-  // --- (Fin de la lógica) ---
 
   return (
     <>

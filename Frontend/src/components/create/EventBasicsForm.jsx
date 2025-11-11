@@ -4,6 +4,7 @@ import TextInput from "./TextInput";
 // import SelectInput from "./SelectInput";  // ya no se usa
 import TextArea from "./TextArea";
 import { BASE_URL } from "../../config.js";
+import { EventuroApi } from "../../api.js";
 
 export default function EventBasicsForm({ form, onChange }) {
   const [categories, setCategories] = useState([]); // [{id,label}]
@@ -13,40 +14,46 @@ export default function EventBasicsForm({ form, onChange }) {
   // Normaliza el array seleccionado (form.categories)
   const selectedIds = useMemo(() => {
     const arr = Array.isArray(form?.categories) ? form.categories : [];
-    // Convertir a string para comparar de forma estable
     return new Set(arr.map((x) => String(x)));
   }, [form?.categories]);
 
-  useEffect(() => {
-    let abort = false;
+  // Carga de categorías usando EventuroApi
+  const fetchCategories = async (ctrl) => {
+    try {
+      setLoadingCats(true);
+      setErrorCats(null);
 
-    (async () => {
-      try {
-        setLoadingCats(true);
-        setErrorCats(null);
+      const payload = await EventuroApi({
+        endpoint: "/event-category/",
+        method: "GET",
+      });
 
-        const res = await fetch(`${BASE_URL}/eventuro/api/event-category/`);
-        const payload = await res.json();
-        if (abort) return;
+      if (ctrl?.aborted) return;
 
-        // Soporta estructura con o sin "category"
-        const parsed = (payload ?? [])
-          .map((it) => (it?.category ? it.category : it))
-          .map((c) => ({
-            id: Number(c.eventCategoryId),
-            label: String(c.description).trim(),
-          }));
+      const parsed = (payload ?? [])
+        .map((it) => (it?.category ? it.category : it))
+        .map((c) => ({
+          id: Number(c.eventCategoryId),
+          label: String(c.description).trim(),
+        }));
 
-        setCategories(parsed);
-      } catch (err) {
-        if (!abort) setErrorCats(err?.message || "Error cargando categorías");
-      } finally {
-        if (!abort) setLoadingCats(false);
+      setCategories(parsed);
+    } catch (err) {
+      if (!ctrl?.aborted) {
+        setErrorCats(err?.message || "Error cargando categorías");
       }
-    })();
+    } finally {
+      if (!ctrl?.aborted) {
+        setLoadingCats(false);
+      }
+    }
+  };
 
+  useEffect(() => {
+    const ctrl = { aborted: false };
+    fetchCategories(ctrl);
     return () => {
-      abort = true;
+      ctrl.aborted = true;
     };
   }, []);
 
@@ -54,6 +61,7 @@ export default function EventBasicsForm({ form, onChange }) {
   const toggleCategory = (id) => {
     const idStr = String(id);
     const current = new Set(selectedIds);
+
     if (current.has(idStr)) current.delete(idStr);
     else current.add(idStr);
 
@@ -67,7 +75,7 @@ export default function EventBasicsForm({ form, onChange }) {
       });
 
     onChange?.({
-      categories: next, // IDs
+      categories: next,
       categoriesLabels: categories
         .filter((c) => next.includes(c.id))
         .map((c) => c.label),
@@ -108,31 +116,7 @@ export default function EventBasicsForm({ form, onChange }) {
             </span>
             <button
               type="button"
-              onClick={() => {
-                // reintentar sin recargar
-                setLoadingCats(true);
-                setErrorCats(null);
-                // fuerza el efecto: volver a llamar al endpoint
-                (async () => {
-                  try {
-                    const res = await fetch(
-                      `${BASE_URL}/eventuro/api/event-category/`
-                    );
-                    const payload = await res.json();
-                    const parsed = (payload ?? [])
-                      .map((it) => (it?.category ? it.category : it))
-                      .map((c) => ({
-                        id: Number(c.eventCategoryId),
-                        label: String(c.description).trim(),
-                      }));
-                    setCategories(parsed);
-                  } catch (err) {
-                    setErrorCats(err?.message || "Error cargando categorías");
-                  } finally {
-                    setLoadingCats(false);
-                  }
-                })();
-              }}
+              onClick={() => fetchCategories()}
               className="rounded-full border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
             >
               Reintentar

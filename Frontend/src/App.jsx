@@ -37,6 +37,12 @@ import AdminComplaints from "./pages/admin/AdminComplaints.jsx";
 import AdminUsers from "./pages/admin/AdminUsers.jsx";
 import AdminLogs from "./pages/admin/AdminLogs.jsx";
 import ManageCategories from "./pages/admin/ManageCategories.jsx";
+import ReporteEventos from "./pages/ReporteEventos.jsx";
+
+import MiPerfil from "./pages/MiPerfil.jsx";
+
+import LibroReclamos from "./pages/LibroReclamos.jsx";
+import MisReclamos from "./pages/MisReclamos.jsx";
 
 function App() {
   return (
@@ -54,9 +60,9 @@ function App() {
             path="/solicitudes-reembolso"
             element={<SolicitudesReembolso />}
           />
-
           {/*<Route> se comenta para evitar que la pagina dentro de ella esté restringida a una sesión autenticada*/}
           <Route element={<ProtectedRoute />}></Route>
+          <Route path="/reporteEventos" element={<ReporteEventos />} />
           <Route path="app/*" element={<Navigate to="/" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
@@ -67,11 +73,9 @@ function App() {
         <Route path="pago" element={<PaymentMethod />} />
         <Route path="miCalendario" element={<MyCalendar />} />
         <Route path="misTickets" element={<MisTickets />} />
-
-        <Route element={<ProtectedRoute />}>
-          <Route path="pago" element={<PaymentMethod />} />
-        </Route>
-
+        <Route path="miPerfil" element={<MiPerfil />} />
+        <Route path="reclamos/nuevo" element={<LibroReclamos />} />
+        <Route path="misReclamos" element={<MisReclamos />} />
         <Route element={<AdminRoute />}>
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/settings" element={<AdminSettings />} />

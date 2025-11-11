@@ -1,6 +1,7 @@
 // src/components/RefundRequestModal.jsx
 import { useMemo, useState } from "react";
 import { EventuroApi } from "../api";
+import { useAuth } from "../services/auth/AuthContext";
 
 /* ======================= Helpers de fecha/UI ======================= */
 function formatDateTime(d) {
@@ -16,11 +17,7 @@ function formatDateTime(d) {
   });
 }
 
-/**
- * Construye la descripción legible para UI:
- * Evento — fecha — Zona X — <audienceName>
- * (sin mostrar “Ticket #id”)
- */
+/** Construye descripción legible sin mostrar IDs */
 function describeItem(it) {
   const title = it?.eventDate?.event?.title ?? "Evento";
   const start = formatDateTime(it?.eventDate?.startAt);
@@ -29,10 +26,7 @@ function describeItem(it) {
     ? `Palco • Fila ${it.seat.rowNumber} • Asiento ${it.seat.seatNumber ?? "-"}`
     : `Zona ${it?.zone?.name ?? "General"}`;
 
-  const audience = it?.allocation?.audienceName
-    ? ` — ${it.allocation.audienceName}`
-    : "";
-
+  const audience = it?.allocation?.audienceName ? ` — ${it.allocation.audienceName}` : "";
   return `${title} — ${start} — ${zone}${audience}`;
 }
 
@@ -55,15 +49,22 @@ function refundStatusUI(status) {
 }
 
 /* ========================= Componente principal ========================= */
-export default function RefundRequestModal({ isOpen, onClose, order, onSubmitted }) {
-  // Construye la lista de TICKETS (y fallback por item) para el modal
+export default function RefundRequestModal({
+  isOpen,
+  onClose,
+  order,
+  onSubmitted,            // el padre debe recibir { ticketIds, refundRequestedAt }
+  acceptPolicyDefault = true,
+}) {
+  const { token } = useAuth();
+
+  // Construye la lista plana de elementos reembolsables (1 por ticket; fallback por item)
   const refundableItems = useMemo(() => {
     const items = Array.isArray(order?.items) ? order.items : [];
 
     return items.flatMap((it) => {
       const tickets = Array.isArray(it.Ticket) ? it.Ticket : [];
 
-      // Si el item tiene tickets, listamos uno por ticket (pero sin mostrar el #id)
       if (tickets.length > 0) {
         return tickets.map((tk) => {
           const refundStatus = tk?.refundStatus ?? "NONE";
@@ -74,20 +75,20 @@ export default function RefundRequestModal({ isOpen, onClose, order, onSubmitted
 
           return {
             key: `${it.orderItemId}-${tk.ticketId}`,
-            ticketId: tk.ticketId,          // usado para la llamada al endpoint
+            ticketId: String(tk.ticketId),
             orderItemId: it.orderItemId,
-            description: describeItem(it),  // 💡 sin “Ticket #…”, incluye allocation
+            description: describeItem(it),
             refundStatus,
             refundRequestedAt,
             requested,
             approved,
             ui,
-            maxQty: 1,                      // un ticket = cantidad 1
+            maxQty: 1,
           };
         });
       }
 
-      // Fallback: sin tickets, usamos estado del item
+      // Fallback: sin tickets, usa estados a nivel item
       const refundStatus = readRefundStatusFromItem(it);
       const refundRequestedAt = it?.refundRequestedAt ?? null;
       const requested = refundStatus === "REQUESTED";
@@ -97,9 +98,9 @@ export default function RefundRequestModal({ isOpen, onClose, order, onSubmitted
       return [
         {
           key: `item-${it.orderItemId}`,
-          ticketId: it.ticketId ?? it.orderItemId,
+          ticketId: String(it.ticketId ?? it.orderItemId), // mejor como string
           orderItemId: it.orderItemId,
-          description: describeItem(it),   // 💡 también muestra allocation si existe
+          description: describeItem(it),
           refundStatus,
           refundRequestedAt,
           requested,
@@ -111,7 +112,7 @@ export default function RefundRequestModal({ isOpen, onClose, order, onSubmitted
     });
   }, [order]);
 
-  // Estado de selección (solo para elegibles)
+  // Estado de selección: sólo para elegibles (no requested/approved)
   const [selected, setSelected] = useState(() =>
     refundableItems.reduce((acc, it) => {
       if (!it.requested && !it.approved) acc[it.ticketId] = { checked: false, qty: 1 };
@@ -119,7 +120,7 @@ export default function RefundRequestModal({ isOpen, onClose, order, onSubmitted
     }, {})
   );
 
-  const [agree, setAgree] = useState(false);
+  const [agree, setAgree] = useState(acceptPolicyDefault);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [summary, setSummary] = useState(null);
@@ -148,32 +149,48 @@ export default function RefundRequestModal({ isOpen, onClose, order, onSubmitted
       setError("");
       setSummary(null);
 
+      // Tomamos los IDs seleccionados (1 por ticket)
+      const selectedTicketIds = chosen.map((it) => it.ticketId);
+
+      // Si tienes endpoint por ticket:
+      const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
       const requests = chosen.map((it) =>
         EventuroApi({
           endpoint: `/tickets/${encodeURIComponent(it.ticketId)}/request-refund`,
           method: "POST",
           data: { quantity: Math.min(selected[it.ticketId]?.qty ?? 1, it.maxQty) },
+          headers,
         })
       );
 
       const results = await Promise.allSettled(requests);
       const ok = [];
+      const okIds = [];
       const fail = [];
 
       results.forEach((r, idx) => {
         const it = chosen[idx];
-        if (r.status === "fulfilled") ok.push(`• ${it.description}`);
-        else {
+        if (r.status === "fulfilled") {
+          ok.push(`• ${it.description}`);
+          okIds.push(it.ticketId);
+        } else {
           const msg = r.reason?.message || "Error desconocido";
           fail.push(`• ${it.description} — ${msg}`);
         }
       });
 
       setSummary({ ok, fail });
-      if (fail.length === 0) {
-        onSubmitted?.();
-        onClose?.();
+
+      // Notifica al padre con los IDs que sí se actualizaron
+      if (okIds.length > 0) {
+        onSubmitted?.({
+          ticketIds: okIds,
+          refundRequestedAt: new Date().toISOString(),
+        });
       }
+
+      // Cierra si todo fue OK
+      if (fail.length === 0) onClose?.();
     } catch (e) {
       setError(e?.message || "No se pudo enviar la solicitud.");
     } finally {

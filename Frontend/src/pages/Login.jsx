@@ -48,7 +48,7 @@ export default function Login() {
 
               if (resMe.ok) {
                 const meData = await resMe.json();
-                finalUser = meData.user; 
+                finalUser = meData.user;
                 login({ token: data.token, user: meData.user });
               }
             } catch (err) {
@@ -58,8 +58,7 @@ export default function Login() {
             // 4️⃣ Usamos finalUser para decidir redirección
             const roles = finalUser.roles || [];
             const organizerStatus = finalUser.organizerStatus || null;
-             handleRoleNavigation(roles,organizerStatus,navigate);
-            
+            handleRoleNavigation(roles, organizerStatus, navigate);
           } catch (err) {
             alert("Error en login: " + err.message);
           }
