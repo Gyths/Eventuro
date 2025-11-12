@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../services/auth/AuthContext";
+import { EVENT_INFORMATION_TEXTS } from "../components/payment/texts";
 
 import { useModal } from "../context/ModalContext";
 import useEvent from "../services/Event/EventContext";
@@ -20,6 +21,8 @@ import {
   UserGroupIcon,
 } from "@heroicons/react/24/solid";
 
+import { FaceFrownIcon } from "@heroicons/react/24/outline";
+
 export default function TicketSelection() {
   const homeRoute = "/";
   const loginPage = "/login";
@@ -27,20 +30,20 @@ export default function TicketSelection() {
   //Manejo de objetos de negocio
   const { isAuthenticated, user } = useAuth();
   const { event, setEvent } = useEvent();
-  const [errorCode, setErrorCode] = React.useState(0);
-  const [dates, setDates] = React.useState(null);
+  const [errorCode, setErrorCode] = React.useState(-1);
   //State para el manejo del scroll
   const [bluredBackgrund, setBluredBackgrund] = React.useState(false);
   //State para manejar modales
   const { modal, setModal } = useModal(null);
+  const [selectedDate, setSelectedDate] = React.useState(false);
 
   const [showContent, setShowContent] = React.useState(false);
-  const [selectedData, setSelectedData] = React.useState();
+  const [isLoading, setIsLoading] = React.useState(true);
   const currencies = { PEN: "S/." };
 
   React.useEffect(() => {
     //Llamada a la api del back para consultar disponibilidad de un evento
-    const fetchAvailability = async () => {
+    const fetchEventInfo = async () => {
       try {
         const availabilityEndpoint = `/event/${event.eventId}/info`;
         const apiMethod = "GET";
@@ -49,59 +52,17 @@ export default function TicketSelection() {
           method: apiMethod,
         });
 
-        const formatted = response.dates.map((dateInfo) => ({
-          ...dateInfo,
-          formattedStartDate: new Date(dateInfo.startAt).toLocaleDateString(
-            "es-PE",
-            {
-              day: "2-digit",
-              month: "long",
-              year: "numeric",
-            }
-          ),
-          formattedStartHour: new Date(dateInfo.startAt).toLocaleTimeString(
-            "es-PE",
-            {
-              hour: "2-digit",
-              minute: "2-digit",
-            }
-          ),
-          formattedEndDate: new Date(dateInfo.endAt).toLocaleDateString(
-            "es-PE",
-            {
-              day: "2-digit",
-              month: "long",
-              year: "numeric",
-            }
-          ),
-          formattedEndHour: new Date(dateInfo.endAt).toLocaleTimeString(
-            "es-PE",
-            {
-              hour: "2-digit",
-              minute: "2-digit",
-            }
-          ),
-        }));
-        //response.status != "A" && navigate(homeRoute);
-        response.dates = formatted;
         response.image = response.imagePrincipalURLSigned ?? placeholder;
         response.bannerEv = response.imageBannerURLSigned ?? placeholder;
-
         setEvent(response);
-        console.log(response);
       } catch (err) {
-        console.error("Error cargando evento:", err);
-        if (err.status === 404) {
-          setErrorCode(err.status);
-        } else if (err.status === 422) {
-          setErrorCode(err.status);
-        } else {
-          setErrorCode(0);
-        }
+        setErrorCode(err.code);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchAvailability();
+    fetchEventInfo();
   }, []);
 
   React.useEffect(() => {
@@ -132,19 +93,34 @@ export default function TicketSelection() {
     setModal("dates");
   };
 
-  const handleContinue = (selectedData) => {
+  const handleContinue = (selectedId) => {
     if (!isAuthenticated) {
       navigate(loginPage);
       return;
     }
-    setSelectedData(selectedData);
+    setSelectedDate(selectedId);
     setModal("tickets");
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen">
+        <div className="w-10 h-10 border-4 border-purple-300 border-t-purple-600 rounded-full animate-spin mb-3"></div>
+        <span className="text-gray-600 text-sm">Cargando evento...</span>
+      </div>
+    );
+  }
+
   return (
     <>
-      {!event || errorCode != 0 ? (
-        <span>No hay fases de venta activas</span>
+      {!event || errorCode != -1 ? (
+        <div className="flex flex-col justify-center items-center h-screen">
+          <FaceFrownIcon className="text-gray-500 size-14"></FaceFrownIcon>
+          <spam className="text-gray-500 text-2xl">¡Lo sentimos!</spam>
+          <span className="text-gray-500 text-2xl">
+            {EVENT_INFORMATION_TEXTS.alerts[errorCode]}
+          </span>
+        </div>
       ) : (
         <>
           <div className="relative min-h-screen overflow-x-hidden">
@@ -383,9 +359,9 @@ export default function TicketSelection() {
           {(modal === "tickets" || modal === "seats") && (
             <AnimatePresence>
               <SelectTicketModal
+                eventDateId={selectedDate}
                 modal={modal}
                 setModal={setModal}
-                selectedData={selectedData}
                 onReturn={() => setModal("dates")}
               />
             </AnimatePresence>

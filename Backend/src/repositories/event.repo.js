@@ -539,7 +539,15 @@ export async function listEventDateZonesByEventDateIdRepo(
   eventId,
   eventDateId
 ) {
-  const [zones, activePhase] = await Promise.all([
+  const [date, zones, activePhase] = await Promise.all([
+    prisma.eventDate.findUnique({
+      where: { eventDateId: BigInt(eventDateId) },
+      select: {
+        startAt: true,
+        endAt: true,
+      },
+    }),
+
     prisma.eventDateZone.findMany({
       where: { eventDateId: BigInt(eventDateId) },
       select: {
@@ -552,6 +560,16 @@ export async function listEventDateZonesByEventDateIdRepo(
         capacityRemaining: true,
         seatMapId: true,
         currency: true,
+
+        allocations: {
+          select: {
+            eventDateZoneAllocationId: true,
+            eventDateZoneId: true,
+            audienceName: true,
+            discountType: true,
+            discountValue: true,
+          },
+        },
       },
     }),
 
@@ -570,7 +588,7 @@ export async function listEventDateZonesByEventDateIdRepo(
     }),
   ]);
 
-  return { zones, activePhase };
+  return { date, zones, activePhase };
 }
 
 export async function setEventStatusRepo(

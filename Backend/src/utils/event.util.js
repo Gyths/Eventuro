@@ -20,3 +20,28 @@ export function setDiscountedPrices(zones, activeSalePhaseDiscount = 0) {
   }
   return zones;
 }
+
+export function formatDates(dates) {
+  const formattedDates = dates.map((date) => ({
+    ...date,
+    startDate: new Date(date.startAt).toLocaleDateString("es-PE", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    }),
+    startHour: new Date(date.startAt).toLocaleTimeString("es-PE", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+    endDate: new Date(date.endAt).toLocaleDateString("es-PE", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    }),
+    endHour: new Date(date.endAt).toLocaleTimeString("es-PE", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+  }));
+  return formattedDates;
+}

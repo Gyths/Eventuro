@@ -1,5 +1,15 @@
 //Textos relevantes a utilizar
 
+export const EVENT_INFORMATION_TEXTS = {
+  alerts: {
+    0: "Ha ocurrido un error inesperado.",
+    1: "El evento seleccionado no existe.",
+    2: "Este evento no se encuentra activo.",
+    3: "El evento ha terminado.",
+    4: "No hay fases de venta activas para este evento.",
+  },
+};
+
 export const TICKET_SELECTION_TEXTS = {
   alerts: {
     "": "Ha ocurrido un error inesperado",
@@ -49,7 +59,7 @@ export const DISCOUNT_CODE_TEXTS = {
     3: "El código ingresado no es aplicable en este evento.",
     4: "El código de descuento no está activo.",
     5: "El código de descuento ha expirado.",
-    6: "Se alcanzó el límite de usos.",
+    6: "Se alcanzó el límite de usos para este código de descuento.",
     7: "Este código de descuento no puede ser combinado con otros código.",
     8: "No hay ítems aplicables en el carrito de compras",
     9: "El código ya ha sido aplicado",

@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
+import Swal from "sweetalert2";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -30,6 +31,7 @@ export default function SelectDateModal({ eventId, onClose, onContinue }) {
     "Diciembre",
   ];
   console.log(dates);
+
   useEffect(() => {
     async function fetchDates() {
       try {
@@ -38,49 +40,22 @@ export default function SelectDateModal({ eventId, onClose, onContinue }) {
           method: "GET",
         });
 
-        const formatted = response.map((dateInfo) => ({
-          ...dateInfo,
-          formattedStartDate: new Date(dateInfo.startAt).toLocaleDateString(
-            "es-PE",
-            {
-              day: "2-digit",
-              month: "long",
-              year: "numeric",
-            }
-          ),
-          formattedStartHour: new Date(dateInfo.startAt).toLocaleTimeString(
-            "es-PE",
-            {
-              hour: "2-digit",
-              minute: "2-digit",
-            }
-          ),
-          formattedEndDate: new Date(dateInfo.endAt).toLocaleDateString(
-            "es-PE",
-            {
-              day: "2-digit",
-              month: "long",
-              year: "numeric",
-            }
-          ),
-          formattedEndHour: new Date(dateInfo.endAt).toLocaleTimeString(
-            "es-PE",
-            {
-              hour: "2-digit",
-              minute: "2-digit",
-            }
-          ),
-        }));
-
-        setDates(formatted);
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        setDates(response);
       } catch (err) {
-        console.error("Error al consultar la disponibilidad:", err);
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        Swal.fire({
+          icon: "error",
+          title: "¡Lo sentimos!",
+          text: "Ocurrió un error inseperado",
+        });
+        onClose();
       } finally {
         setLoading(false);
       }
     }
     fetchDates();
-  }, [eventId]);
+  }, []);
 
   useEffect(() => {
     console.log("Datos originales:", dates);
@@ -104,7 +79,7 @@ export default function SelectDateModal({ eventId, onClose, onContinue }) {
 
     dates.forEach((date) => {
       const dateObj = new Date(date.startAt);
-      const monthNum = dateObj.getMonth() + 1;
+      const monthNum = dateObj.getMonth();
       const dayNum = dateObj.getDate();
       const yearNum = dateObj.getFullYear();
 
@@ -112,9 +87,7 @@ export default function SelectDateModal({ eventId, onClose, onContinue }) {
       if (!days[monthNum]) days[monthNum] = {};
       if (!days[monthNum][dayNum]) days[monthNum][dayNum] = [];
 
-      days[monthNum][dayNum].push(
-        `${date.formattedStartHour} - ${date.formattedEndHour}`
-      );
+      days[monthNum][dayNum].push(`${date.startHour} - ${date.endHour}`);
       selectableDays.push(new Date(yearNum, monthNum - 1, dayNum));
     });
 
@@ -145,16 +118,6 @@ export default function SelectDateModal({ eventId, onClose, onContinue }) {
     setSelectedDate(new Date(year, month, day));
   };
 
-  const handleSelectSchedule = (horario, dateObj) => {
-    const foundEvent = dates.find(
-      (d) =>
-        new Date(d.startAt).toISOString() ===
-          new Date(dateObj.startAt).toISOString() &&
-        d.formattedStartHour === horario.split(" - ")[0]
-    );
-    if (foundEvent) setSelectedSchedule(foundEvent);
-  };
-
   const handleContinue = () => {
     if (!selectedSchedule) return;
     onContinue(selectedSchedule);
@@ -163,11 +126,12 @@ export default function SelectDateModal({ eventId, onClose, onContinue }) {
   return (
     <BaseModal>
       {loading ? (
-        <div className="flex items-center justify-center h-[55vh] w-[50vw] bg-white rounded-md shadow-lg">
+        <div className="flex flex-col items-center justify-center h-[55vh] w-[50vw] bg-white rounded-md shadow-lg">
+          <div className="w-10 h-10 border-4 border-purple-300 border-t-purple-600 rounded-full animate-spin mb-3"></div>
           <span className="text-gray-500">Cargando fechas...</span>
         </div>
       ) : (
-        <div className="flex flex-col md:flex-row items-stretch h-[70vh] sm:h-[55vh] w-[80vw] lg:w-[50vw] bg-white shadow-2xl rounded-md">
+        <div className="flex overflow-auto flex-col md:flex-row items-stretch h-[70vh] sm:h-[55vh] w-[80vw] lg:w-[50vw] bg-white shadow-2xl rounded-md">
           {/* Calendario */}
           <div className="flex flex-col flex-[3] border-r border-gray-200">
             <div className="flex items-center justify-between px-6 py-3 text-gray-900">
@@ -218,14 +182,16 @@ export default function SelectDateModal({ eventId, onClose, onContinue }) {
                     .filter(
                       (d) =>
                         d.dateObj.getDate() === selectedDate.getDate() &&
-                        d.dateObj.getMonth() === selectedDate.getMonth()
+                        d.dateObj.getMonth() === selectedDate.getMonth() + 1
                     )
                     .map((dateObj) => {
-                      const horario = `${dateObj.formattedStartHour} - ${dateObj.formattedEndHour}`;
+                      const horario = `${dateObj.startHour} - ${dateObj.endHour}`;
                       return (
                         <div
                           key={dateObj.eventDateId}
-                          onClick={() => handleSelectSchedule(horario, dateObj)}
+                          onClick={() =>
+                            setSelectedSchedule(dateObj.eventDateId)
+                          }
                           className={`cursor-pointer border-y py-3.5 px-4 hover:bg-purple-50 transition-all ${
                             selectedSchedule?.eventDateId ===
                             dateObj.eventDateId

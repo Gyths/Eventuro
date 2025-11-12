@@ -27,20 +27,24 @@ export const EventuroApi = async ({
     const response = await fetch(BASE_URL1 + endpoint, options);
 
     const text = await response.text();
-    let json;
+
+    let jsonData;
+
     try {
-      json = text ? JSON.parse(text) : {};
+      jsonData = text ? JSON.parse(text) : {};
     } catch {
-      json = { error: text };
+      jsonData = { error: text };
     }
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Error ${response.status}: ${errorText}`);
+      const error = new Error(jsonData.error || "Error inesperado");
+      error.status = response.status;
+      error.code = jsonData.code || 0;
+      error.responseData = jsonData;
+      throw error;
     }
 
-    const result = await response.json();
-    return result;
+    return jsonData;
   } catch (err) {
     console.error("Error en la consulta de la api " + endpoint + ": " + err);
     throw err;
