@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
+import { useLocation } from "react-router-dom";
 
 import useOrder from "../services/Order/OrderContext";
 import useEvent from "../services/Event/EventContext";
@@ -29,7 +30,7 @@ import { useModal } from "../context/ModalContext";
 import banksLogos from "../assets/credit-debit-card.svg";
 import yapePlinLogo from "../assets/yape-plin.svg";
 
-import { ExclamationCircleIcon } from "@heroicons/react/24/solid";
+import { BASE_URL } from "../config";
 
 export default function PaymentMethod() {
   const titleText = "Elige tu método de pago";
@@ -37,6 +38,8 @@ export default function PaymentMethod() {
   const ticketSelectionDest = "/seleccionTickets";
   const homeDest = "/home";
   const viewTicketDest = "/misTickets";
+  const location = useLocation();
+  const prevPath = React.useRef(location.pathname);
 
   const { event } = useEvent();
   const { order, setOrder } = useOrder();
@@ -59,20 +62,54 @@ export default function PaymentMethod() {
   };
 
   //Sección para cancelar la orden de compra cuando el usuario salga de la página de compra
-  /*  async function cancelOrder() {
+  async function cancelOrder(orderId) {
     try {
-      const response = EventuroApi();
+      const response = EventuroApi({
+        endpoint: `/orders/${orderId}/cancel`,
+        method: "POST",
+      });
+      console.log("Orden cancelada con éxito");
     } catch (err) {
       console.error("Error al crear al realizar la compra:", err);
     }
     console.log("Saliendo de la página de compra...");
   }
 
+  //Cancelación de orden de pago en cambio de ruta
   React.useEffect(() => {
     return () => {
-      cancelOrder(orderId);
+      const leavingFrom = prevPath.current;
+      const currentPath = window.location.pathname;
+
+      console.log("leavingFrom:", leavingFrom);
+      console.log("currentPath:", currentPath);
+
+      if (leavingFrom === "/pago" && currentPath != "/pago") {
+        cancelOrder(order.orderId);
+      }
     };
-  }, [orderId]);*/
+  }, [order.orderId]);
+
+  React.useEffect(() => {
+    prevPath.current = location.pathname;
+  }, [location]);
+
+  // Cancelación de orden de pago en cierre de página
+  React.useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      const url = `${BASE_URL}/eventuro/api/orders/${order.orderId}/cancel`;
+      const payload = JSON.stringify({ reason: "user_left_page" });
+      const blob = new Blob([payload], { type: "application/json" });
+
+      navigator.sendBeacon(url, blob);
+      console.log();
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [order.orderId]);
 
   return (
     <>
@@ -122,7 +159,7 @@ export default function PaymentMethod() {
                 {PAYMENT_OPTION_TEXTS.alert}
               </AlertMessage>
             )}
-            {/* TODO: Ingreso de código de descuento*/}
+            {/* Ingreso de código de descuento*/}
             <DiscountCode />
           </div>
           {/* Carrito de compras*/}
@@ -177,7 +214,7 @@ export default function PaymentMethod() {
       <AnimatePresence initial={false}>
         {modal === "fail" && <FailedTransactionModal />}
       </AnimatePresence>
-      {/* TODO: Modal de aviso para retroceder */}
+      {/* Modal de aviso al retroceder */}
       <AnimatePresence initial={false}>
         {modal === "return" && (
           <ReturnConfirmationModal onCancel={() => setModal(null)} />

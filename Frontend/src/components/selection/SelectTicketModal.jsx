@@ -72,12 +72,13 @@ export default function SelectAllocationModal({
 
         console.log(response);
         console.log(event);
+        setZonesInfo(response);
 
         if (
           parseInt(response[0]?.user?.ticketCount) ===
-            parseInt(event?.ticketLimitPerUser) &&
-          new Swal(state)
+          parseInt(event?.ticketLimitPerUser)
         ) {
+          onClose();
           Swal.fire({
             icon: "error",
             title: "¡Lo sentimos!",
@@ -85,13 +86,14 @@ export default function SelectAllocationModal({
           });
         }
 
-        setZonesInfo(response);
         setNotAllocatedGeneralQuantities(
           Array(response[0]?.zoneDates.length).fill(0)
         );
+
         setNotAllocatedSeatedQuantities(() =>
           response[0]?.zoneDates.map(() => [])
         );
+
         setAllocatedGeneralQuantities(
           response[0]?.zoneDates.map((zone) => {
             return zone.allocations.length > 0
@@ -99,16 +101,18 @@ export default function SelectAllocationModal({
               : "";
           })
         );
+
         setAllocatedSeatedQuantities(() =>
           response[0]?.zoneDates.map(() => ({}))
         );
+
         await new Promise((resolve) => setTimeout(resolve, 300));
       } catch (err) {
         await new Promise((resolve) => setTimeout(resolve, 300));
         Swal.fire({
           icon: "error",
           title: "¡Lo sentimos!",
-          text: "Ocurrió un error inseperado",
+          text: "Ocurrió un error inesperado",
         });
       } finally {
         setIsModalLoading(false);
@@ -476,7 +480,7 @@ export default function SelectAllocationModal({
         Swal.fire({
           icon: "error",
           title: "¡Lo sentimos!",
-          text: "Ocurrió un error inseperado",
+          text: "Ocurrió un error inesperado",
         });
       }
       setErrorCode(err.code);
