@@ -431,6 +431,7 @@ export async function createOrderRepo(input) {
 //Módulo para hacer rollback de la orden creada en caso de que un usuario cancele una orden
 //y a su vez, borrar las reservas (holds) y liberar asientos o capacidad reservada
 export async function cancelOrderRepo(orderId) {
+  console.log(orderId);
   return prisma.$transaction(async (tx) => {
     // buscamos la orden con items y createdAt para filtrar holds creados por la misma operación
     const order = await tx.order.findUnique({
