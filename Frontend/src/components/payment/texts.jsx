@@ -1,4 +1,13 @@
-//Textos relevantes a utilizar en los componentes del flujo de pago
+//Textos relevantes a utilizar
+
+export const TICKET_SELECTION_TEXTS = {
+  alerts: {
+    "": "Ha ocurrido un error inesperado",
+    "La orden debe contener al menos un item.":
+      "Selecciona al menos un item para continuar",
+    "No hay fase de venta activa.": "Este evento no se encuentra activo",
+  },
+};
 
 //Párrafos de la descripción de E-Tickets, utilizado en /src/payment/ETicketDescription.jsx
 export const ETICKETS_DESCRIPTION = {
@@ -44,14 +53,5 @@ export const DISCOUNT_CODE_TEXTS = {
     7: "Este código de descuento no puede ser combinado con otros código.",
     8: "No hay ítems aplicables en el carrito de compras",
     9: "El código ya ha sido aplicado",
-  },
-};
-
-export const TICKET_SELECTION_TEXTS = {
-  alerts: {
-    "": "Ha ocurrido un error inesperado",
-    "La orden debe contener al menos un item.":
-      "Selecciona al menos un item para continuar",
-    "No hay fase de venta activa.": "Este evento no se encuentra activo",
   },
 };

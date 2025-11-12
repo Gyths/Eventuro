@@ -43,9 +43,21 @@ export async function listEventInfo(req, res) {
     const { eventId } = req.params;
     const eventInfo = await listEventInfoSvc(eventId);
 
+    if (!eventInfo) {
+      return res.status(404).json({
+        error: "No se encontró el evento seleccionado",
+      });
+    }
+    if (!eventInfo.salesPhases || eventInfo.salesPhases.length === 0) {
+      return res.status(422).json({
+        error: "El evento no tiene fases de venta registradas.",
+      });
+    }
+
     const activeSalePhaseDiscount = Number(
       eventInfo?.salesPhases[0].percentage
     );
+
     //For each que recorre data fecha y modifica los precios con los descuentos de allocations y fases de venta
     for (const date of eventInfo.dates) {
       date.zoneDates = setDiscountedPrices(
@@ -83,7 +95,7 @@ export async function listEventDateZonesByEventDateId(req, res) {
         toJSONSafe(
           setDiscountedPrices(
             eventDateZones.zones,
-            eventDateZones.activePhase.percentage
+            eventDateZones?.activePhase?.percentage
           )
         )
       );

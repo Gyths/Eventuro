@@ -1,5 +1,7 @@
 export function setDiscountedPrices(zones, activeSalePhaseDiscount = 0) {
   for (const zone of zones) {
+    if (!zone.allocations) continue;
+
     if (!zone.allocations) {
       zone.zonePrice = zone.basePrice * (1 - activeSalePhaseDiscount / 100);
       continue;

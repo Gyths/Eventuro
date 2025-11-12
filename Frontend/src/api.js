@@ -7,8 +7,8 @@ export const EventuroApi = async ({
   endpoint,
   method,
   data = null,
-  headers = {},          // <- NUEVO
-  credentials = undefined // <- opcional: "include" si usas cookies/sesión
+  headers = {}, // <- NUEVO
+  credentials = undefined, // <- opcional: "include" si usas cookies/sesión
 }) => {
   try {
     const session = localStorage.getItem("session");
@@ -25,6 +25,14 @@ export const EventuroApi = async ({
     }
 
     const response = await fetch(BASE_URL1 + endpoint, options);
+
+    const text = await response.text();
+    let json;
+    try {
+      json = text ? JSON.parse(text) : {};
+    } catch {
+      json = { error: text };
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
