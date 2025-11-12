@@ -138,6 +138,37 @@ enum ORGANIZER_STATUS {
   @@schema("public")
 }
 
+enum COMPLAINT_STATE {
+  PENDING
+  ACCEPTED
+  NEGATED
+
+  @@schema("public")
+}
+
+enum COMPLAINT_TARGET {
+  PAGE
+  ORGANIZER
+  EVENT
+  OTHERS
+
+  @@schema("public")
+}
+
+enum COMPLAINT_TYPE {
+  CLAIM // Por un bien o servicio
+  COMPLAINT // Queja sobre el trato o servicio
+
+  @@schema("public")
+}
+
+enum ITEM_TYPE {
+  PRODUCT
+  SERVICE
+
+  @@schema("public")
+}
+
 // ====================== Models ======================
 
 // Usuario general
@@ -158,6 +189,7 @@ model User {
   administrator  Administrator? // NUEVO: relación 1:1 con Administrator
   Ticket         Ticket[]       @relation("TicketOwner")
   Discount       Discount[]
+  Complaint      Complaint[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -585,4 +617,60 @@ model AuditChange {
 
   @@map("AuditChange")
   @@schema("app")
+}
+
+model Guardian {
+  idGuardian BigInt  @id @default(autoincrement()) @db.BigInt
+  fullName   String
+  address    String?
+  phone      String?
+  email      String
+
+  // Relaciones
+  complaint Complaint?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("public")
+}
+
+// Reclamo o Queja
+model Complaint {
+  complaintId BigInt @id @default(autoincrement()) @db.BigInt
+
+  userId   BigInt? @db.BigInt
+  fullName String
+  dni      String
+  address  String?
+  phone    String?
+  email    String
+  isMinor  Boolean
+
+  guardianId BigInt? @unique @db.BigInt
+
+  eventName          String?
+  ticketNum          BigInt?        @db.BigInt
+  itemType           ITEM_TYPE
+  itemDescription    String
+  amountClaimed      Decimal        @db.Decimal(10, 2)
+  type               COMPLAINT_TYPE
+  problemDescription String
+  expectedSolution   String
+
+  // Metadata
+  dateCreation DateTime         @default(now())
+  target       COMPLAINT_TARGET
+  state        COMPLAINT_STATE  @default(PENDING)
+
+  // Relaciones
+  user     User?     @relation(fields: [userId], references: [userId], onDelete: SetNull)
+  guardian Guardian? @relation(fields: [guardianId], references: [idGuardian], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([guardianId])
+  @@schema("public")
 }
