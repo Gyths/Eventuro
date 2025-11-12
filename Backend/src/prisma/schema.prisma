@@ -433,11 +433,12 @@ model EventSalesPhase {
 }
 
 model Order {
-  orderId     BigInt       @id @default(autoincrement()) @db.BigInt
-  buyerUserId BigInt       @db.BigInt
-  status      ORDER_STATUS @default(CREATED)
-  currency    CURRENCY
-  totalAmount Decimal      @db.Decimal(10, 2)
+  orderId        BigInt       @id @default(autoincrement()) @db.BigInt
+  buyerUserId    BigInt       @db.BigInt
+  status         ORDER_STATUS @default(CREATED)
+  currency       CURRENCY
+  totalAmount    Decimal      @db.Decimal(10, 2)
+  reminderSentAt DateTime?
 
   // Relaciones
   items OrderItem[]
@@ -507,15 +508,15 @@ model Ticket {
 }
 
 model Hold {
-  holdId          BigInt   @id @default(autoincrement()) @db.BigInt
-  eventDateId     BigInt   @db.BigInt
-  eventDateZoneId BigInt   @db.BigInt
-  eventDateZoneAllocationId BigInt?   @db.BigInt
-  seatId          BigInt?  @db.BigInt
-  quantity        Int?
-  buyerUserId     BigInt?  @db.BigInt
-  expiresAt       DateTime
-  createdAt       DateTime @default(now())
+  holdId                    BigInt   @id @default(autoincrement()) @db.BigInt
+  eventDateId               BigInt   @db.BigInt
+  eventDateZoneId           BigInt   @db.BigInt
+  eventDateZoneAllocationId BigInt?  @db.BigInt
+  seatId                    BigInt?  @db.BigInt
+  quantity                  Int?
+  buyerUserId               BigInt?  @db.BigInt
+  expiresAt                 DateTime
+  createdAt                 DateTime @default(now())
 
   eventDate EventDate     @relation(fields: [eventDateId], references: [eventDateId], onDelete: Cascade)
   zone      EventDateZone @relation(fields: [eventDateZoneId], references: [eventDateZoneId], onDelete: Cascade)
