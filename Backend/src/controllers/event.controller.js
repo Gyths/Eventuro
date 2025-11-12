@@ -99,17 +99,19 @@ export async function listEventDateByEventId(req, res) {
 
 export async function listEventDateZonesByEventDateId(req, res) {
   try {
-    const { eventId, eventDateId } = req.params;
+    const { userId, eventId, eventDateId } = req.params;
     const eventDateZones = await listEventDateZonesByEventDateIdSvc(
+      userId,
       eventId,
       eventDateId
     );
+    const user = { ticketCount: eventDateZones.ticketCount };
     const zoneDates = setDiscountedPrices(
       eventDateZones.zones,
       eventDateZones?.activePhase?.percentage
     );
     const date = formatDates([eventDateZones.date]);
-    return res.status(201).json(toJSONSafe([{ zoneDates, date }]));
+    return res.status(201).json(toJSONSafe([{ user, zoneDates, date }]));
   } catch (err) {
     return res.status(400).json({ error: err.message });
   }

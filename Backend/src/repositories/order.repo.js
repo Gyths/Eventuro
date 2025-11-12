@@ -42,10 +42,13 @@ export async function createOrderRepo(input) {
       if (event.status !== "A") throw new Error("El evento no está activo.");
 
       // Validar que el comprador no sea el organizador del evento
-      if (BigInt(event.organizer.userId) === buyerUserId)
-        throw new Error(
+      if (BigInt(event.organizer.userId) === buyerUserId) {
+        let err = new Error(
           "Un organizador no puede comprar entradas de su propio evento."
         );
+        err.code = 2;
+        throw err;
+      }
 
       // MODULO PARA CONTROLAR EL LIMITE DE ENTRADAS POR USUARIO:
       // Obtener el límite del evento
@@ -69,9 +72,11 @@ export async function createOrderRepo(input) {
         //  Comparar con el límite
         const totalCombined = alreadyOwned + totalToBuyNow;
         if (totalCombined > ticketLimitPerUser) {
-          throw new Error(
+          let err = new Error(
             `Has alcanzado el límite de ${ticketLimitPerUser} entradas para este evento. Ya tienes ${alreadyOwned} y estás intentando comprar ${totalToBuyNow}.`
           );
+          err.code = 3;
+          throw err;
         }
       }
 
@@ -153,8 +158,13 @@ export async function createOrderRepo(input) {
         throw new Error("Solo se permiten órdenes en soles peruanos (PEN).");
 
       // Verificar capacityRemaining suficiente en la zona
-      if ((zone.capacityRemaining ?? 0) < quantity)
-        throw new Error("No hay suficiente capacidad en la zona seleccionada.");
+      if ((zone.capacityRemaining ?? 0) < quantity) {
+        let err = new Error(
+          "No hay suficiente capacidad en la zona seleccionada."
+        );
+        err.code = 4;
+        throw err;
+      }
 
       // --- Allocation (si existe) ---Si se recibe un allocationId
       let allocation = null;
@@ -198,8 +208,11 @@ export async function createOrderRepo(input) {
           select: { status: true, seatId: true, seatMapId: true },
         });
         if (!seat) throw new Error("Asiento no encontrado");
-        if (seat.status !== "AVAILABLE")
-          throw new Error("Asiento no disponible");
+        if (seat.status !== "AVAILABLE") {
+          let err = new Error("Asiento no disponible");
+          err.code = 5;
+          throw err;
+        }
 
         // Validar que el asiento pertenezca al seatMap de la zona
         if (seat.seatMapId === null || zone.seatMapId === null) {
@@ -232,9 +245,11 @@ export async function createOrderRepo(input) {
         });
 
         if (seatUpdate.count === 0) {
-          throw new Error(
+          let err = new Error(
             "Colisión: el asiento fue reservado por otro usuario, reintente."
           );
+          err.code = 6;
+          throw err;
         }
 
         // Crear registro en Hold
@@ -308,10 +323,13 @@ export async function createOrderRepo(input) {
         },
       });
 
-      if (zoneUpdate.count === 0)
-        throw new Error(
+      if (zoneUpdate.count === 0) {
+        let err = new Error(
           "Colisión: la cantidad de entradas de la zona fue modificada, reintente."
         );
+        err.code = 7;
+        throw err;
+      }
 
       // Forzar actualización de timestamp (updatedAt)
       await tx.eventDateZone.update({
@@ -642,33 +660,33 @@ export async function getPendingReminders() {
           eventDate: {
             startAt: {
               gte: now,
-              lte: in24h
-            }
-          }
-        }
-      }
+              lte: in24h,
+            },
+          },
+        },
+      },
     },
     include: {
       items: {
         include: {
           eventDate: {
-            include: { event: true }
+            include: { event: true },
           },
           Ticket: {
             take: 1,
             include: {
-              owner: { select: { email: true, name: true } }
-            }
-          }
-        }
-      }
-    }
+              owner: { select: { email: true, name: true } },
+            },
+          },
+        },
+      },
+    },
   });
 }
 
 export async function markReminderSent(orderId) {
   await prisma.order.update({
     where: { orderId },
-    data: { reminderSentAt: new Date() }
+    data: { reminderSentAt: new Date() },
   });
 }

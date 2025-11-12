@@ -70,10 +70,10 @@ export default function TicketSelection() {
       const scrollY = window.scrollY;
       const height = window.innerHeight;
 
-      // Fondo: se activa al 25% del viewport
+      // Fondo: se activa al 20% del viewport
       setBluredBackgrund(scrollY > height * 0.2);
 
-      // Contenido animado: aparece después del 50%
+      // Card de información: aparece después del 10%
       if (scrollY > height * 0.1 && !showContent) {
         setShowContent(true);
       } else if (scrollY <= height * 0.2 && showContent) {
@@ -362,6 +362,7 @@ export default function TicketSelection() {
                 eventDateId={selectedDate}
                 modal={modal}
                 setModal={setModal}
+                onClose={() => setModal(null)}
                 onReturn={() => setModal("dates")}
               />
             </AnimatePresence>

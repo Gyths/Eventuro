@@ -3,6 +3,7 @@ import BaseModal from "../BaseModal";
 import { useNavigate } from "react-router-dom";
 import { TICKET_SELECTION_TEXTS } from "../payment/texts";
 import ArrowButton from "../../components/ArrowButton";
+import Swal from "sweetalert2";
 
 import useEvent from "../../services/Event/EventContext";
 import useOrder from "../../services/Order/OrderContext";
@@ -28,6 +29,7 @@ export default function SelectAllocationModal({
   eventDateId,
   modal,
   setModal,
+  onClose,
   onReturn,
 }) {
   const paymentPage = "/pago";
@@ -42,7 +44,8 @@ export default function SelectAllocationModal({
 
   const [showAlertMessage, setShowAlertMessage] = React.useState(false);
   const [zonesInfo, setZonesInfo] = React.useState([]);
-  const [isLoading, setIsLoading] = React.useState(true);
+  const [isModalLoading, setIsModalLoading] = React.useState(true);
+  const [isButtonLoading, setIsButtonLoading] = React.useState(false);
 
   // States para el manejo de las cantidad de entradas seleccionadas
   const [notAllocatedGeneralQuantities, setNotAllocatedGeneralQuantities] =
@@ -63,9 +66,25 @@ export default function SelectAllocationModal({
     async function getZones() {
       try {
         const response = await EventuroApi({
-          endpoint: `/event/${event.eventId}/${eventDateId}/zones`,
+          endpoint: `/event/${user.userId}/${event.eventId}/${eventDateId}/zones`,
           method: "GET",
         });
+
+        console.log(response);
+        console.log(event);
+
+        if (
+          parseInt(response[0]?.user?.ticketCount) ===
+            parseInt(event?.ticketLimitPerUser) &&
+          new Swal(state)
+        ) {
+          Swal.fire({
+            icon: "error",
+            title: "¡Lo sentimos!",
+            text: "Usted no puede comprar más tickets para este evento",
+          });
+        }
+
         setZonesInfo(response);
         setNotAllocatedGeneralQuantities(
           Array(response[0]?.zoneDates.length).fill(0)
@@ -86,20 +105,19 @@ export default function SelectAllocationModal({
         await new Promise((resolve) => setTimeout(resolve, 300));
       } catch (err) {
         await new Promise((resolve) => setTimeout(resolve, 300));
+        Swal.fire({
+          icon: "error",
+          title: "¡Lo sentimos!",
+          text: "Ocurrió un error inseperado",
+        });
       } finally {
-        setIsLoading(false);
+        setIsModalLoading(false);
       }
     }
     getZones();
   }, []);
 
-  console.log(zonesInfo);
-  console.log(notAllocatedGeneralQuantities);
-  console.log(notAllocatedSeatedQuantities);
-  console.log(allocatedGeneralQuantities);
-  console.log(allocatedSeatedQuantities);
-
-  const [errorMessage, setErrorMessage] = React.useState("");
+  const [errorCode, setErrorCode] = React.useState("");
   const [subtotal, setSubtotal] = React.useState(0);
   const [seatMap, setSeatMap] = React.useState(null);
   const [zoneIndex, setZoneIndex] = React.useState(null);
@@ -268,16 +286,12 @@ export default function SelectAllocationModal({
 
   // Función para manejar enviar la orden a la bd
   const onContinue = async () => {
-    if (
-      !notAllocatedGeneralQuantities.length &&
-      !allocatedSeatedQuantities.length &&
-      !notAllocatedGeneralQuantities.length &&
-      !notAllocatedSeatedQuantities.length
-    ) {
-      setShowAlertMessage(true);
-      return;
-    }
     setShowAlertMessage(false);
+
+    console.log(allocatedGeneralQuantities);
+    console.log(allocatedSeatedQuantities);
+    console.log(notAllocatedGeneralQuantities);
+    console.log(notAllocatedSeatedQuantities);
 
     let shoppingCart = {};
     const orderData = {};
@@ -290,7 +304,7 @@ export default function SelectAllocationModal({
       if (quantity > 0) {
         orderData.items.push({
           eventId: event.eventId,
-          eventDateId: zonesInfo[0]?.eventDateId,
+          eventDateId: eventDateId,
           eventDateZoneId: zonesInfo[0]?.zoneDates[index].eventDateZoneId,
           quantity: quantity,
         });
@@ -314,7 +328,7 @@ export default function SelectAllocationModal({
         seats.map((seat) => {
           orderData.items.push({
             eventId: event.eventId,
-            eventDateId: zonesInfo[0]?.eventDateId,
+            eventDateId: eventDateId,
             eventDateZoneId: zonesInfo[0]?.zoneDates[index].eventDateZoneId,
             quantity: 1,
             seatId: seat,
@@ -344,7 +358,7 @@ export default function SelectAllocationModal({
           if (quantity > 0) {
             orderData.items.push({
               eventId: event.eventId,
-              eventDateId: zonesInfo[0]?.eventDateId,
+              eventDateId: eventDateId,
               eventDateZoneId: zone.eventDateZoneId,
               eventDateZoneAllocationId:
                 zone.allocations[allocationIndex].eventDateZoneAllocationId,
@@ -382,7 +396,7 @@ export default function SelectAllocationModal({
       for (const seatId in seats) {
         orderData.items.push({
           eventId: event.eventId,
-          eventDateId: zonesInfo[0]?.eventDateId,
+          eventDateId: eventDateId,
           eventDateZoneId: zone.eventDateZoneId,
           eventDateZoneAllocationId:
             zone.allocations[seats[seatId]].eventDateZoneAllocationId,
@@ -421,6 +435,8 @@ export default function SelectAllocationModal({
       }
     });
     try {
+      console.log(orderData);
+      setIsButtonLoading(true);
       const response = await EventuroApi({
         endpoint: orderEndpoint,
         method: apiMethod,
@@ -449,25 +465,32 @@ export default function SelectAllocationModal({
         shoppingCart: shoppingCart,
       });
 
+      await new Promise((res) => setTimeout(res, 1000));
       navigate(paymentPage);
     } catch (err) {
-      console.error("Error al consultar disponibilidad:", err);
-      try {
-        const error = JSON.parse(err.message.split(": ")[1]);
-        setErrorMessage(error.error);
-        setShowAlertMessage(true);
-      } catch {
-        console.warn("No se pudo parsear el JSON del error:", err.message);
+      await new Promise((res) => setTimeout(res, 1000));
+      console.log(err.code);
+      if (err.code === 1) navigate("/login");
+      if (err.code === 0) {
+        //onClose();
+        Swal.fire({
+          icon: "error",
+          title: "¡Lo sentimos!",
+          text: "Ocurrió un error inseperado",
+        });
       }
+      setErrorCode(err.code);
 
-      throw err;
+      setShowAlertMessage(true);
+    } finally {
+      setIsButtonLoading(false);
     }
   };
 
   return (
     <>
       <BaseModal>
-        {isLoading ? (
+        {isModalLoading ? (
           <div className="flex flex-col items-center justify-center h-[55vh] w-[50vw] bg-white rounded-md shadow-lg">
             <div className="w-10 h-10 border-4 border-purple-300 border-t-purple-600 rounded-full animate-spin mb-3"></div>
             <span className="text-gray-500">Cargando fechas...</span>
@@ -487,13 +510,24 @@ export default function SelectAllocationModal({
 
                   {/* Sección donde se muestran las entradas */}
                   <div className="flex overflow-auto flex-col h-full w-full px-7 pb-5 gap-2.5">
-                    <div className="flex pt-3">
-                      {showAlertMessage && (
+                    {showAlertMessage && (
+                      <div className="flex pt-5 pb-1">
                         <AlertMessage id={zoneIndex}>
-                          {TICKET_SELECTION_TEXTS.alerts[errorMessage]}
+                          {TICKET_SELECTION_TEXTS.alerts[errorCode]}
                         </AlertMessage>
-                      )}
+                      </div>
+                    )}
+                    <div className="flex mb-1">
+                      <span className="inline-block text-gray-800">
+                        Puedes seleccionar un máximo de{" "}
+                        {event && zonesInfo
+                          ? parseInt(event?.ticketLimitPerUser) -
+                            parseInt(zonesInfo[0].user.ticketCount)
+                          : 0}{" "}
+                        entradas.
+                      </span>
                     </div>
+
                     {zonesInfo[0] &&
                       zonesInfo[0]?.zoneDates.map((zone, zoneIndex) => (
                         <div key={zoneIndex} className="gap-none">
@@ -568,7 +602,7 @@ export default function SelectAllocationModal({
                                 )}
                               </>
                             ) : (
-                              <div className="flex flex-row gap-2 items-center">
+                              <div className="flex flex-row gap-2 justify-end items-center">
                                 {zone.capacityRemaining > 0 ? (
                                   <CheckCircleIcon
                                     className={`size-5 ${
@@ -736,9 +770,17 @@ export default function SelectAllocationModal({
                 <div className="flex flex-col">
                   <button
                     onClick={onContinue}
-                    className="inline-block w-auto bg-purple-600 rounded-lg text-white px-2.5 py-1 hover:bg-yellow-500/70 hover:scale-103 cursor-pointer transition-all"
+                    className={`inline-block border-0 w-auto rounded-lg text-white px-2.5 py-1 ${
+                      !isButtonLoading
+                        ? "bg-purple-600 hover:bg-yellow-500/70 hover:scale-104  cursor-pointer"
+                        : "bg-purple-700"
+                    } transition-all duration-200`}
                   >
-                    Continuar
+                    {isButtonLoading ? (
+                      <div className="size-3 mx-7 my-1.5 justify-center items-center text-center border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+                    ) : (
+                      "Continuar "
+                    )}
                   </button>
                 </div>
               </div>

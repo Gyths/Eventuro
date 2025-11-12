@@ -414,6 +414,7 @@ export async function listEventInfoRepo(eventId) {
       description: true,
       accessPolicy: true,
       accessPolicyDescription: true,
+      ticketLimitPerUser: true,
 
       imagePrincipalKey: true,
       imageBannerKey: true,
@@ -536,10 +537,19 @@ export async function listEventDateByEventIdRepo(eventId) {
 }
 
 export async function listEventDateZonesByEventDateIdRepo(
+  userId,
   eventId,
   eventDateId
 ) {
-  const [date, zones, activePhase] = await Promise.all([
+  const [ticketCount, date, zones, activePhase] = await Promise.all([
+    prisma.ticket.count({
+      where: {
+        eventId,
+        ownerUserId: userId,
+        status: { in: ["PAID", "USED", "EXPIRED"] },
+      },
+    }),
+
     prisma.eventDate.findUnique({
       where: { eventDateId: BigInt(eventDateId) },
       select: {
@@ -588,7 +598,7 @@ export async function listEventDateZonesByEventDateIdRepo(
     }),
   ]);
 
-  return { date, zones, activePhase };
+  return { ticketCount, date, zones, activePhase };
 }
 
 export async function setEventStatusRepo(

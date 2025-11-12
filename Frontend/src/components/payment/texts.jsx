@@ -12,10 +12,14 @@ export const EVENT_INFORMATION_TEXTS = {
 
 export const TICKET_SELECTION_TEXTS = {
   alerts: {
-    "": "Ha ocurrido un error inesperado",
-    "La orden debe contener al menos un item.":
-      "Selecciona al menos un item para continuar",
-    "No hay fase de venta activa.": "Este evento no se encuentra activo",
+    0: "¡Lo sentimos! Ha ocurrido un error inesperado, por favor vuelva a intentarlo.",
+    2: "Como organizador, no puede comprar entradas para su propio evento.",
+    3: "Ha excedido la cantidad máxima de entradas por usuario.",
+    4: "Su orden excede la capacidad restante para este evento.",
+    5: "Uno o más asientos seleccionados no están disponibles.",
+    6: "Uno o más asientos seleccionados ya fueron ocupados.",
+    7: "Su orden excede la capacidad restante para este evento.",
+    8: "Por favor, seleccione al menos un ítem para continuar.",
   },
 };
 
