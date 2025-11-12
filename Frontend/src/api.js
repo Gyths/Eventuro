@@ -15,7 +15,11 @@ export const EventuroApi = async ({
     const token = session ? JSON.parse(session)?.token : null;
     const options = {
       method,
-      headers: { "Content-Type": "application/json", ...headers }, // <- merge headers
+      headers: {
+        "Content-Type": "application/json", Accept: "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...headers
+      }, // <- merge headers
     };
 
     if (credentials) options.credentials = credentials;
