@@ -81,7 +81,7 @@ function buildEventTreeFromTickets(tickets) {
     }
     const dateNode = evNode.dates.get(dateId);
 
-    // “rawOrder” compatible con RefundRequestModal (items[0].Ticket[])
+    // "rawOrder" compatible con RefundRequestModal (items[0].Ticket[])
     if (!dateNode.orders.has(orderId)) {
       dateNode.orders.set(orderId, {
         orderId,
@@ -147,7 +147,7 @@ export default function MisOrdenes() {
         const res = await EventuroApi({
           endpoint: `/tickets/my?page=1&pageSize=200`,
           method: "GET",
-          headers: { Authorization: `Bearer ${token}` }, // asegúrate que EventuroApi mergee headers
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         const items = Array.isArray(res?.items) ? res.items : [];
@@ -173,7 +173,6 @@ export default function MisOrdenes() {
     [eventsTree, selectedEventId]
   );
 
-  // Se llama cuando el modal reporta éxito; actualiza estado y muestra SuccessModal
   function handleRefundSubmitted(payload) {
     const {
       ticketIds = [],
@@ -205,13 +204,13 @@ export default function MisOrdenes() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-10">
-      <div className="max-w-7xl mx-auto px-6 pt-10">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-6 sm:mb-8">
           Cuenta <span className="text-gray-400">{">"}</span> Mis Tickets
         </h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
-          <aside className="flex flex-col gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] xl:grid-cols-[320px_1fr] gap-4 sm:gap-6">
+          <aside className="flex flex-col gap-3 sm:gap-4">
             {eventsTree.length === 0 && (
               <div className="rounded-2xl bg-white p-6 text-gray-500 text-center">Aún no tienes tickets.</div>
             )}
@@ -224,7 +223,7 @@ export default function MisOrdenes() {
                   selectedEventId === ev.eventId ? "ring-2 ring-purple-400 scale-[1.02]" : "",
                 ].join(" ")}
               >
-                <img src={ev.image} alt={ev.title} className="h-24 w-full rounded-lg object-cover mb-2" />
+                <img src={ev.image} alt={ev.title} className="h-20 sm:h-24 w-full rounded-lg object-cover mb-2" />
                 <h2 className="text-sm font-semibold text-gray-900 leading-tight">{ev.title}</h2>
                 <p className="text-[11px] text-gray-500">
                   {ev.dates.length} {ev.dates.length === 1 ? "fecha" : "fechas"}
@@ -233,7 +232,7 @@ export default function MisOrdenes() {
             ))}
           </aside>
 
-        <section className="rounded-2xl bg-white shadow-lg border border-gray-100 p-6">
+          <section className="rounded-2xl bg-white shadow-lg border border-gray-100 p-4 sm:p-6">
             {!selectedEvent ? (
               <p className="text-gray-400 text-center mt-20">Selecciona un evento para ver tus entradas.</p>
             ) : (
@@ -243,7 +242,6 @@ export default function MisOrdenes() {
         </div>
       </div>
 
-      {/* Modal de éxito global */}
       <SuccessModal
         isOpen={showSuccess}
         onClose={() => setShowSuccess(false)}
@@ -258,17 +256,17 @@ export default function MisOrdenes() {
 function EventDetail({ eventNode, onRefundSubmitted }) {
   return (
     <div>
-      <header className="flex items-center gap-4 mb-6">
-        <img src={eventNode.image} alt={eventNode.title} className="w-24 h-24 rounded-xl object-cover border border-gray-200" />
+      <header className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <img src={eventNode.image} alt={eventNode.title} className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover border border-gray-200" />
         <div>
-          <h3 className="text-2xl font-extrabold text-purple-900">{eventNode.title}</h3>
+          <h3 className="text-xl sm:text-2xl font-extrabold text-purple-900">{eventNode.title}</h3>
           <p className="text-sm text-gray-500">
             {eventNode.dates.length} {eventNode.dates.length === 1 ? "fecha" : "fechas"} programadas
           </p>
         </div>
       </header>
 
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {eventNode.dates.map((d) => (
           <DateBlock key={d.dateId} dateNode={d} onRefundSubmitted={onRefundSubmitted} />
         ))}
@@ -281,11 +279,11 @@ function DateBlock({ dateNode, onRefundSubmitted }) {
   const title = dateNode.startAt ? fmtDateLong(dateNode.startAt) : "Fecha por confirmar";
   return (
     <div className="rounded-xl border border-gray-200">
-      <div className="px-4 py-3 bg-gray-50 rounded-t-xl border-b border-gray-200">
-        <h4 className="text-lg font-semibold text-gray-900">{title}</h4>
+      <div className="px-3 sm:px-4 py-3 bg-gray-50 rounded-t-xl border-b border-gray-200">
+        <h4 className="text-base sm:text-lg font-semibold text-gray-900">{title}</h4>
         <p className="text-xs text-gray-500">Puede haber más de una compra (orden) para esta misma fecha.</p>
       </div>
-      <div className="p-4 space-y-5">
+      <div className="p-3 sm:p-4 space-y-4 sm:space-y-5">
         {dateNode.orders.map((o) => (
           <OrderBlock key={o.orderId} orderNode={o} onRefundSubmitted={onRefundSubmitted} />
         ))}
@@ -304,8 +302,8 @@ function OrderBlock({ orderNode, onRefundSubmitted }) {
 
   return (
     <>
-      <div className="rounded-xl border border-gray-200 p-4">
-        <div className="flex items-center justify-between gap-4 mb-3">
+      <div className="rounded-xl border border-gray-200 p-3 sm:p-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 mb-3">
           <div>
             <p className="text-sm text-gray-600">Compra</p>
             <p className="text-xs text-gray-500">
@@ -315,14 +313,13 @@ function OrderBlock({ orderNode, onRefundSubmitted }) {
           <div className="text-sm font-semibold text-gray-800">{orderNode.totalLabel}</div>
         </div>
 
-        {/* Más ancho: 2 cols en lg, 3 en xl */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
           {orderNode.tickets.map((tk) => {
             const ui = refundStatusUI(tk.refundStatus);
             return (
               <div
                 key={tk.ticketId}
-                className="rounded-lg border border-gray-200 p-4 flex flex-col justify-between min-h-[210px]"
+                className="rounded-lg border border-gray-200 p-3 sm:p-4 flex flex-col justify-between min-h-[240px] sm:min-h-[260px]"
               >
                 <div>
                   <p className="text-sm font-medium text-gray-900 mb-1">Ticket</p>
@@ -330,7 +327,6 @@ function OrderBlock({ orderNode, onRefundSubmitted }) {
                     {tk.desc}
                   </p>
 
-                  {/* Badge en bloque (wrap) */}
                   <div
                     className={[
                       "mt-2 rounded-md border px-3 py-1 text-[12px] leading-5",
@@ -345,11 +341,11 @@ function OrderBlock({ orderNode, onRefundSubmitted }) {
                   </div>
                 </div>
 
-                <div className="mt-3 flex items-center justify-between">
-                  <div className="bg-white p-2 rounded-xl border border-gray-200">
-                    <QRCode value={String(tk.qrValue)} size={90} bgColor="#ffffff" fgColor="#000000" />
+                <div className="mt-3 flex items-start gap-2">
+                  <div className="bg-white p-2 rounded-xl border border-gray-200 flex-shrink-0">
+                    <QRCode value={String(tk.qrValue)} size={80} bgColor="#ffffff" fgColor="#000000" />
                   </div>
-                  <TicketPrintButton ticketNode={tk} />
+                  <TicketPrintButton ticketNode={tk} orderNode={orderNode} />
                 </div>
               </div>
             );
@@ -360,7 +356,7 @@ function OrderBlock({ orderNode, onRefundSubmitted }) {
           <button
             onClick={() => setShowRefund(true)}
             disabled={!hasRefundable}
-            className={`inline-block font-semibold px-4 py-2 rounded-xl text-white ${
+            className={`inline-block font-semibold px-4 py-2 rounded-xl text-white text-sm sm:text-base ${
               hasRefundable
                 ? "bg-rose-600 hover:bg-rose-700"
                 : "bg-rose-300 cursor-not-allowed"
@@ -392,8 +388,11 @@ function OrderBlock({ orderNode, onRefundSubmitted }) {
   );
 }
 
-function TicketPrintButton({ ticketNode }) {
+function TicketPrintButton({ ticketNode, orderNode }) {
   const ref = useRef(null);
+  const { user } = useAuth();
+  const [sending, setSending] = useState(false);
+
   function handlePrint() {
     if (!ref.current) return;
     const win = window.open("", "_blank", "noopener,noreferrer");
@@ -411,8 +410,32 @@ function TicketPrintButton({ ticketNode }) {
       </body></html>`;
     win.document.open(); win.document.write(html); win.document.close();
   }
+
+  async function handleResendConfirmation() {
+    setSending(true);
+    const emailData = {
+      idClient: user.userId,
+      orderInfo: orderNode.rawOrder,
+    };
+
+    try {
+      await EventuroApi({
+        endpoint: "/tickets/email",
+        method: "POST",
+        data: emailData,
+        saveLocalStorage: false,
+      });
+      alert("Correo de confirmación reenviado exitosamente.");
+    } catch (err) {
+      console.error("Error al reenviar el correo:", err);
+      alert("Error al reenviar el correo. Intenta nuevamente.");
+    } finally {
+      setSending(false);
+    }
+  }
+
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-col gap-2 w-full">
       <div className="hidden" ref={ref}>
         <div>
           <p style={{ fontWeight: 700, margin: 0 }}>Ticket</p>
@@ -422,11 +445,24 @@ function TicketPrintButton({ ticketNode }) {
           </div>
         </div>
       </div>
+
       <button
         onClick={handlePrint}
-        className="inline-block bg-indigo-600 text-white font-semibold px-2 py-1 rounded-md hover:bg-indigo-700 text-xs"
+        className="w-full bg-indigo-600 text-white font-semibold px-3 py-2 rounded-lg hover:bg-indigo-700 text-xs sm:text-sm transition"
       >
         Imprimir
+      </button>
+
+      <button
+        onClick={handleResendConfirmation}
+        disabled={sending}
+        className={`w-full font-semibold px-3 py-2 rounded-lg text-xs sm:text-sm transition ${
+          sending
+            ? "bg-green-400 cursor-not-allowed"
+            : "bg-green-600 hover:bg-green-700"
+        } text-white`}
+      >
+        {sending ? "Enviando..." : "Reenviar Confirmación"}
       </button>
     </div>
   );
