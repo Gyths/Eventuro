@@ -32,7 +32,7 @@ export async function confirmationEmail(to, orderInfo) {
     (t, i) => `
       <div style="margin-bottom:15px;">
         <p><b>Ticket #${i + 1}</b></p>
-        <p>Evento: ${t.title}</p>
+        <p>Evento: ${t.eventName}</p>
         <p>Fecha: ${new Date(t.eventDate).toLocaleString('es-PE')}</p>
         <p>Zona: ${t.zoneName}</p>
         <p>Asiento Col: ${t.setCol ?? 'No definido'}</p>
@@ -59,4 +59,22 @@ export async function confirmationEmail(to, orderInfo) {
   // 4. Enviar el correo
   await transporter.sendMail(mailOptions);
   console.log(`Correo de confirmación enviado a ${to}`);
+}
+
+export async function sendReminderEmail(to, eventInfo) {
+  const { title, eventDate, venue, clientName } = eventInfo;
+  const mailOptions = {
+    from: `"Eventuro" <${config.EMAIL_USER}>`,
+    to,
+    subject: `${clientName}, recuerda tu evento ${title}`,
+    html: `
+      <h2>¡No olvides tu próximo evento!</h2>
+      <p>Te recordamos que el evento <b>${title}</b> se llevará a cabo el <b>${new Date(eventDate).toLocaleString('es-PE')}</b> en <b>${venue}</b>.</p>
+      <p>¡Te esperamos!</p>
+    `,
+  };
+
+  // Enviar el correo
+  await transporter.sendMail(mailOptions);
+  console.log(`Correo de recordatorio enviado a ${to}`);
 }
