@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 
-export default function ReturnsPolicy({ value, onChange }) {
+export default function ReturnsPolicy({ form, value, onChange }) {
   const maxMB = 5;
   const controlled = value != null;
 
@@ -50,11 +50,13 @@ export default function ReturnsPolicy({ value, onChange }) {
     }
 
     setFile(f);
+    form.refundPolicyFile = fileLocal;
   };
 
   const handleClearFile = () => {
     setFile(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
+    form.refundPolicyFile = null;
   };
 
   return (

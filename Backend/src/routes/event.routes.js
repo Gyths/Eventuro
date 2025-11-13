@@ -2,7 +2,9 @@ import { Router } from "express";
 import {
   createEvent,
   listEvent,
-  listAvailableTickets,
+  listEventInfo,
+  listEventDateByEventId,
+  listEventDateZonesByEventDateId,
   setEventStatus,
   getEventDetails,
   listEventsByOrganizer,
@@ -28,7 +30,12 @@ router.post(
   createEvent
 );
 router.get("/list", listEvent);
-router.post("/availability", listAvailableTickets);
+router.get("/:eventId/info", listEventInfo);
+router.get("/:eventId/dates", listEventDateByEventId);
+router.get(
+  "/:userId/:eventId/:eventDateId/zones",
+  listEventDateZonesByEventDateId
+);
 router.put(
   "/:id/approve",
   verifyToken,

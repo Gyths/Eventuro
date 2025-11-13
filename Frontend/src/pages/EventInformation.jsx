@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../services/auth/AuthContext";
+import { EVENT_INFORMATION_TEXTS } from "../components/payment/texts";
 
 import { useModal } from "../context/ModalContext";
 import useEvent from "../services/Event/EventContext";
@@ -31,10 +32,8 @@ export default function TicketSelection() {
   // Manejo de objetos de negocio
   const { isAuthenticated, user } = useAuth();
   const { event, setEvent } = useEvent();
-
   const [errorCode, setErrorCode] = React.useState(-1);
-
-  // State para el manejo del scroll
+  //State para el manejo del scroll
   const [bluredBackgrund, setBluredBackgrund] = React.useState(false);
 
   // State para manejar modales
@@ -43,11 +42,10 @@ export default function TicketSelection() {
 
   const [showContent, setShowContent] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
-
   const currencies = { PEN: "S/." };
 
   React.useEffect(() => {
-    // Llamada a la api del back para consultar disponibilidad de un evento
+    //Llamada a la api del back para consultar disponibilidad de un evento
     const fetchEventInfo = async () => {
       try {
         const availabilityEndpoint = `/event/${event.eventId}/info`;
@@ -142,9 +140,7 @@ export default function TicketSelection() {
                 }`}
               />
             </div>
-
             <div className="h-[50vh]"></div>
-
             {/* Contenido */}
             <motion.div
               className="flex flex-col z-10 justify-center min-h-screen text-center gap-20"
@@ -164,15 +160,14 @@ export default function TicketSelection() {
                   />
                 </div>
 
-                {/* Card de Información y entradas */}
+                {/* Card de Información y entradas*/}
                 <div className="flex w-full lg:auto xl:w-1/2 justify-center items-center ">
                   <div className="flex flex-col items-start md:p-3 xl:pr-5 xl:pl-5 xl:py-5 justify-start gap-3 w-[95vw] xl:w-[60vw] rounded-4xl md:rounded-3xl xl:rounded-none xl:rounded-r-4xl bg-white">
-                    <div className="flex flex-row justify-start items-center gap-2">
+                    <div className="flex flex-row justify-start items-center lg gap-2">
                       <ArrowButton
                         className="p-2"
                         onClick={() => navigate(homeRoute)}
-                      />
-
+                      ></ArrowButton>
                       {/* Título */}
                       <div className="inline-flex text-start flex-wrap flex-row">
                         <h1 className="inline-block font-bold text-3xl xl:text-3xl">
@@ -180,7 +175,6 @@ export default function TicketSelection() {
                         </h1>
                       </div>
                     </div>
-
                     {/* Categorías */}
                     <div className="flex flex-wrap gap-2 pl-5 xl:pl-15">
                       {event?.categories?.map((category, index) => (
@@ -227,19 +221,17 @@ export default function TicketSelection() {
                         )}
                       </div>
                     </div>
-
                     {/* ZONAS */}
                     <div className="flex w-full flex-col py-2">
                       <div className="flex flex-row pl-10">
                         {event?.salesPhases ? (
-                          <span className="flex font-semibold text-2xl justify-start items-center">
+                          <span className="flex font-semibold text-2xl justify-start items">
                             Precios - Fase {event?.salesPhases[0].name}
                           </span>
                         ) : (
                           <span></span>
                         )}
                       </div>
-
                       <div className="flex w-full flex-col px-5">
                         <div className="grid grid-cols-2 justify-between text-start px-5 py-1">
                           <span className="flex w-1/2"></span>
@@ -260,7 +252,6 @@ export default function TicketSelection() {
                               )}
                           </div>
                         </div>
-
                         <div className="grid grid-cols-2 justify-between text-start py-3 border border-gray-400 bg-gray-50 shadow-lg rounded-2xl px-5 gap-y-4 xl:ml-4">
                           {event?.dates &&
                             event.dates[0]?.zoneDates.map((zone, index) => (
@@ -285,7 +276,6 @@ export default function TicketSelection() {
                                           )}
                                       </span>
                                     ))}
-
                                   {!zone.allocations && (
                                     <span className="flex font-semibold justify-end items-center">
                                       {currencies.PEN +
@@ -380,7 +370,6 @@ export default function TicketSelection() {
               </div>
             </div>
           </div>
-
           {modal === "dates" && (
             <AnimatePresence>
               <SelectDateModal

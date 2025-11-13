@@ -73,11 +73,12 @@ export async function validateDiscountSvc(input) {
       ? { ...it, eligible: true }
       : { ...it, eligible: false, why: "Zone not eligible" };
   });
+  console.log(eligibleDetail);
 
   const eligibleQty = eligibleDetail
     .filter((d) => d.eligible)
     .reduce((a, d) => a + Number(d.quantity || 0), 0);
-
+  console.log(eligibleQty);
   if (eligibleQty === 0) {
     return {
       valid: false,
