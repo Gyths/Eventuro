@@ -455,8 +455,8 @@ export default function CrearEventoCards() {
       formData.append("discounts", JSON.stringify(discounts));
       formData.append("ticketLimitPerUser", JSON.stringify(tickets.maxPerUser));
 
-      formData.append("refundPolicyText", JSON.stringify(returnsPolicy.text));
-
+      formData.append("refundPolicyText", returnsPolicy.text);
+      console.log("->> Politicaa", returnsPolicy.text);
       returnsPolicy.file &&
         formData.append("refundPolicyFile", returnsPolicy.file);
 
@@ -473,8 +473,6 @@ export default function CrearEventoCards() {
       } else if (form.imageBannerKey) {
         formData.append("imageBannerKey", form.imageBannerKey);
       }
-      formData.append("refundPolicyFile", form.refundPolicyFile);
-      formData.append("refundPolicyText", returnsPolicy);
 
       const session = localStorage.getItem("session");
       const token = session ? JSON.parse(session)?.token : null;
