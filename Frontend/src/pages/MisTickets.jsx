@@ -68,7 +68,7 @@ function buildEventTreeFromTickets(tickets) {
       desc,
       refundStatus: tk.refundStatus ?? "NONE",
       refundRequestedAt: tk.refundRequestedAt ?? null,
-      qrValue:  `${tk.status}_${tk.ticketId}`,
+      qrValue: tk.qrCodeUrl || tk.qrCodeURL || `TICKET:${tk.ticketId}`,
     };
 
     if (!events.has(evId)) {
@@ -279,9 +279,9 @@ function DateBlock({ dateNode, onRefundSubmitted }) {
   const title = dateNode.startAt ? fmtDateLong(dateNode.startAt) : "Fecha por confirmar";
   return (
     <div className="rounded-xl border border-gray-200">
-      <div className="px-4 py-3 bg-gray-50 rounded-t-xl border-b border-gray-200">
-        <h4 className="text-lg font-semibold text-gray-900">{title}</h4>
-        
+      <div className="px-3 sm:px-4 py-3 bg-gray-50 rounded-t-xl border-b border-gray-200">
+        <h4 className="text-base sm:text-lg font-semibold text-gray-900">{title}</h4>
+        <p className="text-xs text-gray-500">Puede haber más de una compra (orden) para esta misma fecha.</p>
       </div>
       <div className="p-3 sm:p-4 space-y-4 sm:space-y-5">
         {dateNode.orders.map((o) => (
@@ -322,11 +322,13 @@ function OrderBlock({ orderNode, onRefundSubmitted }) {
                 className="rounded-lg border border-gray-200 p-3 sm:p-4 flex flex-col justify-between min-h-[240px] sm:min-h-[260px]"
               >
                 <div>
-                  <p className="text-sm font-medium text-gray-900 mb-1">Ticket</p>
-                  <p className="text-xs text-gray-600">
-                    {tk.desc}
-                  </p>
+                  <p className="text-sm font-medium text-gray-900 mb-1">
+                      Ticket #{tk.ticketId}
+                    </p>
 
+                    <p className="text-xs text-gray-600">
+                      {tk.desc}
+                    </p>
                   <div
                     className={[
                       "mt-2 rounded-md border px-3 py-1 text-[12px] leading-5",

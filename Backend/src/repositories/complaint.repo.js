@@ -31,10 +31,30 @@ export async function createComplaintRepo(input, evidenceFile) {
     },
   });
 }
-
 export async function listComplaintsByUserRepo(userId) {
-  return await prisma.complaint.findMany({
+  const complaints = await prisma.complaint.findMany({
     where: { userId },
     orderBy: { createdAt: 'desc' },
   });
+
+  
+  const withDownloadUrl = await Promise.all(
+    complaints.map(async (c) => {
+      let URLDescarga = null;
+      if (c.evidenceUrlKeys) {
+        try {
+          URLDescarga = await getSignedUrlForFile(c.evidenceUrlKeys);
+        } catch (err) {
+          console.error("Error generando URLDescarga:", err);
+        }
+      }
+      
+      return {
+        ...c,
+        URLDescarga,
+      };
+    })
+  );
+
+  return withDownloadUrl;
 }

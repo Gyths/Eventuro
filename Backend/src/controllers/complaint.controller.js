@@ -1,5 +1,6 @@
 import { createComplaintSvc } from '../services/complaint.service.js';
 import { listComplaintsByUserSvc } from '../services/complaint.service.js';
+import { toJSONSafe } from '../utils/serialize.js';
 
 export async function createComplaintController(req, res) {
   try {
@@ -18,7 +19,7 @@ export async function listComplaintsByUserController(req, res) {
   try {
     const userId = BigInt(req.params.userId);
     const complaints = await listComplaintsByUserSvc(userId);
-    res.status(200).json(jsonifyBigInt(complaints));
+    res.status(200).json(toJSONSafe(complaints));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to list complaints', details: error.message });

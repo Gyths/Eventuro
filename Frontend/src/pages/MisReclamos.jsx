@@ -1,7 +1,33 @@
+// src/pages/reclamos/MisReclamos.jsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { EventuroApi } from "../api";
 
 const ESTADOS = ["Todos", "Pendiente", "En revisión", "Resuelto"];
+
+function mapStateToDisplay(state) {
+  switch (state) {
+    case "PENDING":
+      return "Pendiente";
+    case "IN_REVIEW":
+      return "En revisión";
+    case "RESOLVED":
+      return "Resuelto";
+    default:
+      return "Pendiente";
+  }
+}
+
+function mapTypeToDisplay(type) {
+  switch (type) {
+    case "CLAIM":
+      return "Reclamo (por un bien o servicio)";
+    case "COMPLAINT":
+      return "Queja (sobre el trato o servicio)";
+    default:
+      return type || "—";
+  }
+}
 
 function Badge({ estado }) {
   const map = {
@@ -10,66 +36,15 @@ function Badge({ estado }) {
     Resuelto: "bg-green-100 text-green-700",
   };
   return (
-    <span className={`px-2 py-0.5 rounded-full text-xs ${map[estado] || "bg-gray-100 text-gray-700"}`}>
+    <span
+      className={`px-2 py-0.5 rounded-full text-xs ${
+        map[estado] || "bg-gray-100 text-gray-700"
+      }`}
+    >
       {estado}
     </span>
   );
 }
-
-/* ===== Vista previa de evidencia ===== */
-function EvidencePreview({ name, type, dataUrl }) {
-  if (!dataUrl || !type) return null;
-
-  if (type.startsWith("image/")) {
-    return (
-      <div className="mt-3">
-        <img src={dataUrl} alt={name || "Evidencia"} className="max-h-[320px] rounded-lg border border-gray-200" />
-      </div>
-    );
-  }
-
-  if (type === "application/pdf") {
-    return (
-      <div className="mt-3 h-[420px] border border-gray-200 rounded-lg overflow-hidden">
-        <iframe title={name || "PDF"} src={`${dataUrl}#toolbar=1&navpanes=0`} className="w-full h-full" />
-      </div>
-    );
-  }
-
-  // otros tipos: ofrecer descarga
-  return (
-    <div className="mt-2">
-      <a href={dataUrl} download={name} className="text-indigo-600 underline">
-        Descargar {name || "archivo"}
-      </a>
-    </div>
-  );
-}
-
-/* --------- demo data (solo para maqueta) ---------- */
-function seedDemoIfEmpty() {
-  const KEY = "reclamos_eventuro";
-  const existing = localStorage.getItem(KEY);
-  if (existing) return JSON.parse(existing);
-
-  const demo = [
-    {
-      id: "R-240901-001",
-      estado: "Pendiente",
-      fecha: "2025-09-09",
-      detalle: {
-        tipoReclamo: "Error en el pago con tarjeta",
-        descripcionReclamo: "Intenté comprar una entrada, pero la pasarela no procesó el pago.",
-        solucionEsperada: "Devolución del monto o validación de la compra.",
-        evidenciaNombre: "screenshot.png",
-        // evidenciaType/evidenciaDataUrl: vacíos en demo -> no habrá preview
-      },
-    },
-  ];
-  localStorage.setItem(KEY, JSON.stringify(demo));
-  return demo;
-}
-/* -------------------------------------------------- */
 
 export default function MisReclamos() {
   const navigate = useNavigate();
@@ -77,22 +52,87 @@ export default function MisReclamos() {
   const [estado, setEstado] = useState("Todos");
   const [items, setItems] = useState([]);
   const [selected, setSelected] = useState(null);
+  const [loading, setLoading] = useState(true);
 
+  // ----- Cargar reclamos desde el backend -----
   useEffect(() => {
-    const KEY = "reclamos_eventuro";
-    const raw = JSON.parse(localStorage.getItem(KEY) || "null") || seedDemoIfEmpty();
-    setItems(raw);
-    setSelected(raw[0] || null);
+    let cancelled = false;
+
+    const loadComplaints = async () => {
+      try {
+        setLoading(true);
+
+        let userId = null;
+        try {
+          const sessionStr = localStorage.getItem("session");
+          if (sessionStr) {
+            const session = JSON.parse(sessionStr);
+            userId = session?.user?.userId ?? session?.userId ?? null;
+          }
+          if (!userId) {
+            const userDataStr = localStorage.getItem("userData");
+            if (userDataStr) {
+              const userData = JSON.parse(userDataStr);
+              userId = userData?.userId ?? userData?.user?.userId ?? null;
+            }
+          }
+        } catch (e) {
+          console.warn("No se pudo leer el userId de localStorage:", e);
+        }
+
+        if (!userId) {
+          console.warn("No hay userId, no se pueden cargar reclamos");
+          if (!cancelled) {
+            setItems([]);
+            setSelected(null);
+          }
+          return;
+        }
+
+        const data = await EventuroApi({
+          endpoint: `/complaint/user/${userId}`,
+          method: "GET",
+        });
+
+        if (!cancelled) {
+          setItems(Array.isArray(data) ? data : []);
+          setSelected((data && data[0]) || null);
+        }
+      } catch (err) {
+        console.error("Error al cargar reclamos:", err);
+        if (!cancelled) {
+          setItems([]);
+          setSelected(null);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    loadComplaints();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
+  // ----- Filtro por texto y estado -----
   const filtered = useMemo(() => {
     return items.filter((it) => {
-      const okEstado = estado === "Todos" || it.estado === estado;
+      const estadoLabel = mapStateToDisplay(it.state);
+      const okEstado = estado === "Todos" || estado === estadoLabel;
+
       const text =
-        (it.detalle?.descripcionReclamo || "") + " " +
-        (it.detalle?.tipoReclamo || "") + " " +
-        (it.id || "");
-      const okQ = !q.trim() || text.toLowerCase().includes(q.toLowerCase());
+        (it.problemDescription || "") +
+        " " +
+        (it.eventName || "") +
+        " " +
+        (it.fullName || "") +
+        " " +
+        String(it.complaintId || "");
+
+      const okQ =
+        !q.trim() || text.toLowerCase().includes(q.toLowerCase());
+
       return okEstado && okQ;
     });
   }, [items, estado, q]);
@@ -129,25 +169,46 @@ export default function MisReclamos() {
 
         {/* Lista */}
         <div className="space-y-4">
-          {filtered.map((it) => (
-            <button
-              key={it.id}
-              onClick={() => setSelected(it)}
-              className={`w-full text-left rounded-2xl border bg-white p-4 shadow-sm hover:shadow transition
-              ${selected?.id === it.id ? "border-amber-300" : "border-gray-200"}`}
-            >
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-gray-900">
-                  {it.detalle?.tipoReclamo || "Asunto del reclamo"}
-                </h3>
-                <Badge estado={it.estado} />
-              </div>
-              <p className="text-xs text-gray-500 mt-1">ID: {it.id}</p>
-              <p className="text-sm text-gray-500 mt-1">{it.fecha}</p>
-            </button>
-          ))}
+          {loading && (
+            <div className="rounded-2xl border border-gray-200 p-4 text-sm text-gray-500">
+              Cargando reclamos…
+            </div>
+          )}
 
-          {filtered.length === 0 && (
+          {!loading &&
+            filtered.map((it) => {
+              const estadoLabel = mapStateToDisplay(it.state);
+              const fecha = it.dateCreation
+                ? new Date(it.dateCreation).toLocaleDateString("es-PE")
+                : "—";
+              const titulo =
+                mapTypeToDisplay(it.type) || "Reclamo / queja";
+
+              return (
+                <button
+                  key={String(it.complaintId)}
+                  onClick={() => setSelected(it)}
+                  className={`w-full text-left rounded-2xl border bg-white p-4 shadow-sm hover:shadow transition ${
+                    selected?.complaintId === it.complaintId
+                      ? "border-amber-300"
+                      : "border-gray-200"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-gray-900">
+                      {titulo}
+                    </h3>
+                    <Badge estado={estadoLabel} />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    ID: {String(it.complaintId)}
+                  </p>
+                  <p className="text-sm text-gray-500 mt-1">{fecha}</p>
+                </button>
+              );
+            })}
+
+          {!loading && filtered.length === 0 && (
             <div className="rounded-2xl border border-dashed border-gray-300 p-8 text-center text-gray-500">
               No hay reclamos para mostrar.
             </div>
@@ -161,46 +222,95 @@ export default function MisReclamos() {
           <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-gray-900">
-                {selected.detalle?.tipoReclamo || "Detalle del reclamo"}
+                {mapTypeToDisplay(selected.type)}
               </h3>
-              <Badge estado={selected.estado} />
+              <Badge estado={mapStateToDisplay(selected.state)} />
             </div>
 
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm mt-4">
               <div>
                 <dt className="text-gray-500">ID:</dt>
-                <dd className="text-gray-900">{selected.id}</dd>
+                <dd className="text-gray-900">
+                  {String(selected.complaintId)}
+                </dd>
               </div>
               <div>
                 <dt className="text-gray-500">Fecha:</dt>
-                <dd className="text-gray-900">{selected.fecha}</dd>
+                <dd className="text-gray-900">
+                  {selected.dateCreation
+                    ? new Date(selected.dateCreation).toLocaleString("es-PE")
+                    : "—"}
+                </dd>
               </div>
               <div>
-                <dt className="text-gray-500">Tipo:</dt>
-                <dd className="text-gray-900">{selected.detalle?.tipoReclamo || "—"}</dd>
+                <dt className="text-gray-500">Evento:</dt>
+                <dd className="text-gray-900">
+                  {selected.eventName || "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-gray-500">N° ticket:</dt>
+                <dd className="text-gray-900">
+                  {selected.ticketNum ?? "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-gray-500">Monto reclamado:</dt>
+                <dd className="text-gray-900">
+                  {selected.amountClaimed != null
+                    ? `S/ ${selected.amountClaimed}`
+                    : "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-gray-500">Dirigido a:</dt>
+                <dd className="text-gray-900">
+                  {selected.target || "—"}
+                </dd>
               </div>
               <div className="sm:col-span-2">
-                <dt className="text-gray-500">Descripción:</dt>
-                <dd className="text-gray-900">{selected.detalle?.descripcionReclamo || "—"}</dd>
+                <dt className="text-gray-500">Descripción del problema:</dt>
+                <dd className="text-gray-900">
+                  {selected.problemDescription || "—"}
+                </dd>
               </div>
               <div className="sm:col-span-2">
                 <dt className="text-gray-500">Solución esperada:</dt>
-                <dd className="text-gray-900">{selected.detalle?.solucionEsperada || "—"}</dd>
-              </div>
-              <div className="sm:col-span-2">
-                <dt className="text-gray-500">Evidencia adjunta:</dt>
                 <dd className="text-gray-900">
-                  {selected.detalle?.evidenciaNombre || "—"}
+                  {selected.expectedSolution || "—"}
+                </dd>
+              </div>
+
+              {/* Evidencia con nombre azul + descarga */}
+              <div className="sm:col-span-2">
+                <dt className="text-gray-500">Evidencia:</dt>
+                <dd className="text-gray-900">
+                  {selected.evidenceUrlKeys ? (
+                    selected.URLDescarga ? (
+                      <a
+                        href={selected.URLDescarga}
+                        target="_blank"
+                        rel="noreferrer"
+                        download={
+                          selected.evidenceUrlKeys
+                            ? selected.evidenceUrlKeys.split("/").pop()
+                            : undefined
+                        }
+                        className="text-indigo-600 underline hover:text-indigo-700"
+                      >
+                        {selected.evidenceUrlKeys.split("/").pop()}
+                      </a>
+                    ) : (
+                      <span className="text-indigo-600">
+                        {selected.evidenceUrlKeys.split("/").pop()}
+                      </span>
+                    )
+                  ) : (
+                    "—"
+                  )}
                 </dd>
               </div>
             </dl>
-
-            {/* Vista previa */}
-            <EvidencePreview
-              name={selected.detalle?.evidenciaNombre}
-              type={selected.detalle?.evidenciaType}
-              dataUrl={selected.detalle?.evidenciaDataUrl}
-            />
           </div>
         ) : (
           <div className="rounded-2xl border border-dashed border-gray-300 p-8 text-center text-gray-500">
