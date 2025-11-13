@@ -30,12 +30,13 @@ export const EventuroApi = async ({
     const options = {
       method,
       headers: baseHeaders,
-      headers: {
+      //ASI FUNCIONA RECLAMOS XD
+     /* headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...headers,
-      }, // <- merge headers
+      }, // <- merge headers*/
     };
 
     if (credentials) options.credentials = credentials;
