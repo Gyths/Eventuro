@@ -179,6 +179,7 @@ export async function createOrderRepo(input) {
             //allocatedQuantity: true,
             discountType: true,
             discountValue: true,
+            audienceName: true,
           },
         });
 
@@ -374,7 +375,7 @@ export async function createOrderRepo(input) {
         }
 
         // Aplicamos porcentaje de la fase que puede aumentar, disminuir el precio
-        if (phase.percentage !== 0) {
+        if (phase.percentage != 0) {
           price = price * (1 + phase.percentage / 100);
         }
       }
@@ -385,7 +386,7 @@ export async function createOrderRepo(input) {
       const finalPrice = subtotal; // por ahora no hay otros cargos como impuestos
 
       // Crear orderItem
-      const createdItem = await tx.orderItem.create({
+      let createdItem = await tx.orderItem.create({
         data: {
           orderId: order.orderId,
           eventId,
@@ -402,6 +403,8 @@ export async function createOrderRepo(input) {
         },
       });
 
+      createdItem.zoneName = zone.name;
+      createdItem.allocationName = allocation.audienceName;
       // Guardamos los items de la orden creada para el response
       createdOrderItems.push(createdItem);
 
@@ -418,7 +421,7 @@ export async function createOrderRepo(input) {
         status: "PENDING_PAYMENT",
       },
     });
-
+    console.log(createdOrderItems);
     //Retornamos la orden creada con sus items
     return {
       orderId: Number(order.orderId),

@@ -40,7 +40,7 @@ export default function SelectAllocationModal({
 
   const { event, setEvent } = useEvent();
   const { user } = useAuth();
-  const { setOrder } = useOrder();
+  const { order, setOrder } = useOrder();
 
   const [showAlertMessage, setShowAlertMessage] = React.useState(false);
   const [zonesInfo, setZonesInfo] = React.useState([]);
@@ -70,8 +70,6 @@ export default function SelectAllocationModal({
           method: "GET",
         });
 
-        console.log(response);
-        console.log(event);
         setZonesInfo(response);
 
         if (
@@ -185,7 +183,6 @@ export default function SelectAllocationModal({
     );
     const newValues = allocatedGeneralQuantities.map(
       (allocation, zoneIndex) => {
-        //console.log("sumando en " + zoneI + " " + allocationI);
         if (zoneI !== zoneIndex) return allocation;
         const zone = zonesInfo[0]?.zoneDates[zoneIndex];
         const totalSelectedInZone = allocation.reduce(
@@ -195,12 +192,15 @@ export default function SelectAllocationModal({
 
         const getCap = () => {
           if (!event.limitPerUser != null) {
-            return parseInt(event.limitPerUser) <
-              parseInt(zone.capacityRemaining)
-              ? parseInt(event.limitPerUser)
+            const userLimit =
+              parseInt(event?.ticketLimitPerUser) -
+              parseInt(zonesInfo[0].user.ticketCount);
+            console.log(userLimit);
+            return userLimit < parseInt(zone.capacityRemaining)
+              ? userLimit
               : parseInt(zone.capacityRemaining);
           } else {
-            return zone.capacityRemaining;
+            return parseInt(zone.capacityRemaining);
           }
         };
         const cap = getCap();
@@ -292,11 +292,6 @@ export default function SelectAllocationModal({
   const onContinue = async () => {
     setShowAlertMessage(false);
 
-    console.log(allocatedGeneralQuantities);
-    console.log(allocatedSeatedQuantities);
-    console.log(notAllocatedGeneralQuantities);
-    console.log(notAllocatedSeatedQuantities);
-
     let shoppingCart = {};
     const orderData = {};
     orderData.buyerUserId = user.userId;
@@ -312,17 +307,6 @@ export default function SelectAllocationModal({
           eventDateZoneId: zonesInfo[0]?.zoneDates[index].eventDateZoneId,
           quantity: quantity,
         });
-
-        const zonePrice =
-          parseInt(quantity) *
-          parseFloat(zonesInfo[0]?.zoneDates[index].basePrice);
-
-        shoppingCart[zonesInfo[0]?.zoneDates[index].name] = {
-          allocation: "",
-          quantity: parseInt(quantity),
-          price: zonePrice,
-          totalZonePrice: zonePrice,
-        };
       }
     });
 
@@ -338,17 +322,6 @@ export default function SelectAllocationModal({
             seatId: seat,
           });
         });
-
-        const zonePrice =
-          parseInt(seats.length) *
-          parseFloat(zonesInfo[0]?.zoneDates[index].basePrice);
-
-        shoppingCart[zonesInfo[0]?.zoneDates[index].name] = {
-          allocation: "",
-          quantity: seats.length,
-          price: zonePrice,
-          totalZonePrice: zonePrice,
-        };
       }
     });
 
@@ -356,7 +329,6 @@ export default function SelectAllocationModal({
     allocatedGeneralQuantities.map((quantitiesZone, zoneIndex) => {
       if (quantitiesZone != "") {
         const zone = zonesInfo[0]?.zoneDates[zoneIndex];
-        let zonePrice = 0;
 
         quantitiesZone.map((quantity, allocationIndex) => {
           if (quantity > 0) {
@@ -368,34 +340,14 @@ export default function SelectAllocationModal({
                 zone.allocations[allocationIndex].eventDateZoneAllocationId,
               quantity: quantity,
             });
-
-            const allocation = zone.allocations[allocationIndex];
-            const discount =
-              allocation.discountType === "PERCENTAGE"
-                ? (parseFloat(zone.basePrice) *
-                    parseFloat(allocation.discountValue)) /
-                  100
-                : parseFloat(allocation.discountValue);
-            const price =
-              parseFloat(quantity) * (parseFloat(zone.basePrice) - discount);
-
-            if (!shoppingCart[zone.name]) shoppingCart[zone.name] = {};
-            shoppingCart[zone.name][allocation.audienceName] = {
-              quantity,
-              price,
-            };
-            zonePrice += price;
           }
         });
-        if (shoppingCart[zone.name])
-          shoppingCart[zone.name].totalZonePrice = zonePrice;
       }
     });
 
     //Se añaden las entradas con allocation y con sitio
     allocatedSeatedQuantities.map((seats, zoneIndex) => {
       const zone = zonesInfo[0]?.zoneDates[zoneIndex];
-      let zoneTotalPrice = 0;
 
       for (const seatId in seats) {
         orderData.items.push({
@@ -408,38 +360,9 @@ export default function SelectAllocationModal({
           seatId: seatId,
         });
       }
-
-      zone.allocations.map((allocation, index) => {
-        const quantity = Object.values(seats).filter(
-          (value) => value === index
-        ).length;
-        if (quantity) {
-          const discount =
-            allocation.discountType === "PERCENTAGE"
-              ? (parseFloat(zone.basePrice) *
-                  parseFloat(allocation.discountValue)) /
-                100
-              : parseFloat(allocation.discountValue);
-          const price =
-            parseFloat(quantity) * (parseFloat(zone.basePrice) - discount);
-
-          if (!shoppingCart[zone.name]) shoppingCart[zone.name] = {};
-          shoppingCart[zone.name][allocation.audienceName] = {
-            quantity,
-            price,
-          };
-          zoneTotalPrice += price;
-        }
-      });
-
-      if (shoppingCart[zone.name]) {
-        if (!shoppingCart[zone.name].totalZonePrice)
-          shoppingCart[zone.name].totalZonePrice = 0;
-        shoppingCart[zone.name].totalZonePrice += zoneTotalPrice;
-      }
     });
+
     try {
-      console.log(orderData);
       setIsButtonLoading(true);
       const response = await EventuroApi({
         endpoint: orderEndpoint,
@@ -447,33 +370,54 @@ export default function SelectAllocationModal({
         data: orderData,
       });
 
-      // Calcular subtotal sumando totalZonePrice
-      const subtotal = Object.values(shoppingCart).reduce((acc, zone) => {
-        if (typeof zone.totalZonePrice === "number") {
-          return acc + zone.totalZonePrice;
-        }
-        return acc;
-      }, 0);
-
       setOrder({
         ...response,
-        subtotal,
       });
+
+      let shoppingCart = {};
+
+      response.items.forEach((item) => {
+        const { zoneName, allocationName, quantity, unitPrice, finalPrice } =
+          item;
+
+        if (!shoppingCart[zoneName]) {
+          shoppingCart[zoneName] = {
+            totalQuantity: 0,
+            totalZonePrice: 0,
+          };
+        }
+
+        if (!shoppingCart[zoneName][allocationName]) {
+          shoppingCart[zoneName][allocationName] = [];
+        }
+
+        shoppingCart[zoneName][allocationName].push({
+          quantity,
+          unitPrice,
+        });
+
+        shoppingCart[zoneName].totalQuantity += Number(quantity);
+        shoppingCart[zoneName].totalZonePrice += Number(
+          finalPrice ?? unitPrice * quantity
+        );
+      });
+      console.log(shoppingCart);
 
       // Actualizar el evento con el carrito completo
       setEvent({
         ...event,
-        selectedDate: zonesInfo[0]?.startDate,
+        selectedDate: zonesInfo[0]?.date[0]?.startDate,
         selectedSchedule:
-          zonesInfo[0]?.date?.startHour + " - " + zonesInfo[0]?.date?.endHour,
-        shoppingCart: shoppingCart,
+          zonesInfo[0]?.date[0]?.startHour +
+          " - " +
+          zonesInfo[0]?.date[0]?.endHour,
+        shoppingCart,
       });
 
-      await new Promise((res) => setTimeout(res, 1000));
+      await new Promise((res) => setTimeout(res, 300));
       navigate(paymentPage);
     } catch (err) {
-      await new Promise((res) => setTimeout(res, 1000));
-      console.log(err.code);
+      await new Promise((res) => setTimeout(res, 300));
       if (err.code === 1) navigate("/login");
       if (err.code === 0) {
         //onClose();
@@ -483,8 +427,8 @@ export default function SelectAllocationModal({
           text: "Ocurrió un error inesperado",
         });
       }
-      setErrorCode(err.code);
 
+      setErrorCode(err.code || 0);
       setShowAlertMessage(true);
     } finally {
       setIsButtonLoading(false);
@@ -523,7 +467,7 @@ export default function SelectAllocationModal({
                     )}
                     <div className="flex mb-1">
                       <span className="inline-block text-gray-800">
-                        Puedes seleccionar un máximo de{" "}
+                        Puedes comprar hasta un máximo de{" "}
                         {event && zonesInfo
                           ? parseInt(event?.ticketLimitPerUser) -
                             parseInt(zonesInfo[0].user.ticketCount)
@@ -551,7 +495,7 @@ export default function SelectAllocationModal({
                                 <XCircleIcon className="size-5 text-red-500"></XCircleIcon>
                               )}
                               <span>
-                                Quedan {zone.capacityRemaining} entradas
+                                Hay {zone.capacityRemaining} entradas restabtes
                               </span>
                             </div>
                           )}
@@ -620,7 +564,7 @@ export default function SelectAllocationModal({
                                 ) : (
                                   <XCircleIcon className="size-5 text-red-500"></XCircleIcon>
                                 )}
-                                <span>
+                                <span className="flex justify-end text-center">
                                   Quedan {zone.capacityRemaining} entradas
                                 </span>
                               </div>
@@ -643,7 +587,9 @@ export default function SelectAllocationModal({
                                         <span>
                                           {currencies.PEN +
                                             " " +
-                                            parseInt(allocation.price)}
+                                            parseFloat(
+                                              allocation.price
+                                            ).toFixed(2)}
                                         </span>
                                         {zone.kind != "SEATED" ? (
                                           <div

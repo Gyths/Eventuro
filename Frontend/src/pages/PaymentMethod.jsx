@@ -43,7 +43,6 @@ export default function PaymentMethod() {
 
   const { event } = useEvent();
   const { order, setOrder } = useOrder();
-  console.log(order);
   const { user } = useAuth();
   const { modal, setModal } = useModal(null);
 
@@ -68,11 +67,9 @@ export default function PaymentMethod() {
         endpoint: `/orders/${orderId}/cancel`,
         method: "POST",
       });
-      console.log("Orden cancelada con éxito");
     } catch (err) {
       console.error("Error al crear al realizar la compra:", err);
     }
-    console.log("Saliendo de la página de compra...");
   }
 
   //Cancelación de orden de pago en cambio de ruta
@@ -80,9 +77,6 @@ export default function PaymentMethod() {
     return () => {
       const leavingFrom = prevPath.current;
       const currentPath = window.location.pathname;
-
-      console.log("leavingFrom:", leavingFrom);
-      console.log("currentPath:", currentPath);
 
       if (leavingFrom === "/pago" && currentPath != "/pago") {
         cancelOrder(order.orderId);

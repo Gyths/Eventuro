@@ -1,9 +1,9 @@
-export function setDiscountedPrices(zones, activeSalePhaseDiscount = 0) {
+export function setFinalPrices(zones, activeSalePhasePercentage = 0) {
   for (const zone of zones) {
     if (!zone.allocations) continue;
 
     if (!zone.allocations) {
-      zone.zonePrice = zone.basePrice * (1 - activeSalePhaseDiscount / 100);
+      zone.zonePrice = zone.basePrice * (1 - activeSalePhasePercentage / 100);
       continue;
     }
     for (const allocation of zone.allocations) {
@@ -15,7 +15,7 @@ export function setDiscountedPrices(zones, activeSalePhaseDiscount = 0) {
           Number(zone.basePrice) - Number(allocation.discountValue);
 
       allocation.price =
-        Number(allocation.price) * (1 - activeSalePhaseDiscount / 100);
+        Number(allocation.price) * (1 + activeSalePhasePercentage / 100);
     }
   }
   return zones;

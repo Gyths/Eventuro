@@ -30,7 +30,7 @@ export default function SelectDateModal({ eventId, onClose, onContinue }) {
     "Noviembre",
     "Diciembre",
   ];
-  console.log(dates);
+  // console.log(dates);
 
   useEffect(() => {
     async function fetchDates() {
@@ -57,12 +57,12 @@ export default function SelectDateModal({ eventId, onClose, onContinue }) {
     fetchDates();
   }, []);
 
-  useEffect(() => {
+  /*useEffect(() => {
     console.log("Datos originales:", dates);
     console.log("Fechas seleccionables:", selectableDays);
     console.log("Meses disponibles:", months);
     console.log("Días agrupados:", days);
-  }, [dates]);
+  }, [dates]);*/
 
   const parsedDates = useMemo(() => {
     if (!dates || !dates.length) return [];

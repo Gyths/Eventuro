@@ -16,9 +16,10 @@ export const EventuroApi = async ({
     const options = {
       method,
       headers: {
-        "Content-Type": "application/json", Accept: "application/json",
+        "Content-Type": "application/json",
+        Accept: "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...headers
+        ...headers,
       }, // <- merge headers
     };
 
@@ -33,7 +34,6 @@ export const EventuroApi = async ({
     const text = await response.text();
 
     let jsonData;
-
     try {
       jsonData = text ? JSON.parse(text) : {};
     } catch {
@@ -41,13 +41,15 @@ export const EventuroApi = async ({
     }
 
     if (!response.ok) {
-      const error = new Error(jsonData.error || "Error inesperado");
+      const error = new Error(
+        jsonData.error || jsonData.message || "Error inesperado"
+      );
       error.status = response.status;
-      error.code = jsonData.code || 0;
+      error.code = jsonData.code || jsonData.errorCode || 0;
       error.responseData = jsonData;
+      console.log(error);
       throw error;
     }
-
     return jsonData;
   } catch (err) {
     console.error("Error en la consulta de la api " + endpoint + ": " + err);

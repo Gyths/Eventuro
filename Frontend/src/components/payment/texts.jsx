@@ -2,7 +2,7 @@
 
 export const EVENT_INFORMATION_TEXTS = {
   alerts: {
-    0: "Ha ocurrido un error inesperado.",
+    0: "Ha ocurrido un error inesperado, por favor vuelva a intentarlo.",
     1: "El evento seleccionado no existe.",
     2: "Este evento no se encuentra activo.",
     3: "El evento ha terminado.",
@@ -14,7 +14,7 @@ export const TICKET_SELECTION_TEXTS = {
   alerts: {
     0: "¡Lo sentimos! Ha ocurrido un error inesperado, por favor vuelva a intentarlo.",
     2: "Como organizador, no puede comprar entradas para su propio evento.",
-    3: "Ha excedido la cantidad máxima de entradas por usuario.",
+    3: "Se ha excedido la cantidad máxima de entradas por usuario.",
     4: "Su orden excede la capacidad restante para este evento.",
     5: "Uno o más asientos seleccionados no están disponibles.",
     6: "Uno o más asientos seleccionados ya fueron ocupados.",
@@ -58,7 +58,7 @@ export const DISCOUNT_CODE_TEXTS = {
   title: "¿Tienes algún código de descuento?",
   alerts: {
     0: "Ha ocurrido un error inesperado.",
-    1: "Ingresar un código de descuento.",
+    1: "Ingrese un código de descuento.",
     2: "El código ingresado no es válido.",
     3: "El código ingresado no es aplicable en este evento.",
     4: "El código de descuento no está activo.",

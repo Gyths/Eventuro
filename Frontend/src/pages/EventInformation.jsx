@@ -55,8 +55,9 @@ export default function TicketSelection() {
         response.image = response.imagePrincipalURLSigned ?? placeholder;
         response.bannerEv = response.imageBannerURLSigned ?? placeholder;
         setEvent(response);
+        await new Promise((res) => setTimeout(res, 300));
       } catch (err) {
-        setErrorCode(err.code);
+        setErrorCode(err.code || 0);
       } finally {
         setIsLoading(false);
       }
@@ -149,24 +150,25 @@ export default function TicketSelection() {
             >
               <div className="flex px-5 relative flex-wrap xl:flex-row justify-center gap-10 md:gap-20 xl:gap-0 items-stretch">
                 {/* Imagen */}
-                <div className="flex w-full scale-y-110 xl:max-w-[30vw] rounded-lg">
+                <div className="flex w-full scale-y-110 xl:max-w-[30vw] rounded-4xl">
                   <img
                     src={event?.image}
-                    className="w-full h-full object-cover rounded-lg"
+                    className="w-full h-full object-cover rounded-3xl"
                     alt="Imagen del evento"
                   />
                 </div>
 
                 {/* Card de Información y entradas*/}
                 <div className="flex w-full lg:auto xl:w-1/2 justify-center items-center ">
-                  <div className="flex flex-col items-start xl:pl-5 xl:py-5 justify-start gap-3 w-[95vw] xl:w-[60vw] rounded-lg md:rounded-lg xl:rounded-none xl:rounded-r-lg bg-white">
+                  <div className="flex flex-col items-start md:p-3 xl:pr-5 xl:pl-5 xl:py-5 justify-start gap-3 w-[95vw] xl:w-[60vw] rounded-4xl md:rounded-3xl xl:rounded-none xl:rounded-r-4xl bg-white">
                     <div className="flex flex-row justify-start items-center lg gap-2">
                       <ArrowButton
+                        className="p-2"
                         onClick={() => navigate(homeRoute)}
                       ></ArrowButton>
                       {/* Título */}
                       <div className="inline-flex text-start flex-wrap flex-row">
-                        <h1 className="inline-block font-bold text-2xl xl:text-3xl">
+                        <h1 className="inline-block font-bold text-3xl xl:text-3xl">
                           {event?.title}
                         </h1>
                       </div>
@@ -263,12 +265,16 @@ export default function TicketSelection() {
                                       >
                                         {currencies.PEN +
                                           " " +
-                                          allocation.price}
+                                          parseFloat(allocation.price).toFixed(
+                                            2
+                                          )}
                                       </span>
                                     ))}
                                   {!zone.allocations && (
                                     <span className="flex font-semibold justify-end items-center">
-                                      {currencies.PEN + " " + zone.basePrice}
+                                      {currencies.PEN +
+                                        " " +
+                                        parseFloat(zone.basePrice).toFixed(2)}
                                     </span>
                                   )}
                                 </div>
