@@ -101,6 +101,7 @@ export async function findByEmail(email) {
       birthdate: true,
       gender: true,
       status: true,
+      suspendedUntil: true,
       createdAt: true,
       updatedAt: true,
       password: {
