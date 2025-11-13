@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 
-export default function ReturnsPolicy({ value, onChange }) {
+export default function ReturnsPolicy({ form, value, onChange }) {
   const maxMB = 5;
   const controlled = value != null;
 
@@ -12,13 +12,13 @@ export default function ReturnsPolicy({ value, onChange }) {
   const [fileLocal, setFileLocal] = useState(value?.file ?? null);
 
   // Getters/Setters unificados según modo
-  const text = controlled ? (value?.text ?? "") : textLocal;
+  const text = controlled ? value?.text ?? "" : textLocal;
   const setText = (t) => {
     if (controlled) onChange?.({ ...(value ?? {}), text: t });
     else setTextLocal(t);
   };
 
-  const file = controlled ? (value?.file ?? null) : fileLocal;
+  const file = controlled ? value?.file ?? null : fileLocal;
   const setFile = (f) => {
     if (controlled) onChange?.({ ...(value ?? {}), file: f });
     else setFileLocal(f);
@@ -37,17 +37,21 @@ export default function ReturnsPolicy({ value, onChange }) {
   const handleFileChange = (e) => {
     const f = e.target.files?.[0] ?? null;
     setFile(f);
+    form.refundPolicyFile = fileLocal;
   };
 
   const handleClearFile = () => {
     setFile(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
+    form.refundPolicyFile = null;
   };
 
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-800">Política de devoluciones</h3>
+        <h3 className="text-lg font-semibold text-gray-800">
+          Política de devoluciones
+        </h3>
         <button
           type="button"
           onClick={copyToClipboard}
@@ -75,7 +79,7 @@ export default function ReturnsPolicy({ value, onChange }) {
               ref={fileInputRef}
               id="policy-file-input"
               type="file"
-              accept=".pdf,.doc,.docx,.txt"
+              accept=".pdf"
               onChange={handleFileChange}
               className="block w-full text-sm text-gray-700 file:mr-4 file:rounded-full file:border-0 file:bg-gray-100 file:px-4 file:py-2 file:text-sm file:font-medium file:text-gray-700 hover:file:bg-gray-200"
             />
@@ -108,11 +112,14 @@ export default function ReturnsPolicy({ value, onChange }) {
             )}
           </div>
         </div>
-        <div className="mt-1 text-xs text-gray-500">Tamaño máximo: {maxMB} MB</div>
+        <div className="mt-1 text-xs text-gray-500">
+          Tamaño máximo: {maxMB} MB
+        </div>
       </div>
 
       <p className="text-xs text-gray-500">
-        La política de devoluciones puede ser ingresada tanto en la casilla como en archivo.
+        La política de devoluciones puede ser ingresada tanto en la casilla como
+        en archivo.
       </p>
     </section>
   );

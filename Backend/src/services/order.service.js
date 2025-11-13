@@ -4,7 +4,9 @@ import { findByUserId } from "../repositories/order.repo.js";
 
 export async function createOrderSvc(input, ctx = {}) {
   if (!input || !Array.isArray(input.items) || input.items.length === 0) {
-    throw new Error("La orden debe contener al menos un item.");
+    let err = new Error("La orden debe contener al menos un item.");
+    err.code = 8;
+    throw err;
   }
 
   if (input.currency && input.currency !== "PEN") {

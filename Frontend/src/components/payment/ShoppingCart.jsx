@@ -10,9 +10,9 @@ export default function ShoppingCart({
   setSelectedOptionTermsAlert,
 }) {
   const tickets = [];
-
   const { order } = useOrder();
   const { event } = useEvent();
+  console.log(event.shoppingCart);
 
   const currencies = { PEN: "S/." };
 
@@ -46,7 +46,7 @@ export default function ShoppingCart({
                   return (
                     <div
                       key={index}
-                      className="grid grid-cols-[1fr_auto_auto] items-center text-black gap-10"
+                      className="grid grid-cols-[1fr_1fr_auto] items-center text-black gap-10"
                     >
                       <span className="inline-block">{zoneName}</span>
                       <span>{"x" + zone.quantity}</span>
@@ -65,21 +65,29 @@ export default function ShoppingCart({
                       {Object.entries(zone).map(
                         ([zoneInfoName, zoneInfo], zoneInfoIndex) => {
                           if (
+                            zoneInfoName != "totalQuantity" &&
+                            zoneInfoName != "totalPrice" &&
                             zoneInfoName != "totalZonePrice" &&
+                            zoneInfoName != "discountedTotalZonePrice" &&
                             zoneInfoName != "discountsApplied"
                           ) {
                             return (
                               <div
                                 key={zoneInfoIndex}
-                                className="grid grid-cols-[1fr_auto_auto] items-center text-black gap-4"
+                                className="grid grid-cols-[1fr_1fr_auto] items-center text-black gap-4"
                               >
                                 <span className="truncate">{zoneInfoName}</span>
                                 <span className="text-center">
-                                  {"x" + zoneInfo.quantity}
+                                  {"x" + zoneInfo[0]?.quantity}
                                 </span>
                                 <div className="flex flex-row items-center justify-end w-20">
-                                  {currencies.PEN + " "}
-                                  <span>{zoneInfo.price}</span>
+                                  {currencies.PEN}
+                                  <span>
+                                    {" "}
+                                    {parseFloat(zoneInfo[0]?.unitPrice).toFixed(
+                                      2
+                                    )}
+                                  </span>
                                 </div>
                               </div>
                             );
@@ -88,22 +96,20 @@ export default function ShoppingCart({
                               return (
                                 <div
                                   key={discountIndex}
-                                  className="grid grid-cols-[1fr_auto_auto] items-center text-black gap-4"
+                                  className="grid grid-cols-[1fr_1fr] items-center text-black gap-4"
                                 >
                                   <span>
-                                    {"Dscto " +
-                                      discount.allocation +
+                                    {"Descuento " +
                                       " (" +
                                       discount.percentage +
                                       "%)"}
                                   </span>
-                                  <span className="text-center">
-                                    {"x" + discount.discountedQty}
-                                  </span>
-                                  <span>
+                                  <span className="flex justify-end">
                                     {"-" +
                                       currencies.PEN +
-                                      discount.discountAmount}
+                                      parseFloat(
+                                        discount.discountAmount
+                                      ).toFixed(2)}
                                   </span>
                                 </div>
                               );
@@ -124,7 +130,12 @@ export default function ShoppingCart({
         <hr className="my-4 border-gray-300 mx-2" />
         <div className="flex justify-between text-lg font-bold text-gray-900">
           <span>Pago</span>
-          <span>S/. {order.totalAmount}</span>
+          <span>
+            S/.{" "}
+            {!order.totalAmount
+              ? parseFloat(order.subtotal).toFixed(2)
+              : parseFloat(order.totalAmount).toFixed(2)}
+          </span>
         </div>
         {/*Botón de compra duh*/}
         <button

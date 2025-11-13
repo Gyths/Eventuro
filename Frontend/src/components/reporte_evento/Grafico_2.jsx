@@ -1,53 +1,50 @@
-import { Line } from "react-chartjs-2";
+import { Bar } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Tooltip,
+  Legend,
+} from "chart.js";
 
-const PorcentajeOcupacionChart = () => {
-  const labels = [
-    "1",
-    "3",
-    "5",
-    "7",
-    "9",
-    "11",
-    "13",
-    "15",
-    "17",
-    "19",
-    "21",
-    "23",
-  ];
+ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
+
+const PorcentajeOcupacionChart = ({ eventos }) => {
+  function splitLabel(text, maxLength = 30) {
+    const words = text.split(" ");
+    const lines = [];
+    let current = "";
+
+    words.forEach((w) => {
+      if ((current + " " + w).trim().length > maxLength) {
+        lines.push(current.trim());
+        current = w;
+      } else {
+        current += " " + w;
+      }
+    });
+
+    if (current.trim().length > 0) lines.push(current.trim());
+    return lines;
+  }
+
+  const labels = eventos.map((e) => splitLabel(e.nombre));
+  const porcentajes = eventos.map((e) =>
+    Math.round((e.vendidas / e.capacidad) * 100)
+  );
 
   const data = {
     labels,
     datasets: [
       {
-        label: "Conciertos",
-        data: [45, 60, 75, 88, 92, 97, 90, 83, 78, 85, 92, 96],
+        label: "% Ocupación por evento",
+        data: porcentajes,
+        backgroundColor: "rgba(92, 22, 197, 0.4)",
         borderColor: "#5C16C5",
-        backgroundColor: "rgba(92, 22, 197, 0.12)",
-        pointRadius: 3,
-        pointHoverRadius: 5,
-        tension: 0.35,
-        fill: true,
-      },
-      {
-        label: "Teatro",
-        data: [30, 40, 55, 63, 70, 80, 78, 72, 65, 69, 74, 79],
-        borderColor: "#A855F7",
-        backgroundColor: "rgba(168, 85, 247, 0.10)",
-        pointRadius: 3,
-        pointHoverRadius: 5,
-        tension: 0.35,
-        fill: true,
-      },
-      {
-        label: "Exposiciones",
-        data: [15, 22, 28, 35, 40, 48, 45, 39, 33, 30, 27, 25],
-        borderColor: "#F97316",
-        backgroundColor: "rgba(249, 115, 22, 0.08)",
-        pointRadius: 3,
-        pointHoverRadius: 5,
-        tension: 0.35,
-        fill: true,
+        borderWidth: 2,
+        borderRadius: 10,
+        hoverBackgroundColor: "rgba(92, 22, 197, 0.6)",
       },
     ],
   };
@@ -56,46 +53,45 @@ const PorcentajeOcupacionChart = () => {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: {
-        position: "top",
-        labels: {
-          boxWidth: 10,
-          font: { size: 10 },
-        },
-      },
+      legend: { position: "top" },
       tooltip: {
         callbacks: {
-          label: (ctx) => ` ${ctx.raw}% ocupación`,
+          label: (ctx) => {
+            const i = ctx.dataIndex;
+            const evento = eventos[i];
+            const p = ctx.raw;
+            return ` ${evento.vendidas}/${evento.capacidad} (${p}%)`;
+          },
         },
       },
     },
     scales: {
       x: {
-        grid: { display: false },
-        ticks: { color: "#6B7280", font: { size: 9 } },
-        title: {
-          display: true,
-          text: "Día del mes",
-          color: "#9CA3AF",
+        ticks: {
           font: { size: 9 },
+          color: "#6B7280",
+          maxRotation: 0,
+          minRotation: 0,
+          padding: 6,
         },
+        grid: { display: false },
       },
       y: {
         min: 0,
         max: 110,
-        grid: { color: "#E5E7EB" },
         ticks: {
-          color: "#9CA3AF",
-          font: { size: 9 },
           callback: (v) => `${v}%`,
+          color: "#6B7280",
+          font: { size: 9 },
         },
+        grid: { color: "#E5E7EB" },
       },
     },
   };
 
   return (
     <div className="w-full h-64">
-      <Line data={data} options={options} />
+      <Bar data={data} options={options} />
     </div>
   );
 };

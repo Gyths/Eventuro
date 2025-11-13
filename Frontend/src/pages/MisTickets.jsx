@@ -322,11 +322,13 @@ function OrderBlock({ orderNode, onRefundSubmitted }) {
                 className="rounded-lg border border-gray-200 p-3 sm:p-4 flex flex-col justify-between min-h-[240px] sm:min-h-[260px]"
               >
                 <div>
-                  <p className="text-sm font-medium text-gray-900 mb-1">Ticket</p>
-                  <p className="text-xs text-gray-600">
-                    {tk.desc}
-                  </p>
-
+                  <p className="text-sm font-medium text-gray-900 mb-1">
+                      Ticket #{tk.ticketId}
+                    </p>
+Z
+                    <p className="text-xs text-gray-600">
+                      {tk.desc}
+                    </p>
                   <div
                     className={[
                       "mt-2 rounded-md border px-3 py-1 text-[12px] leading-5",

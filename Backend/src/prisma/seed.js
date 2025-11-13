@@ -238,6 +238,12 @@ async function main() {
         createdAt: new Date(),
         updatedAt: new Date(),
       },
+      {
+        initials: "OTR",
+        description: "Otros",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     ],
     skipDuplicates: true, // evita errores si ya existen
   });
@@ -253,11 +259,12 @@ async function main() {
         imagePrincipalKey: "events/1761677737608_Evento_prueba.png",
         imageBannerKey: "events/1761677738279_Evento_prueba_banner.png",
         inPerson: false,
-        status: "P",
+        status: "A",
         description:
           "Evento virtual con 300 de capacidad y dos códigos de descuento",
         accessPolicy: "E",
         accessPolicyDescription: "Apto para todo público.",
+        ticketLimitPerUser: 12,
       },
       //Event 2
       {
@@ -266,11 +273,12 @@ async function main() {
         imagePrincipalKey: "events/1761677737608_Evento_prueba.png",
         imageBannerKey: "events/1761677738279_Evento_prueba_banner.png",
         inPerson: true,
-        status: "P",
+        status: "A",
         description:
           "Evento presencial con 500 de capacidad, segunda fase activa y descuentos.",
         accessPolicy: "E",
         accessPolicyDescription: "Apto para todo público.",
+        ticketLimitPerUser: 10,
       },
       //Event 3
       {
@@ -279,11 +287,12 @@ async function main() {
         imagePrincipalKey: "events/1761677737608_Evento_prueba.png",
         imageBannerKey: "events/1761677738279_Evento_prueba_banner.png",
         inPerson: true,
-        status: "P",
+        status: "A",
         description:
           "Evento presencial con poca capacidad restante en cada zona.",
         accessPolicy: "E",
         accessPolicyDescription: "Apto para todo público.",
+        ticketLimitPerUser: 9,
       },
       //Event 4
       {
@@ -296,6 +305,7 @@ async function main() {
         description: "Evento ya finalizado, no debería aparecer en listado.",
         accessPolicy: "E",
         accessPolicyDescription: "Apto para todo público.",
+        ticketLimitPerUser: 15,
       },
     ],
   });

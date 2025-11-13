@@ -45,11 +45,11 @@ export default function UserMenu(isOrganizerApproved ) {
     >
       <UserIcon className="h-5 w-5" />
       <span>{user.name}</span>
-      {isOrganizerApproved && (
+     {/* {isOrganizerApproved && (
         <span className="ml-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-purple-600 text-white">
           Organizador
         </span>
-      )}
+     )}*/}
    </button>
 
 
