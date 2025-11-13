@@ -180,7 +180,7 @@ async function main() {
     ],
   });
 
-  console.log('Usuarios creados correctamente');
+  console.log("Usuarios creados correctamente");
 
   await prisma.eventCategory.createMany({
     data: [
@@ -248,7 +248,7 @@ async function main() {
     skipDuplicates: true, // evita errores si ya existen
   });
 
-  console.log('Categorias creadas correctamente');
+  console.log("Categorias creadas correctamente");
 
   const events = await prisma.event.createMany({
     data: [
@@ -258,6 +258,9 @@ async function main() {
         title: "Evento de Prueba 01",
         imagePrincipalKey: "events/1761677737608_Evento_prueba.png",
         imageBannerKey: "events/1761677738279_Evento_prueba_banner.png",
+        refundPolicyFileKey: "refund_policies/1763014632484_Informatica.pdf",
+        refundPolicyText:
+          "Política de devoluciones para el evento de prueba 02",
         inPerson: false,
         status: "A",
         description:
@@ -272,6 +275,8 @@ async function main() {
         title: "Evento de Prueba 02",
         imagePrincipalKey: "events/1761677737608_Evento_prueba.png",
         imageBannerKey: "events/1761677738279_Evento_prueba_banner.png",
+        refundPolicyText:
+          "Política de devoluciones para el evento de prueba 02",
         inPerson: true,
         status: "A",
         description:
@@ -286,6 +291,7 @@ async function main() {
         title: "Evento de Prueba 03",
         imagePrincipalKey: "events/1761677737608_Evento_prueba.png",
         imageBannerKey: "events/1761677738279_Evento_prueba_banner.png",
+        refundPolicyFileKey: "refund_policies/1763014632484_Informatica.pdf",
         inPerson: true,
         status: "A",
         description:
@@ -300,6 +306,8 @@ async function main() {
         title: "Evento de Prueba 04",
         imagePrincipalKey: "events/1761677737608_Evento_prueba.png",
         imageBannerKey: "events/1761677738279_Evento_prueba_banner.png",
+        refundPolicyText:
+          "Política de devoluciones para el evento de prueba 01",
         inPerson: true,
         status: "A",
         description: "Evento ya finalizado, no debería aparecer en listado.",
@@ -719,7 +727,7 @@ async function main() {
     ]),
   });
 
-  console.log('Eventos creados correctamente');
+  console.log("Eventos creados correctamente");
 
   //Vista para graficos
   await prisma.$executeRawUnsafe(`
@@ -776,23 +784,22 @@ async function main() {
   LEFT JOIN public."EventDateZoneAllocation" a ON a."eventDateZoneAllocationId" = t."eventDateZoneAllocationId"; 
   `);
 
-  console.log('Vista ReportSaleTicket creada correctamente');
-
+  console.log("Vista ReportSaleTicket creada correctamente");
 
   //Triggers Auditoria
-	await prisma.$executeRawUnsafe(`
+  await prisma.$executeRawUnsafe(`
 		CREATE SCHEMA IF NOT EXISTS app;
 	`);
 
-	await prisma.$executeRawUnsafe(`
+  await prisma.$executeRawUnsafe(`
 		DO $$ BEGIN
-		  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'audit_operation_type') THEN
+		  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'auditOperationType') THEN
 			CREATE TYPE app."auditOperationType" AS ENUM ('INSERT','UPDATE','DELETE');
 		  END IF;
 		END $$;
 	`);
 
-	await prisma.$executeRawUnsafe(`
+  await prisma.$executeRawUnsafe(`
 		-- CABECERA: 1 fila por operación
 		CREATE TABLE IF NOT EXISTS app."AuditTransaction" (
 		  "auditTransactionId"   BIGSERIAL PRIMARY KEY,
@@ -805,17 +812,17 @@ async function main() {
 		);
 	`);
 
-	await prisma.$executeRawUnsafe(`
+  await prisma.$executeRawUnsafe(`
 		CREATE INDEX IF NOT EXISTS "ix_auditTransaction_createdAt"
 		  ON app."AuditTransaction" ("createdAt" DESC);
 	`);
 
-	await prisma.$executeRawUnsafe(`
+  await prisma.$executeRawUnsafe(`
 		CREATE INDEX IF NOT EXISTS "ix_auditTransaction_table_op"
 		  ON app."AuditTransaction" ("targetTableName", "operationType");
 	`);
 
-	await prisma.$executeRawUnsafe(`
+  await prisma.$executeRawUnsafe(`
 		-- DETALLE: 1 fila por columna afectada
 		CREATE TABLE IF NOT EXISTS app."AuditChange" (
 		  "auditChangeId"        BIGSERIAL PRIMARY KEY,
@@ -829,17 +836,17 @@ async function main() {
 		);
 	`);
 
-	await prisma.$executeRawUnsafe(`
+  await prisma.$executeRawUnsafe(`
 		CREATE INDEX IF NOT EXISTS "ix_auditChange_auditTransactionId"
 		  ON app."AuditChange" ("auditTransactionId");
 	`);
 
-	await prisma.$executeRawUnsafe(`
+  await prisma.$executeRawUnsafe(`
 		CREATE INDEX IF NOT EXISTS "ix_auditChange_columnName"
 		  ON app."AuditChange" ("columnName");
 	`);
 
-	await prisma.$executeRawUnsafe(`
+  await prisma.$executeRawUnsafe(`
 		-- FUNCION GENERICA PARA AUDITORIA
 		CREATE OR REPLACE FUNCTION app."tgAuditRow"() RETURNS TRIGGER AS $$
 		DECLARE
@@ -909,41 +916,41 @@ async function main() {
 		$$ LANGUAGE plpgsql SECURITY DEFINER;
 	`);
 
-// TRIGGER PARA CATEGORIAS
-await prisma.$executeRawUnsafe(`
+  // TRIGGER PARA CATEGORIAS
+  await prisma.$executeRawUnsafe(`
   DROP TRIGGER IF EXISTS "trAuditEventCategory" ON "EventCategory";
 `);
-await prisma.$executeRawUnsafe(`
+  await prisma.$executeRawUnsafe(`
   CREATE TRIGGER "trAuditEventCategory"
   AFTER INSERT OR UPDATE OR DELETE ON "EventCategory"
   FOR EACH ROW EXECUTE FUNCTION app."tgAuditRow"('eventCategoryId');
 `);
 
-// TRIGGER PARA EVENTOS
-await prisma.$executeRawUnsafe(`
+  // TRIGGER PARA EVENTOS
+  await prisma.$executeRawUnsafe(`
   DROP TRIGGER IF EXISTS "trAuditEvent" ON "Event";
 `);
-await prisma.$executeRawUnsafe(`
+  await prisma.$executeRawUnsafe(`
   CREATE TRIGGER "trAuditEvent"
   AFTER INSERT OR UPDATE OR DELETE ON "Event"
   FOR EACH ROW EXECUTE FUNCTION app."tgAuditRow"('eventId');
 `);
 
-// TRIGGER PARA USUARIOS
-await prisma.$executeRawUnsafe(`
+  // TRIGGER PARA USUARIOS
+  await prisma.$executeRawUnsafe(`
   DROP TRIGGER IF EXISTS "trAuditUser" ON "User";
 `);
-await prisma.$executeRawUnsafe(`
+  await prisma.$executeRawUnsafe(`
   CREATE TRIGGER "trAuditUser"
   AFTER INSERT OR UPDATE OR DELETE ON "User"
   FOR EACH ROW EXECUTE FUNCTION app."tgAuditRow"('userId');
 `);
 
-	// COMO LA FUNCION ES GENERICA SE PUEDE ADAPTAR A PARA CADA TABLA QUE SE QUIERA AUDITAR.
-	// NO OLVIDAR EN BACK USAR LOS MIDDLEWARES VERIFY TOKEN Y ATTACHUSERCONTEXT PARA OBTENER EL USER ID DE QUIEN REALIZO EL CAMBIO
-	// Y USAR LA FUNCION WITHAUDIT UBICADA EN /BACKEND/SRC/UTILS PARA GUARDAR EL USER ID EN BD.
+  // COMO LA FUNCION ES GENERICA SE PUEDE ADAPTAR A PARA CADA TABLA QUE SE QUIERA AUDITAR.
+  // NO OLVIDAR EN BACK USAR LOS MIDDLEWARES VERIFY TOKEN Y ATTACHUSERCONTEXT PARA OBTENER EL USER ID DE QUIEN REALIZO EL CAMBIO
+  // Y USAR LA FUNCION WITHAUDIT UBICADA EN /BACKEND/SRC/UTILS PARA GUARDAR EL USER ID EN BD.
 
-  console.log('Triggers de auditoria creados correctamente');
+  console.log("Triggers de auditoria creados correctamente");
 }
 
 main().finally(() => prisma.$disconnect());

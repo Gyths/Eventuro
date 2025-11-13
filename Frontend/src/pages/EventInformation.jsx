@@ -162,7 +162,7 @@ export default function TicketSelection() {
 
                 {/* Card de Información y entradas*/}
                 <div className="flex w-full lg:auto xl:w-1/2 justify-center items-center ">
-                  <div className="flex flex-col items-start md:p-3 xl:pr-5 xl:pl-5 xl:py-5 justify-start gap-3 w-[95vw] xl:w-[60vw] rounded-4xl md:rounded-3xl xl:rounded-none xl:rounded-r-4xl bg-white">
+                  <div className="flex flex-col items-start md:p-3 p-5 xl:pr-5 xl:pl-5 xl:py-5 justify-start gap-3 w-[95vw] xl:w-[60vw] rounded-4xl md:rounded-3xl xl:rounded-none xl:rounded-r-4xl bg-white">
                     <div className="flex flex-row justify-start items-center lg gap-2">
                       <ArrowButton
                         className="p-2"
@@ -170,7 +170,7 @@ export default function TicketSelection() {
                       ></ArrowButton>
                       {/* Título */}
                       <div className="inline-flex text-start flex-wrap flex-row">
-                        <h1 className="inline-block font-bold text-3xl xl:text-3xl">
+                        <h1 className="inline-block font-bold text-2xl xl:text-3xl">
                           {event?.title}
                         </h1>
                       </div>
@@ -225,7 +225,7 @@ export default function TicketSelection() {
                     <div className="flex w-full flex-col py-2">
                       <div className="flex flex-row pl-10">
                         {event?.salesPhases ? (
-                          <span className="flex font-semibold text-2xl justify-start items">
+                          <span className="flex font-semibold text-2xl justify-start text-start">
                             Precios - Fase {event?.salesPhases[0].name}
                           </span>
                         ) : (
@@ -315,36 +315,35 @@ export default function TicketSelection() {
                 <div className="flex flex-col lg:flex-row justify-between gap-12 lg:gap-20">
                   {/* Texto de política */}
                   <div className="flex flex-col gap-4 w-full lg:w-1/3 pt-16">
-                    <div className="flex flex-row gap-8 items-center">
+                    <div className="flex flex-wrap gap-8 items-center">
                       <h1 className="font-bold text-3xl">
                         Política de devoluciones
                       </h1>
 
-                      {event.refundPolicyFileURLSigned && (
+                      {event.refundPolicyFileURLSigned &&
+                      event.refundPolicyText ? (
                         <button
                           onClick={() => setModal("refundPolicy")}
                           className="flex px-4 py-2 w-auto bg-gray-100 border border-gray-400 hover:bg-gray-200 hover:scale-98 transition-all text-gray-600 rounded-lg text-sm font-medium cursor-pointer"
                         >
                           Ver pdf
                         </button>
+                      ) : (
+                        ""
                       )}
                     </div>
 
                     {event?.refundPolicyText ? (
                       <span>{event.refundPolicyText}</span>
+                    ) : event.refundPolicyFileURLSigned ? (
+                      <button
+                        onClick={() => setModal("refundPolicy")}
+                        className="flex text-center justify-center px-4 py-2 w-24 bg-gray-100 border border-gray-400 hover:bg-gray-200 hover:scale-98 transition-all text-gray-600 rounded-lg text-sm font-medium cursor-pointer"
+                      >
+                        Ver pdf
+                      </button>
                     ) : (
-                      <span className="inline-block text-justify leading-relaxed text-gray-700">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                        Vestibulum gravida ullamcorper massa in convallis. Nunc
-                        non viverra lacus. Ut est tellus, iaculis in imperdiet
-                        a, tempus a neque. Nulla auctor sagittis purus. Nullam
-                        libero turpis, mollis quis mauris eu, interdum porta
-                        odio. Mauris egestas euismod ipsum, sed tincidunt ipsum
-                        blandit a. Pellentesque habitant morbi tristique
-                        senectus et netus et malesuada fames ac turpis egestas.
-                        Praesent vel semper eros. Aenean sit amet lorem aliquet,
-                        lobortis est vel, rhoncus arcu.
-                      </span>
+                      ""
                     )}
                   </div>
 
