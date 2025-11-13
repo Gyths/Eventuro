@@ -1,4 +1,3 @@
-// src/pages/reclamos/MisReclamos.jsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -11,15 +10,43 @@ function Badge({ estado }) {
     Resuelto: "bg-green-100 text-green-700",
   };
   return (
-    <span
-      className={`px-2 py-0.5 rounded-full text-xs ${map[estado] || "bg-gray-100 text-gray-700"}`}
-    >
+    <span className={`px-2 py-0.5 rounded-full text-xs ${map[estado] || "bg-gray-100 text-gray-700"}`}>
       {estado}
     </span>
   );
 }
 
-// --------- demo data (solo para maqueta) ----------
+/* ===== Vista previa de evidencia ===== */
+function EvidencePreview({ name, type, dataUrl }) {
+  if (!dataUrl || !type) return null;
+
+  if (type.startsWith("image/")) {
+    return (
+      <div className="mt-3">
+        <img src={dataUrl} alt={name || "Evidencia"} className="max-h-[320px] rounded-lg border border-gray-200" />
+      </div>
+    );
+  }
+
+  if (type === "application/pdf") {
+    return (
+      <div className="mt-3 h-[420px] border border-gray-200 rounded-lg overflow-hidden">
+        <iframe title={name || "PDF"} src={`${dataUrl}#toolbar=1&navpanes=0`} className="w-full h-full" />
+      </div>
+    );
+  }
+
+  // otros tipos: ofrecer descarga
+  return (
+    <div className="mt-2">
+      <a href={dataUrl} download={name} className="text-indigo-600 underline">
+        Descargar {name || "archivo"}
+      </a>
+    </div>
+  );
+}
+
+/* --------- demo data (solo para maqueta) ---------- */
 function seedDemoIfEmpty() {
   const KEY = "reclamos_eventuro";
   const existing = localStorage.getItem(KEY);
@@ -29,46 +56,20 @@ function seedDemoIfEmpty() {
     {
       id: "R-240901-001",
       estado: "Pendiente",
-      fecha: "09/09/2025",
+      fecha: "2025-09-09",
       detalle: {
         tipoReclamo: "Error en el pago con tarjeta",
-        descripcionReclamo:
-          "Intenté comprar una entrada, pero la pasarela no procesó el pago y salió un mensaje de error.",
-        solucionEsperada:
-          "Devolución del monto retenido o validación de la compra para obtener el ticket.",
-        evidenciaNombre: "screenshot_2025-09-09_1203.png",
-      },
-    },
-    {
-      id: "R-240812-014",
-      estado: "Resuelto",
-      fecha: "12/08/2025",
-      detalle: {
-        tipoReclamo: "Ticket no enviado al correo",
-        descripcionReclamo:
-          "Realicé la compra y no recibí el ticket en mi bandeja ni en spam.",
-        solucionEsperada: "Reenvío inmediato del ticket y confirmación por correo.",
-        evidenciaNombre: "comprobante_123456.pdf",
-      },
-    },
-    {
-      id: "R-240826-007",
-      estado: "En revisión",
-      fecha: "26/08/2025",
-      detalle: {
-        tipoReclamo: "Error en datos del ticket",
-        descripcionReclamo:
-          "El nombre del ticket no coincide con el ingresado en el formulario.",
-        solucionEsperada: "Actualización del nombre sin costo adicional.",
-        evidenciaNombre: "captura_datos_ticket.png",
+        descripcionReclamo: "Intenté comprar una entrada, pero la pasarela no procesó el pago.",
+        solucionEsperada: "Devolución del monto o validación de la compra.",
+        evidenciaNombre: "screenshot.png",
+        // evidenciaType/evidenciaDataUrl: vacíos en demo -> no habrá preview
       },
     },
   ];
-
   localStorage.setItem(KEY, JSON.stringify(demo));
   return demo;
 }
-// --------------------------------------------------
+/* -------------------------------------------------- */
 
 export default function MisReclamos() {
   const navigate = useNavigate();
@@ -78,7 +79,8 @@ export default function MisReclamos() {
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
-    const raw = seedDemoIfEmpty(); // carga demo si está vacío
+    const KEY = "reclamos_eventuro";
+    const raw = JSON.parse(localStorage.getItem(KEY) || "null") || seedDemoIfEmpty();
     setItems(raw);
     setSelected(raw[0] || null);
   }, []);
@@ -87,10 +89,8 @@ export default function MisReclamos() {
     return items.filter((it) => {
       const okEstado = estado === "Todos" || it.estado === estado;
       const text =
-        (it.detalle?.descripcionReclamo || "") +
-        " " +
-        (it.detalle?.tipoReclamo || "") +
-        " " +
+        (it.detalle?.descripcionReclamo || "") + " " +
+        (it.detalle?.tipoReclamo || "") + " " +
         (it.id || "");
       const okQ = !q.trim() || text.toLowerCase().includes(q.toLowerCase());
       return okEstado && okQ;
@@ -103,7 +103,7 @@ export default function MisReclamos() {
       <div className="lg:col-span-5">
         <div className="mb-4 flex items-center gap-3">
           <input
-            placeholder="Search..."
+            placeholder="Buscar…"
             className="flex-1 rounded-xl border border-gray-300 px-3 py-2"
             value={q}
             onChange={(e) => setQ(e.target.value)}
@@ -118,7 +118,6 @@ export default function MisReclamos() {
             ))}
           </select>
 
-          {/* Botón crear reclamo (toolbar) */}
           <button
             onClick={() => navigate("/reclamos/nuevo")}
             className="rounded-xl bg-amber-500 text-white px-3 py-2 hover:bg-amber-600"
@@ -144,7 +143,7 @@ export default function MisReclamos() {
                 <Badge estado={it.estado} />
               </div>
               <p className="text-xs text-gray-500 mt-1">ID: {it.id}</p>
-              <p className="text-sm text-gray-500 mt-1">Tipo de reclamo</p>
+              <p className="text-sm text-gray-500 mt-1">{it.fecha}</p>
             </button>
           ))}
 
@@ -178,21 +177,15 @@ export default function MisReclamos() {
               </div>
               <div>
                 <dt className="text-gray-500">Tipo:</dt>
-                <dd className="text-gray-900">
-                  {selected.detalle?.tipoReclamo || "—"}
-                </dd>
+                <dd className="text-gray-900">{selected.detalle?.tipoReclamo || "—"}</dd>
               </div>
               <div className="sm:col-span-2">
                 <dt className="text-gray-500">Descripción:</dt>
-                <dd className="text-gray-900">
-                  {selected.detalle?.descripcionReclamo || "—"}
-                </dd>
+                <dd className="text-gray-900">{selected.detalle?.descripcionReclamo || "—"}</dd>
               </div>
               <div className="sm:col-span-2">
                 <dt className="text-gray-500">Solución esperada:</dt>
-                <dd className="text-gray-900">
-                  {selected.detalle?.solucionEsperada || "—"}
-                </dd>
+                <dd className="text-gray-900">{selected.detalle?.solucionEsperada || "—"}</dd>
               </div>
               <div className="sm:col-span-2">
                 <dt className="text-gray-500">Evidencia adjunta:</dt>
@@ -201,6 +194,13 @@ export default function MisReclamos() {
                 </dd>
               </div>
             </dl>
+
+            {/* Vista previa */}
+            <EvidencePreview
+              name={selected.detalle?.evidenciaNombre}
+              type={selected.detalle?.evidenciaType}
+              dataUrl={selected.detalle?.evidenciaDataUrl}
+            />
           </div>
         ) : (
           <div className="rounded-2xl border border-dashed border-gray-300 p-8 text-center text-gray-500">

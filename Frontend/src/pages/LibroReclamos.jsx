@@ -1,8 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import ClaimSuccessModal from "../components/ClaimSuccessModal.jsx";
 
-/* ======================= Modelos/Constantes estáticas ======================= */
-const RECLAMO_ESTADOS = ["Pendiente", "En revisión", "Resuelto"];
+/* ======================= Constantes ======================= */
 const RECLAMO_TIPOS = [
   "Reclamo por funcionamiento de página",
   "Reclamo por cobro/compra",
@@ -11,13 +10,57 @@ const RECLAMO_TIPOS = [
 ];
 const TIPOS_BIEN = ["Producto", "Servicio"];
 
-/* ======================= UI helpers ======================= */
-function StepBadge({ number }) {
+/* ======================= Inputs (fuera del componente) ======================= */
+function Input({ label, name, value, onChange, required, type = "text", className = "", placeholder, autoComplete, error }) {
   return (
-    <div className="h-9 w-9 rounded-full bg-amber-400 text-white grid place-items-center font-bold shadow">
-      {number}
+    <div>
+      <label htmlFor={name} className="block text-sm text-gray-600 mb-1">
+        {label}{required && " *"}
+      </label>
+      <input
+        id={name} name={name} type={type} value={value} onChange={onChange} required={required}
+        placeholder={placeholder} autoComplete={autoComplete}
+        className={`w-full rounded-lg border px-3 py-2 ${className} ${error ? "border-rose-400" : "border-gray-300"}`}
+      />
+      {error && <p className="text-xs text-rose-600 mt-1">{error}</p>}
     </div>
   );
+}
+function TextArea({ label, name, value, onChange, required, rows = 4, className = "", placeholder, error }) {
+  return (
+    <div>
+      <label htmlFor={name} className="block text-sm text-gray-600 mb-1">
+        {label}{required && " *"}
+      </label>
+      <textarea
+        id={name} name={name} value={value} onChange={onChange} required={required} rows={rows} placeholder={placeholder}
+        className={`w-full rounded-lg border px-3 py-2 resize-y ${className} ${error ? "border-rose-400" : "border-gray-300"}`}
+      />
+      {error && <p className="text-xs text-rose-600 mt-1">{error}</p>}
+    </div>
+  );
+}
+function Select({ label, name, value, onChange, required, options = [], className = "", error }) {
+  return (
+    <div>
+      <label htmlFor={name} className="block text-sm text-gray-600 mb-1">
+        {label}{required && " *"}
+      </label>
+      <select
+        id={name} name={name} value={value} onChange={onChange} required={required}
+        className={`w-full rounded-lg border px-3 py-2 ${className} ${error ? "border-rose-400" : "border-gray-300"}`}
+      >
+        <option value="">Sin seleccionar</option>
+        {options.map((o) => <option key={o} value={o}>{o}</option>)}
+      </select>
+      {error && <p className="text-xs text-rose-600 mt-1">{error}</p>}
+    </div>
+  );
+}
+
+/* ======================= UI helpers ======================= */
+function StepBadge({ number }) {
+  return <div className="h-9 w-9 rounded-full bg-amber-400 text-white grid place-items-center font-bold shadow">{number}</div>;
 }
 function WizardCard({ title, subtitle, badge, children }) {
   return (
@@ -95,34 +138,42 @@ export default function LibroReclamos() {
     else window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // ===== Paso 1: Información del cliente =====
+  // Paso 1
   const [cliente, setCliente] = useState({
-    nombres: "",
-    primerApellido: "",
-    segundoApellido: "",
-    telefono: "",
-    email: "",
-    numeroDocumento: "",
-    provincia: "",
-    distrito: "",
-    direccion: "",
-    menorEdad: null, // true | false | null
+    nombres: "", primerApellido: "", segundoApellido: "",
+    telefono: "", email: "", numeroDocumento: "",
+    provincia: "", distrito: "", direccion: "", menorEdad: null,
   });
 
-  // ===== Paso 2: Detalles del reclamo =====
+  // Paso 2
   const [detalle, setDetalle] = useState({
-    nombreEvento: "",
-    numeroTicket: "",
-    montoReclamado: "",
-    tipoBien: "",
-    tipoReclamo: "",
-    descripcionBien: "",
-    descripcionReclamo: "",
-    solucionEsperada: "",
-    evidencia: null, // File
+    nombreEvento: "", numeroTicket: "", montoReclamado: "",
+    tipoBien: "", tipoReclamo: "", descripcionBien: "",
+    descripcionReclamo: "", solucionEsperada: "",
+    evidencia: null, evidenciaType: null, evidenciaDataUrl: null, evidenciaNombre: null,
   });
 
-  // Validaciones y errores
+  // Captura/preview de archivo
+  const handleFile = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      setDetalle(d => ({ ...d, evidencia: null, evidenciaType: null, evidenciaDataUrl: null, evidenciaNombre: null }));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setDetalle(d => ({
+        ...d,
+        evidencia: file,
+        evidenciaType: file.type,
+        evidenciaDataUrl: reader.result,  // dataURL para persistir en localStorage
+        evidenciaNombre: file.name,
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Validaciones
   const [errors, setErrors] = useState({});
   const validateStep = (idx) => {
     const err = {};
@@ -150,84 +201,46 @@ export default function LibroReclamos() {
 
   const handleNext = () => {
     const ok = validateStep(current);
-    if (ok) {
-      setCurrent((c) => Math.min(steps.length - 1, c + 1));
-    } else {
-      scrollToCurrentCardTop();
-    }
+    if (ok) setCurrent((c) => Math.min(steps.length - 1, c + 1));
+    else scrollToCurrentCardTop();
   };
   const handlePrev = () => setCurrent((c) => Math.max(0, c - 1));
 
-  // Confirmación (paso 3) — scroll largo estilo mockup
+  // Envío (mock a localStorage)
   const [sending, setSending] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
 
-  // Simulación de envío y almacenamiento local
   const handleSubmit = async () => {
     const ok = validateStep(2);
     if (!ok) return;
     setSending(true);
-    await new Promise((r) => setTimeout(r, 900)); // fake delay
-    // Guardar en localStorage como "base estática"
-    const prev = JSON.parse(localStorage.getItem("reclamos_eventuro") || "[]");
+    await new Promise((r) => setTimeout(r, 600));
+
+    const KEY = "reclamos_eventuro";
+    const prev = JSON.parse(localStorage.getItem(KEY) || "[]");
     const nuevo = {
-      id: Date.now(),
+      id: Date.now().toString(),
       estado: "Pendiente",
       fecha: new Date().toISOString().slice(0, 10),
       cliente,
       detalle: {
-        ...detalle,
-        evidenciaNombre: detalle.evidencia?.name || null,
+        nombreEvento: detalle.nombreEvento,
+        numeroTicket: detalle.numeroTicket,
+        montoReclamado: detalle.montoReclamado,
+        tipoBien: detalle.tipoBien,
+        tipoReclamo: detalle.tipoReclamo,
+        descripcionBien: detalle.descripcionBien,
+        descripcionReclamo: detalle.descripcionReclamo,
+        solucionEsperada: detalle.solucionEsperada,
+        evidenciaNombre: detalle.evidenciaNombre || null,
+        evidenciaType: detalle.evidenciaType || null,
+        evidenciaDataUrl: detalle.evidenciaDataUrl || null,
       },
     };
-    localStorage.setItem("reclamos_eventuro", JSON.stringify([nuevo, ...prev]));
+    localStorage.setItem(KEY, JSON.stringify([nuevo, ...prev]));
     setSending(false);
     setSuccessOpen(true);
   };
-
-  // Render helpers
-  const Input = (p) => (
-    <div>
-      <label className="block text-sm text-gray-600 mb-1">{p.label}{p.required && " *"}</label>
-      <input
-        {...p}
-        className={`w-full rounded-lg border px-3 py-2 ${p.className || ""} ${
-          errors[p.name] ? "border-rose-400" : "border-gray-300"
-        }`}
-      />
-      {errors[p.name] && <p className="text-xs text-rose-600 mt-1">{errors[p.name]}</p>}
-    </div>
-  );
-  const TextArea = (p) => (
-    <div>
-      <label className="block text-sm text-gray-600 mb-1">{p.label}{p.required && " *"}</label>
-      <textarea
-        {...p}
-        rows={p.rows || 4}
-        className={`w-full rounded-lg border px-3 py-2 resize-y ${p.className || ""} ${
-          errors[p.name] ? "border-rose-400" : "border-gray-300"
-        }`}
-      />
-      {errors[p.name] && <p className="text-xs text-rose-600 mt-1">{errors[p.name]}</p>}
-    </div>
-  );
-  const Select = (p) => (
-    <div>
-      <label className="block text-sm text-gray-600 mb-1">{p.label}{p.required && " *"}</label>
-      <select
-        {...p}
-        className={`w-full rounded-lg border px-3 py-2 ${p.className || ""} ${
-          errors[p.name] ? "border-rose-400" : "border-gray-300"
-        }`}
-      >
-        <option value="">Sin seleccionar</option>
-        {p.options.map((o) => (
-          <option key={o} value={o}>{o}</option>
-        ))}
-      </select>
-      {errors[p.name] && <p className="text-xs text-rose-600 mt-1">{errors[p.name]}</p>}
-    </div>
-  );
 
   return (
     <section className="mx-auto max-w-screen-2xl px-6 lg:px-10 py-6 space-y-6">
@@ -236,63 +249,29 @@ export default function LibroReclamos() {
 
       {/* Paso 1 */}
       <div ref={(el) => (cardRefs.current[0] = el)} className={current === 0 ? "block" : "hidden"}>
-        <WizardCard
-          badge={<StepBadge number={1} />}
-          title="Información del cliente"
-          subtitle="*Marcados como campos obligatorios"
-        >
+        <WizardCard badge={<StepBadge number={1} />} title="Información del cliente" subtitle="*Marcados como campos obligatorios">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Input
-              label="Nombres" name="nombres" required
-              value={cliente.nombres} onChange={(e)=>setCliente(c=>({...c,nombres:e.target.value}))}
-            />
-            <Input
-              label="Primer Apellido" name="primerApellido" required
-              value={cliente.primerApellido} onChange={(e)=>setCliente(c=>({...c,primerApellido:e.target.value}))}
-            />
-            <Input
-              label="Segundo Apellido" name="segundoApellido"
-              value={cliente.segundoApellido} onChange={(e)=>setCliente(c=>({...c,segundoApellido:e.target.value}))}
-            />
-            <Input
-              label="Número de documento" name="numeroDocumento" required
-              value={cliente.numeroDocumento} onChange={(e)=>setCliente(c=>({...c,numeroDocumento:e.target.value}))}
-            />
-            <Input
-              label="Teléfono" name="telefono" required
-              value={cliente.telefono} onChange={(e)=>setCliente(c=>({...c,telefono:e.target.value}))}
-            />
-            <Input
-              label="Correo Electrónico" name="email" required type="email"
-              value={cliente.email} onChange={(e)=>setCliente(c=>({...c,email:e.target.value}))}
-            />
-            <Input
-              label="Provincia" name="provincia" required
-              value={cliente.provincia} onChange={(e)=>setCliente(c=>({...c,provincia:e.target.value}))}
-            />
-            <Input
-              label="Distrito" name="distrito" required
-              value={cliente.distrito} onChange={(e)=>setCliente(c=>({...c,distrito:e.target.value}))}
-            />
+            <Input label="Nombres" name="nombres" required value={cliente.nombres} onChange={(e)=>setCliente(c=>({...c,nombres:e.target.value}))} error={errors.nombres}/>
+            <Input label="Primer Apellido" name="primerApellido" required value={cliente.primerApellido} onChange={(e)=>setCliente(c=>({...c,primerApellido:e.target.value}))} error={errors.primerApellido}/>
+            <Input label="Segundo Apellido" name="segundoApellido" value={cliente.segundoApellido} onChange={(e)=>setCliente(c=>({...c,segundoApellido:e.target.value}))} error={errors.segundoApellido}/>
+            <Input label="Número de documento" name="numeroDocumento" required value={cliente.numeroDocumento} onChange={(e)=>setCliente(c=>({...c,numeroDocumento:e.target.value}))} error={errors.numeroDocumento}/>
+            <Input label="Teléfono" name="telefono" required value={cliente.telefono} onChange={(e)=>setCliente(c=>({...c,telefono:e.target.value}))} error={errors.telefono}/>
+            <Input label="Correo Electrónico" name="email" type="email" required value={cliente.email} onChange={(e)=>setCliente(c=>({...c,email:e.target.value}))} error={errors.email}/>
+            <Input label="Provincia" name="provincia" required value={cliente.provincia} onChange={(e)=>setCliente(c=>({...c,provincia:e.target.value}))} error={errors.provincia}/>
+            <Input label="Distrito" name="distrito" required value={cliente.distrito} onChange={(e)=>setCliente(c=>({...c,distrito:e.target.value}))} error={errors.distrito}/>
             <div className="md:col-span-2">
-              <Input
-                label="Dirección" name="direccion" required
-                value={cliente.direccion} onChange={(e)=>setCliente(c=>({...c,direccion:e.target.value}))}
-              />
+              <Input label="Dirección" name="direccion" required value={cliente.direccion} onChange={(e)=>setCliente(c=>({...c,direccion:e.target.value}))} error={errors.direccion}/>
             </div>
-
             <div className="md:col-span-2">
               <p className="text-sm text-gray-600 mb-1">
                 ¿Eres menor de edad? {errors.menorEdad && <span className="text-rose-600"> (requerido)</span>}
               </p>
               <div className="flex items-center gap-6">
                 <label className="inline-flex items-center gap-2">
-                  <input type="radio" name="menor" onChange={()=>setCliente(c=>({...c,menorEdad:true}))} checked={cliente.menorEdad===true}/>
-                  <span>Si</span>
+                  <input type="radio" name="menor" onChange={()=>setCliente(c=>({...c,menorEdad:true}))} checked={cliente.menorEdad===true}/><span>Sí</span>
                 </label>
                 <label className="inline-flex items-center gap-2">
-                  <input type="radio" name="menor" onChange={()=>setCliente(c=>({...c,menorEdad:false}))} checked={cliente.menorEdad===false}/>
-                  <span>No</span>
+                  <input type="radio" name="menor" onChange={()=>setCliente(c=>({...c,menorEdad:false}))} checked={cliente.menorEdad===false}/><span>No</span>
                 </label>
               </div>
             </div>
@@ -302,68 +281,28 @@ export default function LibroReclamos() {
 
       {/* Paso 2 */}
       <div ref={(el) => (cardRefs.current[1] = el)} className={current === 1 ? "block" : "hidden"}>
-        <WizardCard
-          badge={<StepBadge number={2} />}
-          title="Detalles del reclamo"
-          subtitle="Completa los campos del reclamo"
-        >
+        <WizardCard badge={<StepBadge number={2} />} title="Detalles del reclamo" subtitle="Completa los campos del reclamo">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Input
-              label="Nombre de Evento" name="nombreEvento" required
-              value={detalle.nombreEvento} onChange={(e)=>setDetalle(d=>({...d,nombreEvento:e.target.value}))}
-            />
-            <Input
-              label="Número de ticket" name="numeroTicket"
-              value={detalle.numeroTicket} onChange={(e)=>setDetalle(d=>({...d,numeroTicket:e.target.value}))}
-            />
-            <Input
-              label="Monto reclamado" name="montoReclamado"
-              value={detalle.montoReclamado} onChange={(e)=>setDetalle(d=>({...d,montoReclamado:e.target.value}))}
-            />
-            <Select
-              label="Tipo de reclamo" name="tipoReclamo" required options={RECLAMO_TIPOS}
-              value={detalle.tipoReclamo} onChange={(e)=>setDetalle(d=>({...d,tipoReclamo:e.target.value}))}
-            />
-            <Select
-              label="Tipo de bien" name="tipoBien" required options={TIPOS_BIEN}
-              value={detalle.tipoBien} onChange={(e)=>setDetalle(d=>({...d,tipoBien:e.target.value}))}
-            />
-            <TextArea
-              label="Descripción del bien" name="descripcionBien" rows={3}
-              value={detalle.descripcionBien} onChange={(e)=>setDetalle(d=>({...d,descripcionBien:e.target.value}))}
-            />
-            <TextArea
-              label="Descripción del reclamo" name="descripcionReclamo" required rows={5}
-              value={detalle.descripcionReclamo} onChange={(e)=>setDetalle(d=>({...d,descripcionReclamo:e.target.value}))}
-            />
-            <TextArea
-              label="Solución esperada" name="solucionEsperada" required rows={5}
-              value={detalle.solucionEsperada} onChange={(e)=>setDetalle(d=>({...d,solucionEsperada:e.target.value}))}
-            />
-
+            <Input label="Nombre de Evento" name="nombreEvento" required value={detalle.nombreEvento} onChange={(e)=>setDetalle(d=>({...d,nombreEvento:e.target.value}))} error={errors.nombreEvento}/>
+            <Input label="Número de ticket" name="numeroTicket" value={detalle.numeroTicket} onChange={(e)=>setDetalle(d=>({...d,numeroTicket:e.target.value}))} error={errors.numeroTicket}/>
+            <Input label="Monto reclamado" name="montoReclamado" value={detalle.montoReclamado} onChange={(e)=>setDetalle(d=>({...d,montoReclamado:e.target.value}))} error={errors.montoReclamado}/>
+            <Select label="Tipo de reclamo" name="tipoReclamo" required options={RECLAMO_TIPOS} value={detalle.tipoReclamo} onChange={(e)=>setDetalle(d=>({...d,tipoReclamo:e.target.value}))} error={errors.tipoReclamo}/>
+            <Select label="Tipo de bien" name="tipoBien" required options={TIPOS_BIEN} value={detalle.tipoBien} onChange={(e)=>setDetalle(d=>({...d,tipoBien:e.target.value}))} error={errors.tipoBien}/>
+            <TextArea label="Descripción del bien" name="descripcionBien" rows={3} value={detalle.descripcionBien} onChange={(e)=>setDetalle(d=>({...d,descripcionBien:e.target.value}))} error={errors.descripcionBien}/>
+            <TextArea label="Descripción del reclamo" name="descripcionReclamo" required rows={5} value={detalle.descripcionReclamo} onChange={(e)=>setDetalle(d=>({...d,descripcionReclamo:e.target.value}))} error={errors.descripcionReclamo}/>
+            <TextArea label="Solución esperada" name="solucionEsperada" required rows={5} value={detalle.solucionEsperada} onChange={(e)=>setDetalle(d=>({...d,solucionEsperada:e.target.value}))} error={errors.solucionEsperada}/>
             <div className="md:col-span-2">
               <label className="block text-sm text-gray-600 mb-1">Evidencia adjunta (opcional)</label>
-              <input
-                type="file"
-                accept="image/*,application/pdf"
-                onChange={(e) => setDetalle((d) => ({ ...d, evidencia: e.target.files?.[0] || null }))}
-                className="block w-full rounded-lg border border-gray-300 px-3 py-2 bg-white"
-              />
-              {detalle.evidencia && (
-                <p className="text-xs text-gray-500 mt-1">Archivo: {detalle.evidencia.name}</p>
-              )}
+              <input type="file" accept="image/*,application/pdf" onChange={handleFile} className="block w-full rounded-lg border border-gray-300 px-3 py-2 bg-white"/>
+              {detalle.evidenciaNombre && <p className="text-xs text-gray-500 mt-1">Archivo: {detalle.evidenciaNombre}</p>}
             </div>
           </div>
         </WizardCard>
       </div>
 
-      {/* Paso 3 (confirmación con scroll) */}
+      {/* Paso 3 */}
       <div ref={(el) => (cardRefs.current[2] = el)} className={current === 2 ? "block" : "hidden"}>
-        <WizardCard
-          badge={<StepBadge number={3} />}
-          title="Confirmación de envío"
-          subtitle="Revisa toda la información antes de enviar"
-        >
+        <WizardCard badge={<StepBadge number={3} />} title="Confirmación de envío" subtitle="Revisa toda la información antes de enviar">
           <div className="space-y-8 max-h-[70vh] overflow-auto pr-1">
             <section>
               <h4 className="text-lg font-semibold mb-3">Información del cliente</h4>
@@ -394,32 +333,21 @@ export default function LibroReclamos() {
                 <div className="md:col-span-2"><span className="text-gray-500">Descripción del bien:</span> {detalle.descripcionBien || "—"}</div>
                 <div className="md:col-span-2"><span className="text-gray-500">Descripción del reclamo:</span> {detalle.descripcionReclamo || "—"}</div>
                 <div className="md:col-span-2"><span className="text-gray-500">Solución esperada:</span> {detalle.solucionEsperada || "—"}</div>
-                <div className="md:col-span-2"><span className="text-gray-500">Evidencia:</span> {detalle.evidencia?.name || "—"}</div>
+                <div className="md:col-span-2"><span className="text-gray-500">Evidencia:</span> {detalle.evidenciaNombre || "—"}</div>
               </div>
             </section>
           </div>
         </WizardCard>
       </div>
 
-      {/* Barra inferior fija con controles */}
+      {/* Barra inferior */}
       <div className="sticky bottom-3 z-10">
         <div className="rounded-2xl bg-white/80 backdrop-blur border border-gray-200 p-3 sm:p-4 shadow-lg">
-          <WizardControls
-            current={current}
-            total={steps.length}
-            onPrev={handlePrev}
-            onNext={handleNext}
-            onSubmit={handleSubmit}
-            submitting={sending}
-          />
+          <WizardControls current={current} total={steps.length} onPrev={handlePrev} onNext={handleNext} onSubmit={handleSubmit} submitting={sending}/>
         </div>
       </div>
 
-      {/* Modal de éxito */}
-      <ClaimSuccessModal
-        open={successOpen}
-        onClose={() => setSuccessOpen(false)}
-      />
+      <ClaimSuccessModal open={successOpen} onClose={() => setSuccessOpen(false)} />
     </section>
   );
 }
