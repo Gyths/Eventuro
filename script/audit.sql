@@ -122,7 +122,7 @@ FOR EACH ROW EXECUTE FUNCTION app."tgAuditRow"('eventId');
 
 -- TRIGGER PARA USUARIOS
 DROP TRIGGER IF EXISTS "trAuditUser" ON "User";
-CREATE TRIGGER "trAuditEventCategory"
+CREATE TRIGGER "trAuditUser" --revisar si es trAuditUser o trAuditEventCategory
 AFTER INSERT OR UPDATE OR DELETE ON "User"
 FOR EACH ROW EXECUTE FUNCTION app."tgAuditRow"('userId');
 
