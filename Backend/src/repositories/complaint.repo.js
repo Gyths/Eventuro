@@ -1,14 +1,13 @@
-import { prisma } from '../config/prisma.config.js';
+import { prisma } from '../utils/prisma.js';
 import { uploadFile, getSignedUrlForFile } from "../utils/s3.js";
 
-export async function createComplaintRepo(input) {
-  const buffer = input.evidence.buffer;
-  const fileName = `evidence/${Date.now()}_${input.evidence.originalname
-    }`;
-  evidenceKey = await uploadFile(
+export async function createComplaintRepo(input, evidenceFile) {
+  const buffer = evidenceFile.buffer;
+  const fileName = `evidence/${Date.now()}_${evidenceFile.originalname}`;
+  const evidenceKey = await uploadFile(
     fileName,
     buffer,
-    input.evidence.mimetype
+    evidenceFile.mimetype
   );
 
   return await prisma.complaint.create({
