@@ -31,3 +31,10 @@ export async function createComplaintRepo(input, evidenceFile) {
     },
   });
 }
+
+export async function listComplaintsByUserRepo(userId) {
+  return await prisma.complaint.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'desc' },
+  });
+}
