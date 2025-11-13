@@ -40,11 +40,6 @@ export default function TicketSelection() {
   const [selectedData, setSelectedData] = React.useState();
   const currencies = { PEN: "S/." };
 
-  const [showModal, setShowModal] = React.useState(false);
-
-  const openModal = () => setShowModal(true);
-  const closeModal = () => setShowModal(false);
-
   React.useEffect(() => {
     //Llamada a la api del back para consultar disponibilidad de un evento
     const fetchAvailability = async () => {
