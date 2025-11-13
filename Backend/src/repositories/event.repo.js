@@ -68,6 +68,7 @@ export async function createEventRepo(userId, input) {
     const zones = input.zones ? JSON.parse(input.zones) : [];
     const accessPolicyDescription = input.accessPolicyDescription ?? null;
     const salePhases = input.salePhases ? JSON.parse(input.salePhases) : [];
+    const refundPolicyText = input.refundPolicyText ?? null;
 
     // --- Crear evento ---
     const event = await tx.event.create({
@@ -81,6 +82,7 @@ export async function createEventRepo(userId, input) {
         description: input.description,
         accessPolicy: input.accessPolicy,
         accessPolicyDescription: input.accessPolicyDescription ?? null,
+        refundPolicyText: refundPolicyText,
       },
       select: { eventId: true },
     });
