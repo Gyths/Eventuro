@@ -207,6 +207,7 @@ export async function createEventRepo(userId, input) {
             basePrice: Number(zone.basePrice),
             capacity: Number(zone.capacity),
             capacityRemaining: initialCapacityRemaining,
+            quantityTicketsReleased : initialCapacityRemaining,
             seatMapId,
             currency: zone.currency,
           },

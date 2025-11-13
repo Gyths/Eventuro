@@ -25,11 +25,14 @@ export async function refreshStagedSaleCapacity() {
   for (const z of zones) {
     const e = z.eventDate.event;
 
-    // Si ya está lleno, skip
-    if (z.capacityRemaining >= z.capacity) continue;
-
     // Debe tener venta escalonada válida
     if (!e.stagedSale || !e.quantityStagedSale || !e.stagedSalePeriod) continue;
+
+    // Si ya se liberó todo, no hacer nada
+    if (z.quantityTicketsReleased >= z.capacity) continue;
+
+    // Si ya está lleno, skip
+    if (z.capacityRemaining >= z.capacity) continue;
 
     // Determinar el periodo en milisegundos
     const periodMs =
@@ -43,10 +46,19 @@ export async function refreshStagedSaleCapacity() {
     const now = new Date();
     const lastInc = new Date(z.lastCapacityRemainingIncrement);
 
-    // Verificar si ya corresponde liberar
+    // Si ya pasó el tiempo necesario, liberar más entradas
     if (now - lastInc >= periodMs) {
       const qtyToAdd = Number(e.quantityStagedSale);
-      const newCapacityRemaining = Math.min(z.capacity, z.capacityRemaining + qtyToAdd);
+
+      // Cuántas aún faltan por liberar
+      const remainingToRelease = z.capacity - z.quantityTicketsReleased;
+
+      // Solo libera lo que falta, sin pasarse
+      const increment = Math.min(qtyToAdd, remainingToRelease);
+
+      // Nuevo capacityRemaining
+      const newCapacityRemaining = Math.min(z.capacity, z.capacityRemaining + increment);
+      const newTicketsReleased = z.quantityTicketsReleased + increment;
 
       // Solo actualizar si realmente hay incremento
       if (newCapacityRemaining > z.capacityRemaining) {
@@ -54,13 +66,14 @@ export async function refreshStagedSaleCapacity() {
           where: { eventDateZoneId: z.eventDateZoneId },
           data: {
             capacityRemaining: newCapacityRemaining,
+            quantityTicketsReleased: newTicketsReleased,
             lastCapacityRemainingIncrement: now,
             updatedAt: now,
           },
         });
 
         console.log(
-          ` Zone ${z.eventDateZoneId}: ${z.capacityRemaining} → ${newCapacityRemaining} / ${z.capacity}`
+          ` Zona ${z.eventDateZoneId}: +${increment} tickets → Liberados: ${newTicketsReleased}/${z.capacity}`
         );
       }
     }

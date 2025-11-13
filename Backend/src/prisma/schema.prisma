@@ -383,6 +383,7 @@ model EventDateZone {
   capacityRemaining Int
   seatMapId         BigInt?   @unique @db.BigInt
   currency          CURRENCY
+  quantityTicketsReleased BigInt    @db.BigInt
 
   // relaciones
   eventDate   EventDate                 @relation(fields: [eventDateId], references: [eventDateId], onDelete: Cascade)
