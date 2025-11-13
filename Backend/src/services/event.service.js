@@ -26,8 +26,12 @@ export async function listEventDateByEventIdSvc(eventId) {
   return listEventDateByEventIdRepo(eventId);
 }
 
-export async function listEventDateZonesByEventDateIdSvc(eventId, eventDateId) {
-  return listEventDateZonesByEventDateIdRepo(eventId, eventDateId);
+export async function listEventDateZonesByEventDateIdSvc(
+  userId,
+  eventId,
+  eventDateId
+) {
+  return listEventDateZonesByEventDateIdRepo(userId, eventId, eventDateId);
 }
 
 export async function setEventStatusSvc(userId, { id, status, percentage }) {

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function ReturnConfirmationModal({ onCancel }) {
   const navigate = useNavigate();
-  const ticketSelectionRoute = "/seleccionTickets";
+  const eventInfoRoute = "/seleccionTickets";
   return (
     <>
       <BaseModal>
@@ -16,7 +16,7 @@ export default function ReturnConfirmationModal({ onCancel }) {
           </span>
           <div className="flex flex-row gap-10">
             <button
-              onClick={() => navigate(ticketSelectionRoute)}
+              onClick={() => navigate(eventInfoRoute)}
               className="flex flex-1 rounded-lg justify-center py-0.5 bg-red-500/90 text-white cursor-pointer hover:scale-105 hover:bg-red-600/80 transition-transform"
             >
               Si

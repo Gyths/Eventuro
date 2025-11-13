@@ -1,4 +1,27 @@
-//Textos relevantes a utilizar en los componentes del flujo de pago
+//Textos relevantes a utilizar
+
+export const EVENT_INFORMATION_TEXTS = {
+  alerts: {
+    0: "Ha ocurrido un error inesperado, por favor vuelva a intentarlo.",
+    1: "El evento seleccionado no existe.",
+    2: "Este evento no se encuentra activo.",
+    3: "El evento ha terminado.",
+    4: "No hay fases de venta activas para este evento.",
+  },
+};
+
+export const TICKET_SELECTION_TEXTS = {
+  alerts: {
+    0: "¡Lo sentimos! Ha ocurrido un error inesperado, por favor vuelva a intentarlo.",
+    2: "Como organizador, no puede comprar entradas para su propio evento.",
+    3: "Se ha excedido la cantidad máxima de entradas por usuario.",
+    4: "Su orden excede la capacidad restante para este evento.",
+    5: "Uno o más asientos seleccionados no están disponibles.",
+    6: "Uno o más asientos seleccionados ya fueron ocupados.",
+    7: "Su orden excede la capacidad restante para este evento.",
+    8: "Por favor, seleccione al menos un ítem para continuar.",
+  },
+};
 
 //Párrafos de la descripción de E-Tickets, utilizado en /src/payment/ETicketDescription.jsx
 export const ETICKETS_DESCRIPTION = {
@@ -35,23 +58,14 @@ export const DISCOUNT_CODE_TEXTS = {
   title: "¿Tienes algún código de descuento?",
   alerts: {
     0: "Ha ocurrido un error inesperado.",
-    1: "Ingresar un código de descuento.",
+    1: "Ingrese un código de descuento.",
     2: "El código ingresado no es válido.",
     3: "El código ingresado no es aplicable en este evento.",
     4: "El código de descuento no está activo.",
     5: "El código de descuento ha expirado.",
-    6: "Se alcanzó el límite de usos.",
+    6: "Se alcanzó el límite de usos para este código de descuento.",
     7: "Este código de descuento no puede ser combinado con otros código.",
     8: "No hay ítems aplicables en el carrito de compras",
     9: "El código ya ha sido aplicado",
-  },
-};
-
-export const TICKET_SELECTION_TEXTS = {
-  alerts: {
-    "": "Ha ocurrido un error inesperado",
-    "La orden debe contener al menos un item.":
-      "Selecciona al menos un item para continuar",
-    "No hay fase de venta activa.": "Este evento no se encuentra activo",
   },
 };

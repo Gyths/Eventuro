@@ -58,6 +58,9 @@ export async function createEventRepo(userId, input) {
     const accessPolicyDescription = input.accessPolicyDescription ?? null;
     const salePhases = input.salePhases ? JSON.parse(input.salePhases) : [];
 
+    const stagedSale = input.stagedSale === "true" || input.stagedSale === true;
+    const quantityStagedSale = input.quantityStagedSale ? BigInt(input.quantityStagedSale) : null;
+    const stagedSalePeriod = input.stagedSalePeriod ?? null;
     // --- Crear evento ---
     const event = await tx.event.create({
       data: {
@@ -69,6 +72,10 @@ export async function createEventRepo(userId, input) {
         description: input.description,
         accessPolicy: input.accessPolicy,
         accessPolicyDescription: input.accessPolicyDescription ?? null,
+        ticketLimitPerUser: input.ticketLimitPerUser ? Number(input.ticketLimitPerUser) : 10, // por defecto
+        stagedSale: stagedSale,
+        quantityStagedSale: quantityStagedSale,
+        stagedSalePeriod: stagedSalePeriod,
       },
       select: { eventId: true },
     });
@@ -179,6 +186,19 @@ export async function createEventRepo(userId, input) {
           await tx.seat.createMany({ data: seats, skipDuplicates: true });
         }
 
+        // Determinar cuántas entradas se liberan inicialmente
+        let initialCapacityRemaining;
+        if (stagedSale) {
+          // Si hay venta escalonada, libera la cantidad inicial configurada
+          initialCapacityRemaining = Number(quantityStagedSale);
+          // Seguridad: no puede ser mayor que la capacidad total
+          if (initialCapacityRemaining > Number(zone.capacity)) {
+            initialCapacityRemaining = Number(zone.capacity);
+          }
+        } else {
+          // Si no hay venta escalonada, libera todo
+          initialCapacityRemaining = Number(zone.capacity);
+        }
         const eventDateZone = await tx.eventDateZone.create({
           data: {
             eventDateId,
@@ -186,7 +206,8 @@ export async function createEventRepo(userId, input) {
             kind: zone.kind,
             basePrice: Number(zone.basePrice),
             capacity: Number(zone.capacity),
-            capacityRemaining: Number(zone.capacity),
+            capacityRemaining: initialCapacityRemaining,
+            quantityTicketsReleased : initialCapacityRemaining,
             seatMapId,
             currency: zone.currency,
           },
@@ -414,6 +435,7 @@ export async function listEventInfoRepo(eventId) {
       description: true,
       accessPolicy: true,
       accessPolicyDescription: true,
+      ticketLimitPerUser: true,
 
       imagePrincipalKey: true,
       imageBannerKey: true,
@@ -536,10 +558,27 @@ export async function listEventDateByEventIdRepo(eventId) {
 }
 
 export async function listEventDateZonesByEventDateIdRepo(
+  userId,
   eventId,
   eventDateId
 ) {
-  const [zones, activePhase] = await Promise.all([
+  const [ticketCount, date, zones, activePhase] = await Promise.all([
+    prisma.ticket.count({
+      where: {
+        eventId,
+        ownerUserId: userId,
+        status: { in: ["PAID", "USED", "EXPIRED"] },
+      },
+    }),
+
+    prisma.eventDate.findUnique({
+      where: { eventDateId: BigInt(eventDateId) },
+      select: {
+        startAt: true,
+        endAt: true,
+      },
+    }),
+
     prisma.eventDateZone.findMany({
       where: { eventDateId: BigInt(eventDateId) },
       select: {
@@ -552,6 +591,16 @@ export async function listEventDateZonesByEventDateIdRepo(
         capacityRemaining: true,
         seatMapId: true,
         currency: true,
+
+        allocations: {
+          select: {
+            eventDateZoneAllocationId: true,
+            eventDateZoneId: true,
+            audienceName: true,
+            discountType: true,
+            discountValue: true,
+          },
+        },
       },
     }),
 
@@ -570,7 +619,7 @@ export async function listEventDateZonesByEventDateIdRepo(
     }),
   ]);
 
-  return { zones, activePhase };
+  return { ticketCount, date, zones, activePhase };
 }
 
 export async function setEventStatusRepo(

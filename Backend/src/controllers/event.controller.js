@@ -9,7 +9,7 @@ import { _listEventsByOrganizer } from "../services/event.service.js";
 import { listEventstoApproveSvc } from "../services/event.service.js";
 import { toJSONSafe } from "../utils/serialize.js";
 
-import { setDiscountedPrices } from "../utils/event.util.js";
+import { setFinalPrices, formatDates } from "../utils/event.util.js";
 
 export async function createEvent(req, res) {
   try {
@@ -43,15 +43,38 @@ export async function listEventInfo(req, res) {
     const { eventId } = req.params;
     const eventInfo = await listEventInfoSvc(eventId);
 
+    if (!eventInfo) {
+      return res.status(404).json({
+        code: 1,
+        error: "El evento no existe",
+      });
+    }
+    if (eventInfo.status != "A") {
+      return res.status(400).json({
+        code: 2,
+        error: "Evento inactivo",
+      });
+    }
+    if (eventInfo.dates[eventInfo.dates.length - 1].endAt < new Date()) {
+      return res.status(400).json({
+        code: 3,
+        error: "Evento terminado",
+      });
+    }
+    if (!eventInfo.salesPhases || eventInfo.salesPhases.length === 0) {
+      return res.status(400).json({
+        code: 4,
+        error: "No hay fases de venta activas.",
+      });
+    }
+
     const activeSalePhaseDiscount = Number(
       eventInfo?.salesPhases[0].percentage
     );
-    //For each que recorre data fecha y modifica los precios con los descuentos de allocations y fases de venta
+
+    //For each que recorre cada fecha y modifica los precios con los descuentos de allocations y fases de venta
     for (const date of eventInfo.dates) {
-      date.zoneDates = setDiscountedPrices(
-        date.zoneDates,
-        activeSalePhaseDiscount
-      );
+      date.zoneDates = setFinalPrices(date.zoneDates, activeSalePhaseDiscount);
     }
 
     return res.status(201).json(toJSONSafe(eventInfo));
@@ -63,8 +86,9 @@ export async function listEventInfo(req, res) {
 export async function listEventDateByEventId(req, res) {
   try {
     const { eventId } = req.params;
-    const eventDates = await listEventDateByEventIdSvc(eventId);
-    return res.status(201).json(toJSONSafe(eventDates));
+    let eventDates = await listEventDateByEventIdSvc(eventId);
+
+    return res.status(201).json(toJSONSafe(formatDates(eventDates)));
   } catch (err) {
     return res.status(400).json({ error: err.message });
   }
@@ -72,21 +96,19 @@ export async function listEventDateByEventId(req, res) {
 
 export async function listEventDateZonesByEventDateId(req, res) {
   try {
-    const { eventId, eventDateId } = req.params;
+    const { userId, eventId, eventDateId } = req.params;
     const eventDateZones = await listEventDateZonesByEventDateIdSvc(
+      userId,
       eventId,
       eventDateId
     );
-    return res
-      .status(201)
-      .json(
-        toJSONSafe(
-          setDiscountedPrices(
-            eventDateZones.zones,
-            eventDateZones.activePhase.percentage
-          )
-        )
-      );
+    const user = { ticketCount: eventDateZones.ticketCount };
+    const zoneDates = setFinalPrices(
+      eventDateZones.zones,
+      eventDateZones?.activePhase?.percentage
+    );
+    const date = formatDates([eventDateZones.date]);
+    return res.status(201).json(toJSONSafe([{ user, zoneDates, date }]));
   } catch (err) {
     return res.status(400).json({ error: err.message });
   }

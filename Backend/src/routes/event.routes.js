@@ -28,7 +28,10 @@ router.post(
 router.get("/list", listEvent);
 router.get("/:eventId/info", listEventInfo);
 router.get("/:eventId/dates", listEventDateByEventId);
-router.get("/:eventId/:eventDateId/zones", listEventDateZonesByEventDateId);
+router.get(
+  "/:userId/:eventId/:eventDateId/zones",
+  listEventDateZonesByEventDateId
+);
 router.put(
   "/:id/approve",
   verifyToken,

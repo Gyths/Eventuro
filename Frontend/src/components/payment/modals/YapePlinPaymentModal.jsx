@@ -106,7 +106,6 @@ export default function YapePlinPaymentModal({ onClose, onSuccess, onFail }) {
       console.error("Error al crear al realizar la compra:", err);
       throw err;
     }
-
     onSuccess();
   }
 
