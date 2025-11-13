@@ -9,7 +9,7 @@ import { toJSONSafe } from "../utils/serialize.js";
 
 export async function createEvent(req, res) {
   try {
-    
+
     const userId = req.auth?.user?.userId ?? null;
 
     // Pasa el archivo con el mismo nombre que espera el repo
@@ -17,6 +17,7 @@ export async function createEvent(req, res) {
       ...req.body,
       imagenPrincipal: req.files?.imagenPrincipal?.[0] || null,
       imagenBanner: req.files?.imagenBanner?.[0] || null,
+      policyFile: req.files?.refundPolicyFile?.[0] || null,
     });
 
     return res.status(201).json(toJSONSafe(data));

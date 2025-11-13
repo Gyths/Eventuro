@@ -43,6 +43,19 @@ export async function createEventRepo(userId, input) {
       imageBannerKey = input.imageBannerKey;
     }
 
+    // --- Manejo del refundPolicyFile ---
+    let refundPolicyFileKey = null;
+    if (input.policyFile) {
+      const buffer = input.policyFile.buffer;
+      const fileName = `refund_policies/${Date.now()}_${input.policyFile.originalname
+        }`;
+      refundPolicyFileKey = await uploadFile(
+        fileName,
+        buffer,
+        input.policyFile.mimetype
+      );
+    }
+
     // --- Parsear y convertir tipos ---
     const organizerId = BigInt(input.organizerId);
     const inPerson = input.inPerson === "true" || input.inPerson === true;
@@ -64,6 +77,7 @@ export async function createEventRepo(userId, input) {
         inPerson: inPerson,
         imagePrincipalKey: imagePrincipalKey ?? "",
         imageBannerKey: imageBannerKey ?? "",
+        refundPolicyFileKey: refundPolicyFileKey ?? null,
         description: input.description,
         accessPolicy: input.accessPolicy,
         accessPolicyDescription: input.accessPolicyDescription ?? null,
@@ -554,7 +568,7 @@ export async function setEventStatusRepo(userId, { eventId, status, percentage }
   return withAudit(userId, async (tx) => {
     const eventIdNormalized = BigInt(eventId);
 
-    const dataToUpdate = { status }; 
+    const dataToUpdate = { status };
     if (percentage !== undefined && percentage !== null) {
       const pNum = Number(percentage);
       if (!Number.isFinite(pNum)) {
@@ -594,17 +608,17 @@ export async function listEventstoApproveRepo({ page = 1, pageSize = 10 }) {
     prisma.event.findMany({
       skip,
       take,
-      where: { status: 'P'},
+      where: { status: 'P' },
       orderBy: { createdAt: "desc" },
       select: {
         eventId: true,
         title: true,
         description: true,
         imagePrincipalKey: true,
-        createdAt: true, 
-        organizer: {     
+        createdAt: true,
+        organizer: {
           select: {
-            companyName: true 
+            companyName: true
           }
         },
         dates: {
