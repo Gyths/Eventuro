@@ -12,7 +12,6 @@ export async function createTicketCtrl(req, res) {
     if (!sessionUserId && !req.body.buyerUserId) {
       return res.status(401).json({ error: 'Usuario no autenticado.' });
     }
-
     if (!req.body.orderId) {
       return res.status(400).json({ error: 'orderId es requerido.' });
     }
@@ -116,7 +115,7 @@ export async function rejectRefundCtrl(req, res) {
 export async function getMyTicketsController(req, res) {
   try {
     const userId = BigInt(req.user.id); // viene del verifyToken
-
+    
     const eventId = req.query.eventId ? BigInt(req.query.eventId) : undefined;
     const page = Math.max(1, Number(req.query.page ?? 1));
     const pageSize = Math.min(200, Math.max(1, Number(req.query.pageSize ?? 50)));

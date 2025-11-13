@@ -117,6 +117,21 @@ export async function loginWithCredentials(email, password) {
 
   const isMatch = await bcrypt.compare(password, user.password.hashedPassword);
   if (!isMatch) throw new Error("Credenciales inválidas :)");
+   if (user.status === "B") {
+    throw new Error("Tu cuenta ha sido baneada permanentemente.");
+  }
+
+  if (
+    user.status === "S" &&
+    user.suspendedUntil &&
+    new Date() < new Date(user.suspendedUntil)
+  ) {
+    throw new Error(
+      `Tu cuenta está suspendida hasta ${new Date(
+        user.suspendedUntil
+      ).toLocaleString()}.`
+    );
+  }
 
   const token = generateToken({ id: user.userId, email: user.email });
 

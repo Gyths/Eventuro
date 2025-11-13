@@ -23,7 +23,7 @@ export default function ClaimSuccessModal({ open, onClose }) {
             Volver al inicio
           </a>
           <a
-            href="/mis-reclamos"
+            href="/misReclamos"
             className="px-4 py-2 rounded-xl border border-amber-300 bg-amber-400 text-white hover:bg-amber-500"
           >
             Ver reclamos

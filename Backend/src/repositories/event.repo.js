@@ -5,7 +5,7 @@ import { uploadFile, getSignedUrlForFile } from "../utils/s3.js";
 import { skip } from "../generated/prisma/runtime/library.js";
 import fs from "fs";
 import path from "path";
-import { withAudit } from "../utils/audit.util.js"
+import { withAudit } from "../utils/audit.util.js";
 
 export async function createEventRepo(userId, input) {
   return withAudit(userId, async (tx) => {
@@ -14,8 +14,9 @@ export async function createEventRepo(userId, input) {
     if (input.imagenPrincipal) {
       // 1. Si se sube un nuevo archivo (Multer)
       const buffer = input.imagenPrincipal.buffer;
-      const fileName = `events/${Date.now()}_${input.imagenPrincipal.originalname
-        }`;
+      const fileName = `events/${Date.now()}_${
+        input.imagenPrincipal.originalname
+      }`;
       imagePrincipalKey = await uploadFile(
         fileName,
         buffer,
@@ -31,8 +32,9 @@ export async function createEventRepo(userId, input) {
     if (input.imagenBanner) {
       // 1. Si se sube un nuevo archivo (Multer)
       const buffer = input.imagenBanner.buffer;
-      const fileName = `events/${Date.now()}_${input.imagenBanner.originalname
-        }`;
+      const fileName = `events/${Date.now()}_${
+        input.imagenBanner.originalname
+      }`;
       imageBannerKey = await uploadFile(
         fileName,
         buffer,
@@ -56,6 +58,9 @@ export async function createEventRepo(userId, input) {
     const accessPolicyDescription = input.accessPolicyDescription ?? null;
     const salePhases = input.salePhases ? JSON.parse(input.salePhases) : [];
 
+    const stagedSale = input.stagedSale === "true" || input.stagedSale === true;
+    const quantityStagedSale = input.quantityStagedSale ? BigInt(input.quantityStagedSale) : null;
+    const stagedSalePeriod = input.stagedSalePeriod ?? null;
     // --- Crear evento ---
     const event = await tx.event.create({
       data: {
@@ -67,11 +72,13 @@ export async function createEventRepo(userId, input) {
         description: input.description,
         accessPolicy: input.accessPolicy,
         accessPolicyDescription: input.accessPolicyDescription ?? null,
+        ticketLimitPerUser: input.ticketLimitPerUser ? Number(input.ticketLimitPerUser) : 10, // por defecto
+        stagedSale: stagedSale,
+        quantityStagedSale: quantityStagedSale,
+        stagedSalePeriod: stagedSalePeriod,
       },
       select: { eventId: true },
     });
-
-
 
     //Auditoria o Logs:
 
@@ -94,10 +101,6 @@ export async function createEventRepo(userId, input) {
 
     // Escribir o añadir al archivo
     fs.appendFileSync(logFile, logLine, "utf8");
-
-
-
-
 
     const eventId = event.eventId;
     let venueId = null;
@@ -183,6 +186,19 @@ export async function createEventRepo(userId, input) {
           await tx.seat.createMany({ data: seats, skipDuplicates: true });
         }
 
+        // Determinar cuántas entradas se liberan inicialmente
+        let initialCapacityRemaining;
+        if (stagedSale) {
+          // Si hay venta escalonada, libera la cantidad inicial configurada
+          initialCapacityRemaining = Number(quantityStagedSale);
+          // Seguridad: no puede ser mayor que la capacidad total
+          if (initialCapacityRemaining > Number(zone.capacity)) {
+            initialCapacityRemaining = Number(zone.capacity);
+          }
+        } else {
+          // Si no hay venta escalonada, libera todo
+          initialCapacityRemaining = Number(zone.capacity);
+        }
         const eventDateZone = await tx.eventDateZone.create({
           data: {
             eventDateId,
@@ -190,7 +206,8 @@ export async function createEventRepo(userId, input) {
             kind: zone.kind,
             basePrice: Number(zone.basePrice),
             capacity: Number(zone.capacity),
-            capacityRemaining: Number(zone.capacity),
+            capacityRemaining: initialCapacityRemaining,
+            quantityTicketsReleased : initialCapacityRemaining,
             seatMapId,
             currency: zone.currency,
           },
@@ -234,7 +251,6 @@ export async function createEventRepo(userId, input) {
     }
 
     if (Array.isArray(salePhases) && salePhases.length > 0) {
-
       // Prepara los datos para la función 'createMany'
       const phasesData = salePhases.map((phase) => ({
         eventId: eventId,
@@ -243,9 +259,8 @@ export async function createEventRepo(userId, input) {
         endAt: new Date(phase.endAt),
         percentage: Number(phase.percentage),
         ticketLimit: phase.ticketLimit ? Number(phase.ticketLimit) : null,
-        active: true
+        active: true,
       }));
-
 
       await tx.eventSalesPhase.createManyAndReturn({
         data: phasesData,
@@ -407,9 +422,9 @@ export async function listEventsByOrganizerRepo(idOrganizer) {
   });
 }
 
-export async function listAvailableTicketsRepo(input) {
+export async function listEventInfoRepo(eventId) {
   const event = await prisma.event.findUnique({
-    where: { eventId: BigInt(input.eventId) },
+    where: { eventId: BigInt(eventId) },
     select: {
       //Se consulta toda la información del evento en caso haya habido alguna actualización durante el tiempo que el usuario estuvo en la pantalla de inicio
       eventId: true,
@@ -420,6 +435,7 @@ export async function listAvailableTicketsRepo(input) {
       description: true,
       accessPolicy: true,
       accessPolicyDescription: true,
+      ticketLimitPerUser: true,
 
       imagePrincipalKey: true,
       imageBannerKey: true,
@@ -450,6 +466,7 @@ export async function listAvailableTicketsRepo(input) {
 
       //Relación son SalesPhases
       salesPhases: {
+        where: { active: true },
         select: {
           eventSalesPhaseId: true,
           name: true,
@@ -495,28 +512,6 @@ export async function listAvailableTicketsRepo(input) {
                   discountValue: true,
                 },
               },
-
-              //SeatMaps relacionados al evento
-              seatMap: {
-                select: {
-                  seatMapId: true,
-                  rows: true,
-                  cols: true,
-
-                  //Asientos relacionados a cada seatMap
-                  occupiedSeats: {
-                    orderBy: {
-                      seatId: "asc",
-                    },
-                    select: {
-                      seatId: true,
-                      rowNumber: true,
-                      colNumber: true,
-                      status: true,
-                    },
-                  },
-                },
-              },
             },
           },
         },
@@ -550,11 +545,91 @@ export async function listAvailableTicketsRepo(input) {
   return event;
 }
 
-export async function setEventStatusRepo(userId, { eventId, status, percentage }) {
+export async function listEventDateByEventIdRepo(eventId) {
+  return prisma.eventDate.findMany({
+    where: { eventId: BigInt(eventId) },
+    select: {
+      eventDateId: true,
+      eventId: true,
+      startAt: true,
+      endAt: true,
+    },
+  });
+}
+
+export async function listEventDateZonesByEventDateIdRepo(
+  userId,
+  eventId,
+  eventDateId
+) {
+  const [ticketCount, date, zones, activePhase] = await Promise.all([
+    prisma.ticket.count({
+      where: {
+        eventId,
+        ownerUserId: userId,
+        status: { in: ["PAID", "USED", "EXPIRED"] },
+      },
+    }),
+
+    prisma.eventDate.findUnique({
+      where: { eventDateId: BigInt(eventDateId) },
+      select: {
+        startAt: true,
+        endAt: true,
+      },
+    }),
+
+    prisma.eventDateZone.findMany({
+      where: { eventDateId: BigInt(eventDateId) },
+      select: {
+        eventDateZoneId: true,
+        eventDateId: true,
+        name: true,
+        kind: true,
+        basePrice: true,
+        capacity: true,
+        capacityRemaining: true,
+        seatMapId: true,
+        currency: true,
+
+        allocations: {
+          select: {
+            eventDateZoneAllocationId: true,
+            eventDateZoneId: true,
+            audienceName: true,
+            discountType: true,
+            discountValue: true,
+          },
+        },
+      },
+    }),
+
+    prisma.eventSalesPhase.findFirst({
+      where: {
+        eventId: BigInt(eventId),
+        active: true,
+      },
+      select: {
+        eventSalesPhaseId: true,
+        name: true,
+        startAt: true,
+        endAt: true,
+        percentage: true,
+      },
+    }),
+  ]);
+
+  return { ticketCount, date, zones, activePhase };
+}
+
+export async function setEventStatusRepo(
+  userId,
+  { eventId, status, percentage }
+) {
   return withAudit(userId, async (tx) => {
     const eventIdNormalized = BigInt(eventId);
 
-    const dataToUpdate = { status }; 
+    const dataToUpdate = { status };
     if (percentage !== undefined && percentage !== null) {
       const pNum = Number(percentage);
       if (!Number.isFinite(pNum)) {
@@ -594,18 +669,18 @@ export async function listEventstoApproveRepo({ page = 1, pageSize = 10 }) {
     prisma.event.findMany({
       skip,
       take,
-      where: { status: 'P'},
+      where: { status: "P" },
       orderBy: { createdAt: "desc" },
       select: {
         eventId: true,
         title: true,
         description: true,
         imagePrincipalKey: true,
-        createdAt: true, 
-        organizer: {     
+        createdAt: true,
+        organizer: {
           select: {
-            companyName: true 
-          }
+            companyName: true,
+          },
         },
         dates: {
           orderBy: { startAt: "asc" },
@@ -617,10 +692,10 @@ export async function listEventstoApproveRepo({ page = 1, pageSize = 10 }) {
         },
       },
     }),
-    prisma.event.count({ where: { status: 'P' } }),
+    prisma.event.count({ where: { status: "P" } }),
   ]);
 
-  const allDateIds = items.flatMap(ev => ev.dates.map(d => d.eventDateId));
+  const allDateIds = items.flatMap((ev) => ev.dates.map((d) => d.eventDateId));
   let sumsByDateId = new Map();
 
   if (allDateIds.length > 0) {
@@ -631,19 +706,22 @@ export async function listEventstoApproveRepo({ page = 1, pageSize = 10 }) {
     });
 
     sumsByDateId = new Map(
-      grouped.map(g => [
+      grouped.map((g) => [
         String(g.eventDateId),
         {
-          totalTickets: g._sum.capacity ?? 0
+          totalTickets: g._sum.capacity ?? 0,
         },
       ])
     );
   }
 
-  const enriched = items.map(ev => ({
+  const enriched = items.map((ev) => ({
     ...ev,
-    dates: ev.dates.map(d => {
-      const sums = sumsByDateId.get(String(d.eventDateId)) ?? { totalTickets: 0, totalRemaining: 0 };
+    dates: ev.dates.map((d) => {
+      const sums = sumsByDateId.get(String(d.eventDateId)) ?? {
+        totalTickets: 0,
+        totalRemaining: 0,
+      };
       return { ...d, ...sums };
     }),
   }));
