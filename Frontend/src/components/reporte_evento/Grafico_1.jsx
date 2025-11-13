@@ -1,6 +1,6 @@
 import { Bar } from "react-chartjs-2";
 
-const VentasPorDiaChart = () => {
+const VentasPorMesChart = () => {
   const data = {
     labels: [
       "Enero",
@@ -15,7 +15,7 @@ const VentasPorDiaChart = () => {
     ],
     datasets: [
       {
-        label: "Ventas por día (promedio)",
+        label: "Ventas por mes (promedio)",
         data: [150, 165, 172, 180, 178, 182, 185, 176, 188],
         backgroundColor: [
           "#B388FF",
@@ -69,4 +69,4 @@ const VentasPorDiaChart = () => {
   );
 };
 
-export default VentasPorDiaChart;
+export default VentasPorMesChart;
