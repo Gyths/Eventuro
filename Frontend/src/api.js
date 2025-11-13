@@ -7,8 +7,8 @@ export const EventuroApi = async ({
   endpoint,
   method,
   data = null,
-  headers = {},          // <- NUEVO
-  credentials = undefined // <- opcional: "include" si usas cookies/sesión
+  headers = {}, // <- NUEVO
+  credentials = undefined, // <- opcional: "include" si usas cookies/sesión
 }) => {
   try {
     const session = localStorage.getItem("session");
@@ -16,9 +16,10 @@ export const EventuroApi = async ({
     const options = {
       method,
       headers: {
-        "Content-Type": "application/json", Accept: "application/json",
+        "Content-Type": "application/json",
+        Accept: "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...headers
+        ...headers,
       }, // <- merge headers
     };
 
@@ -30,13 +31,26 @@ export const EventuroApi = async ({
 
     const response = await fetch(BASE_URL1 + endpoint, options);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Error ${response.status}: ${errorText}`);
+    const text = await response.text();
+
+    let jsonData;
+    try {
+      jsonData = text ? JSON.parse(text) : {};
+    } catch {
+      jsonData = { error: text };
     }
 
-    const result = await response.json();
-    return result;
+    if (!response.ok) {
+      const error = new Error(
+        jsonData.error || jsonData.message || "Error inesperado"
+      );
+      error.status = response.status;
+      error.code = jsonData.code || jsonData.errorCode || 0;
+      error.responseData = jsonData;
+      console.log(error);
+      throw error;
+    }
+    return jsonData;
   } catch (err) {
     console.error("Error en la consulta de la api " + endpoint + ": " + err);
     throw err;

@@ -467,6 +467,8 @@ export default function CrearEventoCards() {
       } else if (form.imageBannerKey) {
         formData.append("imageBannerKey", form.imageBannerKey);
       }
+      formData.append("refundPolicyFile", form.refundPolicyFile);
+      formData.append("refundPolicyText", returnsPolicy);
 
       const session = localStorage.getItem("session");
       const token = session ? JSON.parse(session)?.token : null;
@@ -1054,7 +1056,11 @@ export default function CrearEventoCards() {
               value={discountCodes}
               onChange={setDiscountCodes}
             />
-            <ReturnsPolicy value={returnsPolicy} onChange={setReturnsPolicy} />
+            <ReturnsPolicy
+              form={form}
+              value={returnsPolicy}
+              onChange={setReturnsPolicy}
+            />
           </div>
         </WizardCard>
       </div>

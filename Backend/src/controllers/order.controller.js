@@ -7,7 +7,9 @@ export async function createOrderCtrl(req, res) {
   try {
     const sessionUserId = req.user?.userId;
     if (!sessionUserId && !req.body.buyerUserId) {
-      return res.status(401).json({ error: "Usuario no autenticado." });
+      return res
+        .status(401)
+        .json({ code: 1, error: "Usuario no autenticado." });
     }
 
     const payload = {
@@ -21,7 +23,7 @@ export async function createOrderCtrl(req, res) {
 
     return res.status(201).json(toJSONSafe(order));
   } catch (err) {
-    return res.status(400).json({ error: err.message });
+    return res.status(400).json({ code: err.code, error: err.message });
   }
 }
 
