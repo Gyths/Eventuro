@@ -56,6 +56,9 @@ export async function createEventRepo(userId, input) {
     const accessPolicyDescription = input.accessPolicyDescription ?? null;
     const salePhases = input.salePhases ? JSON.parse(input.salePhases) : [];
 
+    const stagedSale = input.stagedSale === "true" || input.stagedSale === true;
+    const quantityStagedSale = input.quantityStagedSale ? BigInt(input.quantityStagedSale) : null;
+    const stagedSalePeriod = input.stagedSalePeriod ?? null;
     // --- Crear evento ---
     const event = await tx.event.create({
       data: {
@@ -67,6 +70,10 @@ export async function createEventRepo(userId, input) {
         description: input.description,
         accessPolicy: input.accessPolicy,
         accessPolicyDescription: input.accessPolicyDescription ?? null,
+        ticketLimitPerUser: input.ticketLimitPerUser ? Number(input.ticketLimitPerUser) : 10, // por defecto
+        stagedSale: stagedSale,
+        quantityStagedSale: quantityStagedSale,
+        stagedSalePeriod: stagedSalePeriod,
       },
       select: { eventId: true },
     });
@@ -183,6 +190,19 @@ export async function createEventRepo(userId, input) {
           await tx.seat.createMany({ data: seats, skipDuplicates: true });
         }
 
+        // Determinar cuántas entradas se liberan inicialmente
+        let initialCapacityRemaining;
+        if (stagedSale) {
+          // Si hay venta escalonada, libera la cantidad inicial configurada
+          initialCapacityRemaining = Number(quantityStagedSale);
+          // Seguridad: no puede ser mayor que la capacidad total
+          if (initialCapacityRemaining > Number(zone.capacity)) {
+            initialCapacityRemaining = Number(zone.capacity);
+          }
+        } else {
+          // Si no hay venta escalonada, libera todo
+          initialCapacityRemaining = Number(zone.capacity);
+        }
         const eventDateZone = await tx.eventDateZone.create({
           data: {
             eventDateId,
@@ -190,7 +210,7 @@ export async function createEventRepo(userId, input) {
             kind: zone.kind,
             basePrice: Number(zone.basePrice),
             capacity: Number(zone.capacity),
-            capacityRemaining: Number(zone.capacity),
+            capacityRemaining: initialCapacityRemaining,
             seatMapId,
             currency: zone.currency,
           },
@@ -554,7 +574,7 @@ export async function setEventStatusRepo(userId, { eventId, status, percentage }
   return withAudit(userId, async (tx) => {
     const eventIdNormalized = BigInt(eventId);
 
-    const dataToUpdate = { status }; 
+    const dataToUpdate = { status };
     if (percentage !== undefined && percentage !== null) {
       const pNum = Number(percentage);
       if (!Number.isFinite(pNum)) {
@@ -594,17 +614,17 @@ export async function listEventstoApproveRepo({ page = 1, pageSize = 10 }) {
     prisma.event.findMany({
       skip,
       take,
-      where: { status: 'P'},
+      where: { status: 'P' },
       orderBy: { createdAt: "desc" },
       select: {
         eventId: true,
         title: true,
         description: true,
         imagePrincipalKey: true,
-        createdAt: true, 
-        organizer: {     
+        createdAt: true,
+        organizer: {
           select: {
-            companyName: true 
+            companyName: true
           }
         },
         dates: {

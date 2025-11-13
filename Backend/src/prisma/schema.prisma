@@ -138,6 +138,14 @@ enum ORGANIZER_STATUS {
   @@schema("public")
 }
 
+enum STAGED_SALE_PERIOD {
+  D // DAILY
+  W // WEEKLY
+  M // MONTHLY
+
+  @@schema("public")
+}
+
 // ====================== Models ======================
 
 // Usuario general
@@ -294,6 +302,10 @@ model Event {
   accessPolicy            ACCESS_POLICY
   accessPolicyDescription String?
   ticketLimitPerUser      Int?          @default(10)
+  // NUEVOS CAMPOS para Venta Escalonada
+  stagedSale              Boolean       @default(false)
+  quantityStagedSale      BigInt?       @db.BigInt
+  stagedSalePeriod        STAGED_SALE_PERIOD?
 
   // Relaciones
   organizer   Organizer         @relation(fields: [organizerId], references: [organizerId])
@@ -349,6 +361,7 @@ model EventDateZone {
   Ticket      Ticket[]
   Hold        Hold[]
 
+  lastCapacityRemainingIncrement DateTime @default(now()) //para venta escalonada
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
