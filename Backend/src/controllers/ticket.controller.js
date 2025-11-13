@@ -12,7 +12,6 @@ export async function createTicketCtrl(req, res) {
     if (!sessionUserId && !req.body.buyerUserId) {
       return res.status(401).json({ error: 'Usuario no autenticado.' });
     }
-
     if (!req.body.orderId) {
       return res.status(400).json({ error: 'orderId es requerido.' });
     }
