@@ -5,7 +5,7 @@ import { AuthProvider } from "./services/auth/AuthContext";
 import { ModalProvider } from "./context/ModalContext";
 import { EventProvider } from "./services/Event/EventContext.jsx";
 import { OrderProvider } from "./services/Order/OrderContext.jsx";
-
+import { Toaster } from "react-hot-toast";
 import "./styles/index.css";
 import App from "./App.jsx";
 import "@radix-ui/themes/styles.css";
@@ -21,6 +21,7 @@ createRoot(document.getElementById("root")).render(
         <OrderProvider>
           <AuthProvider>
             <ModalProvider>
+              <Toaster position="top-center" />
               <App />
             </ModalProvider>
           </AuthProvider>
