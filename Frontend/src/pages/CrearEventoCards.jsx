@@ -453,6 +453,12 @@ export default function CrearEventoCards() {
       formData.append("dates", JSON.stringify(eventDates));
       formData.append("zones", JSON.stringify(eventZones));
       formData.append("discounts", JSON.stringify(discounts));
+      formData.append("ticketLimitPerUser", JSON.stringify(tickets.maxPerUser));
+
+      formData.append("refundPolicyText", JSON.stringify(returnsPolicy.text));
+
+      returnsPolicy.file &&
+        formData.append("refundPolicyFile", returnsPolicy.file);
 
       // Imagen principal
       if (form.imageFile) {
@@ -475,6 +481,10 @@ export default function CrearEventoCards() {
 
       if (token) {
         headers.append("Authorization", `Bearer ${token}`);
+      }
+
+      for (const [key, value] of formData.entries()) {
+        console.log(key, value);
       }
 
       // --- Enviar con fetch ---

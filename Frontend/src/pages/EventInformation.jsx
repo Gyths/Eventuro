@@ -11,6 +11,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import SelectDateModal from "../components/selection/SelectDateModal";
 import SelectTicketModal from "../components/selection/SelectTicketModal";
+import RefundPolicyModal from "../components/selection/RefundPolicyModal";
 import placeholder from "../assets/DefaultEvent.webp";
 
 import {
@@ -38,6 +39,11 @@ export default function TicketSelection() {
   const [showContent, setShowContent] = React.useState(false);
   const [selectedData, setSelectedData] = React.useState();
   const currencies = { PEN: "S/." };
+
+  const [showModal, setShowModal] = React.useState(false);
+
+  const openModal = () => setShowModal(true);
+  const closeModal = () => setShowModal(false);
 
   React.useEffect(() => {
     //Llamada a la api del back para consultar disponibilidad de un evento
@@ -241,7 +247,10 @@ export default function TicketSelection() {
                           event.dates[0].zoneDates[0].allocations &&
                           event.dates[0].zoneDates[0].allocations.map(
                             (allocation) => (
-                              <span key={allocation.id || allocation.audienceName} className="inline-block">
+                              <span
+                                key={allocation.id || allocation.audienceName}
+                                className="inline-block"
+                              >
                                 {allocation.audienceName}
                               </span>
                             )
@@ -258,7 +267,12 @@ export default function TicketSelection() {
                             <div className="flex flex-row w-full justify-between">
                               {zone.allocations &&
                                 zone.allocations.map((allocation) => (
-                                  <span key={allocation.id || allocation.audienceName} className="flex font-semibold justify-end items-center">
+                                  <span
+                                    key={
+                                      allocation.id || allocation.audienceName
+                                    }
+                                    className="flex font-semibold justify-end items-center"
+                                  >
                                     {currencies.PEN + " " + allocation.price}
                                   </span>
                                 ))}
@@ -298,10 +312,23 @@ export default function TicketSelection() {
             <div className="flex flex-col lg:flex-row justify-between gap-12 lg:gap-20">
               {/* Texto de política */}
               <div className="flex flex-col gap-4 w-full lg:w-1/3 pt-16">
-                <h1 className="font-bold text-3xl">Política de devoluciones</h1>
+                <div className="flex flex-row gap-8 items-center">
+                  <h1 className="font-bold text-3xl">
+                    Política de devoluciones
+                  </h1>
 
-                {event?.refundPolicy ? (
-                  <span>{event.refundPolicy.text}</span>
+                  {event.refundPolicyFileURLSigned && (
+                    <button
+                      onClick={() => setModal("refundPolicy")}
+                      className="flex px-4 py-2 w-auto bg-gray-100 border-1 border-gray-400 hover:bg-gray-200 hover:scale-98 transition-all text-gray-600 rounded-lg text-sm font-medium cursor-pointer"
+                    >
+                      Ver pdf
+                    </button>
+                  )}
+                </div>
+
+                {event?.refundPolicyText ? (
+                  <span>{event.refundPolicyText}</span>
                 ) : (
                   <span className="inline-block text-justify leading-relaxed text-gray-700">
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit.
@@ -357,6 +384,11 @@ export default function TicketSelection() {
             selectedData={selectedData}
             onReturn={() => setModal("dates")}
           />
+        </AnimatePresence>
+      )}
+      {modal === "refundPolicy" && (
+        <AnimatePresence>
+          <RefundPolicyModal onClose={() => setModal(null)} />
         </AnimatePresence>
       )}
     </>

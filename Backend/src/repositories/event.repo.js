@@ -5,7 +5,7 @@ import { uploadFile, getSignedUrlForFile } from "../utils/s3.js";
 import { skip } from "../generated/prisma/runtime/library.js";
 import fs from "fs";
 import path from "path";
-import { withAudit } from "../utils/audit.util.js"
+import { withAudit } from "../utils/audit.util.js";
 
 export async function createEventRepo(userId, input) {
   return withAudit(userId, async (tx) => {
@@ -14,8 +14,9 @@ export async function createEventRepo(userId, input) {
     if (input.imagenPrincipal) {
       // 1. Si se sube un nuevo archivo (Multer)
       const buffer = input.imagenPrincipal.buffer;
-      const fileName = `events/${Date.now()}_${input.imagenPrincipal.originalname
-        }`;
+      const fileName = `events/${Date.now()}_${
+        input.imagenPrincipal.originalname
+      }`;
       imagePrincipalKey = await uploadFile(
         fileName,
         buffer,
@@ -31,8 +32,9 @@ export async function createEventRepo(userId, input) {
     if (input.imagenBanner) {
       // 1. Si se sube un nuevo archivo (Multer)
       const buffer = input.imagenBanner.buffer;
-      const fileName = `events/${Date.now()}_${input.imagenBanner.originalname
-        }`;
+      const fileName = `events/${Date.now()}_${
+        input.imagenBanner.originalname
+      }`;
       imageBannerKey = await uploadFile(
         fileName,
         buffer,
@@ -47,8 +49,9 @@ export async function createEventRepo(userId, input) {
     let refundPolicyFileKey = null;
     if (input.policyFile) {
       const buffer = input.policyFile.buffer;
-      const fileName = `refund_policies/${Date.now()}_${input.policyFile.originalname
-        }`;
+      const fileName = `refund_policies/${Date.now()}_${
+        input.policyFile.originalname
+      }`;
       refundPolicyFileKey = await uploadFile(
         fileName,
         buffer,
@@ -87,8 +90,6 @@ export async function createEventRepo(userId, input) {
       select: { eventId: true },
     });
 
-
-
     //Auditoria o Logs:
 
     //Dirección Carpeta Log
@@ -110,10 +111,6 @@ export async function createEventRepo(userId, input) {
 
     // Escribir o añadir al archivo
     fs.appendFileSync(logFile, logLine, "utf8");
-
-
-
-
 
     const eventId = event.eventId;
     let venueId = null;
@@ -250,7 +247,6 @@ export async function createEventRepo(userId, input) {
     }
 
     if (Array.isArray(salePhases) && salePhases.length > 0) {
-
       // Prepara los datos para la función 'createMany'
       const phasesData = salePhases.map((phase) => ({
         eventId: eventId,
@@ -259,9 +255,8 @@ export async function createEventRepo(userId, input) {
         endAt: new Date(phase.endAt),
         percentage: Number(phase.percentage),
         ticketLimit: phase.ticketLimit ? Number(phase.ticketLimit) : null,
-        active: true
+        active: true,
       }));
-
 
       await tx.eventSalesPhase.createManyAndReturn({
         data: phasesData,
@@ -455,12 +450,14 @@ export async function listAvailableTicketsRepo(input) {
       eventId: true,
       organizerId: true,
       title: true,
+      refundPolicyText: true,
       status: true,
       inPerson: true,
       description: true,
       accessPolicy: true,
       accessPolicyDescription: true,
 
+      refundPolicyFileKey: true,
       imagePrincipalKey: true,
       imageBannerKey: true,
 
@@ -601,7 +598,10 @@ export async function listAvailableTicketsRepo(input) {
   return event;
 }
 
-export async function setEventStatusRepo(userId, { eventId, status, percentage }) {
+export async function setEventStatusRepo(
+  userId,
+  { eventId, status, percentage }
+) {
   return withAudit(userId, async (tx) => {
     const eventIdNormalized = BigInt(eventId);
 
@@ -645,7 +645,7 @@ export async function listEventstoApproveRepo({ page = 1, pageSize = 10 }) {
     prisma.event.findMany({
       skip,
       take,
-      where: { status: 'P' },
+      where: { status: "P" },
       orderBy: { createdAt: "desc" },
       select: {
         eventId: true,
@@ -655,8 +655,8 @@ export async function listEventstoApproveRepo({ page = 1, pageSize = 10 }) {
         createdAt: true,
         organizer: {
           select: {
-            companyName: true
-          }
+            companyName: true,
+          },
         },
         dates: {
           orderBy: { startAt: "asc" },
@@ -668,10 +668,10 @@ export async function listEventstoApproveRepo({ page = 1, pageSize = 10 }) {
         },
       },
     }),
-    prisma.event.count({ where: { status: 'P' } }),
+    prisma.event.count({ where: { status: "P" } }),
   ]);
 
-  const allDateIds = items.flatMap(ev => ev.dates.map(d => d.eventDateId));
+  const allDateIds = items.flatMap((ev) => ev.dates.map((d) => d.eventDateId));
   let sumsByDateId = new Map();
 
   if (allDateIds.length > 0) {
@@ -682,19 +682,22 @@ export async function listEventstoApproveRepo({ page = 1, pageSize = 10 }) {
     });
 
     sumsByDateId = new Map(
-      grouped.map(g => [
+      grouped.map((g) => [
         String(g.eventDateId),
         {
-          totalTickets: g._sum.capacity ?? 0
+          totalTickets: g._sum.capacity ?? 0,
         },
       ])
     );
   }
 
-  const enriched = items.map(ev => ({
+  const enriched = items.map((ev) => ({
     ...ev,
-    dates: ev.dates.map(d => {
-      const sums = sumsByDateId.get(String(d.eventDateId)) ?? { totalTickets: 0, totalRemaining: 0 };
+    dates: ev.dates.map((d) => {
+      const sums = sumsByDateId.get(String(d.eventDateId)) ?? {
+        totalTickets: 0,
+        totalRemaining: 0,
+      };
       return { ...d, ...sums };
     }),
   }));

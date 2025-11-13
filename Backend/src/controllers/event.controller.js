@@ -9,7 +9,6 @@ import { toJSONSafe } from "../utils/serialize.js";
 
 export async function createEvent(req, res) {
   try {
-
     const userId = req.auth?.user?.userId ?? null;
 
     // Pasa el archivo con el mismo nombre que espera el repo
