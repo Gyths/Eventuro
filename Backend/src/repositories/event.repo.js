@@ -290,6 +290,7 @@ export async function listEventRepo() {
       description: true,
       accessPolicy: true,
       accessPolicyDescription: true,
+      refundPolicyText: true,
 
       // relación con categorías
       categories: {
@@ -351,6 +352,18 @@ export async function listEventRepo() {
         }
       }
 
+      if (event.refundPolicyFileKey) {
+        //crear url firmada refund policy
+        try {
+          event.refundPolicyFileURLSigned = await getSignedUrlForFile(
+            event.refundPolicyFileKey
+          );
+        } catch (err) {
+          console.error("Error generando signed URL refund policy:", err);
+          event.refundPolicyFileURLSigned = null;
+        }
+      }
+
       return event;
     })
   );
@@ -400,6 +413,17 @@ export async function eventDetails(id) {
       } catch (err) {
         console.error("Error generando signed URL banner:", err);
         event.imageBannerURLSigned = null;
+      }
+    }
+
+    if (event.refundPolicyFileKey) {
+      try {
+        event.refundPolicyFileURLSigned = await getSignedUrlForFile(
+          event.refundPolicyFileKey
+        );
+      } catch (err) {
+        console.error("Error generando signed URL refund policy:", err);
+        event.refundPolicyFileURLSigned = null;
       }
     }
   }
@@ -560,6 +584,17 @@ export async function listAvailableTicketsRepo(input) {
     } catch (err) {
       console.error("Error generando signed URL banner:", err);
       event.imageBannerURLSigned = null;
+    }
+  }
+
+  if (event?.refundPolicyFileKey) {
+    try {
+      event.refundPolicyFileURLSigned = await getSignedUrlForFile(
+        event.refundPolicyFileKey
+      );
+    } catch (err) {
+      console.error("Error generando signed URL refund policy:", err);
+      event.refundPolicyFileURLSigned = null;
     }
   }
 
