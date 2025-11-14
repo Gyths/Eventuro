@@ -30,9 +30,20 @@ const PorcentajeOcupacionChart = ({ eventos }) => {
   }
 
   const labels = eventos.map((e) => splitLabel(e.nombre));
-  const porcentajes = eventos.map((e) =>
-    Math.round((e.vendidas / e.capacidad) * 100)
-  );
+
+  // 🔥 ahora usamos la ocupacion que viene del backend
+  const porcentajes = eventos.map((e) => {
+    if (typeof e.ocupacion === "number" && !Number.isNaN(e.ocupacion)) {
+      return e.ocupacion; // ya viene en %
+    }
+
+    // fallback por si algún evento no trae occupancy
+    if (e.capacidad > 0) {
+      return Math.round(((e.vendidas || 0) / e.capacidad) * 100);
+    }
+
+    return 0;
+  });
 
   const data = {
     labels,
@@ -59,7 +70,9 @@ const PorcentajeOcupacionChart = ({ eventos }) => {
           label: (ctx) => {
             const i = ctx.dataIndex;
             const evento = eventos[i];
-            const p = ctx.raw;
+            const p = ctx.raw; // porcentaje que mostramos
+
+            // mostramos ocupación y detalle de capacidad/vendidas
             return ` ${evento.vendidas}/${evento.capacidad} (${p}%)`;
           },
         },
@@ -78,7 +91,7 @@ const PorcentajeOcupacionChart = ({ eventos }) => {
       },
       y: {
         min: 0,
-        max: 110,
+        max: 100, // 0–100% está perfecto
         ticks: {
           callback: (v) => `${v}%`,
           color: "#6B7280",

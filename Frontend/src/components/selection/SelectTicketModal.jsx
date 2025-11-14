@@ -495,7 +495,7 @@ export default function SelectAllocationModal({
                                 <XCircleIcon className="size-5 text-red-500"></XCircleIcon>
                               )}
                               <span>
-                                Hay {zone.capacityRemaining} entradas restabtes
+                                Hay {zone.capacityRemaining} entradas restantes
                               </span>
                             </div>
                           )}
