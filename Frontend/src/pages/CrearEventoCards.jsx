@@ -153,6 +153,13 @@ export default function CrearEventoCards() {
     tier: { enabled: false, qty: "", period: "diariamente" }, // toggle
   });
 
+  let capacity = location.inPerson
+    ? location?.capacity || 0
+    : (tickets?.zones ?? []).reduce(
+        (sum, zone) => sum + Number(zone.quantity || 0),
+        0
+      );
+
   const resetWizard = () => {
     // Ir al paso 1
     setCurrent(0);
@@ -419,6 +426,12 @@ export default function CrearEventoCards() {
         };
       });
 
+      const stageMap = {
+        diariamente: "D",
+        semanalmente: "W",
+        mensualmente: "M",
+      };
+      const stagePeriod = stageMap[tickets.tier.period] || "M";
       // ===== FormData =====
       const formData = new FormData();
 
@@ -428,7 +441,9 @@ export default function CrearEventoCards() {
       formData.append("description", form.description);
       formData.append("accessPolicy", "E");
       formData.append("accessPolicyDescription", form.extraInfo);
-
+      formData.append("stagedSale", tickets.tier.enabled);
+      formData.append("quantityStagedSale", tickets.tier.qty);
+      formData.append("stagedSalePeriod", stagePeriod);
       formData.append(
         "venue",
         JSON.stringify({
@@ -452,7 +467,14 @@ export default function CrearEventoCards() {
       formData.append("salePhases", JSON.stringify(salePhases));
       formData.append("dates", JSON.stringify(eventDates));
       formData.append("zones", JSON.stringify(eventZones));
+      formData.append("ticketLimitPerUser", parseInt(tickets.maxPerUser));
+      //console.log("ticketLimitPerUser" + tickets.maxPerUser);
       formData.append("discounts", JSON.stringify(discounts));
+
+      formData.append("refundPolicyText", returnsPolicy.text);
+      console.log("->> Politicaa", returnsPolicy.text);
+      returnsPolicy.file &&
+        formData.append("refundPolicyFile", returnsPolicy.file);
 
       // Imagen principal
       if (form.imageFile) {
@@ -477,8 +499,12 @@ export default function CrearEventoCards() {
         headers.append("Authorization", `Bearer ${token}`);
       }
 
+      for (const [key, value] of formData.entries()) {
+        console.log(key, value);
+      }
+
       // --- Enviar con fetch ---
-      const res = await fetch(`${BASE_URL}/eventuro/api/event/`, {
+      await fetch(`${BASE_URL}/eventuro/api/event/`, {
         method: "POST",
         body: formData, // ¡sin JSON.stringify!
         headers: headers,
@@ -746,6 +772,7 @@ export default function CrearEventoCards() {
 
     if (stepIndex === 1) {
       const isVirtual = location.inPerson === false;
+
       if (!isVirtual) {
         if (!location.city) {
           newErrors.city = "La ciudad es obligatoria.";
@@ -884,6 +911,25 @@ export default function CrearEventoCards() {
         }
       }
 
+      //Se comprueba que la cantidad máxima de tickets por usuario ingresada no sea mayor a la cantidad de tickets establecida
+      if (!tickets?.maxPerUser)
+        newErrors.tickets = "Debe ingresar un limite de tickets por usuario.";
+
+      let maxPerUserCap = 0;
+      if (isVirtual) {
+        maxPerUserCap = (tickets?.zones ?? []).reduce(
+          (sum, zone) => sum + Number(zone.quantity || 0),
+          0
+        );
+      } else {
+        maxPerUserCap = Number(location.capacity) || 0;
+      }
+
+      if (maxPerUserCap < Number(tickets.maxPerUser)) {
+        newErrors.tickets =
+          "La cantidad máxima de tickets por usuario debe ser coherente con la capacidad del evento.";
+      }
+
       if (tickets?.tier?.enabled) {
         const tierQty = Number(tickets.tier.qty || 0);
 
@@ -901,7 +947,6 @@ export default function CrearEventoCards() {
         }
       }
     }
-
     if (stepIndex === 2) {
       const txt = (returnsPolicy?.text ?? "").trim();
       if (!txt && !returnsPolicy?.file) {
@@ -1024,7 +1069,11 @@ export default function CrearEventoCards() {
                 setLocation((prev) => ({ ...prev, ...patch }))
               }
             />
-            <CrearTicketCard value={tickets} onChange={setTickets} />
+            <CrearTicketCard
+              value={tickets}
+              capacity={capacity ? capacity : 0}
+              onChange={setTickets}
+            />
           </div>
         </WizardCard>
       </div>
@@ -1054,7 +1103,11 @@ export default function CrearEventoCards() {
               value={discountCodes}
               onChange={setDiscountCodes}
             />
-            <ReturnsPolicy value={returnsPolicy} onChange={setReturnsPolicy} />
+            <ReturnsPolicy
+              form={form}
+              value={returnsPolicy}
+              onChange={setReturnsPolicy}
+            />
           </div>
         </WizardCard>
       </div>

@@ -1,14 +1,17 @@
 import {
   createEventRepo,
   listEventRepo,
-  listAvailableTicketsRepo,
+  listEventInfoRepo,
+  listEventDateByEventIdRepo,
+  listEventDateZonesByEventDateIdRepo,
   setEventStatusRepo,
   eventDetails,
   listEventsByOrganizerRepo,
-  listEventstoApproveRepo
+  listEventstoApproveRepo,
 } from "../repositories/event.repo.js";
 
 export async function createEventSvc(userId, input) {
+  console.log(input);
   return await createEventRepo(userId, input);
 }
 
@@ -16,8 +19,20 @@ export async function listEventSvc() {
   return listEventRepo();
 }
 
-export async function listAvailableTicketsSvc(input) {
-  return listAvailableTicketsRepo(input);
+export async function listEventInfoSvc(eventId) {
+  return listEventInfoRepo(eventId);
+}
+
+export async function listEventDateByEventIdSvc(eventId) {
+  return listEventDateByEventIdRepo(eventId);
+}
+
+export async function listEventDateZonesByEventDateIdSvc(
+  userId,
+  eventId,
+  eventDateId
+) {
+  return listEventDateZonesByEventDateIdRepo(userId, eventId, eventDateId);
 }
 
 export async function setEventStatusSvc(userId, { id, status, percentage }) {
@@ -31,7 +46,6 @@ export async function _getEventDetails(id) {
 export async function _listEventsByOrganizer(idOrganizer) {
   return listEventsByOrganizerRepo(idOrganizer);
 }
-
 
 export async function listEventstoApproveSvc({ page = 1, pageSize = 10 }) {
   return listEventstoApproveRepo({ page, pageSize });

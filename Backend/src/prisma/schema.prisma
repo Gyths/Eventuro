@@ -138,6 +138,44 @@ enum ORGANIZER_STATUS {
   @@schema("public")
 }
 
+enum STAGED_SALE_PERIOD {
+  D // DAILY
+  W // WEEKLY
+  M // MONTHLY
+ @@schema("public")
+}
+
+enum COMPLAINT_STATE {
+  PENDING
+  ACCEPTED
+  NEGATED
+
+  @@schema("public")
+}
+
+enum COMPLAINT_TARGET {
+  PAGE
+  ORGANIZER
+  EVENT
+  OTHERS
+
+  @@schema("public")
+}
+
+enum COMPLAINT_TYPE {
+  CLAIM // Por un bien o servicio
+  COMPLAINT // Queja sobre el trato o servicio
+
+  @@schema("public")
+}
+
+enum ITEM_TYPE {
+  PRODUCT
+  SERVICE
+
+  @@schema("public")
+}
+
 // ====================== Models ======================
 
 // Usuario general
@@ -158,6 +196,7 @@ model User {
   administrator  Administrator? // NUEVO: relación 1:1 con Administrator
   Ticket         Ticket[]       @relation("TicketOwner")
   Discount       Discount[]
+  Complaint      Complaint[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -288,12 +327,18 @@ model Event {
   title                   String
   imagePrincipalKey       String
   imageBannerKey          String
+  refundPolicyFileKey     String?
+  refundPolicyText        String?
   status                  EVENT_STATUS  @default(P)
   inPerson                Boolean
   description             String
   accessPolicy            ACCESS_POLICY
   accessPolicyDescription String?
   ticketLimitPerUser      Int?          @default(10)
+  // NUEVOS CAMPOS para Venta Escalonada
+  stagedSale              Boolean       @default(false)
+  quantityStagedSale      BigInt?       @db.BigInt
+  stagedSalePeriod        STAGED_SALE_PERIOD?
 
   // Relaciones
   organizer   Organizer         @relation(fields: [organizerId], references: [organizerId])
@@ -340,6 +385,7 @@ model EventDateZone {
   capacityRemaining Int
   seatMapId         BigInt?   @unique @db.BigInt
   currency          CURRENCY
+  quantityTicketsReleased BigInt    @db.BigInt
 
   // relaciones
   eventDate   EventDate                 @relation(fields: [eventDateId], references: [eventDateId], onDelete: Cascade)
@@ -349,6 +395,7 @@ model EventDateZone {
   Ticket      Ticket[]
   Hold        Hold[]
 
+  lastCapacityRemainingIncrement DateTime @default(now()) //para venta escalonada
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -422,6 +469,7 @@ model EventSalesPhase {
   ticketLimit       Int?
   percentage        Decimal   @db.Decimal(10, 2)
   active            Boolean   @default(false)
+  quantityTicketsSold Int     @default(0)
 
   event Event @relation(fields: [eventId], references: [eventId], onDelete: Cascade)
 
@@ -585,4 +633,41 @@ model AuditChange {
 
   @@map("AuditChange")
   @@schema("app")
+}
+
+// Reclamo o Queja
+model Complaint {
+  complaintId BigInt @id @default(autoincrement()) @db.BigInt
+
+  userId   BigInt? @db.BigInt
+  fullName String
+  dni      String
+  address  String?
+  phone    String?
+  email    String
+
+  eventName          String?
+  ticketNum          BigInt?        @db.BigInt
+  itemType           ITEM_TYPE
+  itemDescription    String
+  amountClaimed      Decimal        @db.Decimal(10, 2)
+  type               COMPLAINT_TYPE
+  problemDescription String
+  expectedSolution   String
+
+  evidenceUrlKeys String
+
+  // Metadata
+  dateCreation DateTime         @default(now())
+  target       COMPLAINT_TARGET
+  state        COMPLAINT_STATE  @default(PENDING)
+
+  // Relaciones
+  user User? @relation(fields: [userId], references: [userId], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@schema("public")
 }

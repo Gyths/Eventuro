@@ -19,6 +19,7 @@ export default function DiscountCode() {
   const [errorCode, setErrorCode] = React.useState(0);
   const [discountCode, setDiscountCode] = React.useState("");
   const [appliedCodes, setAppliedCodes] = React.useState([]);
+  const [isLoading, setIsLoading] = React.useState(false);
   const [showDiscountCodeAlert, setShowDiscountCodeAlert] =
     React.useState(false);
 
@@ -52,9 +53,8 @@ export default function DiscountCode() {
       setShowDiscountCodeAlert(true);
       return;
     }
-
+    console.log(event.shoppingCart);
     setShowDiscountCodeAlert(false);
-
     const data = {
       code: discountCode,
       eventId: event.eventId,
@@ -63,26 +63,15 @@ export default function DiscountCode() {
         return code.code;
       }),
       items: Object.entries(event.shoppingCart).map(([zone, zoneInf]) => {
-        let quantity = 0;
-        if (zoneInf.price && zoneInf.quantity)
-          quantity = parseInt(zoneInf.quantity);
-        else {
-          Object.entries(zoneInf).map(([_, allocationInf]) => {
-            quantity += parseInt(allocationInf.quantity || 0);
-          });
-        }
+        const quantity = parseInt(zoneInf.totalQuantity);
         return { zone, quantity };
       }),
     };
 
     try {
+      setIsLoading(true);
+      console.log(data);
       const response = await EventuroApi({ endpoint, method, data });
-
-      if (!response.success) {
-        setErrorCode(0);
-        setShowDiscountCodeAlert(true);
-        return;
-      }
 
       const newCode = {
         discountId: response.discount.discountId,
@@ -96,15 +85,16 @@ export default function DiscountCode() {
           })),
       };
 
+      await new Promise((res) => setTimeout(res, 300));
       setAppliedCodes((prev) => [...prev, newCode]);
     } catch (err) {
-      try {
-        const error = JSON.parse(err.message.split(": ")[1]);
-        setShowDiscountCodeAlert(true);
-        setErrorCode(error.errorCode);
-      } catch {
-        console.warn("No se pudo parsear el JSON del error:", err.message);
-      }
+      await new Promise((res) => setTimeout(res, 300));
+
+      setShowDiscountCodeAlert(true);
+      setErrorCode(err.code);
+      throw err;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -119,7 +109,7 @@ export default function DiscountCode() {
       // Restaurar total original cuando haya subtotal disponible
       setOrder((prev) => ({
         ...prev,
-        totalAmount: prev?.subtotal || 0,
+        totalAmount: prev?.subtotal,
       }));
     };
 
@@ -138,7 +128,6 @@ export default function DiscountCode() {
 
     const updatedCart = structuredClone(event.shoppingCart);
 
-    // Siempre limpiar descuentos anteriores del carrito
     Object.keys(updatedCart).forEach((zoneName) => {
       const zoneCart = updatedCart[zoneName];
       if (!zoneCart) return;
@@ -146,30 +135,9 @@ export default function DiscountCode() {
       delete zoneCart.discountsApplied;
       delete zoneCart.discount;
       delete zoneCart.discountedQty;
-
-      // Si tiene allocations
-      if (!zoneCart.price && typeof zoneCart === "object") {
-        Object.values(zoneCart).forEach((alloc) => {
-          if (alloc && typeof alloc === "object") {
-            delete alloc.discount;
-            delete alloc.priceAfterDiscount;
-          }
-        });
-      }
-
-      // Restaurar precio total original
-      if (zoneCart.price && zoneCart.quantity) {
-        zoneCart.totalZonePrice = zoneCart.price;
-      } else if (typeof zoneCart === "object") {
-        let total = 0;
-        Object.values(zoneCart).forEach((alloc) => {
-          if (alloc && typeof alloc.price === "number") total += alloc.price;
-        });
-        zoneCart.totalZonePrice = total;
-      }
     });
 
-    // 🧮 2️⃣ Si no hay descuentos activos → limpiar y restablecer totales
+    // Si no hay descuentos activos, limpiar y restablecer totales
     if (appliedCodes.length === 0) {
       const restoredTotal = Object.values(updatedCart).reduce((sum, zone) => {
         if (typeof zone.totalZonePrice === "number")
@@ -178,86 +146,54 @@ export default function DiscountCode() {
       }, 0);
 
       setEvent((prev) => ({ ...prev, shoppingCart: updatedCart }));
-      setOrder((prev) => ({ ...prev, totalAmount: restoredTotal }));
-      return; // 👈 termina aquí, no aplica descuentos
+      setOrder((prev) => ({ ...prev, totalAmount: order.subtotal }));
+      return;
     }
 
-    // Si hay descuentos activos → reaplicar descuentos
-    appliedCodes.forEach((code) => {
-      const percentage = code.value / 100;
-      code.eligibleZones.forEach(({ zone, quantity: eligibleQty }) => {
-        const zoneCart = updatedCart[zone];
-        if (!zoneCart) return;
+    // Si hay descuentos activos, reaplicar descuentos
+    Object.entries(updatedCart).forEach(([zoneName, zoneCart]) => {
+      if (!zoneCart || typeof zoneCart !== "object") return;
 
-        let totalDiscountAmount = 0;
-        let totalDiscountedQty = 0;
+      const basePrice =
+        typeof zoneCart.totalZonePrice === "number"
+          ? zoneCart.totalZonePrice
+          : 0;
 
-        // Caso 1: sin allocations
-        if (zoneCart.price && zoneCart.quantity) {
-          const discountedQty = Math.min(zoneCart.quantity, eligibleQty);
-          const basePricePerTicket = zoneCart.price / zoneCart.quantity;
-          const discountAmount =
-            discountedQty * basePricePerTicket * percentage;
+      // Guardar historial de descuentos aplicados
+      let totalDiscount = 0;
+      let discountsApplied = [];
 
-          totalDiscountAmount += discountAmount;
-          totalDiscountedQty += discountedQty;
+      appliedCodes.forEach((code) => {
+        const eligibleZone = code.eligibleZones.find(
+          (z) => z.zone === zoneName
+        );
+        if (!eligibleZone) return;
 
-          zoneCart.totalZonePrice = zoneCart.price - totalDiscountAmount;
-          zoneCart.discountsApplied = [
-            {
-              discountId: discountId,
-              code: code.code,
-              percentage: code.value,
-              discountedQty,
-              discountAmount,
-            },
-          ];
-        }
-        // Caso 2: con allocations
-        else {
-          let remainingEligible = eligibleQty;
-          let totalPrice = 0;
-          let discountsApplied = [];
+        const percentage = code.value / 100;
+        const discountAmount = basePrice * percentage;
 
-          Object.entries(zoneCart).forEach(([key, alloc]) => {
-            if (typeof alloc !== "object" || !alloc.quantity) return;
-            const basePricePerTicket = alloc.price / alloc.quantity;
+        discountsApplied.push({
+          discountId: code.discountId,
+          code: code.code,
+          percentage: code.value,
+          discountAmount,
+        });
 
-            const discountedQty = Math.min(alloc.quantity, remainingEligible);
-            remainingEligible -= discountedQty;
-
-            const discountAmount =
-              discountedQty * basePricePerTicket * percentage;
-            totalDiscountAmount += discountAmount;
-            totalDiscountedQty += discountedQty;
-
-            alloc.discount = discountAmount;
-            alloc.priceAfterDiscount = alloc.price - discountAmount;
-            totalPrice += alloc.priceAfterDiscount;
-
-            if (discountedQty > 0) {
-              discountsApplied.push({
-                discountId: code.discountId,
-                code: code.code,
-                percentage: code.value,
-                discountedQty,
-                discountAmount,
-                allocation: key,
-              });
-            }
-          });
-
-          zoneCart.totalZonePrice = totalPrice;
-          zoneCart.discountsApplied = discountsApplied;
-        }
+        totalDiscount += discountAmount;
       });
+
+      // Guardar nuevo total con descuentos
+      zoneCart.discountedTotalZonePrice = basePrice - totalDiscount;
+      zoneCart.discountsApplied = discountsApplied;
     });
 
     // Recalcular total general final
     const newTotal = Object.values(updatedCart).reduce((sum, zone) => {
-      if (typeof zone.totalZonePrice === "number")
-        return sum + zone.totalZonePrice;
-      return sum;
+      const price =
+        typeof zone.discountedTotalZonePrice === "number"
+          ? zone.discountedTotalZonePrice
+          : zone.totalZonePrice;
+      return sum + price;
     }, 0);
 
     setEvent((prev) => ({ ...prev, shoppingCart: updatedCart }));
@@ -281,7 +217,11 @@ export default function DiscountCode() {
               onClick={handleDiscount}
               className="bg-yellow-400 text-white px-4 rounded-lg cursor-pointer hover:scale-103 hover:bg-yellow-500/90 transition-all duration-200 active:scale-102"
             >
-              Agregar
+              {isLoading ? (
+                <div className="size-3 mx-5.5 my-1.5 justify-center items-center text-center border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+              ) : (
+                "Agregar"
+              )}
             </button>
           </div>
         </div>

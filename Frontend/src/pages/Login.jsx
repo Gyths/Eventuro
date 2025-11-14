@@ -3,8 +3,9 @@ import LoginCard from "../components/LoginCard";
 import { useAuth } from "../services/auth/AuthContext.jsx";
 import { BASE_URL } from "../config.js";
 import handleRoleNavigation from "../utils/handleRoleNavigation.js";
+import toast from "react-hot-toast";
 export default function Login() {
-  const { login } = useAuth();
+  const { login, logout } = useAuth?.() ?? { login: () => {}, logout: () => {} };
   const navigate = useNavigate();
 
   return (
@@ -19,7 +20,6 @@ export default function Login() {
       <LoginCard
         onSubmit={async ({ email, password }) => {
           try {
-            // 1️⃣ Llamada de login
             const response = await fetch(`${BASE_URL}/login`, {
               method: "POST",
               headers: {
@@ -28,13 +28,22 @@ export default function Login() {
               body: JSON.stringify({ email, password }),
             });
 
+            
+            const data = await response.json().catch(() => null);
+
             if (!response.ok) {
-              throw new Error("Credenciales inválidas");
+              
+              const serverMsg =
+                data?.error ||
+                data?.message ||
+                (response.status === 403
+                  ? "Tu cuenta está suspendida o baneada."
+                  : "Credenciales inválidas.");
+
+              throw new Error(serverMsg);
             }
 
-            const data = await response.json();
-
-            // 2️⃣ Guardamos sesión base
+           
             localStorage.setItem("sessionToken", data.token);
             localStorage.setItem("userData", JSON.stringify(data.user));
             login({ token: data.token, user: data.user });
@@ -50,17 +59,30 @@ export default function Login() {
                 const meData = await resMe.json();
                 finalUser = meData.user;
                 login({ token: data.token, user: meData.user });
+              } else if (resMe.status === 403) {
+               
+                const errBody = await resMe.json().catch(() => null);
+                const msg =
+                  errBody?.error ||
+                  errBody?.message ||
+                  "Tu cuenta ya no tiene acceso al sistema.";
+                // limpiamos sesión
+                localStorage.removeItem("sessionToken");
+                localStorage.removeItem("userData");
+                if (logout) logout();
+                alert(msg);
+                return; // no navegamos a ningún lado
               }
             } catch (err) {
               console.warn("No se pudo refrescar /me:", err);
             }
 
-            // 4️⃣ Usamos finalUser para decidir redirección
+            
             const roles = finalUser.roles || [];
             const organizerStatus = finalUser.organizerStatus || null;
             handleRoleNavigation(roles, organizerStatus, navigate);
           } catch (err) {
-            alert("Error en login: " + err.message);
+            toast.error(err.message);
           }
         }}
         onForgotPassword={() => alert("TODO: recuperar contraseña")}

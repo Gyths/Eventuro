@@ -54,6 +54,7 @@ function normalize(s) {
 //item es la zona a comparar
 export function isItemEligibleByAppliesTo(spec, item) {
   const zone = normalize(item?.zone);
+  console.log("zona: " + zone);
   if (!zone) return false;
 
   if (typeof spec === "string") {

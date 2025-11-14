@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { EventuroApi } from "../../api";
-import { ClockIcon, CheckIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import {
+  ClockIcon,
+  CheckIcon,
+  XMarkIcon,
+  EyeIcon,
+  InformationCircleIcon,
+  CalendarDaysIcon,
+  UsersIcon,
+} from "@heroicons/react/24/outline";
 import Swal from "sweetalert2";
 
 const animationStyles = `
@@ -16,6 +24,22 @@ const animationStyles = `
   }
   .animate-fade-in-up {
     animation: fade-in-up 0.4s ease-out forwards;
+  }
+  
+  /* --- NUEVO: Animaciones para el modal --- */
+  @keyframes fade-in-backdrop {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .animate-fade-in-backdrop {
+    animation: fade-in-backdrop 0.2s ease-out forwards;
+  }
+  @keyframes modal-scale-in {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .animate-modal-scale-in {
+    animation: modal-scale-in 0.3s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
   }
 `;
 
@@ -35,6 +59,9 @@ export default function AdminEvents() {
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   const fetchPendingEvents = async () => {
     setIsLoading(true);
@@ -148,6 +175,16 @@ export default function AdminEvents() {
     }
   };
 
+  const handleViewDetails = (event) => {
+    setSelectedEvent(event);
+    setIsDetailModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsDetailModalOpen(false);
+    setSelectedEvent(null);
+  };
+
   const renderContent = () => {
     if (isLoading) {
       return (
@@ -184,6 +221,7 @@ export default function AdminEvents() {
               animationDelay: `${index * 100}ms`,
             }}
           >
+            {/* Detalles del Evento */}
             <div className="flex-1 mb-4 sm:mb-0 pr-4">
               <h4 className="text-base font-semibold text-purple-800">
                 {event.title || "Evento sin título"}
@@ -200,6 +238,14 @@ export default function AdminEvents() {
             </div>
 
             <div className="flex-shrink-0 flex gap-2">
+              <button
+                onClick={() => handleViewDetails(event)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700 hover:bg-purple-200"
+                title="Ver Detalle"
+              >
+                <EyeIcon className="h-4 w-4" />
+                Detalle
+              </button>
               <button
                 onClick={() => handleReject(event.eventId)}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-red-100 text-red-700 hover:bg-red-200"
@@ -227,12 +273,14 @@ export default function AdminEvents() {
     <>
       <style>{animationStyles}</style>
 
+      {/* Contenedor principal */}
       <div className="p-4 sm:p-6 lg:p-8 flex items-center justify-center min-h-[calc(100vh-80px)]">
         <div className="bg-white border border-gray-200 rounded-2xl shadow-sm max-w-5xl mx-auto overflow-hidden transition-shadow duration-300 hover:shadow-md w-full">
+          {/* Encabezado */}
           <div className="border-b border-gray-200 p-6 sm:p-8 bg-gray-50/70">
             <h3 className="text-3xl font-semibold text-gray-800 flex items-center gap-3">
               <ClockIcon className="h-9 w-9 text-purple-600" />
-              Eventos pendientes de aprobación
+              Eventos Pendientes de Aprobación
             </h3>
             <p className="mt-2 text-base text-gray-600">
               Revisa y aprueba los nuevos eventos enviados por los
@@ -240,9 +288,128 @@ export default function AdminEvents() {
             </p>
           </div>
 
+          {/* Contenido (Lista) */}
           <div className="p-0">{renderContent()}</div>
         </div>
       </div>
+
+      <EventDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={handleCloseModal}
+        event={selectedEvent}
+      />
     </>
+  );
+}
+
+function DetailRow({ label, value, span = 1, icon: Icon }) {
+  return (
+    <div className={span === 2 ? "sm:col-span-2" : ""}>
+      <dt className="text-sm font-medium text-gray-500 flex items-center gap-1.5">
+        {Icon && <Icon className="h-4 w-4 text-gray-400" />}
+        {label}
+      </dt>
+      <dd className="mt-1 text-sm text-gray-900">{value || "—"}</dd>
+    </div>
+  );
+}
+
+function EventDetailModal({ isOpen, event, onClose }) {
+  if (!isOpen || !event) return null;
+
+  const aforoTotal = (event.dates || []).reduce(
+    (sum, date) => sum + (date.totalTickets || 0),
+    0
+  );
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm animate-fade-in-backdrop"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col animate-modal-scale-in"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Encabezado del Modal */}
+        <div className="flex justify-between items-center p-4 border-b">
+          <h3 className="text-lg font-semibold text-gray-800">
+            Detalle del Evento
+          </h3>
+          <button
+            onClick={onClose}
+            className="p-1 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+          >
+            <XMarkIcon className="h-6 w-6" />
+          </button>
+        </div>
+
+        {/* Cuerpo del Modal (con scroll) */}
+        <div className="p-6 overflow-y-auto space-y-6">
+          {/* Sección Principal */}
+          <section>
+            <h4 className="text-2xl font-bold text-purple-800 mb-2">
+              {event.title}
+            </h4>
+            <p className="text-base text-gray-700">{event.description}</p>
+          </section>
+
+          {/* Sección de Detalles */}
+          <section>
+            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
+              <DetailRow
+                label="Organizador"
+                value={event.organizer?.companyName}
+                icon={UsersIcon}
+              />
+              <DetailRow
+                label="Aforo Total (sumado de fechas)"
+                value={aforoTotal.toLocaleString("es-PE")}
+                icon={UsersIcon}
+                Dey
+              />
+              <DetailRow
+                label="Solicitado (Fecha)"
+                value={formatDate(event.createdAt)}
+                icon={CalendarDaysIcon}
+              />
+              <DetailRow
+                label="Imagen Key"
+                value={event.imagePrincipalKey}
+                icon={InformationCircleIcon}
+                span={2}
+              />
+            </dl>
+          </section>
+
+          {/* Sección de Fechas */}
+          <section>
+            <h4 className="text-base font-semibold text-purple-700 mb-3">
+              Fechas y Aforos
+            </h4>
+            <ul className="divide-y divide-gray-200 border rounded-lg">
+              {(event.dates || []).map((date) => (
+                <li
+                  key={date.eventDateId}
+                  className="px-4 py-3 flex justify-between items-center"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-gray-800">
+                      {formatDate(date.startAt)}
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      Termina: {formatDate(date.endAt)}
+                    </p>
+                  </div>
+                  <span className="text-sm font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full">
+                    Aforo: {date.totalTickets}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        </div>
+      </div>
+    </div>
   );
 }

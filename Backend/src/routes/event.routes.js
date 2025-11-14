@@ -2,7 +2,9 @@ import { Router } from "express";
 import {
   createEvent,
   listEvent,
-  listAvailableTickets,
+  listEventInfo,
+  listEventDateByEventId,
+  listEventDateZonesByEventDateId,
   setEventStatus,
   getEventDetails,
   listEventsByOrganizer,
@@ -16,11 +18,38 @@ import multer from "multer";
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
-router.post("/",upload.fields([{ name: "imagenPrincipal" },{ name: "imagenBanner" }]),verifyToken, attachUserContext, createEvent);
+router.post(
+  "/",
+  upload.fields([
+    { name: "imagenPrincipal" },
+    { name: "imagenBanner" },
+    { name: "refundPolicyFile" },
+  ]),
+  verifyToken,
+  attachUserContext,
+  createEvent
+);
 router.get("/list", listEvent);
-router.post("/availability", listAvailableTickets);
-router.put('/:id/approve', verifyToken, attachUserContext, requireAdmin, setEventStatus);
-router.get('/:id/details', getEventDetails);
-router.get('/events-by-organizer/:idOrganizer', listEventsByOrganizer);
-router.get('/to-approve', verifyToken, attachUserContext, requireAdmin, listEventstoApprove)
+router.get("/:eventId/info", listEventInfo);
+router.get("/:eventId/dates", listEventDateByEventId);
+router.get(
+  "/:userId/:eventId/:eventDateId/zones",
+  listEventDateZonesByEventDateId
+);
+router.put(
+  "/:id/approve",
+  verifyToken,
+  attachUserContext,
+  requireAdmin,
+  setEventStatus
+);
+router.get("/:id/details", getEventDetails);
+router.get("/events-by-organizer/:idOrganizer", listEventsByOrganizer);
+router.get(
+  "/to-approve",
+  verifyToken,
+  attachUserContext,
+  requireAdmin,
+  listEventstoApprove
+);
 export default router;

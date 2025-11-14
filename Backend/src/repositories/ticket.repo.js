@@ -37,13 +37,13 @@ export async function createTicketRepo(input) {
     const discounts =
       discountIds && discountIds.length
         ? await tx.discount.findMany({
-            where: {
-              discountId: { in: discountIds },
-              status: "A",
-              startAt: { lte: now },
-              endAt: { gte: now },
-            },
-          })
+          where: {
+            discountId: { in: discountIds },
+            status: "A",
+            startAt: { lte: now },
+            endAt: { gte: now },
+          },
+        })
         : [];
 
     // Si el front aseguró validez puede que no haga falta, pero validamos que se encontraron todos
@@ -178,6 +178,19 @@ export async function createTicketRepo(input) {
           );
         }
 
+        // Validar expiración del HOLD (HARD RULE)
+        if (hold.expiresAt < now) {
+          throw new Error(
+            `La reserva (HOLD) del asiento ${seatId} ha expirado. No se puede completar la compra.`
+          );
+        }
+
+        // Validar expiración del asiento (holdUntil)
+        if (seat.holdUntil && seat.holdUntil < now) {
+          throw new Error(
+            `Su reserva del asiento ${seatId} ya expiró.`
+          );
+        }
         // Una vez validado todo lo anterior , podemos actualizar el asiento a SOLD
         await tx.seat.update({
           where: { seatId },
@@ -231,6 +244,13 @@ export async function createTicketRepo(input) {
         if (!hold) {
           throw new Error(
             `No se encontró un hold válido para la zona ${eventDateZoneId} (general).`
+          );
+        }
+
+        // VALIDAMOS EXPIRACIÓN DEL HOLD
+        if (hold.expiresAt < now) {
+          throw new Error(
+            `Su reserva de entradas para esta zona ha expirado.`
           );
         }
 
