@@ -19,7 +19,7 @@ ChartJS.register(
   Tooltip,
   Legend
 );
-import VentasPorDiaChart from "../components/reporte_evento/Grafico_1";
+import VentasPorMesChart from "../components/reporte_evento/Grafico_1";
 import PorcentajeOcupacionChart from "../components/reporte_evento/Grafico_2";
 
 export default function ReportesOrganizador() {
@@ -64,7 +64,9 @@ export default function ReportesOrganizador() {
         <div className="w-full px-4 lg:px-8">
           <div className="bg-white border border-gray-200 rounded-3xl shadow-sm w-full p-6 lg:p-8 space-y-6">
             {/* Título */}
-            <h3 className="text-3xl font-bold text-gray-800 flex items-center gap-3">Reporte de Eventos</h3>
+            <h3 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
+              Reporte de Eventos
+            </h3>
 
             {/* Tabla */}
             <div className="overflow-x-auto">
@@ -201,10 +203,10 @@ export default function ReportesOrganizador() {
             <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div className="rounded-2xl bg-gray-50 px-4 py-3 flex flex-col shadow-md">
                 <h2 className="font-semibold text-gray-800 mb-2">
-                  Ventas por día
+                  Ventas por mes
                 </h2>
                 <div className="flex-1 h-64">
-                  <VentasPorDiaChart />
+                  <VentasPorMesChart />
                 </div>
               </div>
 
@@ -213,7 +215,7 @@ export default function ReportesOrganizador() {
                   Porcentaje de ocupación
                 </h2>
                 <div className="flex-1 h-64">
-                  <PorcentajeOcupacionChart />
+                  <PorcentajeOcupacionChart eventos={eventos} />
                 </div>
               </div>
             </section>

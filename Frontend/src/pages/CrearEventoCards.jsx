@@ -419,6 +419,12 @@ export default function CrearEventoCards() {
         };
       });
 
+      const stageMap = {
+        diariamente:"D",
+        semanalmente:"W",
+        mensualmente:"M",
+      };
+      const stagePeriod = stageMap[tickets.tier.period]||"M";
       // ===== FormData =====
       const formData = new FormData();
 
@@ -428,7 +434,9 @@ export default function CrearEventoCards() {
       formData.append("description", form.description);
       formData.append("accessPolicy", "E");
       formData.append("accessPolicyDescription", form.extraInfo);
-
+      formData.append("stagedSale", tickets.tier.enabled);
+      formData.append("quantityStagedSale",tickets.tier.qty);
+      formData.append("stagedSalePeriod",stagePeriod);
       formData.append(
         "venue",
         JSON.stringify({
@@ -467,6 +475,8 @@ export default function CrearEventoCards() {
       } else if (form.imageBannerKey) {
         formData.append("imageBannerKey", form.imageBannerKey);
       }
+      formData.append("refundPolicyFile", form.refundPolicyFile);
+      formData.append("refundPolicyText", returnsPolicy);
 
       const session = localStorage.getItem("session");
       const token = session ? JSON.parse(session)?.token : null;
@@ -1054,7 +1064,11 @@ export default function CrearEventoCards() {
               value={discountCodes}
               onChange={setDiscountCodes}
             />
-            <ReturnsPolicy value={returnsPolicy} onChange={setReturnsPolicy} />
+            <ReturnsPolicy
+              form={form}
+              value={returnsPolicy}
+              onChange={setReturnsPolicy}
+            />
           </div>
         </WizardCard>
       </div>
