@@ -153,6 +153,13 @@ export default function CrearEventoCards() {
     tier: { enabled: false, qty: "", period: "diariamente" }, // toggle
   });
 
+  let capacity = location.inPerson
+    ? location?.capacity || 0
+    : (tickets?.zones ?? []).reduce(
+        (sum, zone) => sum + Number(zone.quantity || 0),
+        0
+      );
+
   const resetWizard = () => {
     // Ir al paso 1
     setCurrent(0);
@@ -420,11 +427,11 @@ export default function CrearEventoCards() {
       });
 
       const stageMap = {
-        diariamente:"D",
-        semanalmente:"W",
-        mensualmente:"M",
+        diariamente: "D",
+        semanalmente: "W",
+        mensualmente: "M",
       };
-      const stagePeriod = stageMap[tickets.tier.period]||"M";
+      const stagePeriod = stageMap[tickets.tier.period] || "M";
       // ===== FormData =====
       const formData = new FormData();
 
@@ -435,8 +442,8 @@ export default function CrearEventoCards() {
       formData.append("accessPolicy", "E");
       formData.append("accessPolicyDescription", form.extraInfo);
       formData.append("stagedSale", tickets.tier.enabled);
-      formData.append("quantityStagedSale",tickets.tier.qty);
-      formData.append("stagedSalePeriod",stagePeriod);
+      formData.append("quantityStagedSale", tickets.tier.qty);
+      formData.append("stagedSalePeriod", stagePeriod);
       formData.append(
         "venue",
         JSON.stringify({
@@ -460,6 +467,8 @@ export default function CrearEventoCards() {
       formData.append("salePhases", JSON.stringify(salePhases));
       formData.append("dates", JSON.stringify(eventDates));
       formData.append("zones", JSON.stringify(eventZones));
+      formData.append("ticketLimitPerUser", tickets.maxPerUser);
+      console.log("ticketLimitPerUser" + tickets.maxPerUser);
       formData.append("discounts", JSON.stringify(discounts));
 
       // Imagen principal
@@ -756,6 +765,7 @@ export default function CrearEventoCards() {
 
     if (stepIndex === 1) {
       const isVirtual = location.inPerson === false;
+
       if (!isVirtual) {
         if (!location.city) {
           newErrors.city = "La ciudad es obligatoria.";
@@ -894,6 +904,22 @@ export default function CrearEventoCards() {
         }
       }
 
+      //Se comprueba que la cantidad máxima de tickets por usuario ingresada no sea mayor a la cantidad de tickets establecida
+      let maxPerUserCap = 0;
+      if (isVirtual) {
+        maxPerUserCap = (tickets?.zones ?? []).reduce(
+          (sum, zone) => sum + Number(zone.quantity || 0),
+          0
+        );
+      } else {
+        maxPerUserCap = Number(location.capacity) || 0;
+      }
+
+      if (maxPerUserCap < Number(tickets.maxPerUser)) {
+        newErrors.tickets =
+          "La cantidad máxima de tickets por usuario debe ser coherente con la capacidad del evento.";
+      }
+
       if (tickets?.tier?.enabled) {
         const tierQty = Number(tickets.tier.qty || 0);
 
@@ -911,7 +937,6 @@ export default function CrearEventoCards() {
         }
       }
     }
-
     if (stepIndex === 2) {
       const txt = (returnsPolicy?.text ?? "").trim();
       if (!txt && !returnsPolicy?.file) {
@@ -1034,7 +1059,11 @@ export default function CrearEventoCards() {
                 setLocation((prev) => ({ ...prev, ...patch }))
               }
             />
-            <CrearTicketCard value={tickets} onChange={setTickets} />
+            <CrearTicketCard
+              value={tickets}
+              capacity={capacity ? capacity : 0}
+              onChange={setTickets}
+            />
           </div>
         </WizardCard>
       </div>

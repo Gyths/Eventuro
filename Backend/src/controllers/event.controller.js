@@ -16,6 +16,7 @@ export async function createEvent(req, res) {
     const userId = req.auth?.user?.userId ?? null;
 
     // Pasa el archivo con el mismo nombre que espera el repo
+    console.log(req);
     const data = await createEventSvc(userId, {
       ...req.body,
       imagenPrincipal: req.files?.imagenPrincipal?.[0] || null,
