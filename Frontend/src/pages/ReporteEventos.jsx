@@ -118,7 +118,7 @@ export default function ReportesOrganizador() {
       bruto: `S/. ${e.gross}`,
       neto: `S/. ${e.net}`,
       reembolso: `S/. ${e.refundAmount}`,
-      ocupacion: Math.round(Number(e.occupancy) * 100),
+      ocupacion: (Number(e.occupancy)),
       // datos crudos para métricas cuando se filtra
       _raw: e,
     })) ?? [];
@@ -192,7 +192,7 @@ export default function ReportesOrganizador() {
 
   const formatPercent = (value) => {
     const n = Number(value || 0);
-    return `${n.toFixed(1)}%`;
+    return `${n.toFixed(2)}%`;
   };
 
   const selectedEventName =
