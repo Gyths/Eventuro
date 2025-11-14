@@ -137,7 +137,7 @@ export default function TopBarRoles({ filters, setFilters }) {
   return (
     <div className="flex w-full items-center justify-between px-6">
       {/* ========= IZQUIERDA: LOGO + BUSCADOR ========= */}
-      {!isAdmin &&(
+      {(
       <div className="flex items-center gap-3 flex-1 max-w-4xl mx-4">
         {/* Logo (opcional) */}
 
@@ -231,7 +231,7 @@ export default function TopBarRoles({ filters, setFilters }) {
 
 
         {/* Notificaciones */}
-        {isAuthenticated && !isAdmin &&(
+        {isAuthenticated && (
           <div className="relative" ref={notifRef}>
             <button
               type="button"
@@ -310,7 +310,7 @@ export default function TopBarRoles({ filters, setFilters }) {
 
 
         {/* Botón Crear Evento */}
-        {isAuthenticated && !isAdmin &&(
+        {isAuthenticated && (
           <button
             type="button"
             onClick={handleCrearEvento}
