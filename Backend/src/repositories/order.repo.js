@@ -21,7 +21,8 @@ export async function createOrderRepo(input) {
     let totalAmount = 0;
     const createdOrderItems = [];
     const createdTickets = [];
-
+    const holdExpiration = new Date(Date.now() + 5 * 60 * 1000); // 5 minutos de tolerancia para realizar la compra
+    
     // Recorrido de items de la orden (cada item puede ser zona general o numerada, con/sin allocation)
     for (const item of input.items) {
       // Validar que el evento exista y obtener el organizador y su userId
@@ -226,7 +227,7 @@ export async function createOrderRepo(input) {
         }
       }
 
-      const holdExpiration = new Date(Date.now() + 5 * 60 * 1000); // 5 minutos de tolerancia para realizar la compra
+      
       // CONTROL DE CONCURRENCIA OCC (optimistic concurrency control):
       // Todo dentro de la transacción tx: si alguno falla se hace rollback.
 
