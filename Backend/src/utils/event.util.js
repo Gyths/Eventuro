@@ -11,8 +11,7 @@ export function setFinalPrices(zones, activeSalePhasePercentage = 0) {
         allocation.price =
           Number(zone.basePrice) * (1 - Number(allocation.discountValue) / 100);
       if (allocation.discountType === "CASH")
-        allocation.price =
-          Number(zone.basePrice) - Number(allocation.discountValue);
+        allocation.price = allocation.discountValue;
 
       allocation.price =
         Number(allocation.price) * (1 + activeSalePhasePercentage / 100);
