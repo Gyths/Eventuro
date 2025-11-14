@@ -327,6 +327,8 @@ model Event {
   title                   String
   imagePrincipalKey       String
   imageBannerKey          String
+  refundPolicyFileKey     String?
+  refundPolicyText        String?
   status                  EVENT_STATUS  @default(P)
   inPerson                Boolean
   description             String

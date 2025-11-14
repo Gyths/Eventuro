@@ -258,6 +258,9 @@ async function main() {
         title: "Evento de Prueba 01",
         imagePrincipalKey: "events/1761677737608_Evento_prueba.png",
         imageBannerKey: "events/1761677738279_Evento_prueba_banner.png",
+        refundPolicyFileKey: "refund_policies/1763014632484_Informatica.pdf",
+        refundPolicyText:
+          "Política de devoluciones para el evento de prueba 02",
         inPerson: false,
         status: "A",
         description:
@@ -272,6 +275,8 @@ async function main() {
         title: "Evento de Prueba 02",
         imagePrincipalKey: "events/1761677737608_Evento_prueba.png",
         imageBannerKey: "events/1761677738279_Evento_prueba_banner.png",
+        refundPolicyText:
+          "Política de devoluciones para el evento de prueba 02",
         inPerson: true,
         status: "A",
         description:
@@ -286,6 +291,7 @@ async function main() {
         title: "Evento de Prueba 03",
         imagePrincipalKey: "events/1761677737608_Evento_prueba.png",
         imageBannerKey: "events/1761677738279_Evento_prueba_banner.png",
+        refundPolicyFileKey: "refund_policies/1763014632484_Informatica.pdf",
         inPerson: true,
         status: "P",
         description:
@@ -300,6 +306,8 @@ async function main() {
         title: "Evento de Prueba 04",
         imagePrincipalKey: "events/1761677737608_Evento_prueba.png",
         imageBannerKey: "events/1761677738279_Evento_prueba_banner.png",
+        refundPolicyText:
+          "Política de devoluciones para el evento de prueba 01",
         inPerson: true,
         status: "A",
         description: "Evento ya finalizado, no debería aparecer en listado.",
@@ -720,6 +728,8 @@ async function main() {
       },
     ]),
   });
+
+  console.log("Eventos creados correctamente");
 
   //Vista para graficos
   await prisma.$executeRawUnsafe(`
