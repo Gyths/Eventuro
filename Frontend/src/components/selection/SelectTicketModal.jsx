@@ -69,7 +69,6 @@ export default function SelectAllocationModal({
           endpoint: `/event/${user.userId}/${event.eventId}/${eventDateId}/zones`,
           method: "GET",
         });
-
         setZonesInfo(response);
 
         if (
@@ -195,7 +194,6 @@ export default function SelectAllocationModal({
             const userLimit =
               parseInt(event?.ticketLimitPerUser) -
               parseInt(zonesInfo[0].user.ticketCount);
-            console.log(userLimit);
             return userLimit < parseInt(zone.capacityRemaining)
               ? userLimit
               : parseInt(zone.capacityRemaining);
@@ -369,7 +367,6 @@ export default function SelectAllocationModal({
         method: apiMethod,
         data: orderData,
       });
-
       setOrder({
         ...response,
       });
@@ -401,7 +398,6 @@ export default function SelectAllocationModal({
           finalPrice ?? unitPrice * quantity
         );
       });
-      console.log(shoppingCart);
 
       // Actualizar el evento con el carrito completo
       setEvent({
@@ -435,6 +431,18 @@ export default function SelectAllocationModal({
     }
   };
 
+  function getCap() {
+    let cap = 0;
+    if (event && zonesInfo)
+      cap = Math.min(
+        parseInt(event?.ticketLimitPerUser) -
+          parseInt(zonesInfo[0].user.ticketCount),
+        zonesInfo[0]?.availableSalePhaseQuantity
+      );
+
+    return cap;
+  }
+
   return (
     <>
       <BaseModal>
@@ -465,13 +473,9 @@ export default function SelectAllocationModal({
                         </AlertMessage>
                       </div>
                     )}
-                    <div className="flex mb-1">
+                    <div className="flex mt-4 mb-1.5">
                       <span className="inline-block text-gray-800">
-                        Puedes comprar hasta un máximo de{" "}
-                        {event && zonesInfo
-                          ? parseInt(event?.ticketLimitPerUser) -
-                            parseInt(zonesInfo[0].user.ticketCount)
-                          : 0}{" "}
+                        Puedes seleccionar hasta un máximo de {getCap()}{" "}
                         entradas.
                       </span>
                     </div>
@@ -495,7 +499,7 @@ export default function SelectAllocationModal({
                                 <XCircleIcon className="size-5 text-red-500"></XCircleIcon>
                               )}
                               <span>
-                                Hay {zone.capacityRemaining} entradas restabtes
+                                Hay {zone.capacityRemaining} entradas restantes
                               </span>
                             </div>
                           )}

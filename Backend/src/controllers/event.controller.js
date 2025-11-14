@@ -16,6 +16,7 @@ export async function createEvent(req, res) {
     const userId = req.auth?.user?.userId ?? null;
 
     // Pasa el archivo con el mismo nombre que espera el repo
+    console.log(req);
     const data = await createEventSvc(userId, {
       ...req.body,
       imagenPrincipal: req.files?.imagenPrincipal?.[0] || null,
@@ -109,7 +110,14 @@ export async function listEventDateZonesByEventDateId(req, res) {
       eventDateZones?.activePhase?.percentage
     );
     const date = formatDates([eventDateZones.date]);
-    return res.status(201).json(toJSONSafe([{ user, zoneDates, date }]));
+    const availableSalePhaseQuantity =
+      parseInt(eventDateZones?.activePhase?.ticketLimit) -
+      parseInt(eventDateZones?.activePhase?.quantityTicketsSold);
+    return res
+      .status(201)
+      .json(
+        toJSONSafe([{ user, zoneDates, date, availableSalePhaseQuantity }])
+      );
   } catch (err) {
     return res.status(400).json({ error: err.message });
   }

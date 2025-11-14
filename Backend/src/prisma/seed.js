@@ -264,9 +264,9 @@ async function main() {
         inPerson: false,
         status: "A",
         description:
-          "Evento virtual con 300 de capacidad y dos códigos de descuento",
+          "Evento virtual con 12 tickets por usario,fase de preventa activa con solo 3 tickets disponibles y dos códigos de descuento",
         accessPolicy: "E",
-        accessPolicyDescription: "Apto para todo público.",
+        accessPolicyDescription: "Permisos de entrada para el evento 01",
         ticketLimitPerUser: 12,
       },
       //Event 2
@@ -280,9 +280,9 @@ async function main() {
         inPerson: true,
         status: "A",
         description:
-          "Evento presencial con 500 de capacidad, segunda fase activa y descuentos.",
+          "Evento presencial con 500 de capacidad, segunda de venta general activa y 2 dos códigos de descuento.",
         accessPolicy: "E",
-        accessPolicyDescription: "Apto para todo público.",
+        accessPolicyDescription: "Permisos de entrada para el evento 02",
         ticketLimitPerUser: 10,
       },
       //Event 3
@@ -293,11 +293,11 @@ async function main() {
         imageBannerKey: "events/1761677738279_Evento_prueba_banner.png",
         refundPolicyFileKey: "refund_policies/1763014632484_Informatica.pdf",
         inPerson: true,
-        status: "A",
+        status: "P",
         description:
           "Evento presencial con poca capacidad restante en cada zona.",
         accessPolicy: "E",
-        accessPolicyDescription: "Apto para todo público.",
+        accessPolicyDescription: "Permisos de entrada para el evento 03",
         ticketLimitPerUser: 9,
       },
       //Event 4
@@ -312,7 +312,7 @@ async function main() {
         status: "A",
         description: "Evento ya finalizado, no debería aparecer en listado.",
         accessPolicy: "E",
-        accessPolicyDescription: "Apto para todo público.",
+        accessPolicyDescription: "Permisos de entrada para el evento 04",
         ticketLimitPerUser: 15,
       },
     ],
@@ -379,6 +379,7 @@ async function main() {
         startAt: new Date(),
         endAt: addDays(7),
         ticketLimit: 100,
+        quantityTicketsSold: 97,
         percentage: 10,
         active: true,
       },
@@ -388,6 +389,7 @@ async function main() {
         startAt: addDays(7),
         endAt: addDays(14),
         ticketLimit: 200,
+        quantityTicketsSold: 0,
         percentage: 0,
         active: false,
       },
@@ -398,6 +400,7 @@ async function main() {
         startAt: addDays(-14),
         endAt: addDays(-7),
         ticketLimit: 150,
+        quantityTicketsSold: 0,
         percentage: 10,
         active: false,
       },
@@ -407,6 +410,7 @@ async function main() {
         startAt: new Date(),
         endAt: addDays(7),
         ticketLimit: 350,
+        quantityTicketsSold: 0,
         percentage: 0,
         active: true,
       },
@@ -417,6 +421,7 @@ async function main() {
         startAt: new Date(),
         endAt: addDays(7),
         ticketLimit: 600,
+        quantityTicketsSold: 0,
         percentage: 0,
         active: true,
       },
@@ -479,44 +484,115 @@ async function main() {
   //Dates
   const eventDates = await prisma.eventDate.createMany({
     data: [
-      //Event 1
+      //Evento 1
+      //Día 1
+      {
+        eventId: event1.eventId,
+        startAt: new Date("2025-12-05T13:00:00Z"),
+        endAt: new Date("2025-12-05T18:00:00Z"),
+      },
       {
         eventId: event1.eventId,
         startAt: new Date("2025-12-05T20:00:00Z"),
         endAt: new Date("2025-12-06T01:00:00Z"),
+      },
+      //Día 2
+      {
+        eventId: event1.eventId,
+        startAt: new Date("2025-12-06T13:00:00Z"),
+        endAt: new Date("2025-12-06T18:00:00Z"),
       },
       {
         eventId: event1.eventId,
         startAt: new Date("2025-12-06T20:00:00Z"),
         endAt: new Date("2025-12-07T01:00:00Z"),
       },
+      //Día 3
       {
         eventId: event1.eventId,
-        startAt: new Date("2025-12-08T20:00:00Z"),
-        endAt: new Date("2025-12-09T01:00:00Z"),
+        startAt: new Date("2025-12-09T13:00:00Z"),
+        endAt: new Date("2025-12-09T18:00:00Z"),
       },
-      //Event 2
+      {
+        eventId: event1.eventId,
+        startAt: new Date("2025-12-09T20:00:00Z"),
+        endAt: new Date("2025-12-10T01:00:00Z"),
+      },
+      //Evento 2
+      //Día 1
       {
         eventId: event2.eventId,
-        startAt: new Date("2025-12-20T14:00:00Z"),
-        endAt: new Date("2025-12-21T16:00:00Z"),
+        startAt: new Date("2025-11-29T14:00:00Z"),
+        endAt: new Date("2025-11-29T16:00:00Z"),
       },
+      //Día 2
       {
         eventId: event2.eventId,
         startAt: new Date("2025-12-20T18:00:00Z"),
-        endAt: new Date("2025-12-21T20:00:00Z"),
+        endAt: new Date("2025-12-20T20:00:00Z"),
       },
-      // Event 3
+      //Día 3
+      {
+        eventId: event2.eventId,
+        startAt: new Date("2025-12-22T18:00:00Z"),
+        endAt: new Date("2025-12-22T20:00:00Z"),
+      },
+      //Día 4
+      {
+        eventId: event2.eventId,
+        startAt: new Date("2025-12-24T18:00:00Z"),
+        endAt: new Date("2025-12-24T20:00:00Z"),
+      },
+      // Evento 3
+      //Día 1
       {
         eventId: event3.eventId,
-        startAt: new Date("2025-12-15T15:00:00Z"),
-        endAt: new Date("2025-12-15T20:00:00Z"),
+        startAt: new Date("2025-12-20T18:00:00Z"),
+        endAt: new Date("2025-12-20T20:00:00Z"),
       },
       {
         eventId: event3.eventId,
-        startAt: new Date("2025-12-16T15:00:00Z"),
-        endAt: new Date("2025-12-16T20:00:00Z"),
+        startAt: new Date("2025-12-20T20:00:00Z"),
+        endAt: new Date("2025-12-20T22:00:00Z"),
       },
+      {
+        eventId: event3.eventId,
+        startAt: new Date("2025-12-20T22:00:00Z"),
+        endAt: new Date("2025-12-21T00:00:00Z"),
+      },
+      //Día 2
+      {
+        eventId: event3.eventId,
+        startAt: new Date("2025-12-22T18:00:00Z"),
+        endAt: new Date("2025-12-22T20:00:00Z"),
+      },
+      {
+        eventId: event3.eventId,
+        startAt: new Date("2025-12-22T20:00:00Z"),
+        endAt: new Date("2025-12-22T22:00:00Z"),
+      },
+      {
+        eventId: event3.eventId,
+        startAt: new Date("2025-12-22T22:00:00Z"),
+        endAt: new Date("2025-12-23T00:00:00Z"),
+      },
+      //Día 3
+      {
+        eventId: event3.eventId,
+        startAt: new Date("2026-01-15T18:00:00Z"),
+        endAt: new Date("2026-01-15T20:00:00Z"),
+      },
+      {
+        eventId: event3.eventId,
+        startAt: new Date("2026-01-15T20:00:00Z"),
+        endAt: new Date("2026-01-15T22:00:00Z"),
+      },
+      {
+        eventId: event3.eventId,
+        startAt: new Date("2026-01-15T22:00:00Z"),
+        endAt: new Date("2026-01-16T00:00:00Z"),
+      },
+
       // Event 4
       {
         eventId: event4.eventId,
@@ -539,173 +615,98 @@ async function main() {
     where: { eventId: event4.eventId },
   });
 
-  await prisma.eventDateZone.createMany({
-    data: [
-      // Event 1
-      // Date 1
+  const zonesTemplates = {
+    event1: [
       {
-        eventDateId: event1Date[0].eventDateId,
         name: "Experiencia VIP",
-        kind: "GENERAL",
         basePrice: 100,
         capacity: 100,
-        capacityRemaining: 100,
-        currency: "PEN",
+        quantityTicketsReleased: 100,
       },
       {
-        eventDateId: event1Date[0].eventDateId,
         name: "Experiencia General",
-        kind: "GENERAL",
         basePrice: 50,
         capacity: 200,
-        capacityRemaining: 200,
-        currency: "PEN",
-      },
-      // Date 2
-      {
-        eventDateId: event1Date[1].eventDateId,
-        name: "Experiencia VIP",
-        kind: "GENERAL",
-        basePrice: 100,
-        capacity: 100,
-        capacityRemaining: 100,
-        currency: "PEN",
-      },
-      {
-        eventDateId: event1Date[1].eventDateId,
-        name: "Experiencia General",
-        kind: "GENERAL",
-        basePrice: 50,
-        capacity: 200,
-        capacityRemaining: 200,
-        currency: "PEN",
-      },
-      // Date 3
-      {
-        eventDateId: event1Date[2].eventDateId,
-        name: "Experiencia VIP",
-        kind: "GENERAL",
-        basePrice: 100,
-        capacity: 100,
-        capacityRemaining: 100,
-        currency: "PEN",
-      },
-      {
-        eventDateId: event1Date[2].eventDateId,
-        name: "Experiencia General",
-        kind: "GENERAL",
-        basePrice: 50,
-        capacity: 200,
-        capacityRemaining: 200,
-        currency: "PEN",
-      },
-      // Event 2
-      //Date 1
-      {
-        eventDateId: event2Date[0].eventDateId,
-        name: "Zona VIP",
-        kind: "GENERAL",
-        basePrice: 350,
-        capacity: 200,
-        capacityRemaining: 200,
-        currency: "PEN",
-      },
-      {
-        eventDateId: event2Date[0].eventDateId,
-        name: "Zona General",
-        kind: "GENERAL",
-        basePrice: 180,
-        capacity: 300,
-        capacityRemaining: 300,
-        currency: "PEN",
-      },
-      //Date 2
-      {
-        eventDateId: event2Date[1].eventDateId,
-        name: "Zona VIP",
-        kind: "GENERAL",
-        basePrice: 350,
-        capacity: 200,
-        capacityRemaining: 200,
-        currency: "PEN",
-      },
-      {
-        eventDateId: event2Date[1].eventDateId,
-        name: "Zona General",
-        kind: "GENERAL",
-        basePrice: 180,
-        capacity: 300,
-        capacityRemaining: 300,
-        currency: "PEN",
-      },
-      // Event 3
-      //Date 1
-      {
-        eventDateId: event3Date[0].eventDateId,
-        name: "Zona VIP",
-        kind: "GENERAL",
-        basePrice: 350,
-        capacity: 200,
-        capacityRemaining: 8,
-        currency: "PEN",
-      },
-      {
-        eventDateId: event3Date[0].eventDateId,
-        name: "Zona General",
-        kind: "GENERAL",
-        basePrice: 180,
-        capacity: 300,
-        capacityRemaining: 6,
-        currency: "PEN",
-      },
-      {
-        eventDateId: event3Date[0].eventDateId,
-        name: "Zona Preferencial",
-        kind: "GENERAL",
-        basePrice: 180,
-        capacity: 100,
-        capacityRemaining: 5,
-        currency: "PEN",
-      },
-      //Date 2
-      {
-        eventDateId: event3Date[1].eventDateId,
-        name: "Zona VIP",
-        kind: "GENERAL",
-        basePrice: 350,
-        capacity: 200,
-        capacityRemaining: 8,
-        currency: "PEN",
-      },
-      {
-        eventDateId: event3Date[1].eventDateId,
-        name: "Zona General",
-        kind: "GENERAL",
-        basePrice: 180,
-        capacity: 300,
-        capacityRemaining: 6,
-        currency: "PEN",
-      },
-      {
-        eventDateId: event3Date[1].eventDateId,
-        name: "Zona Preferencial",
-        kind: "GENERAL",
-        basePrice: 180,
-        capacity: 100,
-        capacityRemaining: 5,
-        currency: "PEN",
-      },
-      // Event 4
-      {
-        eventDateId: event4Date[0].eventDateId,
-        name: "Zona General",
-        kind: "GENERAL",
-        basePrice: 180,
-        capacity: 600,
-        capacityRemaining: 5,
-        currency: "PEN",
+        quantityTicketsReleased: 200,
       },
     ],
+
+    event2: [
+      {
+        name: "Zona VIP",
+        basePrice: 350,
+        capacity: 200,
+        quantityTicketsReleased: 200,
+      },
+      {
+        name: "Zona General",
+        basePrice: 180,
+        capacity: 300,
+        quantityTicketsReleased: 300,
+      },
+    ],
+
+    event3: [
+      {
+        name: "Zona VIP",
+        basePrice: 350,
+        capacity: 200,
+        quantityTicketsReleased: 200,
+      },
+      {
+        name: "Zona General",
+        basePrice: 180,
+        capacity: 300,
+        quantityTicketsReleased: 300,
+      },
+      {
+        name: "Zona Preferencial",
+        basePrice: 180,
+        capacity: 100,
+        quantityTicketsReleased: 100,
+      },
+    ],
+
+    event4: [
+      {
+        name: "Zona General",
+        basePrice: 180,
+        capacity: 600,
+        quantityTicketsReleased: 600,
+      },
+    ],
+  };
+
+  let zonesToInsert = [];
+
+  const eventToDates = {
+    event1: event1Date,
+    event2: event2Date,
+    event3: event3Date,
+    event4: event4Date,
+  };
+
+  for (const [key, dates] of Object.entries(eventToDates)) {
+    const template = zonesTemplates[key];
+
+    dates.forEach((date) => {
+      template.forEach((zone) => {
+        zonesToInsert.push({
+          eventDateId: date.eventDateId,
+          name: zone.name,
+          kind: "GENERAL",
+          basePrice: zone.basePrice,
+          capacity: zone.capacity,
+          capacityRemaining: zone.capacity, // igual al inicio
+          quantityTicketsReleased: zone.quantityTicketsReleased,
+          currency: "PEN",
+        });
+      });
+    });
+  }
+
+  await prisma.eventDateZone.createMany({
+    data: zonesToInsert,
   });
 
   const zones = await prisma.eventDateZone.findMany();
@@ -718,6 +719,7 @@ async function main() {
         discountType: "PERCENTAGE",
         discountValue: 20,
       },
+
       {
         eventDateZoneId: z.eventDateZoneId,
         audienceName: "Adultos",

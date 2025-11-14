@@ -12,7 +12,6 @@ export default function ShoppingCart({
   const tickets = [];
   const { order } = useOrder();
   const { event } = useEvent();
-  console.log(event.shoppingCart);
 
   const currencies = { PEN: "S/." };
 

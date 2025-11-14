@@ -73,6 +73,11 @@ export async function createEventRepo(userId, input) {
     const salePhases = input.salePhases ? JSON.parse(input.salePhases) : [];
     const refundPolicyText = input.refundPolicyText ?? null;
 
+    const stagedSale = input.stagedSale === "true" || input.stagedSale === true;
+    const quantityStagedSale = input.quantityStagedSale
+      ? BigInt(input.quantityStagedSale)
+      : null;
+    const stagedSalePeriod = input.stagedSalePeriod ?? null;
     // --- Crear evento ---
     const event = await tx.event.create({
       data: {
@@ -86,6 +91,12 @@ export async function createEventRepo(userId, input) {
         accessPolicy: input.accessPolicy,
         accessPolicyDescription: input.accessPolicyDescription ?? null,
         refundPolicyText: refundPolicyText,
+        ticketLimitPerUser: input.ticketLimitPerUser
+          ? Number(input.ticketLimitPerUser)
+          : 10, // por defecto
+        stagedSale: stagedSale,
+        quantityStagedSale: quantityStagedSale,
+        stagedSalePeriod: stagedSalePeriod,
       },
       select: { eventId: true },
     });
@@ -196,6 +207,19 @@ export async function createEventRepo(userId, input) {
           await tx.seat.createMany({ data: seats, skipDuplicates: true });
         }
 
+        // Determinar cuántas entradas se liberan inicialmente
+        let initialCapacityRemaining;
+        if (stagedSale) {
+          // Si hay venta escalonada, libera la cantidad inicial configurada
+          initialCapacityRemaining = Number(quantityStagedSale);
+          // Seguridad: no puede ser mayor que la capacidad total
+          if (initialCapacityRemaining > Number(zone.capacity)) {
+            initialCapacityRemaining = Number(zone.capacity);
+          }
+        } else {
+          // Si no hay venta escalonada, libera todo
+          initialCapacityRemaining = Number(zone.capacity);
+        }
         const eventDateZone = await tx.eventDateZone.create({
           data: {
             eventDateId,
@@ -203,7 +227,8 @@ export async function createEventRepo(userId, input) {
             kind: zone.kind,
             basePrice: Number(zone.basePrice),
             capacity: Number(zone.capacity),
-            capacityRemaining: Number(zone.capacity),
+            capacityRemaining: initialCapacityRemaining,
+            quantityTicketsReleased: initialCapacityRemaining,
             seatMapId,
             currency: zone.currency,
           },
@@ -644,10 +669,12 @@ export async function listEventDateZonesByEventDateIdRepo(
       },
       select: {
         eventSalesPhaseId: true,
+        ticketLimit: true,
         name: true,
         startAt: true,
         endAt: true,
         percentage: true,
+        quantityTicketsSold: true,
       },
     }),
   ]);

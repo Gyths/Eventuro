@@ -16,9 +16,9 @@ import audit from "./routes/audit.routes.js";
 import discount from "./routes/discount.routes.js"
 import organizerRoutes from "./routes/organizer.routes.js";
 import defaultUserRoutes from "./routes/defaultUser.routes.js";
-import reportSales from "./routes/reportSales.routes.js";
+import reportSales from "./routes/reportSales.routes.js"
 import complaint from "./routes/complaint.route.js";
-
+import './jobs/incrementCapacityJob.js'; // Asegura que el job se inicie y se ejecute cuando le corresponda
 import { config } from "./config/env.js";
 const app = express();
 const route = "/eventuro/api";

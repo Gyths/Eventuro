@@ -20,6 +20,7 @@ import {
   MapPinIcon,
   UserIcon,
   UserGroupIcon,
+  Bars4Icon,
 } from "@heroicons/react/24/solid";
 
 import { FaceFrownIcon } from "@heroicons/react/24/outline";
@@ -203,10 +204,19 @@ export default function TicketSelection() {
                         </p>
                       </div>
 
+                      <div className="inline-flex flex-row justify-start items-start xl:items-center text-center gap-4">
+                        <Bars4Icon className="flex-shrink-0 size-5 items-end"></Bars4Icon>
+                        <p className="inline-block text-start max-w-prose">
+                          {event?.accessPolicyDescription}
+                        </p>
+                      </div>
                       <div className="flex flex-1 flex-row justify-start items-center text-center gap-4">
                         <UserGroupIcon className="flex size-5" />
                         <p className="inline-block text-start">
-                          {event?.accessPolicyDescription}
+                          {event &&
+                            EVENT_INFORMATION_TEXTS.access_policy[
+                              event?.accessPolicy
+                            ]}
                         </p>
                       </div>
 

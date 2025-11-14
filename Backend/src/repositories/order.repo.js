@@ -21,7 +21,8 @@ export async function createOrderRepo(input) {
     let totalAmount = 0;
     const createdOrderItems = [];
     const createdTickets = [];
-
+    const holdExpiration = new Date(Date.now() + 5 * 60 * 1000); // 5 minutos de tolerancia para realizar la compra
+    
     // Recorrido de items de la orden (cada item puede ser zona general o numerada, con/sin allocation)
     for (const item of input.items) {
       // Validar que el evento exista y obtener el organizador y su userId
@@ -226,7 +227,7 @@ export async function createOrderRepo(input) {
         }
       }
 
-      const holdExpiration = new Date(Date.now() + 5 * 60 * 1000); // 5 minutos de tolerancia para realizar la compra
+      
       // CONTROL DE CONCURRENCIA OCC (optimistic concurrency control):
       // Todo dentro de la transacción tx: si alguno falla se hace rollback.
 
@@ -349,11 +350,22 @@ export async function createOrderRepo(input) {
         where: {
           eventId,
           active: true,
-          startAt: { lte: now },
-          endAt: { gte: now },
+          AND: [
+            {
+              OR: [
+                { startAt: { lte: now } },
+                { startAt: null }
+              ]
+            },
+            {
+              OR: [
+                { endAt: { gte: now } },
+                { endAt: null }
+              ]
+            }
+          ]
         },
-      });
-
+      })
       // Si tendrá allocation, calculamos el precio de la entrada para la allocation de dicha zona
       if (allocation) {
         const { discountType, discountValue } = allocation;
@@ -367,11 +379,27 @@ export async function createOrderRepo(input) {
       }
 
       if (phase) {
-        // Validamos límite de entradas por usuario
-        if (quantity > phase.ticketLimit) {
-          throw new Error(
-            `Solo se cuentan con ${phase.ticketLimit} entradas para esta fase.`
-          );
+        // Si la fase tiene un límite, lo validamos
+        if (phase.ticketLimit !== null) {
+          const newTotal = phase.quantityTicketsSold + quantity;
+
+          if (newTotal > phase.ticketLimit) {
+            const remaining = phase.ticketLimit - phase.quantityTicketsSold;
+
+            let err = new Error(
+              `La fase de venta solo tiene ${remaining} entradas disponibles. Puedes esperar a una siguiente fase o comprar la entradas restantes.`
+            );
+            err.code = 8;
+            throw err;
+          }
+
+          // Si pasa la validación → actualizamos quantityTicketsSold
+          await tx.eventSalesPhase.update({
+            where: { eventSalesPhaseId: phase.eventSalesPhaseId },
+            data: {
+              quantityTicketsSold: newTotal,
+            },
+          });
         }
 
         // Aplicamos porcentaje de la fase que puede aumentar, disminuir el precio
@@ -426,6 +454,7 @@ export async function createOrderRepo(input) {
     return {
       orderId: Number(order.orderId),
       subtotal: totalAmount,
+      expiresAt: holdExpiration,
       items: createdOrderItems,
     };
   });
@@ -542,6 +571,43 @@ export async function cancelOrderRepo(orderId) {
           },
         });
       }
+
+      // 5) Buscar la fase activa en la que se compraron las entradas según la fecha de creación de la orden
+      const eventDate = await tx.eventDate.findUnique({
+        where: { eventDateId },
+        select: { eventId: true },
+      });
+
+      const phase = await tx.eventSalesPhase.findFirst({
+        where: {
+          eventId: eventDate.eventId,
+          active: true,
+          AND: [
+            {
+              OR: [
+                { startAt: { lte: orderCreatedAt } },
+                { startAt: null },
+              ],
+            },
+            {
+              OR: [
+                { endAt: { gte: orderCreatedAt } },
+                { endAt: null },
+              ],
+            },
+          ],
+        },
+      });
+
+      if (phase && phase.ticketLimit !== null) {
+        await tx.eventSalesPhase.update({
+          where: { eventSalesPhaseId: phase.eventSalesPhaseId },
+          data: {
+            quantityTicketsSold: phase.quantityTicketsSold - Number(quantity),
+          },
+        });
+      }
+
     }
 
     // Borrar los orderItems de esta orden
