@@ -905,6 +905,9 @@ export default function CrearEventoCards() {
       }
 
       //Se comprueba que la cantidad máxima de tickets por usuario ingresada no sea mayor a la cantidad de tickets establecida
+      if (!tickets?.maxPerUser)
+        newErrors.tickets = "Debe ingresar un limite de tickets por usuario.";
+
       let maxPerUserCap = 0;
       if (isVirtual) {
         maxPerUserCap = (tickets?.zones ?? []).reduce(

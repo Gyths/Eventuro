@@ -322,8 +322,7 @@ export default function LibroReclamos() {
       if (!detalle.eventName.trim()) err.eventName = "Campo obligatorio";
       if (!detalle.target)
         err.target = "Seleccione a quién va dirigido el reclamo";
-      if (!detalle.type)
-        err.type = "Seleccione un tipo de reclamo/queja";
+      if (!detalle.type) err.type = "Seleccione un tipo de reclamo/queja";
       if (!detalle.itemDescription.trim())
         err.itemDescription = "Campo obligatorio";
       if (!detalle.amountClaimed.trim())
@@ -447,9 +446,7 @@ export default function LibroReclamos() {
       setCurrent(0);
     } catch (err) {
       console.error(err);
-      toast.error(
-        err.message || "Ocurrió un error al registrar tu reclamo."
-      );
+      toast.error(err.message || "Ocurrió un error al registrar tu reclamo.");
     } finally {
       setSending(false);
     }
@@ -659,7 +656,7 @@ export default function LibroReclamos() {
             />
             <div className="md:col-span-2">
               <label className="block text-sm text-gray-600 mb-1">
-                Evidencia adjunta (opcional)
+                Evidencia adjunta
               </label>
               <input
                 type="file"
@@ -751,9 +748,7 @@ export default function LibroReclamos() {
                 </div>
                 <div>
                   <span className="text-gray-500">Monto reclamado:</span>{" "}
-                  {detalle.amountClaimed
-                    ? `S/ ${detalle.amountClaimed}`
-                    : "—"}
+                  {detalle.amountClaimed ? `S/ ${detalle.amountClaimed}` : "—"}
                 </div>
                 <div className="md:col-span-2">
                   <span className="text-gray-500">
