@@ -1,6 +1,13 @@
 import { prisma, Prisma } from "../utils/prisma.js";
 
-function buildWhere({ organizerId, eventId, orderStatus, ticketStatus, from, to }) {
+function buildWhere({
+  organizerId,
+  eventId,
+  orderStatus,
+  ticketStatus,
+  from,
+  to,
+}) {
   const conds = [];
   const params = [];
 
@@ -35,11 +42,18 @@ export async function listReportSaleTicketsRepo({
   filters = {},
 }) {
   const safeSortBy = [
-    "orderCreatedAt","issuedAt","eventStartAt",
-    "pricePaid","platformCommissionAmount","netForOrganizer"
-  ].includes(sortBy) ? Prisma.raw(`"${sortBy}"`) : Prisma.raw(`"orderCreatedAt"`);
+    "orderCreatedAt",
+    "issuedAt",
+    "eventStartAt",
+    "pricePaid",
+    "platformCommissionAmount",
+    "netForOrganizer",
+  ].includes(sortBy)
+    ? Prisma.raw(`"${sortBy}"`)
+    : Prisma.raw(`"orderCreatedAt"`);
 
-  const safeSortDir = sortDir?.toLowerCase() === "asc" ? Prisma.sql`ASC` : Prisma.sql`DESC`;
+  const safeSortDir =
+    sortDir?.toLowerCase() === "asc" ? Prisma.sql`ASC` : Prisma.sql`DESC`;
 
   const where = buildWhere(filters);
   const offset = Math.max(0, (Number(page) - 1) * Number(pageSize));
@@ -93,3 +107,147 @@ export async function exportReportSaleTicketsCsvRepo({ filters = {} }) {
   );
   return rows;
 }
+
+export const showSalesReportRepo = async (organizerId) => {
+  const events = await prisma.event.findMany({
+    where: { organizerId, status: "A" },
+    include: {
+      venue: true,
+      dates: {
+        include: {
+          zoneDates: true,
+          Ticket: true,
+        },
+      },
+    },
+  });
+
+  let totalGross = 0;
+  let totalNet = 0;
+  let totalTicketsSold = 0;
+  let totalRefunds = 0;
+
+  const eventReports = [];
+
+  // ===============================
+  // AGRUPACIÓN GLOBAL DE VENTAS POR MES
+  // ===============================
+  const salesByMonth = await prisma.ticket.groupBy({
+    by: ["issuedAt"],
+    _sum: { pricePaid: true },
+    where: {
+      status: { in: ["PAID", "USED"] },
+      eventDate: {
+        event: {
+          organizerId,
+        },
+      },
+    },
+  });
+
+  const monthlySales = salesByMonth.reduce((acc, row) => {
+    const month = row.issuedAt.toISOString().slice(0, 7); // YYYY-MM
+
+    acc[month] = (acc[month] || 0) + Number(row._sum.pricePaid || 0);
+
+    return acc;
+  }, {});
+
+  // ===============================
+  // REPORTES POR EVENTO
+  // ===============================
+  for (const event of events) {
+    let eventGross = 0;
+    let eventRefunds = 0;
+    let ticketsSold = 0;
+    let totalCapacity = 0;
+
+    // SUMAR CAPACIDAD DE TODAS LAS ZONAS DE TODAS LAS FECHAS
+    for (const date of event.dates) {
+      for (const zone of date.zoneDates) {
+        totalCapacity += zone.capacity;
+      }
+    }
+
+    // PROCESAR TICKETS DEL EVENTO
+    for (const date of event.dates) {
+      for (const ticket of date.Ticket) {
+        const price = Number(ticket.pricePaid);
+
+        eventGross += price;
+
+        if (ticket.refundStatus === "APPROVED") {
+          eventRefunds += price;
+        }
+
+        if (ticket.status === "PAID" || ticket.status === "USED") {
+          ticketsSold++;
+        }
+      }
+    }
+
+    const eventNet = eventGross - eventRefunds;
+    const refundRate = eventGross ? (eventRefunds / eventGross) * 100 : 0;
+
+    const occupancy =
+      totalCapacity > 0 ? (ticketsSold / totalCapacity) * 100 : 0;
+
+    // ACUMULACIÓN GLOBAL
+    totalGross += eventGross;
+    totalNet += eventNet;
+    totalTicketsSold += ticketsSold;
+    totalRefunds += eventRefunds;
+
+    eventReports.push({
+      eventId: event.eventId,
+      title: event.title,
+
+      // capacidades y ventas
+      capacity: totalCapacity,
+      sold: ticketsSold,
+
+      // dinero
+      gross: eventGross.toFixed(2),
+      net: eventNet.toFixed(2),
+      refundAmount: eventRefunds.toFixed(2),
+      refundRate: refundRate.toFixed(1),
+
+      // ocupación
+      occupancy: occupancy.toFixed(1),
+
+      // estado
+      status:
+        event.status === "A"
+          ? "Aceptado"
+          : event.status === "P"
+            ? "Pendiente"
+            : "Denegado",
+
+      dates: event.dates.map((d) => ({
+        startAt: d.startAt,
+        endAt: d.endAt,
+      })),
+    });
+  }
+
+  const refundRateTotal = totalGross
+    ? (totalRefunds / totalGross) * 100
+    : 0;
+
+  return {
+    summary: {
+      gross: totalGross.toFixed(2),
+      net: totalNet.toFixed(2),
+      ticketsSold: totalTicketsSold,
+      refundRate: refundRateTotal.toFixed(1),
+    },
+    events: eventReports,
+
+    charts: {
+      salesByMonth: Object.entries(monthlySales).map(([month, total]) => ({
+        month,
+        total,
+      })),
+    },
+  };
+};

@@ -419,6 +419,12 @@ export default function CrearEventoCards() {
         };
       });
 
+      const stageMap = {
+        diariamente:"D",
+        semanalmente:"W",
+        mensualmente:"M",
+      };
+      const stagePeriod = stageMap[tickets.tier.period]||"M";
       // ===== FormData =====
       const formData = new FormData();
 
@@ -428,7 +434,9 @@ export default function CrearEventoCards() {
       formData.append("description", form.description);
       formData.append("accessPolicy", "E");
       formData.append("accessPolicyDescription", form.extraInfo);
-
+      formData.append("stagedSale", tickets.tier.enabled);
+      formData.append("quantityStagedSale",tickets.tier.qty);
+      formData.append("stagedSalePeriod",stagePeriod);
       formData.append(
         "venue",
         JSON.stringify({
