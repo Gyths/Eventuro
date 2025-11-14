@@ -381,7 +381,7 @@ export async function sendReminderEmail(to, eventInfo) {
               color: #374151;
               margin: 24px 0 0 0;
             ">
-              ¡Te esperamos! 🎉
+              ¡Que no se te pase la fecha! 🎉
             </p>
           </div>
 
