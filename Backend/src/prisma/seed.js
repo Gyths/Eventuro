@@ -542,6 +542,7 @@ async function main() {
         basePrice: 100,
         capacity: 100,
         capacityRemaining: 100,
+        quantityTicketsReleased: 100,
         currency: "PEN",
       },
       {
@@ -551,6 +552,7 @@ async function main() {
         basePrice: 50,
         capacity: 200,
         capacityRemaining: 200,
+        quantityTicketsReleased: 100,
         currency: "PEN",
       },
       // Date 2
@@ -561,6 +563,7 @@ async function main() {
         basePrice: 100,
         capacity: 100,
         capacityRemaining: 100,
+        quantityTicketsReleased: 100,
         currency: "PEN",
       },
       {
@@ -570,6 +573,7 @@ async function main() {
         basePrice: 50,
         capacity: 200,
         capacityRemaining: 200,
+        quantityTicketsReleased: 200,
         currency: "PEN",
       },
       // Date 3
@@ -580,6 +584,7 @@ async function main() {
         basePrice: 100,
         capacity: 100,
         capacityRemaining: 100,
+        quantityTicketsReleased: 100,
         currency: "PEN",
       },
       {
@@ -589,6 +594,7 @@ async function main() {
         basePrice: 50,
         capacity: 200,
         capacityRemaining: 200,
+        quantityTicketsReleased: 200,
         currency: "PEN",
       },
       // Event 2
@@ -600,6 +606,7 @@ async function main() {
         basePrice: 350,
         capacity: 200,
         capacityRemaining: 200,
+        quantityTicketsReleased: 200,
         currency: "PEN",
       },
       {
@@ -609,6 +616,7 @@ async function main() {
         basePrice: 180,
         capacity: 300,
         capacityRemaining: 300,
+        quantityTicketsReleased: 300,
         currency: "PEN",
       },
       //Date 2
@@ -619,6 +627,7 @@ async function main() {
         basePrice: 350,
         capacity: 200,
         capacityRemaining: 200,
+        quantityTicketsReleased: 200,
         currency: "PEN",
       },
       {
@@ -628,6 +637,7 @@ async function main() {
         basePrice: 180,
         capacity: 300,
         capacityRemaining: 300,
+        quantityTicketsReleased: 300,
         currency: "PEN",
       },
       // Event 3
@@ -639,6 +649,7 @@ async function main() {
         basePrice: 350,
         capacity: 200,
         capacityRemaining: 8,
+        quantityTicketsReleased: 200,
         currency: "PEN",
       },
       {
@@ -648,6 +659,7 @@ async function main() {
         basePrice: 180,
         capacity: 300,
         capacityRemaining: 6,
+        quantityTicketsReleased: 300,
         currency: "PEN",
       },
       {
@@ -657,6 +669,7 @@ async function main() {
         basePrice: 180,
         capacity: 100,
         capacityRemaining: 5,
+        quantityTicketsReleased: 100,
         currency: "PEN",
       },
       //Date 2
@@ -667,6 +680,7 @@ async function main() {
         basePrice: 350,
         capacity: 200,
         capacityRemaining: 8,
+        quantityTicketsReleased: 200,
         currency: "PEN",
       },
       {
@@ -676,6 +690,7 @@ async function main() {
         basePrice: 180,
         capacity: 300,
         capacityRemaining: 6,
+        quantityTicketsReleased: 300,
         currency: "PEN",
       },
       {
@@ -685,6 +700,7 @@ async function main() {
         basePrice: 180,
         capacity: 100,
         capacityRemaining: 5,
+        quantityTicketsReleased: 100,
         currency: "PEN",
       },
       // Event 4
@@ -695,6 +711,7 @@ async function main() {
         basePrice: 180,
         capacity: 600,
         capacityRemaining: 5,
+        quantityTicketsReleased: 600,
         currency: "PEN",
       },
     ],

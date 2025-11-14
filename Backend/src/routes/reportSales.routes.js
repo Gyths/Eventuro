@@ -19,6 +19,8 @@ router.get(
   "/sales-tickets/export",
   /*verifyToken, attachUserContext, requireAdmin, */ exportReportSaleTicketsCsvCtrl
 );
-router.get("/sales/:organizerId", showSalesReportCtrl);
+router.get("/sales/:organizerId", 
+  /*verifyToken, attachUserContext, requireAdmin, */ showSalesReportCtrl
+);
 
 export default router;

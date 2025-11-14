@@ -52,12 +52,7 @@ export const showSalesReportCtrl = async (req, res) => {
     const { organizerId } = req.params;
 
     const data = await showSalesReportSvc(Number(organizerId));
-
-    return res.status(200).json({
-      ok: true,
-      message: "Reporte de ventas generado correctamente.",
-      data,
-    });
+    return res.json(toJSONSafe(data));
   } catch (error) {
     console.error("Error en showSalesReportController:", error);
     return res.status(500).json({
