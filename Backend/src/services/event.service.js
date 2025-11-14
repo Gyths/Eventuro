@@ -11,6 +11,7 @@ import {
 } from "../repositories/event.repo.js";
 
 export async function createEventSvc(userId, input) {
+  console.log(input);
   return await createEventRepo(userId, input);
 }
 
