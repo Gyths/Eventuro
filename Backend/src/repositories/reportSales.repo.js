@@ -130,11 +130,9 @@ export const showSalesReportRepo = async (organizerId) => {
   const eventReports = [];
 
   // ===============================
-  // AGRUPACIÓN GLOBAL DE VENTAS POR MES
+  // NUEVO: AGRUPAR VENTAS POR MES Y POR EVENTO
   // ===============================
-  const salesByMonth = await prisma.ticket.groupBy({
-    by: ["issuedAt"],
-    _sum: { pricePaid: true },
+  const sales = await prisma.ticket.findMany({
     where: {
       status: { in: ["PAID", "USED"] },
       eventDate: {
@@ -143,15 +141,38 @@ export const showSalesReportRepo = async (organizerId) => {
         },
       },
     },
+    select: {
+      pricePaid: true,
+      issuedAt: true,
+      eventDate: {
+        select: {
+          eventId: true,
+        },
+      },
+    },
   });
 
-  const monthlySales = salesByMonth.reduce((acc, row) => {
-    const month = row.issuedAt.toISOString().slice(0, 7); // YYYY-MM
+  const monthNames = [
+    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+    "Julio", "Agosto", "Setiembre", "Octubre", "Noviembre", "Diciembre"
+  ];
 
-    acc[month] = (acc[month] || 0) + Number(row._sum.pricePaid || 0);
+  const monthlySales = {};
 
-    return acc;
-  }, {});
+  // inicializamos todos los meses con []
+  monthNames.forEach(m => (monthlySales[m] = []));
+
+  // poblamos las ventas
+  for (const s of sales) {
+    const monthIndex = s.issuedAt.getMonth(); // 0–11
+    const monthName = monthNames[monthIndex];
+
+    monthlySales[monthName].push({
+      eventId: s.eventDate.eventId,
+      monto: Number(s.pricePaid),
+    });
+  }
+
 
   // ===============================
   // REPORTES POR EVENTO
@@ -244,10 +265,7 @@ export const showSalesReportRepo = async (organizerId) => {
     events: eventReports,
 
     charts: {
-      salesByMonth: Object.entries(monthlySales).map(([month, total]) => ({
-        month,
-        total,
-      })),
+      salesByMonth: [monthlySales],
     },
   };
 };
