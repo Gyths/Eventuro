@@ -21,6 +21,7 @@ export async function createEvent(req, res) {
       ...req.body,
       imagenPrincipal: req.files?.imagenPrincipal?.[0] || null,
       imagenBanner: req.files?.imagenBanner?.[0] || null,
+      policyFile: req.files?.refundPolicyFile?.[0] || null,
     });
 
     return res.status(201).json(toJSONSafe(data));

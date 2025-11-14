@@ -45,6 +45,20 @@ export async function createEventRepo(userId, input) {
       imageBannerKey = input.imageBannerKey;
     }
 
+    // --- Manejo del refundPolicyFile ---
+    let refundPolicyFileKey = null;
+    if (input.policyFile) {
+      const buffer = input.policyFile.buffer;
+      const fileName = `refund_policies/${Date.now()}_${
+        input.policyFile.originalname
+      }`;
+      refundPolicyFileKey = await uploadFile(
+        fileName,
+        buffer,
+        input.policyFile.mimetype
+      );
+    }
+
     // --- Parsear y convertir tipos ---
     const organizerId = BigInt(input.organizerId);
     const inPerson = input.inPerson === "true" || input.inPerson === true;
@@ -57,6 +71,7 @@ export async function createEventRepo(userId, input) {
     const zones = input.zones ? JSON.parse(input.zones) : [];
     const accessPolicyDescription = input.accessPolicyDescription ?? null;
     const salePhases = input.salePhases ? JSON.parse(input.salePhases) : [];
+    const refundPolicyText = input.refundPolicyText ?? null;
 
     const stagedSale = input.stagedSale === "true" || input.stagedSale === true;
     const quantityStagedSale = input.quantityStagedSale
@@ -71,9 +86,11 @@ export async function createEventRepo(userId, input) {
         inPerson: inPerson,
         imagePrincipalKey: imagePrincipalKey ?? "",
         imageBannerKey: imageBannerKey ?? "",
+        refundPolicyFileKey: refundPolicyFileKey ?? null,
         description: input.description,
         accessPolicy: input.accessPolicy,
         accessPolicyDescription: input.accessPolicyDescription ?? null,
+        refundPolicyText: refundPolicyText,
         ticketLimitPerUser: input.ticketLimitPerUser
           ? Number(input.ticketLimitPerUser)
           : 10, // por defecto
@@ -293,6 +310,7 @@ export async function listEventRepo() {
       description: true,
       accessPolicy: true,
       accessPolicyDescription: true,
+      refundPolicyText: true,
 
       // relación con categorías
       categories: {
@@ -354,6 +372,18 @@ export async function listEventRepo() {
         }
       }
 
+      if (event.refundPolicyFileKey) {
+        //crear url firmada refund policy
+        try {
+          event.refundPolicyFileURLSigned = await getSignedUrlForFile(
+            event.refundPolicyFileKey
+          );
+        } catch (err) {
+          console.error("Error generando signed URL refund policy:", err);
+          event.refundPolicyFileURLSigned = null;
+        }
+      }
+
       return event;
     })
   );
@@ -405,6 +435,17 @@ export async function eventDetails(id) {
         event.imageBannerURLSigned = null;
       }
     }
+
+    if (event.refundPolicyFileKey) {
+      try {
+        event.refundPolicyFileURLSigned = await getSignedUrlForFile(
+          event.refundPolicyFileKey
+        );
+      } catch (err) {
+        console.error("Error generando signed URL refund policy:", err);
+        event.refundPolicyFileURLSigned = null;
+      }
+    }
   }
 
   return event; // ✅ Devolver el objeto, no un array
@@ -434,6 +475,7 @@ export async function listEventInfoRepo(eventId) {
       eventId: true,
       organizerId: true,
       title: true,
+      refundPolicyText: true,
       status: true,
       inPerson: true,
       description: true,
@@ -441,6 +483,7 @@ export async function listEventInfoRepo(eventId) {
       accessPolicyDescription: true,
       ticketLimitPerUser: true,
 
+      refundPolicyFileKey: true,
       imagePrincipalKey: true,
       imageBannerKey: true,
 
@@ -543,6 +586,17 @@ export async function listEventInfoRepo(eventId) {
     } catch (err) {
       console.error("Error generando signed URL banner:", err);
       event.imageBannerURLSigned = null;
+    }
+  }
+
+  if (event?.refundPolicyFileKey) {
+    try {
+      event.refundPolicyFileURLSigned = await getSignedUrlForFile(
+        event.refundPolicyFileKey
+      );
+    } catch (err) {
+      console.error("Error generando signed URL refund policy:", err);
+      event.refundPolicyFileURLSigned = null;
     }
   }
 

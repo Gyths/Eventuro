@@ -470,6 +470,12 @@ export default function CrearEventoCards() {
       formData.append("ticketLimitPerUser", tickets.maxPerUser);
       console.log("ticketLimitPerUser" + tickets.maxPerUser);
       formData.append("discounts", JSON.stringify(discounts));
+      formData.append("ticketLimitPerUser", JSON.stringify(tickets.maxPerUser));
+
+      formData.append("refundPolicyText", returnsPolicy.text);
+      console.log("->> Politicaa", returnsPolicy.text);
+      returnsPolicy.file &&
+        formData.append("refundPolicyFile", returnsPolicy.file);
 
       // Imagen principal
       if (form.imageFile) {
@@ -484,8 +490,6 @@ export default function CrearEventoCards() {
       } else if (form.imageBannerKey) {
         formData.append("imageBannerKey", form.imageBannerKey);
       }
-      formData.append("refundPolicyFile", form.refundPolicyFile);
-      formData.append("refundPolicyText", returnsPolicy);
 
       const session = localStorage.getItem("session");
       const token = session ? JSON.parse(session)?.token : null;
@@ -494,6 +498,10 @@ export default function CrearEventoCards() {
 
       if (token) {
         headers.append("Authorization", `Bearer ${token}`);
+      }
+
+      for (const [key, value] of formData.entries()) {
+        console.log(key, value);
       }
 
       // --- Enviar con fetch ---
