@@ -231,10 +231,10 @@ export const showSalesReportRepo = async (organizerId) => {
       gross: eventGross.toFixed(2),
       net: eventNet.toFixed(2),
       refundAmount: eventRefunds.toFixed(2),
-      refundRate: refundRate.toFixed(1),
+      refundRate: refundRate.toFixed(2),
 
       // ocupación
-      occupancy: occupancy.toFixed(1),
+      occupancy: occupancy.toFixed(2),
 
       // estado
       status:
@@ -260,7 +260,7 @@ export const showSalesReportRepo = async (organizerId) => {
       gross: totalGross.toFixed(2),
       net: totalNet.toFixed(2),
       ticketsSold: totalTicketsSold,
-      refundRate: refundRateTotal.toFixed(1),
+      refundRate: refundRateTotal.toFixed(2),
     },
     events: eventReports,
 
