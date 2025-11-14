@@ -59,7 +59,9 @@ export async function createEventRepo(userId, input) {
     const salePhases = input.salePhases ? JSON.parse(input.salePhases) : [];
 
     const stagedSale = input.stagedSale === "true" || input.stagedSale === true;
-    const quantityStagedSale = input.quantityStagedSale ? BigInt(input.quantityStagedSale) : null;
+    const quantityStagedSale = input.quantityStagedSale
+      ? BigInt(input.quantityStagedSale)
+      : null;
     const stagedSalePeriod = input.stagedSalePeriod ?? null;
     // --- Crear evento ---
     const event = await tx.event.create({
@@ -72,7 +74,9 @@ export async function createEventRepo(userId, input) {
         description: input.description,
         accessPolicy: input.accessPolicy,
         accessPolicyDescription: input.accessPolicyDescription ?? null,
-        ticketLimitPerUser: input.ticketLimitPerUser ? Number(input.ticketLimitPerUser) : 10, // por defecto
+        ticketLimitPerUser: input.ticketLimitPerUser
+          ? Number(input.ticketLimitPerUser)
+          : 10, // por defecto
         stagedSale: stagedSale,
         quantityStagedSale: quantityStagedSale,
         stagedSalePeriod: stagedSalePeriod,
@@ -207,7 +211,7 @@ export async function createEventRepo(userId, input) {
             basePrice: Number(zone.basePrice),
             capacity: Number(zone.capacity),
             capacityRemaining: initialCapacityRemaining,
-            quantityTicketsReleased : initialCapacityRemaining,
+            quantityTicketsReleased: initialCapacityRemaining,
             seatMapId,
             currency: zone.currency,
           },
@@ -611,10 +615,12 @@ export async function listEventDateZonesByEventDateIdRepo(
       },
       select: {
         eventSalesPhaseId: true,
+        ticketLimit: true,
         name: true,
         startAt: true,
         endAt: true,
         percentage: true,
+        quantityTicketsSold: true,
       },
     }),
   ]);
