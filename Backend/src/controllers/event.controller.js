@@ -9,7 +9,12 @@ import { _listEventsByOrganizer } from "../services/event.service.js";
 import { listEventstoApproveSvc } from "../services/event.service.js";
 import { toJSONSafe } from "../utils/serialize.js";
 
-import { setFinalPrices, formatDates } from "../utils/event.util.js";
+import {
+  setFinalPrices,
+  formatDates,
+  formatDate,
+  formatHour,
+} from "../utils/event.util.js";
 
 export async function createEvent(req, res) {
   try {
@@ -72,6 +77,15 @@ export async function listEventInfo(req, res) {
 
     const activeSalePhaseDiscount = Number(
       eventInfo?.salesPhases[0].percentage
+    );
+
+    eventInfo.salesPhases[0].startAt = formatDate(
+      eventInfo?.salesPhases[0]?.startAt,
+      "2-digit"
+    );
+    eventInfo.salesPhases[0].endAt = formatDate(
+      eventInfo?.salesPhases[0]?.endAt,
+      "2-digit"
     );
 
     //For each que recorre cada fecha y modifica los precios con los descuentos de allocations y fases de venta

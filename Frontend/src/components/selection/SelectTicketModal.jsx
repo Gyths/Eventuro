@@ -1,6 +1,7 @@
 import React from "react";
 import BaseModal from "../BaseModal";
 import { useNavigate } from "react-router-dom";
+import { EVENT_INFORMATION_TEXTS } from "../payment/texts";
 import { TICKET_SELECTION_TEXTS } from "../payment/texts";
 import ArrowButton from "../../components/ArrowButton";
 import Swal from "sweetalert2";
@@ -124,6 +125,18 @@ export default function SelectAllocationModal({
   const [zoneIndex, setZoneIndex] = React.useState(null);
   const [allocationIndex, setAllocationIndex] = React.useState(null);
 
+  function getCap() {
+    let cap = 0;
+    if (event && zonesInfo)
+      cap = Math.min(
+        parseInt(event?.ticketLimitPerUser) -
+          parseInt(zonesInfo[0].user.ticketCount),
+        zonesInfo[0]?.availableSalePhaseQuantity
+      );
+
+    return cap;
+  }
+
   const currencies = { PEN: "S/." };
 
   // Manejo de suma y resta de entradas sin allocation
@@ -137,11 +150,12 @@ export default function SelectAllocationModal({
 
   const handleNoAllocationGeneralSum = (zoneIndex) => {
     // CAMBIO: usar && y Number para límites
-    const cap = () =>
-      event.limitPerUser &&
-      parseInt(zone.capacityRemaining) > parseInt(event.limitPerUser)
-        ? parseInt(event.limitPerUser)
-        : parseInt(zone.capacityRemaining);
+    const cap = Math.min(
+      parseInt(event?.ticketLimitPerUser) -
+        parseInt(zonesInfo[0].user.ticketCount),
+      zonesInfo[0]?.availableSalePhaseQuantity,
+      parseInt(zone.capacityRemaining)
+    );
 
     const newValues = notAllocatedGeneralQuantities.map((value, index) =>
       index === zoneIndex && value < cap ? value + 1 : value
@@ -175,7 +189,6 @@ export default function SelectAllocationModal({
   };
 
   const handleAllocatedGeneralSum = (zoneI, allocationI) => {
-    // CAMBIO: usar && y Number
     const rem = Number(
       zonesInfo[0]?.zoneDates[zoneI].allocations[allocationI]
         .remainingQuantity || 0
@@ -189,19 +202,12 @@ export default function SelectAllocationModal({
           0
         );
 
-        const getCap = () => {
-          if (!event.limitPerUser != null) {
-            const userLimit =
-              parseInt(event?.ticketLimitPerUser) -
-              parseInt(zonesInfo[0].user.ticketCount);
-            return userLimit < parseInt(zone.capacityRemaining)
-              ? userLimit
-              : parseInt(zone.capacityRemaining);
-          } else {
-            return parseInt(zone.capacityRemaining);
-          }
-        };
-        const cap = getCap();
+        const cap = Math.min(
+          parseInt(event?.ticketLimitPerUser) -
+            parseInt(zonesInfo[0].user.ticketCount),
+          zonesInfo[0]?.availableSalePhaseQuantity,
+          parseInt(zone.capacityRemaining)
+        );
 
         if (totalSelectedInZone >= cap) {
           setShowAlertMessage(false);
@@ -430,18 +436,6 @@ export default function SelectAllocationModal({
       setIsButtonLoading(false);
     }
   };
-
-  function getCap() {
-    let cap = 0;
-    if (event && zonesInfo)
-      cap = Math.min(
-        parseInt(event?.ticketLimitPerUser) -
-          parseInt(zonesInfo[0].user.ticketCount),
-        zonesInfo[0]?.availableSalePhaseQuantity
-      );
-
-    return cap;
-  }
 
   return (
     <>
@@ -693,7 +687,10 @@ export default function SelectAllocationModal({
                     <div className="flex flex-1 flex-row justify-start items-center gap-2">
                       <UserGroupIcon className="flex size-5 text-purple-600"></UserGroupIcon>
                       <p className="inline-block text-start">
-                        {event?.accessPolicyDescription}
+                        {event &&
+                          EVENT_INFORMATION_TEXTS?.access_policy[
+                            event?.accessPolicy
+                          ]}
                       </p>
                     </div>
                     <div className="flex flex-1 flex-row  justify-start items-center gap-2">

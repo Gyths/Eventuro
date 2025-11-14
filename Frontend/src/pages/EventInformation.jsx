@@ -59,6 +59,7 @@ export default function TicketSelection() {
         response.image = response.imagePrincipalURLSigned ?? placeholder;
         response.bannerEv = response.imageBannerURLSigned ?? placeholder;
         setEvent(response);
+
         await new Promise((res) => setTimeout(res, 300));
       } catch (err) {
         setErrorCode(err.code || 0);
@@ -234,17 +235,19 @@ export default function TicketSelection() {
                     {/* ZONAS */}
                     <div className="flex w-full flex-col py-2">
                       <div className="flex flex-row pl-10">
-                        {event?.salesPhases ? (
-                          <span className="flex font-semibold text-2xl justify-start text-start">
+                        {event?.salesPhases && (
+                          <span className="flex font-semibold text-2xl justify-start mb-6 text-start">
                             Precios - Fase {event?.salesPhases[0].name}
                           </span>
-                        ) : (
-                          <span></span>
                         )}
                       </div>
+
                       <div className="flex w-full flex-col px-5">
                         <div className="grid grid-cols-2 justify-between text-start px-5 py-1">
-                          <span className="flex w-1/2"></span>
+                          <span className="flex font-semibold justify-start items">
+                            Del {event?.salesPhases[0]?.startAt} al{" "}
+                            {event?.salesPhases[0]?.endAt}
+                          </span>
                           <div className="flex flex-row w-full justify-between">
                             {event?.dates &&
                               event.dates[0].zoneDates[0].allocations &&

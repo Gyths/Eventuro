@@ -299,6 +299,16 @@ export async function createEventRepo(userId, input) {
 
 export async function listEventRepo() {
   const events = await prisma.event.findMany({
+    where: {
+      dates: {
+        some: {
+          endAt: {
+            gt: new Date(),
+          },
+        },
+      },
+    },
+
     select: {
       eventId: true,
       organizerId: true,

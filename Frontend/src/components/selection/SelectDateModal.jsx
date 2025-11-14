@@ -196,10 +196,10 @@ export default function SelectDateModal({ eventId, onClose, onContinue }) {
                           onClick={() =>
                             setSelectedSchedule(dateObj.eventDateId)
                           }
-                          className={`cursor-pointer border-y py-3.5 px-4 hover:bg-purple-50 transition-all ${
+                          className={`cursor-pointer  py-3.5 px-4 hover:bg-purple-50 transition-all ${
                             selectedSchedule === dateObj.eventDateId
-                              ? "bg-purple-100 border-purple-400"
-                              : "border-gray-200 hover:border-purple-400/60 mx-1 hover:scale-101"
+                              ? "border-y bg-purple-100 border-purple-400"
+                              : "border rounded-lg border-gray-200 hover:border-purple-400/60 mx-1 hover:scale-101"
                           }`}
                         >
                           {horario}

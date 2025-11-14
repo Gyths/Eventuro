@@ -30,6 +30,7 @@ export default function CardPaymentModal({ onClose, onSuccess, onFail }) {
     name: "",
     focus: "",
   });
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const handleInputChange = (evt) => {
     const { name, value } = evt.target;
@@ -86,6 +87,7 @@ export default function CardPaymentModal({ onClose, onSuccess, onFail }) {
     };
 
     try {
+      setIsLoading(true);
       const response = await EventuroApi({
         endpoint: ticketEnpoint,
         method: apiMethod,
@@ -93,10 +95,14 @@ export default function CardPaymentModal({ onClose, onSuccess, onFail }) {
         saveLocalStorage: true,
         storageName: "ticketData",
       });
+      await new Promise((res) => setTimeout(res, 300));
     } catch (err) {
       onFail();
+      await new Promise((res) => setTimeout(res, 300));
       console.error("Error al crear al realizar la compra:", err);
       throw err;
+    } finally {
+      setIsLoading(false);
     }
     onSuccess();
   }
@@ -190,7 +196,11 @@ export default function CardPaymentModal({ onClose, onSuccess, onFail }) {
                   type="submit"
                   className="flex w-50 h-12 items-center justify-center cursor-pointer rounded-2xl font-bold bg-purple-600 text-white hover:bg-yellow-500 transition-transfor-all duration-500 ease-in-out hover:scale-102"
                 >
-                  Aceptar
+                  {isLoading ? (
+                    <div className="size-3 mx-7 my-1.5 justify-center items-center text-center border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+                  ) : (
+                    "Aceptar "
+                  )}
                 </button>
               </div>
             </div>
