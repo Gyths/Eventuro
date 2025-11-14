@@ -58,7 +58,7 @@ export default function ReportesOrganizador() {
         }
 
         console.log(
-          "👉 Fetching report from:",
+          "Fetching report from:",
           `${BASE_URL}/eventuro/api/report/sales/${numericOrganizerId}`
         );
 
@@ -69,21 +69,17 @@ export default function ReportesOrganizador() {
             headers,
           }
         );
-
-        console.log("👉 Raw response:", res);
-
         if (!res.ok) {
           const errorText = await res.text();
-          console.error("❌ Server returned error:", res.status, errorText);
+          console.error("Server returned error:", res.status, errorText);
           throw new Error("Request failed");
         }
 
         const json = await res.json();
-        console.log("✅ JSON response:", json);
 
         setReport(json);
       } catch (err) {
-        console.error("🔥 Error generating report:", err);
+        console.error("Error generating report:", err);
       } finally {
         setPosting(false);
       }
@@ -155,12 +151,37 @@ export default function ReportesOrganizador() {
   // --------- Ventas por mes (para gráfico 1) ----------
   // 💡 Si tu API empieza a devolver eventId en cada item:
   // { month: '2025-11', total: 9620, eventId: 6 }
-  const salesByMonthAll = report?.charts?.salesByMonth ?? [];
+  const monthsOrder = [
+    "Enero",
+    "Febrero",
+    "Marzo",
+    "Abril",
+    "Mayo",
+    "Junio",
+    "Julio",
+    "Agosto",
+    "Setiembre",
+    "Octubre",
+    "Noviembre",
+    "Diciembre",
+  ];
 
-  const salesByMonthFiltrado =
-    selectedEventId == null
-      ? salesByMonthAll
-      : salesByMonthAll.filter((m) => m.eventId === selectedEventId);
+  // Tu JSON: charts.salesByMonth es un array con UN objeto dentro
+  const rawSalesByMonthObj = report?.charts?.salesByMonth?.[0] ?? {};
+
+  const salesByMonthTotals = monthsOrder.map((month) => {
+    const rows = rawSalesByMonthObj[month] ?? [];
+
+    // si no hay filtro, sumamos todos los montos del mes
+    if (selectedEventId == null) {
+      return rows.reduce((sum, r) => sum + Number(r.monto || 0), 0);
+    }
+
+    // si hay filtro, solo montos del evento seleccionado
+    return rows
+      .filter((r) => r.eventId === selectedEventId)
+      .reduce((sum, r) => sum + Number(r.monto || 0), 0);
+  });
 
   // --------- Helpers de formato ----------
   const formatMoney = (amount) =>
@@ -340,7 +361,7 @@ export default function ReportesOrganizador() {
                 </h2>
                 <div className="flex-1 h-64">
                   {/* ⭐ pasamos la data filtrada */}
-                  <VentasPorMesChart salesByMonth={salesByMonthFiltrado} />
+                  <VentasPorMesChart monthlyTotals={salesByMonthTotals} />
                 </div>
               </div>
 
