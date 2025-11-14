@@ -70,10 +70,6 @@ export default function SelectDateModal({ eventId, onClose, onContinue }) {
   }, [dates]);
 
   const [currentDate, setCurrentDate] = useState(null);
-  console.log("current_date: " + currentDate);
-  console.log("dates " + dates);
-  console.log("dates_length " + dates.length);
-  dates.length && console.log("first_date " + dates[0].startAt);
 
   const year = currentDate?.getFullYear();
   const month = currentDate?.getMonth();

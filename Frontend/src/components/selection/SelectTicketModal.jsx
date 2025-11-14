@@ -69,7 +69,6 @@ export default function SelectAllocationModal({
           endpoint: `/event/${user.userId}/${event.eventId}/${eventDateId}/zones`,
           method: "GET",
         });
-        console.log(response);
         setZonesInfo(response);
 
         if (
@@ -195,7 +194,6 @@ export default function SelectAllocationModal({
             const userLimit =
               parseInt(event?.ticketLimitPerUser) -
               parseInt(zonesInfo[0].user.ticketCount);
-            console.log(userLimit);
             return userLimit < parseInt(zone.capacityRemaining)
               ? userLimit
               : parseInt(zone.capacityRemaining);
@@ -369,7 +367,6 @@ export default function SelectAllocationModal({
         method: apiMethod,
         data: orderData,
       });
-      console.log(response);
       setOrder({
         ...response,
       });
@@ -401,7 +398,6 @@ export default function SelectAllocationModal({
           finalPrice ?? unitPrice * quantity
         );
       });
-      console.log(shoppingCart);
 
       // Actualizar el evento con el carrito completo
       setEvent({
