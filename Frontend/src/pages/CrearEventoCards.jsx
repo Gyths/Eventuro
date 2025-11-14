@@ -480,7 +480,7 @@ export default function CrearEventoCards() {
       }
 
       // --- Enviar con fetch ---
-      const res = await fetch(`${BASE_URL}/eventuro/api/event/`, {
+      await fetch(`${BASE_URL}/eventuro/api/event/`, {
         method: "POST",
         body: formData, // ¡sin JSON.stringify!
         headers: headers,

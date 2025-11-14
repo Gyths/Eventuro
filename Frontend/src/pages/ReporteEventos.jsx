@@ -21,8 +21,36 @@ ChartJS.register(
 );
 import VentasPorMesChart from "../components/reporte_evento/Grafico_1";
 import PorcentajeOcupacionChart from "../components/reporte_evento/Grafico_2";
-
+import { useAuth } from "../services/auth/AuthContext";
+import { useRef, useState, useEffect } from "react";
 export default function ReportesOrganizador() {
+  const { user } = useAuth();
+  const [, setPosting] = useState(false);
+  const hasLoaded = useRef(false);
+  useEffect(() => {
+    if (hasLoaded.current) return;
+    if (!user?.organizer?.organizerId) return;
+    hasLoaded.current = true;
+    const init = async () => {
+      try {
+        setPosting(true);
+
+        const organizerId = user?.organizer?.organizerId;
+        const numericOrganizerId = Number(organizerId);
+
+        console.log("Organizer ID (numeric):", numericOrganizerId);
+      } catch (err) {
+        console.error("Error generating report:", err);
+      } finally {
+        setPosting(false);
+      }
+    };
+
+    if (user?.organizer?.organizerId) {
+      init();
+    }
+  }, [user]);
+
   const eventos = [
     {
       nombre: "Seminario de sistemas web para venta de tickets",
