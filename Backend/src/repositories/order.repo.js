@@ -453,6 +453,7 @@ export async function createOrderRepo(input) {
     return {
       orderId: Number(order.orderId),
       subtotal: totalAmount,
+      expiresAt: holdExpiration,
       items: createdOrderItems,
     };
   });
