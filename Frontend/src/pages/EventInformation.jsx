@@ -235,7 +235,7 @@ export default function TicketSelection() {
                     {/* ZONAS */}
                     <div className="flex w-full flex-col py-2">
                       <div className="flex flex-row pl-10">
-                        {event?.salesPhases ? (
+                        {event?.salesPhases && (
                           <span className="flex font-semibold text-2xl justify-start text-start">
                             Precios - Fase {event?.salesPhases[0].name}
                           </span>
