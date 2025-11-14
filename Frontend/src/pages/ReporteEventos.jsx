@@ -23,67 +23,102 @@ import VentasPorMesChart from "../components/reporte_evento/Grafico_1";
 import PorcentajeOcupacionChart from "../components/reporte_evento/Grafico_2";
 import { useAuth } from "../services/auth/AuthContext";
 import { useRef, useState, useEffect } from "react";
+import { BASE_URL } from "../config.js";
+
 export default function ReportesOrganizador() {
   const { user } = useAuth();
-  const [, setPosting] = useState(false);
+  const [posting, setPosting] = useState(false);
   const hasLoaded = useRef(false);
+  const [report, setReport] = useState(null);
   useEffect(() => {
     if (hasLoaded.current) return;
     if (!user?.organizer?.organizerId) return;
+
     hasLoaded.current = true;
+
     const init = async () => {
       try {
         setPosting(true);
 
-        const organizerId = user?.organizer?.organizerId;
+        const organizerId = user.organizer.organizerId;
         const numericOrganizerId = Number(organizerId);
 
-        console.log("Organizer ID (numeric):", numericOrganizerId);
+        const session = localStorage.getItem("session");
+        const token = session ? JSON.parse(session)?.token : null;
+
+        const headers = {
+          "Content-Type": "application/json",
+        };
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        console.log(
+          "👉 Fetching report from:",
+          `${BASE_URL}/eventuro/api/report/sales/${numericOrganizerId}`
+        );
+
+        const res = await fetch(
+          `${BASE_URL}/eventuro/api/report/sales/${numericOrganizerId}`,
+          {
+            method: "GET",
+            headers,
+          }
+        );
+
+        console.log("👉 Raw response:", res);
+
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error("❌ Server returned error:", res.status, errorText);
+          throw new Error("Request failed");
+        }
+
+        const json = await res.json();
+
+        console.log("✅ JSON response:", json); // 👈 AQUÍ IMPRIME EL JSON REAL
+
+        setReport(json);
       } catch (err) {
-        console.error("Error generating report:", err);
+        console.error("🔥 Error generating report:", err);
       } finally {
         setPosting(false);
       }
     };
 
-    if (user?.organizer?.organizerId) {
-      init();
-    }
+    init();
   }, [user]);
 
-  const eventos = [
-    {
-      nombre: "Seminario de sistemas web para venta de tickets",
-      fechas: ["17-09-25 12:00pm-02:00pm", "19-09-25 02:00pm-04:00pm"],
-      estado: "Aceptado",
-      capacidad: 600,
-      vendidas: 522,
-      bruto: "S/. 42,846.60",
-      neto: "S/. 37,740.00",
-      reembolso: "S/. 2,310.00",
-    },
-    {
-      nombre:
-        "Taller de integración de pasarelas de pago para venta de tickets",
-      fechas: ["17-12-25 12:00am-02:00pm", "20-12-25 05:00pm-04:00pm"],
-      estado: "Aceptado",
-      capacidad: 2400,
-      vendidas: 1760,
-      bruto: "S/. 42,846.60",
-      neto: "S/. 37,740.00",
-      reembolso: "S/. 513.00",
-    },
-    {
-      nombre: "Conferencia sobre seguridad y antifraude para venta de tickets",
-      fechas: ["20-01-26 12:00pm-11:00pm"],
-      estado: "Aceptado",
-      capacidad: 1200,
-      vendidas: 1200,
-      bruto: "S/. 42,846.60",
-      neto: "S/. 37,740.00",
-      reembolso: "S/. 1,232.40",
-    },
-  ];
+  const eventos =
+    report?.events?.map((e) => ({
+      nombre: e.title,
+      fechas: e.dates.map((d) => {
+        const start = new Date(d.startAt);
+        const end = new Date(d.endAt);
+
+        return (
+          start.toLocaleString("es-PE", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+          }) +
+          " - " +
+          end.toLocaleTimeString("es-PE", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        );
+      }),
+      estado: e.status,
+      capacidad: e.capacity,
+      vendidas: e.sold,
+      bruto: `S/. ${e.gross}`,
+      neto: `S/. ${e.net}`,
+      reembolso: `S/. ${e.refundAmount}`,
+      ocupacion: Math.round(Number(e.occupancy) * 100),
+    })) ?? [];
 
   return (
     <div className="min-h-screen bg-[#f5f5ff] text-gray-900">
