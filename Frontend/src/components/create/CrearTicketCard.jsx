@@ -5,7 +5,7 @@ import SelectInput from "./SelectInput";
 import TextInput from "./TextInput";
 import CrearTicketLine from "./CrearTicketLine";
 
-export default function CrearTicketCard({ value, onChange }) {
+export default function CrearTicketCard({ value, capacity, onChange }) {
   const controlled = !!value;
 
   const [state, setState] = useState(
@@ -18,7 +18,7 @@ export default function CrearTicketCard({ value, onChange }) {
         },
       ],
       endSaleWhen: "termino",
-      maxPerUser: "10",
+      maxPerUser: "0",
       tier: { enabled: false, qty: "", period: "diariamente" },
     }
   );
@@ -103,14 +103,16 @@ export default function CrearTicketCard({ value, onChange }) {
           />
         </FormField>
         <FormField label="Entradas máximas por usuario">
-          <SelectInput
+          <TextInput
             value={state.maxPerUser}
-            onChange={(v) => set({ maxPerUser: v })}
-            options={[
-              { value: "10", label: "10" },
-              { value: "20", label: "20" },
-              { value: "30", label: "30" },
-            ]}
+            placeholder="Capacidad máxima del local"
+            onChange={(v) => {
+              let sanitized = v.replace(/\D+/g, "");
+              if (sanitized !== "" && Number(sanitized) > capacity) {
+                sanitized = capacity.toString();
+              }
+              set({ maxPerUser: sanitized });
+            }}
           />
         </FormField>
       </div>
