@@ -273,7 +273,7 @@ async function main() {
         imagePrincipalKey: "events/1761677737608_Evento_prueba.png",
         imageBannerKey: "events/1761677738279_Evento_prueba_banner.png",
         inPerson: true,
-        status: "P",
+        status: "A",
         description:
           "Evento presencial con 500 de capacidad, segunda fase activa y descuentos.",
         accessPolicy: "E",
@@ -471,7 +471,8 @@ async function main() {
   //Dates
   const eventDates = await prisma.eventDate.createMany({
     data: [
-      //Event 1
+      //Evento 1
+      //Día 1
       {
         eventId: event1.eventId,
         startAt: new Date("2025-12-05T13:00:00Z"),
@@ -482,7 +483,7 @@ async function main() {
         startAt: new Date("2025-12-05T20:00:00Z"),
         endAt: new Date("2025-12-06T01:00:00Z"),
       },
-
+      //Día 2
       {
         eventId: event1.eventId,
         startAt: new Date("2025-12-06T13:00:00Z"),
@@ -493,6 +494,7 @@ async function main() {
         startAt: new Date("2025-12-06T20:00:00Z"),
         endAt: new Date("2025-12-07T01:00:00Z"),
       },
+      //Día 3
       {
         eventId: event1.eventId,
         startAt: new Date("2025-12-09T13:00:00Z"),
@@ -501,60 +503,81 @@ async function main() {
       {
         eventId: event1.eventId,
         startAt: new Date("2025-12-09T20:00:00Z"),
-        endAt: new Date("2025-12-010T01:00:00Z"),
+        endAt: new Date("2025-12-10T01:00:00Z"),
       },
-      //Event 2
+      //Evento 2
+      //Día 1
       {
         eventId: event2.eventId,
         startAt: new Date("2025-11-29T14:00:00Z"),
         endAt: new Date("2025-11-29T16:00:00Z"),
       },
+      //Día 2
       {
         eventId: event2.eventId,
         startAt: new Date("2025-12-20T18:00:00Z"),
         endAt: new Date("2025-12-20T20:00:00Z"),
       },
+      //Día 3
       {
         eventId: event2.eventId,
         startAt: new Date("2025-12-22T18:00:00Z"),
         endAt: new Date("2025-12-22T20:00:00Z"),
       },
+      //Día 4
       {
         eventId: event2.eventId,
         startAt: new Date("2025-12-24T18:00:00Z"),
         endAt: new Date("2025-12-24T20:00:00Z"),
       },
-      // Event 3
+      // Evento 3
+      //Día 1
       {
-        eventId: event2.eventId,
+        eventId: event3.eventId,
         startAt: new Date("2025-12-20T18:00:00Z"),
         endAt: new Date("2025-12-20T20:00:00Z"),
       },
       {
-        eventId: event2.eventId,
+        eventId: event3.eventId,
         startAt: new Date("2025-12-20T20:00:00Z"),
         endAt: new Date("2025-12-20T22:00:00Z"),
       },
       {
-        eventId: event2.eventId,
+        eventId: event3.eventId,
         startAt: new Date("2025-12-20T22:00:00Z"),
         endAt: new Date("2025-12-21T00:00:00Z"),
       },
-
+      //Día 2
       {
-        eventId: event2.eventId,
+        eventId: event3.eventId,
         startAt: new Date("2025-12-22T18:00:00Z"),
         endAt: new Date("2025-12-22T20:00:00Z"),
       },
       {
-        eventId: event2.eventId,
+        eventId: event3.eventId,
         startAt: new Date("2025-12-22T20:00:00Z"),
         endAt: new Date("2025-12-22T22:00:00Z"),
       },
       {
-        eventId: event2.eventId,
+        eventId: event3.eventId,
         startAt: new Date("2025-12-22T22:00:00Z"),
         endAt: new Date("2025-12-23T00:00:00Z"),
+      },
+      //Día 3
+      {
+        eventId: event3.eventId,
+        startAt: new Date("2026-01-15T18:00:00Z"),
+        endAt: new Date("2026-01-15T20:00:00Z"),
+      },
+      {
+        eventId: event3.eventId,
+        startAt: new Date("2026-01-15T20:00:00Z"),
+        endAt: new Date("2026-01-15T22:00:00Z"),
+      },
+      {
+        eventId: event3.eventId,
+        startAt: new Date("2026-01-15T22:00:00Z"),
+        endAt: new Date("2026-01-16T00:00:00Z"),
       },
 
       // Event 4
@@ -671,25 +694,6 @@ async function main() {
 
   await prisma.eventDateZone.createMany({
     data: zonesToInsert,
-  });
-  
-  const zones = await prisma.eventDateZone.findMany();
-
-  await prisma.eventDateZoneAllocation.createMany({
-    data: zones.flatMap((z) => [
-      {
-        eventDateZoneId: z.eventDateZoneId,
-        audienceName: "Niños",
-        discountType: "PERCENTAGE",
-        discountValue: 20,
-      },
-      {
-        eventDateZoneId: z.eventDateZoneId,
-        audienceName: "Adultos",
-        discountType: "PERCENTAGE",
-        discountValue: 0,
-      },
-    ]),
   });
 
   const zones = await prisma.eventDateZone.findMany();
