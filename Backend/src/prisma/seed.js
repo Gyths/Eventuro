@@ -717,25 +717,6 @@ async function main() {
     ],
   });
 
-  const zones = await prisma.eventDateZone.findMany();
-
-  await prisma.eventDateZoneAllocation.createMany({
-    data: zones.flatMap((z) => [
-      {
-        eventDateZoneId: z.eventDateZoneId,
-        audienceName: "Niños",
-        discountType: "PERCENTAGE",
-        discountValue: 20,
-      },
-      {
-        eventDateZoneId: z.eventDateZoneId,
-        audienceName: "Adultos",
-        discountType: "PERCENTAGE",
-        discountValue: 0,
-      },
-    ]),
-  });
-
   console.log('Eventos creados correctamente');
 
   //Vista para graficos
