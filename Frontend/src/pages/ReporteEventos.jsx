@@ -30,6 +30,10 @@ export default function ReportesOrganizador() {
   const [posting, setPosting] = useState(false);
   const hasLoaded = useRef(false);
   const [report, setReport] = useState(null);
+
+  // ⭐ NUEVO: evento seleccionado
+  const [selectedEventId, setSelectedEventId] = useState(null);
+
   useEffect(() => {
     if (hasLoaded.current) return;
     if (!user?.organizer?.organizerId) return;
@@ -75,8 +79,7 @@ export default function ReportesOrganizador() {
         }
 
         const json = await res.json();
-
-        console.log("✅ JSON response:", json); // 👈 AQUÍ IMPRIME EL JSON REAL
+        console.log("✅ JSON response:", json);
 
         setReport(json);
       } catch (err) {
@@ -89,8 +92,10 @@ export default function ReportesOrganizador() {
     init();
   }, [user]);
 
+  // --------- Mapeo de eventos para la tabla y el gráfico de ocupación ---------
   const eventos =
     report?.events?.map((e) => ({
+      id: e.eventId, // ⭐ importante para saber qué evento es
       nombre: e.title,
       fechas: e.dates.map((d) => {
         const start = new Date(d.startAt);
@@ -118,7 +123,61 @@ export default function ReportesOrganizador() {
       neto: `S/. ${e.net}`,
       reembolso: `S/. ${e.refundAmount}`,
       ocupacion: Math.round(Number(e.occupancy) * 100),
+      // datos crudos para métricas cuando se filtra
+      _raw: e,
     })) ?? [];
+
+  // ⭐ NUEVO: eventos que realmente se muestran (filtrados o no)
+  const eventosFiltrados =
+    selectedEventId == null
+      ? eventos
+      : eventos.filter((e) => e.id === selectedEventId);
+
+  // --------- Summary (global o del evento seleccionado) ----------
+  const summaryGlobal = report?.summary;
+
+  const summary =
+    selectedEventId == null
+      ? summaryGlobal
+      : (() => {
+          const ev = eventos.find((e) => e.id === selectedEventId);
+          if (!ev) return summaryGlobal;
+
+          const r = ev._raw;
+          return {
+            gross: r.gross,
+            net: r.net,
+            ticketsSold: r.sold,
+            refundRate: r.refundRate,
+          };
+        })();
+
+  // --------- Ventas por mes (para gráfico 1) ----------
+  // 💡 Si tu API empieza a devolver eventId en cada item:
+  // { month: '2025-11', total: 9620, eventId: 6 }
+  const salesByMonthAll = report?.charts?.salesByMonth ?? [];
+
+  const salesByMonthFiltrado =
+    selectedEventId == null
+      ? salesByMonthAll
+      : salesByMonthAll.filter((m) => m.eventId === selectedEventId);
+
+  // --------- Helpers de formato ----------
+  const formatMoney = (amount) =>
+    `S/. ${Number(amount || 0).toLocaleString("es-PE", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+
+  const formatPercent = (value) => {
+    const n = Number(value || 0);
+    return `${n.toFixed(1)}%`;
+  };
+
+  const selectedEventName =
+    selectedEventId == null
+      ? null
+      : eventos.find((e) => e.id === selectedEventId)?.nombre ?? null;
 
   return (
     <div className="min-h-screen bg-[#f5f5ff] text-gray-900">
@@ -130,6 +189,22 @@ export default function ReportesOrganizador() {
             <h3 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
               Reporte de Eventos
             </h3>
+
+            {/* ⭐ NUEVO: indicador de filtro */}
+            {selectedEventName && (
+              <div className="flex items-center justify-between bg-purple-50 border border-purple-200 rounded-2xl px-4 py-2 text-sm text-purple-800 mb-2">
+                <span>
+                  Mostrando métricas y gráficos solo para:{" "}
+                  <strong>{selectedEventName}</strong>
+                </span>
+                <button
+                  className="text-xs font-semibold underline hover:opacity-80"
+                  onClick={() => setSelectedEventId(null)}
+                >
+                  Ver todos los eventos
+                </button>
+              </div>
+            )}
 
             {/* Tabla */}
             <div className="overflow-x-auto">
@@ -146,80 +221,76 @@ export default function ReportesOrganizador() {
                     <th className="p-4 rounded-tr-2xl">% Ocupación</th>
                   </tr>
                 </thead>
-
                 <tbody className="text-sm text-gray-800">
-                  <tr className="border-b border-gray-200 hover:bg-gray-50 transition">
-                    <td className="p-4 font-semibold">
-                      Seminario de sistemas web para venta de tickets
-                    </td>
-                    <td className="p-4">
-                      17-09-25 12:00pm–02:00pm
-                      <br />
-                      19-09-25 02:00pm–04:00pm
-                    </td>
-                    <td className="p-4">
-                      <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">
-                        Aceptado
-                      </span>
-                    </td>
-                    <td className="p-4">600</td>
-                    <td className="p-4">522</td>
-                    <td className="p-4">
-                      S/. 42,846.60
-                      <br />
-                      S/. 37,740.00
-                    </td>
-                    <td className="p-4">S/. 2,310.00</td>
-                    <td className="p-4 font-semibold text-right">87%</td>
-                  </tr>
+                  {eventosFiltrados.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={8}
+                        className="p-4 text-center text-gray-500 italic"
+                      >
+                        No hay eventos con ventas registradas todavía.
+                      </td>
+                    </tr>
+                  ) : (
+                    eventosFiltrados.map((ev) => (
+                      <tr
+                        key={ev.id}
+                        onClick={() => setSelectedEventId(ev.id)} // ⭐ click = filtrar
+                        className={`border-b border-gray-200 hover:bg-purple-50 transition cursor-pointer ${
+                          ev.id === selectedEventId
+                            ? "bg-purple-50"
+                            : "bg-white"
+                        }`}
+                      >
+                        {/* Evento */}
+                        <td className="p-4 font-semibold">{ev.nombre}</td>
 
-                  <tr className="border-b border-gray-200 hover:bg-gray-50 transition">
-                    <td className="p-4 font-semibold">
-                      Taller de integración de pasarelas de pago para venta de
-                      tickets
-                    </td>
-                    <td className="p-4">
-                      17-12-25 12:00am–02:00pm
-                      <br />
-                      20-12-25 05:00pm–04:00pm
-                    </td>
-                    <td className="p-4">
-                      <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">
-                        Aceptado
-                      </span>
-                    </td>
-                    <td className="p-4">2400</td>
-                    <td className="p-4">1760</td>
-                    <td className="p-4">
-                      S/. 42,846.60
-                      <br />
-                      S/. 37,740.00
-                    </td>
-                    <td className="p-4">S/. 513.00</td>
-                    <td className="p-4 font-semibold text-right">73%</td>
-                  </tr>
+                        {/* Fechas */}
+                        <td className="p-4">
+                          {ev.fechas.map((f, i) => (
+                            <span key={i}>
+                              {f}
+                              {i < ev.fechas.length - 1 && <br />}
+                            </span>
+                          ))}
+                        </td>
 
-                  <tr className="hover:bg-gray-50 transition">
-                    <td className="p-4 font-semibold">
-                      Conferencia sobre seguridad y antifraude para venta de
-                      tickets
-                    </td>
-                    <td className="p-4">20-01-26 12:00pm–11:00pm</td>
-                    <td className="p-4">
-                      <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">
-                        Aceptado
-                      </span>
-                    </td>
-                    <td className="p-4">1200</td>
-                    <td className="p-4">1200</td>
-                    <td className="p-4">
-                      S/. 42,846.60
-                      <br />
-                      S/. 37,740.00
-                    </td>
-                    <td className="p-4">S/. 1,232.40</td>
-                    <td className="p-4 font-semibold text-right">100%</td>
-                  </tr>
+                        {/* Estado */}
+                        <td className="p-4">
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              ev.estado === "Aceptado"
+                                ? "bg-green-100 text-green-700"
+                                : "bg-gray-100 text-gray-600"
+                            }`}
+                          >
+                            {ev.estado}
+                          </span>
+                        </td>
+
+                        {/* Capacidad */}
+                        <td className="p-4">{ev.capacidad}</td>
+
+                        {/* Vendidas */}
+                        <td className="p-4">{ev.vendidas}</td>
+
+                        {/* Bruto / Neto */}
+                        <td className="p-4">
+                          {ev.bruto}
+                          <br />
+                          {ev.neto}
+                        </td>
+
+                        {/* Reembolso */}
+                        <td className="p-4">{ev.reembolso}</td>
+
+                        {/* % Ocupación */}
+                        <td className="p-4 font-semibold text-right">
+                          {ev.ocupacion ?? 0}%
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -229,35 +300,34 @@ export default function ReportesOrganizador() {
         {/* MÉTRICAS */}
         <div className="w-full px-4 lg:px-8">
           <div className="bg-white border border-gray-200 rounded-3xl shadow-sm w-full p-6 lg:p-8 space-y-6">
-            {/* MÉTRICAS */}
             <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
               <div className="rounded-2xl bg-gray-50 px-4 py-3 shadow-md">
                 <p className="text-xs text-gray-500 mb-1">
                   Recaudado bruto (GMV)
                 </p>
                 <p className="text-3xl font-bold text-gray-800 flex items-center gap-3">
-                  S/. 128,540
+                  {summary ? formatMoney(summary.gross) : "S/. 0.00"}
                 </p>
               </div>
 
               <div className="rounded-2xl bg-gray-50 px-4 py-3 shadow-md">
                 <p className="text-xs text-gray-500 mb-1">Ingresos netos</p>
                 <p className="text-3xl font-bold text-gray-800 flex items-center gap-3">
-                  S/. 113,220
+                  {summary ? formatMoney(summary.net) : "S/. 0.00"}
                 </p>
               </div>
 
               <div className="rounded-2xl bg-gray-50 px-4 py-3 shadow-md">
                 <p className="text-xs text-gray-500 mb-1">Entradas vendidas</p>
                 <p className="text-3xl font-bold text-gray-800 flex items-center gap-3">
-                  3,482
+                  {summary ? summary.ticketsSold : 0}
                 </p>
               </div>
 
               <div className="rounded-2xl bg-gray-50 px-4 py-3 shadow-md">
                 <p className="text-xs text-gray-500 mb-1">Tasa de reembolso</p>
                 <p className="text-3xl font-bold text-gray-800 flex items-center gap-3">
-                  1.8%
+                  {summary ? formatPercent(summary.refundRate) : "0.0%"}
                 </p>
               </div>
             </section>
@@ -269,7 +339,8 @@ export default function ReportesOrganizador() {
                   Ventas por mes
                 </h2>
                 <div className="flex-1 h-64">
-                  <VentasPorMesChart />
+                  {/* ⭐ pasamos la data filtrada */}
+                  <VentasPorMesChart salesByMonth={salesByMonthFiltrado} />
                 </div>
               </div>
 
@@ -278,7 +349,8 @@ export default function ReportesOrganizador() {
                   Porcentaje de ocupación
                 </h2>
                 <div className="flex-1 h-64">
-                  <PorcentajeOcupacionChart eventos={eventos} />
+                  {/* ⭐ usamos solo los eventos filtrados */}
+                  <PorcentajeOcupacionChart eventos={eventosFiltrados} />
                 </div>
               </div>
             </section>
