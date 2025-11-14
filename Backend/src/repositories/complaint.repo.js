@@ -61,6 +61,9 @@ export async function listComplaintsByUserRepo(userId) {
 
 export async function listComplaintsByAdminRepo() {
   const complaints = await prisma.complaint.findMany({
+    where: {
+      state: "PENDING",
+    },
     orderBy: { dateCreation: "desc" },
     select: {
       complaintId: true,
