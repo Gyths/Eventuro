@@ -9,9 +9,11 @@ function mapStateToDisplay(state) {
   switch (state) {
     case "PENDING":
       return "Pendiente";
+    case "NEGATED":
+      return "Rechazado";
     case "IN_REVIEW":
       return "En revisión";
-    case "RESOLVED":
+    case "ACCEPTED":
       return "Resuelto";
     default:
       return "Pendiente";
@@ -130,8 +132,7 @@ export default function MisReclamos() {
         " " +
         String(it.complaintId || "");
 
-      const okQ =
-        !q.trim() || text.toLowerCase().includes(q.toLowerCase());
+      const okQ = !q.trim() || text.toLowerCase().includes(q.toLowerCase());
 
       return okEstado && okQ;
     });
@@ -181,8 +182,7 @@ export default function MisReclamos() {
               const fecha = it.dateCreation
                 ? new Date(it.dateCreation).toLocaleDateString("es-PE")
                 : "—";
-              const titulo =
-                mapTypeToDisplay(it.type) || "Reclamo / queja";
+              const titulo = mapTypeToDisplay(it.type) || "Reclamo / queja";
 
               return (
                 <button
@@ -195,9 +195,7 @@ export default function MisReclamos() {
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <h3 className="font-semibold text-gray-900">
-                      {titulo}
-                    </h3>
+                    <h3 className="font-semibold text-gray-900">{titulo}</h3>
                     <Badge estado={estadoLabel} />
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
@@ -244,15 +242,11 @@ export default function MisReclamos() {
               </div>
               <div>
                 <dt className="text-gray-500">Evento:</dt>
-                <dd className="text-gray-900">
-                  {selected.eventName || "—"}
-                </dd>
+                <dd className="text-gray-900">{selected.eventName || "—"}</dd>
               </div>
               <div>
                 <dt className="text-gray-500">N° ticket:</dt>
-                <dd className="text-gray-900">
-                  {selected.ticketNum ?? "—"}
-                </dd>
+                <dd className="text-gray-900">{selected.ticketNum ?? "—"}</dd>
               </div>
               <div>
                 <dt className="text-gray-500">Monto reclamado:</dt>
@@ -264,9 +258,7 @@ export default function MisReclamos() {
               </div>
               <div>
                 <dt className="text-gray-500">Dirigido a:</dt>
-                <dd className="text-gray-900">
-                  {selected.target || "—"}
-                </dd>
+                <dd className="text-gray-900">{selected.target || "—"}</dd>
               </div>
               <div className="sm:col-span-2">
                 <dt className="text-gray-500">Descripción del problema:</dt>
