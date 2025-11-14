@@ -467,10 +467,9 @@ export default function CrearEventoCards() {
       formData.append("salePhases", JSON.stringify(salePhases));
       formData.append("dates", JSON.stringify(eventDates));
       formData.append("zones", JSON.stringify(eventZones));
-      formData.append("ticketLimitPerUser", tickets.maxPerUser);
-      console.log("ticketLimitPerUser" + tickets.maxPerUser);
+      formData.append("ticketLimitPerUser", parseInt(tickets.maxPerUser));
+      //console.log("ticketLimitPerUser" + tickets.maxPerUser);
       formData.append("discounts", JSON.stringify(discounts));
-      formData.append("ticketLimitPerUser", JSON.stringify(tickets.maxPerUser));
 
       formData.append("refundPolicyText", returnsPolicy.text);
       console.log("->> Politicaa", returnsPolicy.text);

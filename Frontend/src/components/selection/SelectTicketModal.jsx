@@ -71,7 +71,8 @@ export default function SelectAllocationModal({
     if (zonesResponse[0]?.remainingSalePhaseQuantity === 0) return 2;
     if (
       parseInt(event?.ticketLimitPerUser) -
-      parseInt(zonesResponse[0].user.ticketCount)
+        parseInt(zonesResponse[0].user.ticketCount) ===
+      0
     )
       return 3;
     return 0;

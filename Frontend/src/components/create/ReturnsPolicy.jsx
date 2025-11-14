@@ -24,7 +24,6 @@ export default function ReturnsPolicy({ form, value, onChange }) {
     if (controlled) onChange?.({ ...(value ?? {}), file: f });
     else setFileLocal(f);
   };
-  console.log(file);
 
   const copyToClipboard = async () => {
     try {

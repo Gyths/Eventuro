@@ -15,6 +15,7 @@ import {
   Legend,
 } from "recharts";
 import Papa from "papaparse";
+import { BASE_URL } from "../../config";
 
 function parseCSV(csvText) {
   const lines = csvText.trim().split("\n");
@@ -100,8 +101,7 @@ function IncomeChartCard() {
     const fetchReportData = async () => {
       setIsLoading(true);
       setError(null);
-      const url =
-        "http://localhost:4000/eventuro/api/report/sales-tickets/export";
+      const url = BASE_URL + "/eventuro/api/report/sales-tickets/export";
 
       try {
         const response = await fetch(url);
