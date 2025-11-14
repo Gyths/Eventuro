@@ -1,8 +1,11 @@
 import React from "react";
 import BaseModal from "../BaseModal";
 import { useNavigate } from "react-router-dom";
-import { EVENT_INFORMATION_TEXTS } from "../payment/texts";
-import { TICKET_SELECTION_TEXTS } from "../payment/texts";
+import {
+  TICKET_SELECTION_TEXTS,
+  EVENT_INFORMATION_TEXTS,
+  ERROR_MODAL_TEXTS,
+} from "../payment/texts";
 import ArrowButton from "../../components/ArrowButton";
 import Swal from "sweetalert2";
 
@@ -63,6 +66,17 @@ export default function SelectAllocationModal({
   const [allocatedSeatedQuantities, setAllocatedSeatedQuantities] =
     React.useState([]);
 
+  function verifyQuantityError(zonesResponse) {
+    if (zonesResponse[0]?.capacityRemaining === 0) return 1;
+    if (zonesResponse[0]?.remainingSalePhaseQuantity === 0) return 2;
+    if (
+      parseInt(event?.ticketLimitPerUser) -
+      parseInt(zonesResponse[0].user.ticketCount)
+    )
+      return 3;
+    return 0;
+  }
+
   React.useEffect(() => {
     async function getZones() {
       try {
@@ -72,15 +86,13 @@ export default function SelectAllocationModal({
         });
         setZonesInfo(response);
 
-        if (
-          parseInt(response[0]?.user?.ticketCount) ===
-          parseInt(event?.ticketLimitPerUser)
-        ) {
+        const ticketsErrorCode = verifyQuantityError(response);
+        if (ticketsErrorCode !== 0) {
           onClose();
           Swal.fire({
             icon: "error",
-            title: "¡Lo sentimos!",
-            text: "Usted no puede comprar más tickets para este evento",
+            title: ERROR_MODAL_TEXTS.title,
+            text: ERROR_MODAL_TEXTS.text[ticketsErrorCode],
           });
         }
 
@@ -131,8 +143,11 @@ export default function SelectAllocationModal({
       cap = Math.min(
         parseInt(event?.ticketLimitPerUser) -
           parseInt(zonesInfo[0].user.ticketCount),
-        zonesInfo[0]?.availableSalePhaseQuantity
+        zonesInfo[0]?.remainingSalePhaseQuantity
       );
+    console.log(zonesInfo[0]);
+    console.log(event?.ticketLimitPerUser);
+    console.log(zonesInfo[0].user.ticketCount);
 
     return cap;
   }
@@ -153,7 +168,7 @@ export default function SelectAllocationModal({
     const cap = Math.min(
       parseInt(event?.ticketLimitPerUser) -
         parseInt(zonesInfo[0].user.ticketCount),
-      zonesInfo[0]?.availableSalePhaseQuantity,
+      zonesInfo[0]?.remainingSalePhaseQuantity,
       parseInt(zone.capacityRemaining)
     );
 
@@ -205,7 +220,7 @@ export default function SelectAllocationModal({
         const cap = Math.min(
           parseInt(event?.ticketLimitPerUser) -
             parseInt(zonesInfo[0].user.ticketCount),
-          zonesInfo[0]?.availableSalePhaseQuantity,
+          zonesInfo[0]?.remainingSalePhaseQuantity,
           parseInt(zone.capacityRemaining)
         );
 
