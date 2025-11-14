@@ -124,13 +124,13 @@ export async function listEventDateZonesByEventDateId(req, res) {
       eventDateZones?.activePhase?.percentage
     );
     const date = formatDates([eventDateZones.date]);
-    const availableSalePhaseQuantity =
+    const remainingSalePhaseQuantity =
       parseInt(eventDateZones?.activePhase?.ticketLimit) -
       parseInt(eventDateZones?.activePhase?.quantityTicketsSold);
     return res
       .status(201)
       .json(
-        toJSONSafe([{ user, zoneDates, date, availableSalePhaseQuantity }])
+        toJSONSafe([{ user, zoneDates, date, remainingSalePhaseQuantity }])
       );
   } catch (err) {
     return res.status(400).json({ error: err.message });

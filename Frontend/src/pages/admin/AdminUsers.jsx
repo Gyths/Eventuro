@@ -76,6 +76,11 @@ function StatusBadge({ status }) {
       icon = <XCircleIcon className="h-4 w-4" />;
       classes = "bg-red-100 text-red-800";
       break;
+    case "D":
+      text = "Eliminado";
+      icon = <XCircleIcon className="h-4 w-4" />;
+      classes = "bg-red-100 text-red-800";
+      break;
     default:
       text = "Desconocido";
       icon = <UserCircleIcon className="h-4 w-4" />;

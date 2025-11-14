@@ -1,5 +1,14 @@
 //Textos relevantes a utilizar
 
+export const ERROR_MODAL_TEXTS = {
+  title: "¡Lo sentimos!",
+  text: {
+    1: "Las entradas para esta fecha se han agotado.",
+    2: "Ya no quedan más entradas para la fase de ventas actual.",
+    3: "Usted no puede comprar más entradas para este evento.",
+  },
+};
+
 export const EVENT_INFORMATION_TEXTS = {
   access_policy: {
     E: "Evento apto para todo público",
