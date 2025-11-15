@@ -327,6 +327,8 @@ model Event {
   title                   String
   imagePrincipalKey       String
   imageBannerKey          String
+  refundPolicyFileKey     String?
+  refundPolicyText        String?
   status                  EVENT_STATUS  @default(P)
   inPerson                Boolean
   description             String
@@ -467,6 +469,7 @@ model EventSalesPhase {
   ticketLimit       Int?
   percentage        Decimal   @db.Decimal(10, 2)
   active            Boolean   @default(false)
+  quantityTicketsSold Int     @default(0)
 
   event Event @relation(fields: [eventId], references: [eventId], onDelete: Cascade)
 

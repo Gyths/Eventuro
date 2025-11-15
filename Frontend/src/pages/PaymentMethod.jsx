@@ -63,6 +63,7 @@ export default function PaymentMethod() {
   //Sección para cancelar la orden de compra cuando el usuario salga de la página de compra
   async function cancelOrder(orderId) {
     try {
+      console.log(orderId);
       const response = EventuroApi({
         endpoint: `/orders/${orderId}/cancel`,
         method: "POST",

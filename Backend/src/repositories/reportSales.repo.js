@@ -109,44 +109,96 @@ export async function exportReportSaleTicketsCsvRepo({ filters = {} }) {
 }
 
 export const showSalesReportRepo = async (organizerId) => {
-  //falta validar que el id del usuario sea de un organizador
-  //falta validar que si ese organizador no tiene eventos, enviar un mensaje
-  //falta validar la info a enviar ´para hacer los gráficos
-
-  // Traemos todos los eventos aceptados del organizador con sus tickets
   const events = await prisma.event.findMany({
     where: { organizerId, status: "A" },
     include: {
       venue: true,
       dates: {
         include: {
+          zoneDates: true,
           Ticket: true,
         },
       },
     },
   });
 
-  let totalGross = 0; // GMV
+  let totalGross = 0;
   let totalNet = 0;
   let totalTicketsSold = 0;
   let totalRefunds = 0;
 
   const eventReports = [];
 
+  // ===============================
+  // NUEVO: AGRUPAR VENTAS POR MES Y POR EVENTO
+  // ===============================
+  const sales = await prisma.ticket.findMany({
+    where: {
+      status: { in: ["PAID", "USED"] },
+      eventDate: {
+        event: {
+          organizerId,
+        },
+      },
+    },
+    select: {
+      pricePaid: true,
+      issuedAt: true,
+      eventDate: {
+        select: {
+          eventId: true,
+        },
+      },
+    },
+  });
+
+  const monthNames = [
+    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+    "Julio", "Agosto", "Setiembre", "Octubre", "Noviembre", "Diciembre"
+  ];
+
+  const monthlySales = {};
+
+  // inicializamos todos los meses con []
+  monthNames.forEach(m => (monthlySales[m] = []));
+
+  // poblamos las ventas
+  for (const s of sales) {
+    const monthIndex = s.issuedAt.getMonth(); // 0–11
+    const monthName = monthNames[monthIndex];
+
+    monthlySales[monthName].push({
+      eventId: s.eventDate.eventId,
+      monto: Number(s.pricePaid),
+    });
+  }
+
+
+  // ===============================
+  // REPORTES POR EVENTO
+  // ===============================
   for (const event of events) {
     let eventGross = 0;
     let eventRefunds = 0;
     let ticketsSold = 0;
-    const venueCapacity = event.venue?.capacity || 0; //Falta validar, para más precisión podría sumarse la capacity de cada zona de cada fecha del evento
-    //y asi calcular la capacidad total de entradas de dicho evento
+    let totalCapacity = 0;
 
+    // SUMAR CAPACIDAD DE TODAS LAS ZONAS DE TODAS LAS FECHAS
+    for (const date of event.dates) {
+      for (const zone of date.zoneDates) {
+        totalCapacity += zone.capacity;
+      }
+    }
+
+    // PROCESAR TICKETS DEL EVENTO
     for (const date of event.dates) {
       for (const ticket of date.Ticket) {
-        //esto falta validar, ya que no sé si los tickets se guardaron en cada fecha del evento
-        eventGross += Number(ticket.pricePaid);
+        const price = Number(ticket.pricePaid);
+
+        eventGross += price;
 
         if (ticket.refundStatus === "APPROVED") {
-          eventRefunds += Number(ticket.pricePaid);
+          eventRefunds += price;
         }
 
         if (ticket.status === "PAID" || ticket.status === "USED") {
@@ -158,7 +210,10 @@ export const showSalesReportRepo = async (organizerId) => {
     const eventNet = eventGross - eventRefunds;
     const refundRate = eventGross ? (eventRefunds / eventGross) * 100 : 0;
 
-    // Acumulamos
+    const occupancy =
+      totalCapacity > 0 ? (ticketsSold / totalCapacity) * 100 : 0;
+
+    // ACUMULACIÓN GLOBAL
     totalGross += eventGross;
     totalNet += eventNet;
     totalTicketsSold += ticketsSold;
@@ -167,18 +222,28 @@ export const showSalesReportRepo = async (organizerId) => {
     eventReports.push({
       eventId: event.eventId,
       title: event.title,
-      capacity: venueCapacity,
+
+      // capacidades y ventas
+      capacity: totalCapacity,
       sold: ticketsSold,
+
+      // dinero
       gross: eventGross.toFixed(2),
       net: eventNet.toFixed(2),
       refundAmount: eventRefunds.toFixed(2),
-      refundRate: refundRate.toFixed(1) + "%",
+      refundRate: refundRate.toFixed(2),
+
+      // ocupación
+      occupancy: occupancy.toFixed(2),
+
+      // estado
       status:
         event.status === "A"
           ? "Aceptado"
           : event.status === "P"
-          ? "Pendiente"
-          : "Denegado",
+            ? "Pendiente"
+            : "Denegado",
+
       dates: event.dates.map((d) => ({
         startAt: d.startAt,
         endAt: d.endAt,
@@ -186,15 +251,21 @@ export const showSalesReportRepo = async (organizerId) => {
     });
   }
 
-  const refundRateTotal = totalGross ? (totalRefunds / totalGross) * 100 : 0;
+  const refundRateTotal = totalGross
+    ? (totalRefunds / totalGross) * 100
+    : 0;
 
   return {
     summary: {
       gross: totalGross.toFixed(2),
       net: totalNet.toFixed(2),
       ticketsSold: totalTicketsSold,
-      refundRate: refundRateTotal.toFixed(1) + "%",
+      refundRate: refundRateTotal.toFixed(2),
     },
     events: eventReports,
+
+    charts: {
+      salesByMonth: [monthlySales],
+    },
   };
 };

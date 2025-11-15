@@ -19,6 +19,7 @@ export default function DiscountCode() {
   const [errorCode, setErrorCode] = React.useState(0);
   const [discountCode, setDiscountCode] = React.useState("");
   const [appliedCodes, setAppliedCodes] = React.useState([]);
+  const [isLoading, setIsLoading] = React.useState(false);
   const [showDiscountCodeAlert, setShowDiscountCodeAlert] =
     React.useState(false);
 
@@ -68,6 +69,7 @@ export default function DiscountCode() {
     };
 
     try {
+      setIsLoading(true);
       console.log(data);
       const response = await EventuroApi({ endpoint, method, data });
 
@@ -83,11 +85,16 @@ export default function DiscountCode() {
           })),
       };
 
+      await new Promise((res) => setTimeout(res, 300));
       setAppliedCodes((prev) => [...prev, newCode]);
     } catch (err) {
+      await new Promise((res) => setTimeout(res, 300));
+
       setShowDiscountCodeAlert(true);
       setErrorCode(err.code);
       throw err;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -210,7 +217,11 @@ export default function DiscountCode() {
               onClick={handleDiscount}
               className="bg-yellow-400 text-white px-4 rounded-lg cursor-pointer hover:scale-103 hover:bg-yellow-500/90 transition-all duration-200 active:scale-102"
             >
-              Agregar
+              {isLoading ? (
+                <div className="size-3 mx-5.5 my-1.5 justify-center items-center text-center border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+              ) : (
+                "Agregar"
+              )}
             </button>
           </div>
         </div>

@@ -9,17 +9,24 @@ import { _listEventsByOrganizer } from "../services/event.service.js";
 import { listEventstoApproveSvc } from "../services/event.service.js";
 import { toJSONSafe } from "../utils/serialize.js";
 
-import { setFinalPrices, formatDates } from "../utils/event.util.js";
+import {
+  setFinalPrices,
+  formatDates,
+  formatDate,
+  formatHour,
+} from "../utils/event.util.js";
 
 export async function createEvent(req, res) {
   try {
     const userId = req.auth?.user?.userId ?? null;
 
     // Pasa el archivo con el mismo nombre que espera el repo
+    console.log(req);
     const data = await createEventSvc(userId, {
       ...req.body,
       imagenPrincipal: req.files?.imagenPrincipal?.[0] || null,
       imagenBanner: req.files?.imagenBanner?.[0] || null,
+      policyFile: req.files?.refundPolicyFile?.[0] || null,
     });
 
     return res.status(201).json(toJSONSafe(data));
@@ -72,6 +79,15 @@ export async function listEventInfo(req, res) {
       eventInfo?.salesPhases[0].percentage
     );
 
+    eventInfo.salesPhases[0].startAt = formatDate(
+      eventInfo?.salesPhases[0]?.startAt,
+      "2-digit"
+    );
+    eventInfo.salesPhases[0].endAt = formatDate(
+      eventInfo?.salesPhases[0]?.endAt,
+      "2-digit"
+    );
+
     //For each que recorre cada fecha y modifica los precios con los descuentos de allocations y fases de venta
     for (const date of eventInfo.dates) {
       date.zoneDates = setFinalPrices(date.zoneDates, activeSalePhaseDiscount);
@@ -108,7 +124,14 @@ export async function listEventDateZonesByEventDateId(req, res) {
       eventDateZones?.activePhase?.percentage
     );
     const date = formatDates([eventDateZones.date]);
-    return res.status(201).json(toJSONSafe([{ user, zoneDates, date }]));
+    const remainingSalePhaseQuantity =
+      parseInt(eventDateZones?.activePhase?.ticketLimit) -
+      parseInt(eventDateZones?.activePhase?.quantityTicketsSold);
+    return res
+      .status(201)
+      .json(
+        toJSONSafe([{ user, zoneDates, date, remainingSalePhaseQuantity }])
+      );
   } catch (err) {
     return res.status(400).json({ error: err.message });
   }

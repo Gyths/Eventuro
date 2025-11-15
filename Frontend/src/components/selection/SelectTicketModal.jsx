@@ -1,7 +1,11 @@
 import React from "react";
 import BaseModal from "../BaseModal";
 import { useNavigate } from "react-router-dom";
-import { TICKET_SELECTION_TEXTS } from "../payment/texts";
+import {
+  TICKET_SELECTION_TEXTS,
+  EVENT_INFORMATION_TEXTS,
+  ERROR_MODAL_TEXTS,
+} from "../payment/texts";
 import ArrowButton from "../../components/ArrowButton";
 import Swal from "sweetalert2";
 
@@ -62,6 +66,18 @@ export default function SelectAllocationModal({
   const [allocatedSeatedQuantities, setAllocatedSeatedQuantities] =
     React.useState([]);
 
+  function verifyQuantityError(zonesResponse) {
+    if (zonesResponse[0]?.capacityRemaining === 0) return 1;
+    if (zonesResponse[0]?.remainingSalePhaseQuantity === 0) return 2;
+    if (
+      parseInt(event?.ticketLimitPerUser) -
+        parseInt(zonesResponse[0].user.ticketCount) ===
+      0
+    )
+      return 3;
+    return 0;
+  }
+
   React.useEffect(() => {
     async function getZones() {
       try {
@@ -69,18 +85,15 @@ export default function SelectAllocationModal({
           endpoint: `/event/${user.userId}/${event.eventId}/${eventDateId}/zones`,
           method: "GET",
         });
-
         setZonesInfo(response);
 
-        if (
-          parseInt(response[0]?.user?.ticketCount) ===
-          parseInt(event?.ticketLimitPerUser)
-        ) {
+        const ticketsErrorCode = verifyQuantityError(response);
+        if (ticketsErrorCode !== 0) {
           onClose();
           Swal.fire({
             icon: "error",
-            title: "¡Lo sentimos!",
-            text: "Usted no puede comprar más tickets para este evento",
+            title: ERROR_MODAL_TEXTS.title,
+            text: ERROR_MODAL_TEXTS.text[ticketsErrorCode],
           });
         }
 
@@ -125,6 +138,21 @@ export default function SelectAllocationModal({
   const [zoneIndex, setZoneIndex] = React.useState(null);
   const [allocationIndex, setAllocationIndex] = React.useState(null);
 
+  function getCap() {
+    let cap = 0;
+    if (event && zonesInfo)
+      cap = Math.min(
+        parseInt(event?.ticketLimitPerUser) -
+          parseInt(zonesInfo[0].user.ticketCount),
+        zonesInfo[0]?.remainingSalePhaseQuantity
+      );
+    console.log(zonesInfo[0]);
+    console.log(event?.ticketLimitPerUser);
+    console.log(zonesInfo[0].user.ticketCount);
+
+    return cap;
+  }
+
   const currencies = { PEN: "S/." };
 
   // Manejo de suma y resta de entradas sin allocation
@@ -138,11 +166,12 @@ export default function SelectAllocationModal({
 
   const handleNoAllocationGeneralSum = (zoneIndex) => {
     // CAMBIO: usar && y Number para límites
-    const cap = () =>
-      event.limitPerUser &&
-      parseInt(zone.capacityRemaining) > parseInt(event.limitPerUser)
-        ? parseInt(event.limitPerUser)
-        : parseInt(zone.capacityRemaining);
+    const cap = Math.min(
+      parseInt(event?.ticketLimitPerUser) -
+        parseInt(zonesInfo[0].user.ticketCount),
+      zonesInfo[0]?.remainingSalePhaseQuantity,
+      parseInt(zone.capacityRemaining)
+    );
 
     const newValues = notAllocatedGeneralQuantities.map((value, index) =>
       index === zoneIndex && value < cap ? value + 1 : value
@@ -176,7 +205,6 @@ export default function SelectAllocationModal({
   };
 
   const handleAllocatedGeneralSum = (zoneI, allocationI) => {
-    // CAMBIO: usar && y Number
     const rem = Number(
       zonesInfo[0]?.zoneDates[zoneI].allocations[allocationI]
         .remainingQuantity || 0
@@ -190,20 +218,12 @@ export default function SelectAllocationModal({
           0
         );
 
-        const getCap = () => {
-          if (!event.limitPerUser != null) {
-            const userLimit =
-              parseInt(event?.ticketLimitPerUser) -
-              parseInt(zonesInfo[0].user.ticketCount);
-            console.log(userLimit);
-            return userLimit < parseInt(zone.capacityRemaining)
-              ? userLimit
-              : parseInt(zone.capacityRemaining);
-          } else {
-            return parseInt(zone.capacityRemaining);
-          }
-        };
-        const cap = getCap();
+        const cap = Math.min(
+          parseInt(event?.ticketLimitPerUser) -
+            parseInt(zonesInfo[0].user.ticketCount),
+          zonesInfo[0]?.remainingSalePhaseQuantity,
+          parseInt(zone.capacityRemaining)
+        );
 
         if (totalSelectedInZone >= cap) {
           setShowAlertMessage(false);
@@ -369,7 +389,6 @@ export default function SelectAllocationModal({
         method: apiMethod,
         data: orderData,
       });
-
       setOrder({
         ...response,
       });
@@ -401,7 +420,6 @@ export default function SelectAllocationModal({
           finalPrice ?? unitPrice * quantity
         );
       });
-      console.log(shoppingCart);
 
       // Actualizar el evento con el carrito completo
       setEvent({
@@ -465,13 +483,9 @@ export default function SelectAllocationModal({
                         </AlertMessage>
                       </div>
                     )}
-                    <div className="flex mb-1">
+                    <div className="flex mt-4 mb-1.5">
                       <span className="inline-block text-gray-800">
-                        Puedes comprar hasta un máximo de{" "}
-                        {event && zonesInfo
-                          ? parseInt(event?.ticketLimitPerUser) -
-                            parseInt(zonesInfo[0].user.ticketCount)
-                          : 0}{" "}
+                        Puedes seleccionar hasta un máximo de {getCap()}{" "}
                         entradas.
                       </span>
                     </div>
@@ -495,7 +509,7 @@ export default function SelectAllocationModal({
                                 <XCircleIcon className="size-5 text-red-500"></XCircleIcon>
                               )}
                               <span>
-                                Hay {zone.capacityRemaining} entradas restabtes
+                                Hay {zone.capacityRemaining} entradas restantes
                               </span>
                             </div>
                           )}
@@ -689,7 +703,10 @@ export default function SelectAllocationModal({
                     <div className="flex flex-1 flex-row justify-start items-center gap-2">
                       <UserGroupIcon className="flex size-5 text-purple-600"></UserGroupIcon>
                       <p className="inline-block text-start">
-                        {event?.accessPolicyDescription}
+                        {event &&
+                          EVENT_INFORMATION_TEXTS?.access_policy[
+                            event?.accessPolicy
+                          ]}
                       </p>
                     </div>
                     <div className="flex flex-1 flex-row  justify-start items-center gap-2">

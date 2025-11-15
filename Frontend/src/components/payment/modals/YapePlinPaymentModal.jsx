@@ -21,6 +21,7 @@ export default function YapePlinPaymentModal({ onClose, onSuccess, onFail }) {
   const [code, setCode] = React.useState(["", "", "", "", "", ""]);
   const inputRefs = React.useRef([]);
   const [phone, setPhone] = React.useState("");
+  const [isLoading, setIsLoading] = React.useState(false);
 
   //Formateador para el input de número de teléfono
   const handleChangePhoneNumber = (e) => {
@@ -94,6 +95,7 @@ export default function YapePlinPaymentModal({ onClose, onSuccess, onFail }) {
     };
 
     try {
+      setIsLoading(true);
       const response = await EventuroApi({
         endpoint: ticketEnpoint,
         method: apiMethod,
@@ -105,6 +107,8 @@ export default function YapePlinPaymentModal({ onClose, onSuccess, onFail }) {
       onFail();
       console.error("Error al crear al realizar la compra:", err);
       throw err;
+    } finally {
+      setIsLoading(false);
     }
     onSuccess();
   }
@@ -150,7 +154,7 @@ export default function YapePlinPaymentModal({ onClose, onSuccess, onFail }) {
             <label htmlFor="approval-code" className="text-start">
               Código de aprobación
             </label>
-            <div id="approval-code" className="flex gap-3">
+            <div id="approval-code" className="flex gap-3 mt-1">
               {code.map((digit, index) => (
                 <input
                   key={index}
@@ -184,7 +188,11 @@ export default function YapePlinPaymentModal({ onClose, onSuccess, onFail }) {
                 type="submit"
                 className="flex flex-1 py-1 font-semibold rounded-xl justify-center text-center cursor-pointer bg-blue-400 text-white hover:bg-blue-400/80 transition-transform "
               >
-                Pagar
+                {isLoading ? (
+                  <div className="size-3 mx-7 my-1.5 justify-center items-center text-center border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+                ) : (
+                  "Pagar "
+                )}
               </button>
             </div>
           </form>

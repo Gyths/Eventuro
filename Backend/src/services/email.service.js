@@ -55,7 +55,7 @@ export async function confirmationEmail(to, orderInfo) {
           font-weight: 600;
           color: #6b7280;
         ">
-          ${t.eventName || 'Logo evento'}
+          ${t.eventID || 'Logo evento'}
         </div>
 
         <!-- Zona/Tipo -->
@@ -83,16 +83,6 @@ export async function confirmationEmail(to, orderInfo) {
             " 
           />
         </div>
-
-        <!-- ID del ticket -->
-        <p style="
-          text-align: center;
-          font-size: 12px;
-          color: #9ca3af;
-          margin-top: 12px;
-        ">
-          ID: ${t.ticketId}
-        </p>
       </div>
     `
   ).join('');
@@ -108,6 +98,7 @@ export async function confirmationEmail(to, orderInfo) {
     minute: '2-digit'
   }) : 'Por confirmar';
 
+  const eventLocation = firstTicket?.eventLocation ? new String(firstTicket.eventLocation) : 'Por confirmar';
   const mailOptions = {
     from: `"Eventuro" <${config.EMAIL_USER}>`,
     to,
@@ -197,7 +188,7 @@ export async function confirmationEmail(to, orderInfo) {
               margin: 0 0 16px 0;
               text-align: center;
             ">
-              ${firstTicket?.eventName || 'Evento de prueba'}
+              ${firstTicket?.eventName || 'Evento'}
             </h2>
             <div style="margin-bottom: 12px;">
               <span style="font-size: 18px; margin-right: 8px;">📅</span>
@@ -222,7 +213,7 @@ export async function confirmationEmail(to, orderInfo) {
                 font-size: 14px;
                 color: #374151;
               ">
-                Por confirmar
+                ${eventLocation}
               </p>
             </div>
           </div>
@@ -252,13 +243,6 @@ export async function confirmationEmail(to, orderInfo) {
               margin: 0;
             ">
               S/${totalAmount}
-            </p>
-            <p style="
-              font-size: 12px;
-              color: #9ca3af;
-              margin: 8px 0 0 0;
-            ">
-              Pedido #${orderId}
             </p>
           </div>
 
@@ -397,7 +381,7 @@ export async function sendReminderEmail(to, eventInfo) {
               color: #374151;
               margin: 24px 0 0 0;
             ">
-              ¡Te esperamos! 🎉
+              ¡Que no se te pase la fecha! 🎉
             </p>
           </div>
 

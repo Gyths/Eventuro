@@ -11,8 +11,7 @@ export function setFinalPrices(zones, activeSalePhasePercentage = 0) {
         allocation.price =
           Number(zone.basePrice) * (1 - Number(allocation.discountValue) / 100);
       if (allocation.discountType === "CASH")
-        allocation.price =
-          Number(zone.basePrice) - Number(allocation.discountValue);
+        allocation.price = allocation.discountValue;
 
       allocation.price =
         Number(allocation.price) * (1 + activeSalePhasePercentage / 100);
@@ -21,27 +20,31 @@ export function setFinalPrices(zones, activeSalePhasePercentage = 0) {
   return zones;
 }
 
+export function formatDate(date, monthFormat = "long") {
+  const formattedDate = new Date(date).toLocaleDateString("es-PE", {
+    day: "2-digit",
+    month: monthFormat,
+    year: "numeric",
+  });
+  return formattedDate;
+}
+
+export function formatHour(date) {
+  const formattedHour = new Date(date).toLocaleTimeString("es-PE", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return formattedHour;
+}
+
 export function formatDates(dates) {
   const formattedDates = dates.map((date) => ({
     ...date,
-    startDate: new Date(date.startAt).toLocaleDateString("es-PE", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-    }),
-    startHour: new Date(date.startAt).toLocaleTimeString("es-PE", {
-      hour: "2-digit",
-      minute: "2-digit",
-    }),
-    endDate: new Date(date.endAt).toLocaleDateString("es-PE", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-    }),
-    endHour: new Date(date.endAt).toLocaleTimeString("es-PE", {
-      hour: "2-digit",
-      minute: "2-digit",
-    }),
+    startDate: formatDate(date.startAt),
+    startHour: formatHour(date.startAt),
+    endDate: formatDate(date.endAt),
+    endHour: formatHour(date.endAt),
   }));
+
   return formattedDates;
 }
