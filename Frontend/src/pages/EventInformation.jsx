@@ -12,6 +12,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import SelectDateModal from "../components/selection/SelectDateModal";
 import SelectTicketModal from "../components/selection/SelectTicketModal";
+import RefundPolicyModal from "../components/selection/RefundPolicyModal";
 import placeholder from "../assets/DefaultEvent.webp";
 
 import {
@@ -19,6 +20,7 @@ import {
   MapPinIcon,
   UserIcon,
   UserGroupIcon,
+  Bars4Icon,
 } from "@heroicons/react/24/solid";
 
 import { FaceFrownIcon } from "@heroicons/react/24/outline";
@@ -27,13 +29,15 @@ export default function TicketSelection() {
   const homeRoute = "/";
   const loginPage = "/login";
   const navigate = useNavigate();
-  //Manejo de objetos de negocio
+
+  // Manejo de objetos de negocio
   const { isAuthenticated, user } = useAuth();
   const { event, setEvent } = useEvent();
   const [errorCode, setErrorCode] = React.useState(-1);
   //State para el manejo del scroll
   const [bluredBackgrund, setBluredBackgrund] = React.useState(false);
-  //State para manejar modales
+
+  // State para manejar modales
   const { modal, setModal } = useModal(null);
   const [selectedDate, setSelectedDate] = React.useState(false);
 
@@ -51,10 +55,14 @@ export default function TicketSelection() {
           endpoint: availabilityEndpoint,
           method: apiMethod,
         });
-
+        console.log(
+          "RAW RESPONSE =",
+          JSON.stringify(response.refundPolicyText)
+        );
         response.image = response.imagePrincipalURLSigned ?? placeholder;
         response.bannerEv = response.imageBannerURLSigned ?? placeholder;
         setEvent(response);
+
         await new Promise((res) => setTimeout(res, 300));
       } catch (err) {
         setErrorCode(err.code || 0);
@@ -65,7 +73,7 @@ export default function TicketSelection() {
 
     fetchEventInfo();
   }, []);
-
+  event && console.log(event.refundPolicyText);
   React.useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
@@ -114,10 +122,10 @@ export default function TicketSelection() {
 
   return (
     <>
-      {!event || errorCode != -1 ? (
+      {!event || errorCode !== -1 ? (
         <div className="flex flex-col justify-center items-center h-screen">
-          <FaceFrownIcon className="text-gray-500 size-14"></FaceFrownIcon>
-          <spam className="text-gray-500 text-2xl">¡Lo sentimos!</spam>
+          <FaceFrownIcon className="text-gray-500 size-14" />
+          <span className="text-gray-500 text-2xl">¡Lo sentimos!</span>
           <span className="text-gray-500 text-2xl">
             {EVENT_INFORMATION_TEXTS.alerts[errorCode]}
           </span>
@@ -130,12 +138,11 @@ export default function TicketSelection() {
               <img
                 src={event?.bannerEv}
                 alt="Fondo del evento"
-                className={`w-full h-full object-cover transition-all duration-700 ease-in-out
-          ${
-            bluredBackgrund
-              ? "blur-2xl brightness-75 scale-105"
-              : "blur-0 brightness-100 scale-100"
-          }`}
+                className={`w-full h-full object-cover transition-all duration-700 ease-in-out ${
+                  bluredBackgrund
+                    ? "blur-2xl brightness-75 scale-105"
+                    : "blur-0 brightness-100 scale-100"
+                }`}
               />
             </div>
             <div className="h-[50vh]"></div>
@@ -160,7 +167,7 @@ export default function TicketSelection() {
 
                 {/* Card de Información y entradas*/}
                 <div className="flex w-full lg:auto xl:w-1/2 justify-center items-center ">
-                  <div className="flex flex-col items-start md:p-3 xl:pr-5 xl:pl-5 xl:py-5 justify-start gap-3 w-[95vw] xl:w-[60vw] rounded-4xl md:rounded-3xl xl:rounded-none xl:rounded-r-4xl bg-white">
+                  <div className="flex flex-col items-start md:p-3 p-5 xl:pr-5 xl:pl-5 xl:py-5 justify-start gap-3 w-[95vw] xl:w-[60vw] rounded-4xl md:rounded-3xl xl:rounded-none xl:rounded-r-4xl bg-white">
                     <div className="flex flex-row justify-start items-center lg gap-2">
                       <ArrowButton
                         className="p-2"
@@ -168,7 +175,7 @@ export default function TicketSelection() {
                       ></ArrowButton>
                       {/* Título */}
                       <div className="inline-flex text-start flex-wrap flex-row">
-                        <h1 className="inline-block font-bold text-3xl xl:text-3xl">
+                        <h1 className="inline-block font-bold text-2xl xl:text-3xl">
                           {event?.title}
                         </h1>
                       </div>
@@ -184,28 +191,41 @@ export default function TicketSelection() {
                         </div>
                       ))}
                     </div>
+
                     <div className="flex flex-col gap-4 pl-5 xl:pl-10 xl:pt-2.5">
-                      {/* Detalles del evento*/}
+                      {/* Detalles del evento */}
                       <div className="inline-flex flex-row justify-start items-center text-center gap-4">
-                        <UserIcon className="flex-shrink-0 size-5 justify-start"></UserIcon>
+                        <UserIcon className="flex-shrink-0 size-5" />
                         <p className="inline-flex text-start max-w-prose">
                           {"Organizado por " + event?.organizer?.companyName}
                         </p>
                       </div>
+
                       <div className="inline-flex flex-row justify-start items-start xl:items-center text-center gap-4">
-                        <ChatBubbleBottomCenterTextIcon className="flex-shrink-0 size-5 items-end"></ChatBubbleBottomCenterTextIcon>
+                        <ChatBubbleBottomCenterTextIcon className="flex-shrink-0 size-5" />
                         <p className="inline-block text-start max-w-prose">
                           {event?.description}
                         </p>
                       </div>
-                      <div className="flex flex-1 flex-row justify-start items-center text-center gap-4">
-                        <UserGroupIcon className="flex size-5"></UserGroupIcon>
-                        <p className="inline-block text-start">
+
+                      <div className="inline-flex flex-row justify-start items-start xl:items-center text-center gap-4">
+                        <Bars4Icon className="flex-shrink-0 size-5 items-end"></Bars4Icon>
+                        <p className="inline-block text-start max-w-prose">
                           {event?.accessPolicyDescription}
                         </p>
                       </div>
                       <div className="flex flex-1 flex-row justify-start items-center text-center gap-4">
-                        <MapPinIcon className="inline-block size-5"></MapPinIcon>
+                        <UserGroupIcon className="flex size-5" />
+                        <p className="inline-block text-start">
+                          {event &&
+                            EVENT_INFORMATION_TEXTS.access_policy[
+                              event?.accessPolicy
+                            ]}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-1 flex-row justify-start items-center text-center gap-4">
+                        <MapPinIcon className="inline-block size-5" />
                         {event?.inPerson ? (
                           <span className="flex text-start">
                             {event?.venue?.address}
@@ -218,17 +238,19 @@ export default function TicketSelection() {
                     {/* ZONAS */}
                     <div className="flex w-full flex-col py-2">
                       <div className="flex flex-row pl-10">
-                        {event?.salesPhases ? (
-                          <span className="flex font-semibold text-2xl justify-start items">
+                        {event?.salesPhases && (
+                          <span className="flex font-semibold text-2xl justify-start mb-6 text-start">
                             Precios - Fase {event?.salesPhases[0].name}
                           </span>
-                        ) : (
-                          <span></span>
                         )}
                       </div>
+
                       <div className="flex w-full flex-col px-5">
                         <div className="grid grid-cols-2 justify-between text-start px-5 py-1">
-                          <span className="flex w-1/2"></span>
+                          <span className="flex font-semibold justify-start items">
+                            Del {event?.salesPhases[0]?.startAt} al{" "}
+                            {event?.salesPhases[0]?.endAt}
+                          </span>
                           <div className="flex flex-row w-full justify-between">
                             {event?.dates &&
                               event.dates[0].zoneDates[0].allocations &&
@@ -297,36 +319,45 @@ export default function TicketSelection() {
                 </div>
               </div>
             </motion.div>
-            {/* Información adicional */}
-            <div className="flex flex-row pt-10 sm:pt-5 md:pt-5 lg:pt-5 xl:pt-5">
-              <div className="flex flex-col relative h-auto flex-1 bg-white px-6 md:px-12 pt-6 pb-12 gap-6">
-                <span className="inline-block text-start font-bold text-4xl pt-5">
-                  Información adicional
-                </span>
 
+            {/* Información adicional */}
+            <div className="flex flex-row pt-10 sm:pt-5 md:pt-5 lg:pt-5 xl:pt-5 ">
+              <div className="flex flex-col relative h-auto flex-1 bg-white px-6 md:px-12 xl:py-10 pt-6 pb-12 gap-6">
                 {/* Contenedor general responsive */}
                 <div className="flex flex-col lg:flex-row justify-between gap-12 lg:gap-20">
                   {/* Texto de política */}
-                  <div className="flex flex-col gap-4 w-full lg:w-1/3 pt-16">
-                    <h1 className="font-bold text-3xl">
-                      Política de devoluciones
-                    </h1>
+                  <div className="flex flex-col gap-4 w-full lg:w-1/3">
+                    <div className="flex flex-wrap gap-8 items-center">
+                      <h1 className="font-bold text-3xl">
+                        Política de devoluciones
+                      </h1>
 
-                    {event?.refundPolicy ? (
-                      <span>{event.refundPolicyText}</span>
+                      {event.refundPolicyFileURLSigned &&
+                      event.refundPolicyText ? (
+                        <button
+                          onClick={() => setModal("refundPolicy")}
+                          className="flex px-4 py-2 w-auto bg-gray-100 border border-gray-400 hover:bg-gray-200 hover:scale-98 transition-all text-gray-600 rounded-lg text-sm font-medium cursor-pointer"
+                        >
+                          Ver pdf
+                        </button>
+                      ) : (
+                        ""
+                      )}
+                    </div>
+
+                    {event?.refundPolicyText ? (
+                      <div className="whitespace-pre-line">
+                        {event.refundPolicyText}
+                      </div>
+                    ) : event.refundPolicyFileURLSigned ? (
+                      <button
+                        onClick={() => setModal("refundPolicy")}
+                        className="flex text-center justify-center px-4 py-2 w-24 bg-gray-100 border border-gray-400 hover:bg-gray-200 hover:scale-98 transition-all text-gray-600 rounded-lg text-sm font-medium cursor-pointer"
+                      >
+                        Ver pdf
+                      </button>
                     ) : (
-                      <span className="inline-block text-justify leading-relaxed text-gray-700">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                        Vestibulum gravida ullamcorper massa in convallis. Nunc
-                        non viverra lacus. Ut est tellus, iaculis in imperdiet
-                        a, tempus a neque. Nulla auctor sagittis purus. Nullam
-                        libero turpis, mollis quis mauris eu, interdum porta
-                        odio. Mauris egestas euismod ipsum, sed tincidunt ipsum
-                        blandit a. Pellentesque habitant morbi tristique
-                        senectus et netus et malesuada fames ac turpis egestas.
-                        Praesent vel semper eros. Aenean sit amet lorem aliquet,
-                        lobortis est vel, rhoncus arcu.
-                      </span>
+                      ""
                     )}
                   </div>
 
@@ -374,6 +405,12 @@ export default function TicketSelection() {
             </AnimatePresence>
           )}
         </>
+      )}
+
+      {modal === "refundPolicy" && (
+        <AnimatePresence>
+          <RefundPolicyModal onClose={() => setModal(null)} />
+        </AnimatePresence>
       )}
     </>
   );

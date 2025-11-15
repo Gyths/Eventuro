@@ -1,33 +1,46 @@
 import { Bar } from "react-chartjs-2";
 
-const VentasPorMesChart = () => {
+const VentasPorMesChart = ({ monthlyTotals = [] }) => {
+  // Labels fijos en español
+  const labels = [
+    "Enero",
+    "Febrero",
+    "Marzo",
+    "Abril",
+    "Mayo",
+    "Junio",
+    "Julio",
+    "Agosto",
+    "Setiembre",
+    "Octubre",
+    "Noviembre",
+    "Diciembre",
+  ];
+
+  // misma paleta original (los 9 primeros) y reusamos el último para los demás
+  const baseColors = [
+    "#B388FF",
+    "#9C6BFF",
+    "#8E5DFF",
+    "#7B45FF",
+    "#6A2FFF",
+    "#5919F2",
+    "#5015D6",
+    "#4A14BF",
+    "#3F10A6",
+  ];
+
+  const backgroundColor = labels.map(
+    (_, idx) => baseColors[Math.min(idx, baseColors.length - 1)]
+  );
+
   const data = {
-    labels: [
-      "Enero",
-      "Febrero",
-      "Marzo",
-      "Abril",
-      "Mayo",
-      "Junio",
-      "Julio",
-      "Agosto",
-      "Septiembre",
-    ],
+    labels,
     datasets: [
       {
-        label: "Ventas por mes (promedio)",
-        data: [150, 165, 172, 180, 178, 182, 185, 176, 188],
-        backgroundColor: [
-          "#B388FF",
-          "#9C6BFF",
-          "#8E5DFF",
-          "#7B45FF",
-          "#6A2FFF",
-          "#5919F2",
-          "#5015D6",
-          "#4A14BF",
-          "#3F10A6",
-        ],
+        label: "Ventas por mes (monto)",
+        data: labels.map((_, i) => Number(monthlyTotals[i] || 0)),
+        backgroundColor,
         borderRadius: 10,
       },
     ],
@@ -42,7 +55,13 @@ const VentasPorMesChart = () => {
       },
       tooltip: {
         callbacks: {
-          label: (ctx) => ` ${ctx.raw} tickets`,
+          label: (ctx) => {
+            const val = Number(ctx.raw || 0);
+            return ` S/. ${val.toLocaleString("es-PE", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}`;
+          },
         },
       },
     },
@@ -56,7 +75,7 @@ const VentasPorMesChart = () => {
         ticks: {
           color: "#9CA3AF",
           font: { size: 10 },
-          callback: (v) => v,
+          callback: (v) => `S/. ${v}`,
         },
       },
     },
