@@ -55,7 +55,10 @@ export default function TicketSelection() {
           endpoint: availabilityEndpoint,
           method: apiMethod,
         });
-
+        console.log(
+          "RAW RESPONSE =",
+          JSON.stringify(response.refundPolicyText)
+        );
         response.image = response.imagePrincipalURLSigned ?? placeholder;
         response.bannerEv = response.imageBannerURLSigned ?? placeholder;
         setEvent(response);
@@ -70,7 +73,7 @@ export default function TicketSelection() {
 
     fetchEventInfo();
   }, []);
-
+  event && console.log(event.refundPolicyText);
   React.useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
@@ -318,16 +321,12 @@ export default function TicketSelection() {
             </motion.div>
 
             {/* Información adicional */}
-            <div className="flex flex-row pt-10 sm:pt-5 md:pt-5 lg:pt-5 xl:pt-5">
-              <div className="flex flex-col relative h-auto flex-1 bg-white px-6 md:px-12 pt-6 pb-12 gap-6">
-                <span className="inline-block text-start font-bold text-4xl pt-5">
-                  Información adicional
-                </span>
-
+            <div className="flex flex-row pt-10 sm:pt-5 md:pt-5 lg:pt-5 xl:pt-5 ">
+              <div className="flex flex-col relative h-auto flex-1 bg-white px-6 md:px-12 xl:py-10 pt-6 pb-12 gap-6">
                 {/* Contenedor general responsive */}
                 <div className="flex flex-col lg:flex-row justify-between gap-12 lg:gap-20">
                   {/* Texto de política */}
-                  <div className="flex flex-col gap-4 w-full lg:w-1/3 pt-16">
+                  <div className="flex flex-col gap-4 w-full lg:w-1/3">
                     <div className="flex flex-wrap gap-8 items-center">
                       <h1 className="font-bold text-3xl">
                         Política de devoluciones
@@ -347,7 +346,9 @@ export default function TicketSelection() {
                     </div>
 
                     {event?.refundPolicyText ? (
-                      <span>{event.refundPolicyText}</span>
+                      <div className="whitespace-pre-line">
+                        {event.refundPolicyText}
+                      </div>
                     ) : event.refundPolicyFileURLSigned ? (
                       <button
                         onClick={() => setModal("refundPolicy")}

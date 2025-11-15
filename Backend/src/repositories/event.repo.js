@@ -8,7 +8,6 @@ import path from "path";
 import { withAudit } from "../utils/audit.util.js";
 
 export async function createEventRepo(userId, input) {
-  console.log(input.ticketLimitPerUser);
   return withAudit(userId, async (tx) => {
     // --- Manejo del imagenPrincipal (multer) ---
     let imagePrincipalKey = null;

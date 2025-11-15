@@ -35,15 +35,12 @@ import { BASE_URL } from "../config";
 export default function PaymentMethod() {
   const titleText = "Elige tu método de pago";
   const navigate = useNavigate();
-  const ticketSelectionDest = "/seleccionTickets";
   const homeDest = "/home";
   const viewTicketDest = "/misTickets";
   const location = useLocation();
   const prevPath = React.useRef(location.pathname);
 
-  const { event } = useEvent();
-  const { order, setOrder } = useOrder();
-  const { user } = useAuth();
+  const { order } = useOrder();
   const { modal, setModal } = useModal(null);
 
   const [termsAccepted, setTermsAccepted] = React.useState(false);
@@ -112,7 +109,7 @@ export default function PaymentMethod() {
         {/*Parte superior de la pantalla, titulo, botón para retroceder, card con la información del evento */}
         <div className="flex flex-wrap items-center gap-4 px-4 py-5 md:px-8">
           <ArrowButton onClick={() => setModal("return")} />
-          <h1 className="font-bold text-2xl sm:text-3xl md:text-4xl">
+          <h1 className="font-bold text-center text-2xl sm:text-3xl md:text-4xl">
             {titleText}
           </h1>
 

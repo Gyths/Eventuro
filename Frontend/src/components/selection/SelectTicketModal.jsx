@@ -188,6 +188,50 @@ export default function SelectAllocationModal({
     setModal("seats");
   };
 
+  function getTotalSelectedTickets() {
+    let total = 0;
+
+    // Entradas sin allocation ni sitio
+    total += notAllocatedGeneralQuantities.reduce(
+      (sum, qty) => sum + Number(qty || 0),
+      0
+    );
+
+    // Entradas sin allocation pero con sitio
+    total += notAllocatedSeatedQuantities.reduce(
+      (sum, seats) => sum + seats.length,
+      0
+    );
+
+    // Entradas con allocation sin sitio
+    allocatedGeneralQuantities.forEach((zone) => {
+      if (zone !== "") {
+        total += zone.reduce((sum, qty) => sum + Number(qty || 0), 0);
+      }
+    });
+
+    // Entradas con allocation + asiento
+    allocatedSeatedQuantities.forEach((zoneSeats) => {
+      total += Object.keys(zoneSeats).length;
+    });
+
+    return total;
+  }
+
+  function verifyCap(subtraction = 0) {
+    const currentTotal = getTotalSelectedTickets() - subtraction;
+    const userRemainingLimit =
+      parseInt(event?.ticketLimitPerUser) -
+      parseInt(zonesInfo[0].user.ticketCount);
+    const phaseRemaining = zonesInfo[0]?.remainingSalePhaseQuantity;
+    const globalCap = Math.min(userRemainingLimit, phaseRemaining);
+    if (currentTotal >= globalCap) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
   // Manejo de suma y resta de entradas con allocation
   const handleAllocatedGeneralSubtraction = (zoneI, allocationI) => {
     const newValues = allocatedGeneralQuantities.map(
@@ -209,31 +253,19 @@ export default function SelectAllocationModal({
       zonesInfo[0]?.zoneDates[zoneI].allocations[allocationI]
         .remainingQuantity || 0
     );
+
+    if (!verifyCap()) return;
+
     const newValues = allocatedGeneralQuantities.map(
       (allocation, zoneIndex) => {
         if (zoneI !== zoneIndex) return allocation;
-        const zone = zonesInfo[0]?.zoneDates[zoneIndex];
-        const totalSelectedInZone = allocation.reduce(
-          (sum, q) => sum + parseInt(q || 0),
-          0
-        );
 
-        const cap = Math.min(
-          parseInt(event?.ticketLimitPerUser) -
-            parseInt(zonesInfo[0].user.ticketCount),
-          zonesInfo[0]?.remainingSalePhaseQuantity,
-          parseInt(zone.capacityRemaining)
-        );
-
-        if (totalSelectedInZone >= cap) {
-          setShowAlertMessage(false);
-          return allocation;
-        }
         return allocation.map((quantity, allocationIndex) => {
           return allocationIndex === allocationI ? quantity + 1 : quantity;
         });
       }
     );
+
     setAllocatedGeneralQuantities(newValues);
   };
 
