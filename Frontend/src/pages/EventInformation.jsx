@@ -167,7 +167,7 @@ export default function TicketSelection() {
 
                 {/* Card de Información y entradas*/}
                 <div className="flex w-full lg:auto xl:w-1/2 justify-center items-center ">
-                  <div className="flex flex-col items-start md:p-3 p-5 xl:pr-5 xl:pl-5 xl:py-5 justify-start gap-3 w-[95vw] xl:w-[60vw] rounded-4xl md:rounded-3xl xl:rounded-none xl:rounded-r-4xl bg-white">
+                  <div className="flex flex-col items-start md:p-3 p-5 xl:pr-5 xl:pl-5 xl:py-5 justify-start gap-4 w-[95vw] xl:w-[60vw] rounded-4xl md:rounded-3xl xl:rounded-none xl:rounded-r-4xl bg-white">
                     <div className="flex flex-row justify-start items-center lg gap-2">
                       <ArrowButton
                         className="p-2"
@@ -192,7 +192,7 @@ export default function TicketSelection() {
                       ))}
                     </div>
 
-                    <div className="flex flex-col gap-4 pl-5 xl:pl-10 xl:pt-2.5">
+                    <div className="flex flex-col gap-5 pl-5 xl:pl-10 xl:pt-2.5">
                       {/* Detalles del evento */}
                       <div className="inline-flex flex-row justify-start items-center text-center gap-4">
                         <UserIcon className="flex-shrink-0 size-5" />
@@ -200,14 +200,6 @@ export default function TicketSelection() {
                           {"Organizado por " + event?.organizer?.companyName}
                         </p>
                       </div>
-
-                      <div className="inline-flex flex-row justify-start items-start xl:items-center text-center gap-4">
-                        <ChatBubbleBottomCenterTextIcon className="flex-shrink-0 size-5" />
-                        <p className="inline-block text-start max-w-prose">
-                          {event?.description}
-                        </p>
-                      </div>
-
                       <div className="inline-flex flex-row justify-start items-start xl:items-center text-center gap-4">
                         <Bars4Icon className="flex-shrink-0 size-5 items-end"></Bars4Icon>
                         <p className="inline-block text-start max-w-prose">
@@ -324,13 +316,17 @@ export default function TicketSelection() {
             <div className="flex flex-row pt-10 sm:pt-5 md:pt-5 lg:pt-5 xl:pt-5 ">
               <div className="flex flex-col relative h-auto flex-1 bg-white px-6 md:px-12 xl:py-10 pt-6 pb-12 gap-6">
                 {/* Contenedor general responsive */}
-                <div className="flex flex-col lg:flex-row justify-between gap-12 lg:gap-20">
+                <div
+                  className={`flex flex-col lg:grid lg:grid-cols-${
+                    event.inPerson ? "3" : "2"
+                  } justify-between gap-12 lg:gap-20`}
+                >
                   {/* Texto de política */}
-                  <div className="flex flex-col gap-4 w-full lg:w-1/3">
-                    <div className="flex flex-wrap gap-8 items-center">
-                      <h1 className="font-bold text-3xl">
+                  <div className="flex flex-col gap-4 w-full">
+                    <div className="flex w-auto gap-8 text-start">
+                      <span className="flex w-auto font-bold text-3xl">
                         Política de devoluciones
-                      </h1>
+                      </span>
 
                       {event.refundPolicyFileURLSigned &&
                       event.refundPolicyText ? (
@@ -361,12 +357,23 @@ export default function TicketSelection() {
                     )}
                   </div>
 
+                  {/* Descripción del evento */}
+
+                  <div className="flex flex-col justify-start text-start gap-5">
+                    <span className="flex font-bold text-3xl justify-start text-start">
+                      Detalles del Evento
+                    </span>
+                    <div className="whitespace-pre-line">
+                      {event.description}
+                    </div>
+                  </div>
+
                   {/* Iframe cuadrado */}
                   {event?.inPerson && (
-                    <div className="flex justify-center xl:justify-end w-full lg:w-1/2">
-                      <div className="aspect-square w-full sm:w-3/4 md:w-2/3 lg:w-3/5 xl:w-1/2 border-2 rounded-md overflow-hidden shadow-2xl">
+                    <div className="flex justify-center w-auto">
+                      <div className="aspect-square w-[70vw] lg:w-auto xl:w-auto lg:h-[50vh] xl:h-[50vh] border-1 rounded-2xl">
                         <iframe
-                          className="w-full h-full"
+                          className="w-full h-full rounded-2xl"
                           src={
                             "https://www.google.com/maps?q=" +
                             encodeURIComponent(event?.venue?.address) +
