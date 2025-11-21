@@ -9,7 +9,7 @@ import { useAuth } from "../services/auth/AuthContext";
 import { EventuroApi } from "../api";
 
 import ArrowButton from "../components/ArrowButton";
-import EventInfoCard from "../components/payment/EvenInfoCard";
+import PaymentEventInfoCard from "../components/payment/PaymentEvenInfoCard";
 import ETicketDescription from "../components/payment/ETicketDescription";
 import TermsServicesCheckbox from "../components/payment/TermsServicesCheckbox";
 import PaymentOptions from "../components/payment/PaymentOptions";
@@ -114,7 +114,7 @@ export default function PaymentMethod() {
           </h1>
 
           <div className="flex-1 flex justify-end pr-10">
-            <EventInfoCard />
+            <PaymentEventInfoCard />
           </div>
         </div>
 
