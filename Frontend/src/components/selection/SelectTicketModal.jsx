@@ -38,14 +38,8 @@ export default function SelectAllocationModal({
   onContinue,
   onReturn,
 }) {
-  const orderEndpoint = "/orders";
-  const apiMethod = "POST";
-
-  const navigate = useNavigate();
-
   const { event, setEvent } = useEvent();
   const { user } = useAuth();
-  const { order, setOrder } = useOrder();
 
   const [showAlertMessage, setShowAlertMessage] = React.useState(false);
   const [zonesInfo, setZonesInfo] = React.useState([]);
@@ -357,6 +351,15 @@ export default function SelectAllocationModal({
                 .eventDateZoneAllocationId,
           });
       });
+    });
+    setEvent({
+      ...event,
+      selectedDate: zonesInfo[0]?.date[0]?.startDate,
+      selectedSchedule:
+        zonesInfo[0]?.date[0]?.startHour +
+        " - " +
+        zonesInfo[0]?.date[0]?.endHour,
+      shoppingCart,
     });
     setEvent({ ...event, shoppingCart });
     onContinue();
@@ -683,8 +686,8 @@ export default function SelectAllocationModal({
         <AnimatePresence>
           <AttendantsNameModal
             shoppingCartItems={event.shoppingCart}
+            selectedDateId={eventDateId}
             onReturn={() => setModal("tickets")}
-            onContinue={() => navigate("/payment")}
           />
         </AnimatePresence>
       )}

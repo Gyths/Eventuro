@@ -1,116 +1,66 @@
 import React from "react";
 import BaseModal from "../BaseModal";
+import { EventuroApi } from "../../api";
 import useEvent from "../../services/Event/EventContext";
 import useOrder from "../../services/Order/OrderContext";
+import { useAuth } from "../../services/auth/AuthContext";
 import { useNavigate } from "react-router-dom";
+
+import { TICKET_SELECTION_TEXTS } from "../payment/texts";
+import AlertMessage from "../AlertMessage";
+import Swal from "sweetalert2";
 
 export default function AttendantsNameModal({
   shoppingCartItems,
+  selectedDateId,
   onReturn,
   onContinue,
 }) {
+  const [state, setState] = React.useState({ name: "", document: "" });
+  const [showAlertMessage, setShowAlertMessage] = React.useState(false);
+  const [isButtonLoading, setIsButtonLoading] = React.useState(false);
+  const [errorCode, setErrorCode] = React.useState(false);
+  const { user } = useAuth();
   const { event, setEvent } = useEvent();
   const { setOrder } = useOrder();
   const navigate = useNavigate();
+
   // Función para manejar enviar la orden a la bd
   const handleContinue = async () => {
     setShowAlertMessage(false);
 
-    const orderData = {};
+    let orderData = {};
     orderData.buyerUserId = user.userId;
     orderData.currency = "PEN";
     orderData.items = [];
 
-    //Se añaden las entradas con allocation pero sin sitio
-    allocatedGeneralQuantities.map((quantitiesZone, zoneIndex) => {
-      if (quantitiesZone != "") {
-        const zone = zonesInfo[0]?.zoneDates[zoneIndex];
-
-        quantitiesZone.map((quantity, allocationIndex) => {
-          if (quantity > 0) {
-            orderData.items.push({
-              eventId: event.eventId,
-              eventDateId: eventDateId,
-              eventDateZoneId: zone.eventDateZoneId,
-              eventDateZoneAllocationId:
-                zone.allocations[allocationIndex].eventDateZoneAllocationId,
-              quantity: quantity,
-            });
-          }
-        });
-      }
-    });
-
-    //Se añaden las entradas con allocation y con sitio
-    allocatedSeatedQuantities.map((seats, zoneIndex) => {
-      const zone = zonesInfo[0]?.zoneDates[zoneIndex];
-
-      for (const seatId in seats) {
-        orderData.items.push({
-          eventId: event.eventId,
-          eventDateId: eventDateId,
-          eventDateZoneId: zone.eventDateZoneId,
-          eventDateZoneAllocationId:
-            zone.allocations[seats[seatId]].eventDateZoneAllocationId,
-          quantity: 1,
-          seatId: seatId,
-        });
-      }
+    shoppingCartItems.map((item) => {
+      orderData.items.push({
+        eventId: event.eventId,
+        eventDateId: selectedDateId,
+        eventDateZoneId: item.zoneId,
+        eventDateZoneAllocationId: item.allocationId,
+        quantity: "1",
+      });
     });
 
     try {
       setIsButtonLoading(true);
+
       const response = await EventuroApi({
-        endpoint: orderEndpoint,
-        method: apiMethod,
+        endpoint: "/orders/",
+        method: "POST",
         data: orderData,
       });
+
       setOrder({
         ...response,
       });
 
-      let shoppingCart = {};
-
-      response.items.forEach((item) => {
-        const { zoneName, allocationName, quantity, unitPrice, finalPrice } =
-          item;
-
-        if (!shoppingCart[zoneName]) {
-          shoppingCart[zoneName] = {
-            totalQuantity: 0,
-            totalZonePrice: 0,
-          };
-        }
-
-        if (!shoppingCart[zoneName][allocationName]) {
-          shoppingCart[zoneName][allocationName] = [];
-        }
-
-        shoppingCart[zoneName][allocationName].push({
-          quantity,
-          unitPrice,
-        });
-
-        shoppingCart[zoneName].totalQuantity += Number(quantity);
-        shoppingCart[zoneName].totalZonePrice += Number(
-          finalPrice ?? unitPrice * quantity
-        );
-      });
-
-      // Actualizar el evento con el carrito completo
-      setEvent({
-        ...event,
-        selectedDate: zonesInfo[0]?.date[0]?.startDate,
-        selectedSchedule:
-          zonesInfo[0]?.date[0]?.startHour +
-          " - " +
-          zonesInfo[0]?.date[0]?.endHour,
-        shoppingCart,
-      });
-
-      await new Promise((res) => setTimeout(res, 300));
+      await new Promise((res) => setTimeout(res, 500));
+      navigate("/pago");
     } catch (err) {
-      await new Promise((res) => setTimeout(res, 300));
+      await new Promise((res) => setTimeout(res, 500));
       if (err.code === 1) navigate("/login");
       if (err.code === 0) {
         //onClose();
@@ -128,23 +78,55 @@ export default function AttendantsNameModal({
     }
   };
 
-  console.log(shoppingCartItems);
+  function handleNameChange(evt) {
+    const { name, value } = evt.target;
+
+    let newValue = value;
+
+    newValue = newValue.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ ]/g, "");
+    newValue = newValue.slice(0, 50);
+    setState((prev) => ({ ...prev, [name]: newValue }));
+  }
+
+  function handleDocumentChange(evt) {
+    const { name, value } = evt.target;
+
+    let newValue = value;
+
+    newValue = newValue.replace(/\D/g, "");
+    newValue = newValue.slice(0, 8);
+    setState((prev) => ({ ...prev, [name]: newValue }));
+  }
+
+  //console.log(shoppingCartItems);
   return (
     <BaseModal>
       <div className="flex flex-col justify-between items-start gap-4 bg-white rounded-2xl px-7 py-5  max-h-[85vh] mt-15">
         {/* Header */}
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 w-full">
           <span className="inline-block text-3xl font-semibold mb-2">
             Ingrese los Nombres de los Asistentes
           </span>
+          <hr className="border-1 text-gray-200 w-full"></hr>
+          {showAlertMessage && (
+            <div className="flex pt-5 pb-1">
+              <AlertMessage id="1">
+                {TICKET_SELECTION_TEXTS.alerts[errorCode]}
+              </AlertMessage>
+            </div>
+          )}
         </div>
-        <div className="grid grid-cols-3 gap-4 overflow-auto">
+        <div
+          className={`grid grid-cols-${
+            shoppingCartItems.length < 3 ? shoppingCartItems.length : "3"
+          } gap-4 overflow-auto items-center justify-center`}
+        >
           {shoppingCartItems != null ? (
             shoppingCartItems.map((item, itemIndex) => {
               return (
                 <div
                   key={itemIndex}
-                  className="flex flex-col gap-2 border-1 border-gray-400 rounded-2xl p-5"
+                  className="flex flex-col gap-2 border-1 border-gray-400 rounded-2xl p-5 items-start"
                 >
                   <label className="inline-block text-black">
                     {item.zoneName + " - " + item.allocationName}
@@ -154,15 +136,21 @@ export default function AttendantsNameModal({
                     Ingrese el nombre del asistente
                   </label>
                   <input
+                    name={"name" + itemIndex}
+                    value={state["name" + itemIndex]}
+                    onChange={handleNameChange}
                     placeholder="Nombre completo"
-                    className="flex bg-gray-100 rounded-xl py-1.5 px-2.5 focus:border-0"
+                    className="flex bg-gray-50 rounded-xl py-1.5 px-2.5 w-full ring hover:bg-gray-100 ring-gray-300 focus:outline-0 focus:bg-gray-200/60 transition-all"
                   ></input>
                   <label className="inline-block w-full text-gray-600">
                     Ingrese el número de documento del asistente
                   </label>
                   <input
+                    name={"document" + itemIndex}
+                    value={state["document" + itemIndex]}
+                    onChange={handleDocumentChange}
                     placeholder="Número de documento"
-                    className="flex bg-gray-100 rounded-xl py-1.5 px-2.5"
+                    className="flex bg-gray-50 rounded-xl py-1.5 px-2.5 w-full ring hover:bg-gray-100 ring-gray-300 focus:outline-0 focus:bg-gray-200 transition-all"
                   ></input>
                 </div>
               );
@@ -176,13 +164,22 @@ export default function AttendantsNameModal({
           <div className="flex justify-start items-center">
             <button
               onClick={onReturn}
-              className="flex bg-red-400 text-white rounded-lg py-0.5 px-2"
+              className="flex bg-red-400 text-white rounded-lg py-0.5 px-2 cursor-pointer hover:scale-103 hover:bg-red-500 transition-all"
             >
               Volver
             </button>
           </div>
-          <div onClick={onContinue} className="flex justify-end items-center">
-            <button className="flex bg-purple-500 text-white rounded-lg py-0.5 px-2">
+          <div
+            onClick={handleContinue}
+            className="flex justify-end items-center"
+          >
+            <button
+              className={`inline-block border-0 w-auto rounded-lg text-white px-2.5 py-1 ${
+                !isButtonLoading
+                  ? "bg-purple-600 hover:bg-yellow-500/70 hover:scale-104  cursor-pointer"
+                  : "bg-purple-700"
+              } transition-all duration-200`}
+            >
               Continuar
             </button>
           </div>
