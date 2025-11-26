@@ -81,7 +81,6 @@ export default function SelectAllocationModal({
           method: "GET",
         });
         setZonesInfo(response);
-        console.log(response);
 
         const ticketsErrorCode = verifyQuantityError(response);
         if (ticketsErrorCode !== 0) {
@@ -333,12 +332,16 @@ export default function SelectAllocationModal({
   }, [allocatedSeatedQuantities, zonesInfo[0]]);
 
   function handleContinue() {
-    let shoppingCart = [];
-    console.log(allocatedGeneralQuantities);
+    let shoppingCart = {
+      itemsByAttendant: [],
+      itemsByZone: {},
+      aditionalInfo: {},
+    };
+    let totalAmount = 0;
     allocatedGeneralQuantities.map((zoneQuantities, zoneIndex) => {
       zoneQuantities.map((allocationQuantity, allocationIndex) => {
-        for (let i = 0; i < allocationQuantity; i++)
-          shoppingCart.push({
+        for (let i = 0; i < allocationQuantity; i++) {
+          shoppingCart.itemsByAttendant.push({
             zoneName: zonesInfo[0].zoneDates[zoneIndex].name,
             allocationName:
               zonesInfo[0].zoneDates[zoneIndex].allocations[allocationIndex]
@@ -350,8 +353,11 @@ export default function SelectAllocationModal({
               zonesInfo[0].zoneDates[zoneIndex].allocations[allocationIndex]
                 .eventDateZoneAllocationId,
           });
+        }
       });
     });
+
+    console.log(shoppingCart);
     setEvent({
       ...event,
       selectedDate: zonesInfo[0]?.date[0]?.startDate,
@@ -685,7 +691,7 @@ export default function SelectAllocationModal({
       {modal === "attendants" && (
         <AnimatePresence>
           <AttendantsNameModal
-            shoppingCartItems={event.shoppingCart}
+            shoppingCart={event.shoppingCart}
             selectedDateId={eventDateId}
             onReturn={() => setModal("tickets")}
           />

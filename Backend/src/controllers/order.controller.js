@@ -4,7 +4,6 @@ import { cancelOrderSvc } from "../services/order.service.js";
 import { getOrdersByUser } from "../services/order.service.js";
 
 export async function createOrderCtrl(req, res) {
-  console.log(req);
   try {
     const sessionUserId = req.user?.userId;
     if (!sessionUserId && !req.body.buyerUserId) {

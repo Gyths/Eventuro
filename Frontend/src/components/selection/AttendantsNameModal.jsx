@@ -11,7 +11,7 @@ import AlertMessage from "../AlertMessage";
 import Swal from "sweetalert2";
 
 export default function AttendantsNameModal({
-  shoppingCartItems,
+  shoppingCart,
   selectedDateId,
   onReturn,
   onContinue,
@@ -34,7 +34,7 @@ export default function AttendantsNameModal({
     orderData.currency = "PEN";
     orderData.items = [];
 
-    shoppingCartItems.map((item) => {
+    shoppingCart.itemsByAttendant.map((item) => {
       orderData.items.push({
         eventId: event.eventId,
         eventDateId: selectedDateId,
@@ -52,11 +52,42 @@ export default function AttendantsNameModal({
         method: "POST",
         data: orderData,
       });
-
+      console.log(response);
       setOrder({
         ...response,
       });
 
+      let shoppingCart = {};
+
+      response.items.forEach((item) => {
+        const { zoneName, allocationName, quantity, unitPrice, finalPrice } =
+          item;
+
+        if (!shoppingCart[zoneName]) {
+          shoppingCart[zoneName] = {
+            totalQuantity: 0,
+            totalZonePrice: 0,
+          };
+        }
+
+        if (!shoppingCart[zoneName][allocationName]) {
+          shoppingCart[zoneName][allocationName] = [];
+        }
+
+        shoppingCart[zoneName][allocationName].push({
+          quantity,
+          unitPrice,
+        });
+
+        shoppingCart[zoneName].totalQuantity += Number(quantity);
+        shoppingCart[zoneName].totalZonePrice += Number(
+          finalPrice ?? unitPrice * quantity
+        );
+      });
+      console.log(shoppingCart);
+      event.shoppingCart = shoppingCart;
+      setEvent(event);
+      console.log(event);
       await new Promise((res) => setTimeout(res, 500));
       navigate("/pago");
     } catch (err) {
@@ -98,7 +129,7 @@ export default function AttendantsNameModal({
     setState((prev) => ({ ...prev, [name]: newValue }));
   }
 
-  //console.log(shoppingCartItems);
+  //console.log(shoppingCart);
   return (
     <BaseModal>
       <div className="flex flex-col justify-between items-start gap-4 bg-white rounded-2xl px-7 py-5  max-h-[85vh] mt-15">
@@ -118,11 +149,13 @@ export default function AttendantsNameModal({
         </div>
         <div
           className={`grid grid-cols-${
-            shoppingCartItems.length < 3 ? shoppingCartItems.length : "3"
+            shoppingCart && shoppingCart.itemsByAttendant.length < 3
+              ? shoppingCart.itemsByAttendant.length
+              : "3"
           } gap-4 overflow-auto items-center justify-center`}
         >
-          {shoppingCartItems != null ? (
-            shoppingCartItems.map((item, itemIndex) => {
+          {shoppingCart && shoppingCart.itemsByAttendant ? (
+            shoppingCart.itemsByAttendant.map((item, itemIndex) => {
               return (
                 <div
                   key={itemIndex}

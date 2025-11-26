@@ -30,7 +30,7 @@ export default function ShoppingCart({
       openModal(selectedOption);
     }
   };
-  console.log(event.shoppingCart);
+  console.log(event);
   return (
     <div className="flex justify-between h-auto flex-col w-auto min-w-[28vw] aspect-[4/5] bg-white rounded-xl shadow-lg px-11 py-7">
       <div>
