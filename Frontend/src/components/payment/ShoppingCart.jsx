@@ -39,7 +39,7 @@ export default function ShoppingCart({
         {/*Acá se muestran los tickets a comprar*/}
         <div className="flex flex-col h-auto gap-4">
           {event.shoppingCart != null &&
-            Object.entries(event.shoppingCart).map(
+            Object.entries(event.shoppingCart.itemsByZone).map(
               ([zoneName, zone], index) => {
                 if (zone.quantity && zone.price) {
                   return (
@@ -77,16 +77,12 @@ export default function ShoppingCart({
                               >
                                 <span className="truncate">{zoneInfoName}</span>
                                 <span className="text-center">
-                                  {"x" + zoneInfo[0]?.quantity}
+                                  {"x" + zoneInfo?.quantity}
                                 </span>
                                 <div className="flex flex-row items-center justify-end w-20">
                                   {currencies.PEN}
                                   <span>
-                                    {" "}
-                                    {parseInt(zoneInfo[0]?.quantity) *
-                                      parseFloat(
-                                        zoneInfo[0]?.unitPrice
-                                      ).toFixed(2)}
+                                    {parseFloat(zoneInfo?.price).toFixed(2)}
                                   </span>
                                 </div>
                               </div>

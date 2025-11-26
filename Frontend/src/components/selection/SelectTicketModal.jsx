@@ -81,6 +81,7 @@ export default function SelectAllocationModal({
           method: "GET",
         });
         setZonesInfo(response);
+        console.log(response);
 
         const ticketsErrorCode = verifyQuantityError(response);
         if (ticketsErrorCode !== 0) {
@@ -337,7 +338,7 @@ export default function SelectAllocationModal({
       itemsByZone: {},
       aditionalInfo: {},
     };
-    let totalAmount = 0;
+
     allocatedGeneralQuantities.map((zoneQuantities, zoneIndex) => {
       zoneQuantities.map((allocationQuantity, allocationIndex) => {
         for (let i = 0; i < allocationQuantity; i++) {
@@ -356,7 +357,10 @@ export default function SelectAllocationModal({
         }
       });
     });
-
+    console.log(zonesInfo[0]?.date[0]?.startDate);
+    console.log(
+      zonesInfo[0]?.date[0]?.startHour + " - " + zonesInfo[0]?.date[0]?.endHour
+    );
     console.log(shoppingCart);
     setEvent({
       ...event,
@@ -367,7 +371,6 @@ export default function SelectAllocationModal({
         zonesInfo[0]?.date[0]?.endHour,
       shoppingCart,
     });
-    setEvent({ ...event, shoppingCart });
     onContinue();
   }
 

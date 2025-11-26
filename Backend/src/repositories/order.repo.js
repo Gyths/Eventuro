@@ -22,7 +22,7 @@ export async function createOrderRepo(input) {
     const createdOrderItems = [];
     const createdTickets = [];
     const holdExpiration = new Date(Date.now() + 5 * 60 * 1000); // 5 minutos de tolerancia para realizar la compra
-    
+
     // Recorrido de items de la orden (cada item puede ser zona general o numerada, con/sin allocation)
     for (const item of input.items) {
       // Validar que el evento exista y obtener el organizador y su userId
@@ -227,7 +227,6 @@ export async function createOrderRepo(input) {
         }
       }
 
-      
       // CONTROL DE CONCURRENCIA OCC (optimistic concurrency control):
       // Todo dentro de la transacción tx: si alguno falla se hace rollback.
 
@@ -352,20 +351,14 @@ export async function createOrderRepo(input) {
           active: true,
           AND: [
             {
-              OR: [
-                { startAt: { lte: now } },
-                { startAt: null }
-              ]
+              OR: [{ startAt: { lte: now } }, { startAt: null }],
             },
             {
-              OR: [
-                { endAt: { gte: now } },
-                { endAt: null }
-              ]
-            }
-          ]
+              OR: [{ endAt: { gte: now } }, { endAt: null }],
+            },
+          ],
         },
-      })
+      });
       // Si tendrá allocation, calculamos el precio de la entrada para la allocation de dicha zona
       if (allocation) {
         const { discountType, discountValue } = allocation;
@@ -449,7 +442,6 @@ export async function createOrderRepo(input) {
         status: "PENDING_PAYMENT",
       },
     });
-    console.log(createdOrderItems);
     //Retornamos la orden creada con sus items
     return {
       orderId: Number(order.orderId),
@@ -584,16 +576,10 @@ export async function cancelOrderRepo(orderId) {
           active: true,
           AND: [
             {
-              OR: [
-                { startAt: { lte: orderCreatedAt } },
-                { startAt: null },
-              ],
+              OR: [{ startAt: { lte: orderCreatedAt } }, { startAt: null }],
             },
             {
-              OR: [
-                { endAt: { gte: orderCreatedAt } },
-                { endAt: null },
-              ],
+              OR: [{ endAt: { gte: orderCreatedAt } }, { endAt: null }],
             },
           ],
         },
@@ -607,7 +593,6 @@ export async function cancelOrderRepo(orderId) {
           },
         });
       }
-
     }
 
     // Borrar los orderItems de esta orden

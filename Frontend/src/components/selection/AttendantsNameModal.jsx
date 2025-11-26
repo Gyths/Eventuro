@@ -22,7 +22,7 @@ export default function AttendantsNameModal({
   const [errorCode, setErrorCode] = React.useState(false);
   const { user } = useAuth();
   const { event, setEvent } = useEvent();
-  const { setOrder } = useOrder();
+  const { order, setOrder } = useOrder();
   const navigate = useNavigate();
 
   // Función para manejar enviar la orden a la bd
@@ -46,7 +46,6 @@ export default function AttendantsNameModal({
 
     try {
       setIsButtonLoading(true);
-
       const response = await EventuroApi({
         endpoint: "/orders/",
         method: "POST",
@@ -67,28 +66,35 @@ export default function AttendantsNameModal({
           shoppingCart[zoneName] = {
             totalQuantity: 0,
             totalZonePrice: 0,
+            discountsApplied: [],
+          };
+        }
+        console.log(
+          "Ingresando en " + zoneName + " - " + allocationName + " " + unitPrice
+        );
+        if (!shoppingCart[zoneName][allocationName]) {
+          shoppingCart[zoneName][allocationName] = {
+            quantity: 0,
+            price: 0,
           };
         }
 
-        if (!shoppingCart[zoneName][allocationName]) {
-          shoppingCart[zoneName][allocationName] = [];
-        }
-
-        shoppingCart[zoneName][allocationName].push({
-          quantity,
-          unitPrice,
-        });
+        shoppingCart[zoneName][allocationName].quantity += 1;
+        shoppingCart[zoneName][allocationName].price += Number(unitPrice);
 
         shoppingCart[zoneName].totalQuantity += Number(quantity);
-        shoppingCart[zoneName].totalZonePrice += Number(
-          finalPrice ?? unitPrice * quantity
-        );
+        shoppingCart[zoneName].totalZonePrice += Number(unitPrice * quantity);
       });
+
       console.log(shoppingCart);
-      event.shoppingCart = shoppingCart;
-      setEvent(event);
-      console.log(event);
+      event.shoppingCart.itemsByZone = shoppingCart;
+
+      const subtotal = order.subtotal;
+      const total = order.subtotal;
+
       await new Promise((res) => setTimeout(res, 500));
+      setEvent({ ...event, subtotal, total });
+      console.log(event);
       navigate("/pago");
     } catch (err) {
       await new Promise((res) => setTimeout(res, 500));
@@ -101,7 +107,6 @@ export default function AttendantsNameModal({
           text: "Ocurrió un error inesperado",
         });
       }
-
       setErrorCode(err.code || 0);
       setShowAlertMessage(true);
     } finally {
@@ -149,7 +154,9 @@ export default function AttendantsNameModal({
         </div>
         <div
           className={`grid grid-cols-${
-            shoppingCart && shoppingCart.itemsByAttendant.length < 3
+            shoppingCart &&
+            shoppingCart.itemsByAttendant &&
+            shoppingCart.itemsByAttendant.length < 3
               ? shoppingCart.itemsByAttendant.length
               : "3"
           } gap-4 overflow-auto items-center justify-center`}
@@ -209,11 +216,15 @@ export default function AttendantsNameModal({
             <button
               className={`inline-block border-0 w-auto rounded-lg text-white px-2.5 py-1 ${
                 !isButtonLoading
-                  ? "bg-purple-600 hover:bg-yellow-500/70 hover:scale-104  cursor-pointer"
+                  ? "bg-purple-600 hover:bg-yellow-500/70 hover:scale-104 cursor-pointer"
                   : "bg-purple-700"
               } transition-all duration-200`}
             >
-              Continuar
+              {isButtonLoading ? (
+                <div className="size-3 mx-3.5 my-1.5 justify-center items-center text-center border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin transition-all"></div>
+              ) : (
+                "Pagar "
+              )}
             </button>
           </div>
         </div>
