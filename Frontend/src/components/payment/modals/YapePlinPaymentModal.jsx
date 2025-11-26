@@ -180,7 +180,7 @@ export default function YapePlinPaymentModal({ onClose, onSuccess, onFail }) {
             <hr className="mt-1/4 border-gray-800/30 border-1"></hr>
             <div className="flex justify-between text-lg font-black text-gray-900 p-2">
               <span>Pago total</span>
-              <span>S/. {order?.totalAmount}</span>
+              <span>S/. {parseFloat(order?.totalAmount).toFixed(2)}</span>
             </div>
             {/* Botón de pagar */}
             <div className="flex justify-center items-center">

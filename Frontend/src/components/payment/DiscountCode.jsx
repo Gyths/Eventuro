@@ -62,10 +62,12 @@ export default function DiscountCode() {
       appliedCodes: appliedCodes.map((code) => {
         return code.code;
       }),
-      items: Object.entries(event.shoppingCart).map(([zone, zoneInf]) => {
-        const quantity = parseInt(zoneInf.totalQuantity);
-        return { zone, quantity };
-      }),
+      items: Object.entries(event.shoppingCart.itemsByZone).map(
+        ([zone, zoneInf]) => {
+          const quantity = parseInt(zoneInf.totalQuantity);
+          return { zone, quantity };
+        }
+      ),
     };
 
     try {
@@ -126,7 +128,7 @@ export default function DiscountCode() {
   useEffect(() => {
     if (!order?.subtotal || !event?.shoppingCart) return;
 
-    const updatedCart = structuredClone(event.shoppingCart);
+    const updatedCart = structuredClone(event.shoppingCart.itemsByZone);
 
     Object.keys(updatedCart).forEach((zoneName) => {
       const zoneCart = updatedCart[zoneName];
@@ -144,7 +146,8 @@ export default function DiscountCode() {
           return sum + zone.totalZonePrice;
         return sum;
       }, 0);
-
+      const newShoppingCart = event.shoppingCart;
+      newShoppingCart.itemsByZone = updatedCart;
       setEvent((prev) => ({ ...prev, shoppingCart: updatedCart }));
       setOrder((prev) => ({ ...prev, totalAmount: order.subtotal }));
       return;
