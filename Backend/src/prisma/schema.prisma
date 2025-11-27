@@ -142,7 +142,8 @@ enum STAGED_SALE_PERIOD {
   D // DAILY
   W // WEEKLY
   M // MONTHLY
- @@schema("public")
+
+  @@schema("public")
 }
 
 enum COMPLAINT_STATE {
@@ -321,23 +322,23 @@ model Fee {
 
 // Evento
 model Event {
-  eventId                 BigInt        @id @default(autoincrement()) @db.BigInt
-  organizerId             BigInt        @db.BigInt
-  feeId                   BigInt?       @db.BigInt
+  eventId                 BigInt              @id @default(autoincrement()) @db.BigInt
+  organizerId             BigInt              @db.BigInt
+  feeId                   BigInt?             @db.BigInt
   title                   String
   imagePrincipalKey       String
   imageBannerKey          String
   refundPolicyFileKey     String?
   refundPolicyText        String?
-  status                  EVENT_STATUS  @default(P)
+  status                  EVENT_STATUS        @default(P)
   inPerson                Boolean
   description             String
   accessPolicy            ACCESS_POLICY
   accessPolicyDescription String?
-  ticketLimitPerUser      Int?          @default(10)
+  ticketLimitPerUser      Int?                @default(10)
   // NUEVOS CAMPOS para Venta Escalonada
-  stagedSale              Boolean       @default(false)
-  quantityStagedSale      BigInt?       @db.BigInt
+  stagedSale              Boolean             @default(false)
+  quantityStagedSale      BigInt?             @db.BigInt
   stagedSalePeriod        STAGED_SALE_PERIOD?
 
   // Relaciones
@@ -376,15 +377,15 @@ model EventDate {
 }
 
 model EventDateZone {
-  eventDateZoneId   BigInt    @id @default(autoincrement()) @db.BigInt
-  eventDateId       BigInt    @db.BigInt
-  name              String
-  kind              ZONE_KIND
-  basePrice         Decimal   @db.Decimal(10, 2)
-  capacity          Int
-  capacityRemaining Int
-  seatMapId         BigInt?   @unique @db.BigInt
-  currency          CURRENCY
+  eventDateZoneId         BigInt    @id @default(autoincrement()) @db.BigInt
+  eventDateId             BigInt    @db.BigInt
+  name                    String
+  kind                    ZONE_KIND
+  basePrice               Decimal   @db.Decimal(10, 2)
+  capacity                Int
+  capacityRemaining       Int
+  seatMapId               BigInt?   @unique @db.BigInt
+  currency                CURRENCY
   quantityTicketsReleased BigInt    @db.BigInt
 
   // relaciones
@@ -396,8 +397,8 @@ model EventDateZone {
   Hold        Hold[]
 
   lastCapacityRemainingIncrement DateTime @default(now()) //para venta escalonada
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt                      DateTime @default(now())
+  updatedAt                      DateTime @updatedAt
 
   @@index([eventDateId, name])
   @@schema("public")
@@ -461,15 +462,15 @@ model EventDateZoneAllocation {
 
 // Fases de venta
 model EventSalesPhase {
-  eventSalesPhaseId BigInt    @id @default(autoincrement()) @db.BigInt
-  eventId           BigInt    @db.BigInt
-  name              String
-  startAt           DateTime?
-  endAt             DateTime?
-  ticketLimit       Int?
-  percentage        Decimal   @db.Decimal(10, 2)
-  active            Boolean   @default(false)
-  quantityTicketsSold Int     @default(0)
+  eventSalesPhaseId   BigInt    @id @default(autoincrement()) @db.BigInt
+  eventId             BigInt    @db.BigInt
+  name                String
+  startAt             DateTime?
+  endAt               DateTime?
+  ticketLimit         Int?
+  percentage          Decimal   @db.Decimal(10, 2)
+  active              Boolean   @default(false)
+  quantityTicketsSold Int       @default(0)
 
   event Event @relation(fields: [eventId], references: [eventId], onDelete: Cascade)
 
@@ -587,6 +588,7 @@ model Discount {
   startAt      DateTime
   endAt        DateTime
   status       STATUS_DISCOUNT @default(A)
+  initialQty   Int
   availableQty Int?
   appliesTo    String?
 

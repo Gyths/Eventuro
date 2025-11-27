@@ -167,6 +167,7 @@ export async function createEventRepo(userId, input) {
         startAt: new Date(d.startAt),
         endAt: new Date(d.endAt),
         status: d.status ?? "A",
+        initialQty: d.availableQty ? Number(d.availableQty) : null,
         availableQty: d.availableQty ? Number(d.availableQty) : null,
         appliesTo: d.appliesTo ?? "ALL",
       }));
