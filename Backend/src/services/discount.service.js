@@ -1,5 +1,6 @@
 import { listDiscountByCode } from "../repositories/discount.repo.js";
 import { listDiscountsByCodes } from "../repositories/discount.repo.js";
+import { listDiscountByOrganizerIdRepo } from "../repositories/discount.repo.js";
 import { pickBestScopeMatch } from "../utils/discount.util.js";
 import { evaluateStacking } from "../utils/discount.util.js";
 import { isItemEligibleByAppliesTo } from "../utils/discount.util.js";
@@ -95,4 +96,8 @@ export async function validateDiscountSvc(input) {
     eligibleDetail,
     eligibleQty,
   };
+}
+
+export async function listDiscountByOrganizerIdSvc({ organizerId, eventId }) {
+  return listDiscountByOrganizerIdRepo({ organizerId, eventId });
 }
