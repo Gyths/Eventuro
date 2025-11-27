@@ -463,20 +463,102 @@ export async function eventDetails(id) {
 }
 
 export async function listEventsByOrganizerRepo(idOrganizer) {
-  return prisma.event.findMany({
+  const events = await prisma.event.findMany({
     where: { organizerId: BigInt(idOrganizer) },
+    orderBy: { createdAt: "desc" },
     select: {
       eventId: true,
       title: true,
+      description: true,
+      accessPolicy: true,
       createdAt: true,
+      updatedAt: true,
+      imagePrincipalKey: true,
+      imageBannerKey: true,
+
       venue: {
         select: {
           city: true,
+          address: true,
+          addressUrl: true,
+          reference: true,
+          capacity: true,
+        },
+      },
+      categories: {
+        select: {
+          category: {
+            select: {
+              eventCategoryId: true,
+              initials: true,
+              description: true,
+            },
+          },
+        },
+      },
+      dates: {
+        select: {
+          eventDateId: true,
+          startAt: true,
+          endAt: true,
+          zoneDates: {
+            select: {
+              eventDateZoneId: true,
+              name: true,
+              kind: true,
+              basePrice: true,
+              capacity: true,
+              capacityRemaining: true,
+              currency: true,
+              quantityTicketsReleased: true,
+            },
+          },
+        },
+      },
+      salesPhases: {
+        select: {
+          eventSalesPhaseId: true,
+          name: true,
+          startAt: true,
+          endAt: true,
+          ticketLimit: true,
+          percentage: true,
+          active: true,
+          quantityTicketsSold: true,
+        },
+      },
+      Discount: {
+        select: {
+          discountId: true,
+          code: true,
+          percentage: true,
+          startAt: true,
+          endAt: true,
+          status: true,
+          scope: true,
         },
       },
     },
   });
+
+  // 🔐 Agregamos las URLs firmadas al resultado
+  return Promise.all(
+    events.map(async (ev) => ({
+      ...ev,
+      imagePrincipalURLSigned: ev.imagePrincipalKey
+        ? await getSignedUrlForFile(ev.imagePrincipalKey)
+        : null,
+      imageBannerURLSigned: ev.imageBannerKey
+        ? await getSignedUrlForFile(ev.imageBannerKey)
+        : null,
+    }))
+  );
 }
+
+
+
+
+
 
 export async function listEventInfoRepo(eventId) {
   const event = await prisma.event.findUnique({

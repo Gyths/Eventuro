@@ -123,7 +123,8 @@ export default function CrearEventoCards() {
   const handlePrev = () => setCurrent((c) => Math.max(0, c - 1));
   const isActive = (i) => current === i;
   const { user } = useAuth();
-
+  console.log(user.organizer.organizerId);
+  
   // Paso 2 — Ubicación (estado en el padre)
   const [location, setLocation] = useState({
     inPerson: null,
@@ -1049,6 +1050,7 @@ export default function CrearEventoCards() {
     }
   };
 
+  
   const [posting, setPosting] = useState(false);
 
   return (
@@ -1221,5 +1223,6 @@ export default function CrearEventoCards() {
         idOrganizer={user?.organizer?.organizerId}
       />
     </section>
+    
   );
 }

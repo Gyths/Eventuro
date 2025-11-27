@@ -201,7 +201,8 @@ export default function MisOrdenes() {
       </div>
     );
   }
-
+ 
+  
   return (
     <div className="min-h-screen bg-gray-50 pb-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">
@@ -215,6 +216,7 @@ export default function MisOrdenes() {
               <div className="rounded-2xl bg-white p-6 text-gray-500 text-center">Aún no tienes tickets.</div>
             )}
             {eventsTree.map((ev) => (
+              
               <button
                 key={ev.eventId}
                 onClick={() => setSelectedEventId(ev.eventId)}
@@ -224,6 +226,7 @@ export default function MisOrdenes() {
                 ].join(" ")}
               >
                 <img src={ev.image} alt={ev.title} className="h-20 sm:h-24 w-full rounded-lg object-cover mb-2" />
+                {console.log("IMAGEN:", ev.image)}
                 <h2 className="text-sm font-semibold text-gray-900 leading-tight">{ev.title}</h2>
                 <p className="text-[11px] text-gray-500">
                   {ev.dates.length} {ev.dates.length === 1 ? "fecha" : "fechas"}

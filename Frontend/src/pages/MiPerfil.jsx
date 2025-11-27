@@ -53,7 +53,7 @@ export default function MiPerfil() {
         headers: { Authorization: `Bearer ${token}` },
         data: { name: firstName, lastName, phone, email },
       });
-      login({ token, user: updated });
+      //login({ token, user: updated });
       setEditMode(false);
       setMsg({ type: "success", text: "Perfil actualizado correctamente." });
     } catch (err) {

@@ -43,6 +43,8 @@ import MiPerfil from "./pages/MiPerfil.jsx";
 
 import LibroReclamos from "./pages/LibroReclamos.jsx";
 import MisReclamos from "./pages/MisReclamos.jsx";
+import MisEventos from "./pages/MisEventos.jsx";
+import EventoDetalleOrganizador from "./pages/EventoDetalleOrganizador.jsx";
 
 function App() {
   return (
@@ -59,6 +61,13 @@ function App() {
           <Route
             path="/solicitudes-reembolso"
             element={<SolicitudesReembolso />}
+          />
+          <Route path="/misEventos" element={<MisEventos />} />
+
+            
+          <Route
+            path="/organizador/eventos/:eventId"
+              element={<EventoDetalleOrganizador />}
           />
           {/*<Route> se comenta para evitar que la pagina dentro de ella esté restringida a una sesión autenticada*/}
           <Route element={<ProtectedRoute />}></Route>

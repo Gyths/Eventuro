@@ -299,7 +299,7 @@ export default function TopBarRoles({ filters, setFilters }) {
             <Linker
               label="Mis Eventos"
               icon="calendar-days"
-              to="/my-events"
+              to="/misEventos"
               activeMatch="/my-events"
             />
           </div>
