@@ -8,6 +8,8 @@ import {
   eventDetails,
   listEventsByOrganizerRepo,
   listEventstoApproveRepo,
+  listSalesSummaryByOrganizer,
+  getAttendeesByEventAndOrganizer,
 } from "../repositories/event.repo.js";
 
 export async function createEventSvc(userId, input) {
@@ -49,4 +51,18 @@ export async function _listEventsByOrganizer(idOrganizer) {
 
 export async function listEventstoApproveSvc({ page = 1, pageSize = 10 }) {
   return listEventstoApproveRepo({ page, pageSize });
+}
+
+export async function getSalesSummarySvc(organizerId) {
+  return await listSalesSummaryByOrganizer(organizerId);
+}
+
+export async function getAttendeesSvc(eventId, organizerId) {
+  if (!eventId) throw new Error("eventId requerido.");
+  if (!organizerId) throw new Error("organizerId requerido.");
+
+  return await getAttendeesByEventAndOrganizer({
+    eventId: BigInt(eventId),
+    organizerId: BigInt(organizerId),
+  });
 }
