@@ -974,6 +974,66 @@ export default function CrearEventoCards() {
           }
         }
       }
+
+
+      // Validar seasons completos
+      if (!salesSeasons?.seasons || salesSeasons.seasons.length < 1) {
+        newErrors.salesSeasons = "Debes agregar al menos una temporada de venta.";
+      } else {
+        // Validar que cada season tenga todos los campos
+        const invalidSeason = salesSeasons.seasons.find((s) =>
+          !s.name.trim() ||
+          !s.percentage.trim() ||
+          !s.startDate.trim() ||
+          !s.endDate.trim() ||
+          !s.ticketLimit.trim()
+        );
+
+        if (invalidSeason) {
+          newErrors.salesSeasons =
+            "Todos los campos de cada temporada deben estar completos.";
+        }
+      }
+
+
+      // Validar que endDate > startDate (solo si no hubo errores previos)
+      if (!newErrors.salesSeasons) {
+        for (const s of salesSeasons.seasons) {
+          const start = new Date(s.startDate);
+          const end = new Date(s.endDate);
+
+          if (end <= start) {
+            newErrors.salesSeasons = `La fecha FIN de la temporada "${s.name || "sin nombre"}" debe ser mayor que su fecha INICIO.`;
+            break;
+          }
+        }
+      }
+
+
+      // Validar que las temporadas NO se crucen entre sí
+      if (!newErrors.salesSeasons) {  
+        // Solo validar cruces si no hay otros errores previos en seasons
+        for (let i = 0; i < salesSeasons.seasons.length; i++) {
+          const a = salesSeasons.seasons[i];
+          const aStart = new Date(a.startDate);
+          const aEnd = new Date(a.endDate);
+
+          for (let j = i + 1; j < salesSeasons.seasons.length; j++) {
+            const b = salesSeasons.seasons[j];
+            const bStart = new Date(b.startDate);
+            const bEnd = new Date(b.endDate);
+
+            if (aStart <= bEnd && bStart <= aEnd) {
+              newErrors.salesSeasons =
+                "Los periodos de las temporadas no pueden cruzarse entre sí.";
+              break; // No necesitamos validar más
+            }
+          }
+
+          if (newErrors.salesSeasons) break;
+        }
+      }
+
     }
 
     setErrors(newErrors);

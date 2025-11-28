@@ -9,6 +9,8 @@ import {
   getEventDetails,
   listEventsByOrganizer,
   listEventstoApprove,
+  getSalesSummaryCtrl,
+  getAttendeesByEventCtrl,
 } from "../controllers/event.controller.js";
 import { verifyToken } from "../middlewares/ensureAuth.js";
 import { attachUserContext } from "../middlewares/ensureAuth.js";
@@ -45,6 +47,8 @@ router.put(
 );
 router.get("/:id/details", getEventDetails);
 router.get("/events-by-organizer/:idOrganizer", listEventsByOrganizer);
+router.get("/sales-summary/:organizerId", getSalesSummaryCtrl);
+router.get("/:eventId/attendanceEvent/organizer/:organizerId", getAttendeesByEventCtrl);
 router.get(
   "/to-approve",
   verifyToken,
