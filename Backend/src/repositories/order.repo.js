@@ -378,9 +378,9 @@ export async function createOrderRepo(input) {
 
           if (newTotal > phase.ticketLimit) {
             const remaining = phase.ticketLimit - phase.quantityTicketsSold;
-
+            let ticketUserCanBought = quantityBoughtNow + remaining;
             let err = new Error(
-              `La fase de venta solo tiene ${remaining} entradas disponibles. Puedes esperar a una siguiente fase o comprar la entradas restantes.`
+              `La fase de venta solo tiene ${ticketUserCanBought} entradas disponibles. Puedes esperar a una siguiente fase o comprar la entradas restantes.`
             );
             err.code = 8;
             throw err;
@@ -431,6 +431,7 @@ export async function createOrderRepo(input) {
 
       //Total de la orden
       totalAmount += finalPrice;
+      quantityBoughtNow += quantity;
     }
 
     // Actualizar total y estado de la orden
@@ -743,4 +744,107 @@ export async function markReminderSent(orderId) {
     where: { orderId },
     data: { reminderSentAt: new Date() },
   });
+}
+
+// Módulo para obtener analíticas de compras por eventos de un organizador
+export async function getPurchaseAnalyticsByOrganizer(organizerId) {
+  // 1. Obtener eventos del organizador
+  const events = await prisma.event.findMany({
+    where: { organizerId },
+    select: { eventId: true },
+  });
+
+  if (events.length === 0) {
+    return {
+      hours: [],
+      months: [],
+      weekdays: [],
+      topHour: null,
+      topMonth: null,
+      topWeekday: null,
+    };
+  }
+
+  const eventIds = events.map((e) => e.eventId);
+
+  // 2. Obtener órdenes relacionadas a esos eventos
+  const orders = await prisma.order.groupBy({
+    by: ["createdAt"],
+    _count: { orderId: true },
+    where: {
+      items: { some: { eventId: { in: eventIds } } },
+      status: { in: ["PAID", "PENDING_PAYMENT", "CREATED"] },
+    },
+  });
+
+  // Estructuras para agrupar
+  const hours = Array.from({ length: 24 }, () => 0); // 0–23
+  const months = Array.from({ length: 12 }, () => 0); // 0=Enero, 11=Diciembre
+  const weekdays = Array.from({ length: 7 }, () => 0); // 0=Domingo, 6=Sábado
+
+  // 3. Agrupación
+  orders.forEach((o) => {
+    const date = new Date(o.createdAt);
+    const count = o._count.orderId;
+
+    const hour = date.getHours();
+    const month = date.getMonth();
+    const weekday = date.getDay();
+
+    hours[hour] += count;
+    months[month] += count;
+    weekdays[weekday] += count;
+  });
+
+  // 4. Cálculos: máximos
+  const topHourIndex = hours.indexOf(Math.max(...hours));
+  const topMonthIndex = months.indexOf(Math.max(...months));
+  const topWeekdayIndex = weekdays.indexOf(Math.max(...weekdays));
+
+  const monthNames = [
+    "Enero",
+    "Febrero",
+    "Marzo",
+    "Abril",
+    "Mayo",
+    "Junio",
+    "Julio",
+    "Agosto",
+    "Setiembre",
+    "Octubre",
+    "Noviembre",
+    "Diciembre",
+  ];
+
+  const weekdayNames = [
+    "Domingo",
+    "Lunes",
+    "Martes",
+    "Miércoles",
+    "Jueves",
+    "Viernes",
+    "Sábado",
+  ];
+
+  return {
+    hours: hours.map((count, hour) => ({ hour, count })),
+    months: months.map((count, month) => ({ month: monthNames[month], count })),
+    weekdays: weekdays.map((count, dow) => ({
+      weekday: weekdayNames[dow],
+      count,
+    })),
+
+    topHour: {
+      hour: topHourIndex,
+      count: hours[topHourIndex],
+    },
+    topMonth: {
+      month: monthNames[topMonthIndex],
+      count: months[topMonthIndex],
+    },
+    topWeekday: {
+      weekday: weekdayNames[topWeekdayIndex],
+      count: weekdays[topWeekdayIndex],
+    },
+  };
 }

@@ -7,6 +7,8 @@ import { setEventStatusSvc } from "../services/event.service.js";
 import { _getEventDetails } from "../services/event.service.js";
 import { _listEventsByOrganizer } from "../services/event.service.js";
 import { listEventstoApproveSvc } from "../services/event.service.js";
+import { getSalesSummarySvc } from "../services/event.service.js";
+import { getAttendeesSvc } from "../services/event.service.js";
 import { toJSONSafe } from "../utils/serialize.js";
 
 import {
@@ -185,5 +187,34 @@ export async function listEventstoApprove(req, res, next) {
     return res.status(200).json(toJSONSafe(data));
   } catch (err) {
     return next(err);
+  }
+}
+
+export async function getSalesSummaryCtrl(req, res) {
+  try {
+    const organizerId = BigInt(req.params.organizerId);
+
+    const data = await getSalesSummarySvc(organizerId);
+    
+    return res.status(200).json(toJSONSafe(data));
+  } catch (err) {
+    console.error("Error en getSalesSummary:", err);
+    return res.status(400).json({ error: err.message });
+  }
+}
+
+
+export async function getAttendeesByEventCtrl(req, res) {
+  try {
+    const { eventId, organizerId } = req.params;
+
+    const data = await getAttendeesSvc(eventId, organizerId);
+
+    return res.status(200).json(toJSONSafe(data));
+  } catch (err) {
+    console.error("Error en getAttendeesByEventCtrl:", err);
+    return res.status(400).json({
+      error: err.message,
+    });
   }
 }

@@ -1,6 +1,7 @@
 import { createOrderRepo } from "../repositories/order.repo.js";
 import { cancelOrderRepo } from "../repositories/order.repo.js";
 import { findByUserId } from "../repositories/order.repo.js";
+import { getPurchaseAnalyticsByOrganizer } from "../repositories/order.repo.js";
 
 export async function createOrderSvc(input, ctx = {}) {
   if (!input || !Array.isArray(input.items) || input.items.length === 0) {
@@ -30,3 +31,11 @@ export async function cancelOrderSvc(orderId) {
 export const getOrdersByUser = async (userId) => {
   return await findByUserId(userId);
 };
+
+export async function getPurchaseAnalyticsSvc(organizerId) {
+  if (!organizerId) {
+    throw new Error("organizerId requerido.");
+  }
+
+  return await getPurchaseAnalyticsByOrganizer(organizerId);
+}
