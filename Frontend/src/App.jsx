@@ -27,6 +27,7 @@ import OrganizerRoute from "./routes/OrganizerRoute";
 import MyCalendar from "./pages/MyCalendar.jsx";
 import TicketSelection from "./pages/EventInformation.jsx";
 import SolicitudesReembolso from "./pages/SolicitudesReembolso.jsx";
+import VentasPorZona from "./pages/VentasPorZona";
 
 import AdminRoute from "./routes/AdminRoute";
 
@@ -69,6 +70,7 @@ function App() {
             path="/organizador/eventos/:eventId"
               element={<EventoDetalleOrganizador />}
           />
+          <Route path="/ventas-zona" element={<VentasPorZona />} />
           {/*<Route> se comenta para evitar que la pagina dentro de ella esté restringida a una sesión autenticada*/}
           <Route element={<ProtectedRoute />}></Route>
           <Route path="/reporteEventos" element={<ReporteEventos />} />

@@ -6,6 +6,7 @@ import { skip } from "../generated/prisma/runtime/library.js";
 import fs from "fs";
 import path from "path";
 import { withAudit } from "../utils/audit.util.js";
+import { title } from "process";
 
 export async function createEventRepo(userId, input) {
   console.log(input.ticketLimitPerUser);
@@ -167,6 +168,7 @@ export async function createEventRepo(userId, input) {
         startAt: new Date(d.startAt),
         endAt: new Date(d.endAt),
         status: d.status ?? "A",
+        initialQty: d.availableQty ? Number(d.availableQty) : null,
         availableQty: d.availableQty ? Number(d.availableQty) : null,
         appliesTo: d.appliesTo ?? "ALL",
       }));
@@ -886,4 +888,145 @@ export async function listEventstoApproveRepo({ page = 1, pageSize = 10 }) {
     totalPages: Math.ceil(total / take),
     items: enriched,
   };
+}
+
+export async function listSalesSummaryByOrganizer(organizerId) {
+  if (!organizerId) {
+    throw new Error("organizerId requerido");
+  }
+
+  // 1. Obtener todos los eventos del organizador
+  const events = await prisma.event.findMany({
+    where: { organizerId: BigInt(organizerId) },
+    select: {
+      eventId: true,
+      title: true,
+      dates: {
+        select: {
+          eventDateId: true,
+          startAt: true,
+          endAt: true,
+          zoneDates: {
+            select: {
+              eventDateZoneId: true,
+              name: true,
+              kind: true,
+              currency: true,
+              capacity: true,
+              basePrice: true,
+              Ticket: {
+                select: {
+                  ticketId: true,
+                  pricePaid: true, 
+                  status: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  // 2. Transformación para el frontend
+  const result = events.map((ev) => ({
+    eventId: ev.eventId,
+    eventName: ev.title,
+    funciones: ev.dates.map((fd) => ({
+      eventDateId: fd.eventDateId,
+      inicio: fd.startAt,
+      fin: fd.endAt,
+      zonas: fd.zoneDates.map((zone) => {
+        const tickets = zone.Ticket || [];
+
+        const ticketsVendidos = tickets.length;
+
+        const totalRecaudado = tickets.reduce(
+          (acc, t) => acc + Number(t.pricePaid || 0),
+          0
+        );
+
+        return {
+          zoneId: zone.eventDateZoneId,
+          zoneName: zone.name,
+          kind: zone.kind,
+          currency: zone.currency,
+          capacidadMaxima: zone.capacity,
+          basePrice: Number(zone.basePrice),
+          ticketsVendidos,
+          totalRecaudado,
+        };
+      }),
+    })),
+  }));
+
+  return result;
+}
+
+export async function getAttendeesByEventAndOrganizer(input) {
+  const { eventId, organizerId } = input;
+
+  // 1️ Validar que el evento exista y sea del organizador
+  const event = await prisma.event.findFirst({
+    where: {
+      eventId: BigInt(eventId),
+      organizerId: BigInt(organizerId),
+    },
+    select: { eventId: true },
+  });
+
+  if (!event) {
+    throw new Error("El evento no existe o no pertenece a este organizador.");
+  }
+
+  // 2️ Obtener fechas del evento, incluyendo los tickets
+  const eventDates = await prisma.eventDate.findMany({
+    where: {
+      eventId: BigInt(eventId),
+    },
+    select: {
+      eventDateId: true,
+      startAt: true,
+      endAt: true,
+      Ticket: {
+        select: {
+          ticketId: true,
+          attendeeName: true,
+          attendeeDni: true,
+          status: true,
+          seat: {
+            select: {
+              rowNumber: true,
+              colNumber: true,
+            },
+          },
+          zone: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: { startAt: "asc" },
+  });
+
+  // 3️ Transformar el formato a algo más limpio y directo
+  return eventDates.map((date) => ({
+    eventDateId: date.eventDateId,
+    startAt: date.startAt,
+    endAt: date.endAt,
+    attendees: date.Ticket.map((ticket) => ({
+      ticketId: ticket.ticketId,
+      attendeeName: ticket.attendeeName,
+      attendeeDni: ticket.attendeeDni,
+      zoneName: ticket.zone?.name ?? null,
+      seat: ticket.seat
+        ? {
+            row: ticket.seat.rowNumber,
+            col: ticket.seat.colNumber,
+          }
+        : null,
+    })),
+  }));
 }
