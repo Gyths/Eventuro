@@ -39,6 +39,7 @@ export default function ShoppingCart({
         {/*Acá se muestran los tickets a comprar*/}
         <div className="flex flex-col h-auto gap-4">
           {event.shoppingCart != null &&
+            event.shoppingCart.itemsByZone &&
             Object.entries(event.shoppingCart.itemsByZone).map(
               ([zoneName, zone], index) => {
                 if (zone.quantity && zone.price) {

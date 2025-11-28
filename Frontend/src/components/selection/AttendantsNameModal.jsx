@@ -19,11 +19,32 @@ export default function AttendantsNameModal({
   const [state, setState] = React.useState({ name: "", document: "" });
   const [showAlertMessage, setShowAlertMessage] = React.useState(false);
   const [isButtonLoading, setIsButtonLoading] = React.useState(false);
+  const [errors, setErrors] = React.useState({});
   const [errorCode, setErrorCode] = React.useState(false);
   const { user } = useAuth();
   const { event, setEvent } = useEvent();
   const { order, setOrder } = useOrder();
   const navigate = useNavigate();
+
+  function validateAttendees() {
+    const newErrors = {};
+
+    shoppingCart.itemsByAttendant.forEach((item, index) => {
+      const name = state["name" + index];
+      const dni = state["document" + index];
+
+      if (!name || name.trim().length < 3) {
+        newErrors["name" + index] = "Ingrese un nombre válido.";
+      }
+
+      if (!dni || dni.length !== 8) {
+        newErrors["document" + index] = "El DNI debe tener 8 dígitos.";
+      }
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0; // true si no hay errores
+  }
 
   // Función para manejar enviar la orden a la bd
   const handleContinue = async () => {
@@ -33,6 +54,18 @@ export default function AttendantsNameModal({
     orderData.buyerUserId = user.userId;
     orderData.currency = "PEN";
     orderData.items = [];
+
+    // Crear arreglo de asistentes
+    const attendees = shoppingCart.itemsByAttendant.map((item, index) => ({
+      eventDateZoneId: item.zoneId,
+      eventDateZoneAllocationId: item.allocationId || null,
+      name: state["name" + index] || "",
+      dni: state["document" + index] || "",
+    }));
+
+    if (!validateAttendees()) {
+      return;
+    }
 
     shoppingCart.itemsByAttendant.map((item) => {
       orderData.items.push({
@@ -54,8 +87,9 @@ export default function AttendantsNameModal({
       console.log(response);
       setOrder({
         ...response,
+        attendees,
       });
-
+      console.log(attendees);
       let shoppingCart = {};
 
       response.items.forEach((item) => {
@@ -181,7 +215,13 @@ export default function AttendantsNameModal({
                     onChange={handleNameChange}
                     placeholder="Nombre completo"
                     className="flex bg-gray-50 rounded-xl py-1.5 px-2.5 w-full ring hover:bg-gray-100 ring-gray-300 focus:outline-0 focus:bg-gray-200/60 transition-all"
-                  ></input>
+                  />
+
+                  {errors["name" + itemIndex] && (
+                    <span className="text-red-500 text-sm">
+                      {errors["name" + itemIndex]}
+                    </span>
+                  )}
                   <label className="inline-block w-full text-gray-600">
                     Ingrese el número de documento del asistente
                   </label>
@@ -191,7 +231,13 @@ export default function AttendantsNameModal({
                     onChange={handleDocumentChange}
                     placeholder="Número de documento"
                     className="flex bg-gray-50 rounded-xl py-1.5 px-2.5 w-full ring hover:bg-gray-100 ring-gray-300 focus:outline-0 focus:bg-gray-200 transition-all"
-                  ></input>
+                  />
+
+                  {errors["document" + itemIndex] && (
+                    <span className="text-red-500 text-sm">
+                      {errors["document" + itemIndex]}
+                    </span>
+                  )}
                 </div>
               );
             })

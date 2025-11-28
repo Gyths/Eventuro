@@ -92,6 +92,7 @@ export default function YapePlinPaymentModal({ onClose, onSuccess, onFail }) {
       orderId: order.orderId,
       buyerUserId: parseInt(user.userId),
       discountIds: discountIds,
+      attendees: order.attendees,
     };
 
     try {

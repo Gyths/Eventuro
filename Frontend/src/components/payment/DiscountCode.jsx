@@ -31,9 +31,27 @@ export default function DiscountCode() {
 
   // Remover un descuento existente
   const handleRemove = (discountId) => {
-    setAppliedCodes(
-      appliedCodes.filter((code) => code.discountId !== discountId)
+    setAppliedCodes((prev) =>
+      prev.filter((code) => code.discountId !== discountId)
     );
+
+    // Limpia los descuentos aplicados antes del siguiente useEffect
+    setEvent((prev) => {
+      const newCart = structuredClone(prev.shoppingCart.itemsByZone);
+
+      Object.values(newCart).forEach((zone) => {
+        delete zone.discountsApplied;
+        delete zone.discountedTotalZonePrice;
+      });
+
+      return {
+        ...prev,
+        shoppingCart: {
+          ...prev.shoppingCart,
+          itemsByZone: newCart,
+        },
+      };
+    });
   };
 
   // Aplicar un nuevo descuento validado desde el backend
@@ -128,52 +146,44 @@ export default function DiscountCode() {
   useEffect(() => {
     if (!order?.subtotal || !event?.shoppingCart) return;
 
-    const updatedCart = structuredClone(event.shoppingCart.itemsByZone);
+    const baseCart = structuredClone(event.shoppingCart.itemsByZone);
+    let newItemsByZone = structuredClone(baseCart);
 
-    Object.keys(updatedCart).forEach((zoneName) => {
-      const zoneCart = updatedCart[zoneName];
-      if (!zoneCart) return;
-
-      delete zoneCart.discountsApplied;
-      delete zoneCart.discount;
-      delete zoneCart.discountedQty;
-    });
-
-    // Si no hay descuentos activos, limpiar y restablecer totales
+    // Si no hay descuentos -> restaurar totales
     if (appliedCodes.length === 0) {
-      const restoredTotal = Object.values(updatedCart).reduce((sum, zone) => {
-        if (typeof zone.totalZonePrice === "number")
-          return sum + zone.totalZonePrice;
-        return sum;
+      const restoredTotal = Object.values(baseCart).reduce((sum, zone) => {
+        return sum + (zone.totalZonePrice || 0);
       }, 0);
-      const newShoppingCart = event.shoppingCart;
-      newShoppingCart.itemsByZone = updatedCart;
-      setEvent((prev) => ({ ...prev, shoppingCart: updatedCart }));
-      setOrder((prev) => ({ ...prev, totalAmount: order.subtotal }));
+
+      setEvent((prev) => ({
+        ...prev,
+        shoppingCart: {
+          ...prev.shoppingCart,
+          itemsByZone: baseCart,
+        },
+      }));
+
+      setOrder((prev) => ({
+        ...prev,
+        totalAmount: order.subtotal,
+      }));
+
       return;
     }
 
-    // Si hay descuentos activos, reaplicar descuentos
-    Object.entries(updatedCart).forEach(([zoneName, zoneCart]) => {
-      if (!zoneCart || typeof zoneCart !== "object") return;
+    // Aplicar descuentos
+    Object.entries(newItemsByZone).forEach(([zoneName, zoneCart]) => {
+      const basePrice = zoneCart.totalZonePrice || 0;
 
-      const basePrice =
-        typeof zoneCart.totalZonePrice === "number"
-          ? zoneCart.totalZonePrice
-          : 0;
-
-      // Guardar historial de descuentos aplicados
       let totalDiscount = 0;
       let discountsApplied = [];
 
       appliedCodes.forEach((code) => {
-        const eligibleZone = code.eligibleZones.find(
-          (z) => z.zone === zoneName
-        );
-        if (!eligibleZone) return;
+        const eligible = code.eligibleZones.find((z) => z.zone === zoneName);
+        if (!eligible) return;
 
-        const percentage = code.value / 100;
-        const discountAmount = basePrice * percentage;
+        const discountAmount = basePrice * (code.value / 100);
+        totalDiscount += discountAmount;
 
         discountsApplied.push({
           discountId: code.discountId,
@@ -181,26 +191,28 @@ export default function DiscountCode() {
           percentage: code.value,
           discountAmount,
         });
-
-        totalDiscount += discountAmount;
       });
 
-      // Guardar nuevo total con descuentos
       zoneCart.discountedTotalZonePrice = basePrice - totalDiscount;
       zoneCart.discountsApplied = discountsApplied;
     });
 
-    // Recalcular total general final
-    const newTotal = Object.values(updatedCart).reduce((sum, zone) => {
-      const price =
-        typeof zone.discountedTotalZonePrice === "number"
-          ? zone.discountedTotalZonePrice
-          : zone.totalZonePrice;
-      return sum + price;
+    const finalTotal = Object.values(newItemsByZone).reduce((sum, zone) => {
+      return sum + (zone.discountedTotalZonePrice ?? zone.totalZonePrice ?? 0);
     }, 0);
 
-    setEvent((prev) => ({ ...prev, shoppingCart: updatedCart }));
-    setOrder((prev) => ({ ...prev, totalAmount: newTotal }));
+    setEvent((prev) => ({
+      ...prev,
+      shoppingCart: {
+        ...prev.shoppingCart,
+        itemsByZone: newItemsByZone,
+      },
+    }));
+
+    setOrder((prev) => ({
+      ...prev,
+      totalAmount: finalTotal,
+    }));
   }, [appliedCodes, order?.subtotal]);
 
   return (

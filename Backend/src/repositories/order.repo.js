@@ -22,6 +22,7 @@ export async function createOrderRepo(input) {
     const createdOrderItems = [];
     const createdTickets = [];
     const holdExpiration = new Date(Date.now() + 5 * 60 * 1000); // 5 minutos de tolerancia para realizar la compra
+    let quantityBoughtNow = 0;
 
     // Recorrido de items de la orden (cada item puede ser zona general o numerada, con/sin allocation)
     for (const item of input.items) {
@@ -443,6 +444,7 @@ export async function createOrderRepo(input) {
         status: "PENDING_PAYMENT",
       },
     });
+    console.log(createdOrderItems);
     //Retornamos la orden creada con sus items
     return {
       orderId: Number(order.orderId),
