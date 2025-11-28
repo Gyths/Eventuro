@@ -22,7 +22,8 @@ export async function createOrderRepo(input) {
     const createdOrderItems = [];
     const createdTickets = [];
     const holdExpiration = new Date(Date.now() + 5 * 60 * 1000); // 5 minutos de tolerancia para realizar la compra
-    
+    let quantityBoughtNow=0;
+
     // Recorrido de items de la orden (cada item puede ser zona general o numerada, con/sin allocation)
     for (const item of input.items) {
       // Validar que el evento exista y obtener el organizador y su userId
@@ -385,9 +386,9 @@ export async function createOrderRepo(input) {
 
           if (newTotal > phase.ticketLimit) {
             const remaining = phase.ticketLimit - phase.quantityTicketsSold;
-
+            let ticketUserCanBought=quantityBoughtNow + remaining;
             let err = new Error(
-              `La fase de venta solo tiene ${remaining} entradas disponibles. Puedes esperar a una siguiente fase o comprar la entradas restantes.`
+              `La fase de venta solo tiene ${ticketUserCanBought} entradas disponibles. Puedes esperar a una siguiente fase o comprar la entradas restantes.`
             );
             err.code = 8;
             throw err;
@@ -438,6 +439,7 @@ export async function createOrderRepo(input) {
 
       //Total de la orden
       totalAmount += finalPrice;
+      quantityBoughtNow+=quantity;
     }
 
     // Actualizar total y estado de la orden

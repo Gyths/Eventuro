@@ -2,7 +2,7 @@ import { prisma } from "../utils/prisma.js";
 import { Prisma } from "../generated/prisma/index.js";
 
 export async function createTicketRepo(input) {
-  const { orderId, discountIds = [] } = input;
+  const { orderId, discountIds = [], attendees = [] } = input;
 
   return prisma.$transaction(async (tx) => {
     const now = new Date();
@@ -72,6 +72,32 @@ export async function createTicketRepo(input) {
 
     const createdTickets = [];
     let newOrderTotal = 0;
+    // Clonar la lista de attendees para no mutar input
+    const attendeesPool = attendees.map(a => ({
+      ...a,
+      eventDateZoneId: BigInt(a.eventDateZoneId),
+      eventDateZoneAllocationId: a.eventDateZoneAllocationId != null
+        ? BigInt(a.eventDateZoneAllocationId)
+        : null,
+      _used: false
+    }));
+
+    function pickNextAttendee(eventDateZoneId, allocationId) {
+      for (const att of attendeesPool) {
+        if (att._used) continue;
+
+        // match estricto
+        const match =
+          att.eventDateZoneId === eventDateZoneId &&
+          ((att.eventDateZoneAllocationId || null) === (allocationId || null));
+
+        if (match) {
+          att._used = true;   // lo marcamos para no volver a usarlo
+          return att;
+        }
+      }
+      return null; // si no hay más asistentes válidos
+    }
 
     // Recorrer los items de la orden y aplicamos descuentos por item
     for (const item of order.items) {
@@ -200,6 +226,12 @@ export async function createTicketRepo(input) {
           },
         });
 
+        const attendee = pickNextAttendee(eventDateZoneId, eventDateZoneAllocationId);
+
+        if (!attendee) {
+          throw new Error(`No hay asistentes disponibles para el asiento ${seatId}`);
+        }
+
         // Crear ticket
         const ticket = await tx.ticket.create({
           data: {
@@ -212,6 +244,8 @@ export async function createTicketRepo(input) {
             ownerUserId: order.buyerUserId,
             pricePaid: new Prisma.Decimal(pricePerTicket.toFixed(2)),
             currency: "PEN",
+            attendeeName: attendee.name,
+            attendeeDni: attendee.dni,
           },
         });
 
@@ -256,6 +290,11 @@ export async function createTicketRepo(input) {
 
         //Una vez validado que hayan un hold, se crean los tickets
         for (let i = 0; i < Number(quantity); i++) {
+          const attendee = pickNextAttendee(eventDateZoneId, eventDateZoneAllocationId);
+
+          if (!attendee) {
+            throw new Error(`No hay suficientes asistentes para asignar ${quantity} tickets en la zona ${eventDateZoneId}`);
+          }
           const ticket = await tx.ticket.create({
             data: {
               orderItemId,
@@ -266,6 +305,8 @@ export async function createTicketRepo(input) {
               ownerUserId: order.buyerUserId,
               pricePaid: new Prisma.Decimal(pricePerTicket.toFixed(2)),
               currency: "PEN",
+              attendeeName: attendee.name,
+              attendeeDni: attendee.dni,
             },
           });
           createdTickets.push(ticket);
@@ -319,6 +360,8 @@ export async function createTicketRepo(input) {
         setCol: t.seat?.col,
         seatId: t.seatId ? Number(t.seatId) : null,
         status: t.status,
+        attendeeName: t.attendeeName,
+        attendeeDni: t.attendeeDni,
       })),
     };
   });
