@@ -541,7 +541,7 @@ export async function listEventsByOrganizerRepo(idOrganizer) {
     },
   });
 
-  // 🔐 Agregamos las URLs firmadas al resultado
+ 
   return Promise.all(
     events.map(async (ev) => ({
       ...ev,
