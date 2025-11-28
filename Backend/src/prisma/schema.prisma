@@ -532,6 +532,8 @@ model Ticket {
   ownerUserId               BigInt?       @db.BigInt
   orderItemId               BigInt        @db.BigInt
   eventId                   BigInt        @db.BigInt
+  attendeeName              String
+  attendeeDni               String
   eventDateId               BigInt        @db.BigInt
   eventDateZoneId           BigInt        @db.BigInt
   eventDateZoneAllocationId BigInt?       @db.BigInt
