@@ -32,6 +32,7 @@ router.post(
   createEvent
 );
 router.get("/list", listEvent);
+router.get("/events-by-organizer/:idOrganizer", listEventsByOrganizer);
 router.get("/:eventId/info", listEventInfo);
 router.get("/:eventId/dates", listEventDateByEventId);
 router.get(
@@ -46,7 +47,7 @@ router.put(
   setEventStatus
 );
 router.get("/:id/details", getEventDetails);
-router.get("/events-by-organizer/:idOrganizer", listEventsByOrganizer);
+
 router.get("/sales-summary/:organizerId", getSalesSummaryCtrl);
 router.get("/:eventId/attendanceEvent/organizer/:organizerId", getAttendeesByEventCtrl);
 router.get(

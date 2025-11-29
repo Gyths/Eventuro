@@ -22,6 +22,7 @@ import Home from "./pages/Home.jsx";
 import { Navigate } from "react-router-dom";
 import AuthCallback from "./pages/AuthCallback";
 import CrearEventoCards from "./pages/CrearEventoCards.jsx";
+import MisEventosCreados from "./pages/MyEvents.jsx";
 import MisTickets from "./pages/MisTickets";
 import OrganizerRoute from "./routes/OrganizerRoute";
 import MyCalendar from "./pages/MyCalendar.jsx";
@@ -56,7 +57,8 @@ function App() {
         <Route path="login" element={<Login />} />
         <Route path="registro" element={<Register />} />
         <Route element={<OrganizerRoute requireApproved={true} />}>
-          <Route path="crearEvento" element={<CrearEventoCards />} />
+          <Route path="my-events" element={<MisEventosCreados />} />
+          <Route path="crearEvento" element={< CrearEventoCards/>} />
           <Route
             path="solicitudes-reembolso"
             element={<SolicitudesReembolso />}

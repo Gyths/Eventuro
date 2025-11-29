@@ -464,19 +464,85 @@ export async function eventDetails(id) {
 }
 
 export async function listEventsByOrganizerRepo(idOrganizer) {
-  return prisma.event.findMany({
-    where: { organizerId: BigInt(idOrganizer) },
+  const events = await prisma.event.findMany({
+    where: {
+      organizerId: BigInt(idOrganizer)
+      
+    },
     select: {
       eventId: true,
       title: true,
       createdAt: true,
+      status: true,
+      imagePrincipalKey: true,
+      imageBannerKey: true,
+      refundPolicyText: true,
+      description: true,
       venue: {
         select: {
           city: true,
+          address: true,
+          capacity: true,
         },
+      },
+      dates: {
+        select: {
+          startAt: true,
+          endAt: true,
+          zoneDates: {
+            select: {
+              name:true,
+              capacity: true,
+              allocations: true, // si quieres mostrar tickets vendidos, se puede procesar
+            },
+          },
+        },
+        orderBy: { startAt: "asc" },
       },
     },
   });
+
+  for (const event of events) {
+    if (event.imagePrincipalKey) {
+      try {
+        event.imagePrincipalURLSigned = await getSignedUrlForFile(
+          event.imagePrincipalKey
+        );
+      } catch {
+        event.imagePrincipalURLSigned = null;
+      }
+    }
+
+    if (event.imageBannerKey) {
+      try {
+        event.imageBannerURLSigned = await getSignedUrlForFile(
+          event.imageBannerKey
+        );
+      } catch {
+        event.imageBannerURLSigned = null;
+      }
+    }
+
+    // calcular vendidas a partir de allocations
+    let sold = 0;
+    if (Array.isArray(event.dates)) {
+      for (const d of event.dates) {
+        if (Array.isArray(d.zoneDates)) {
+          for (const z of d.zoneDates) {
+            if (Array.isArray(z.allocations)) {
+              sold += z.allocations.reduce(
+                (sum, a) => sum + (a.allocatedQuantity || 0),
+                0
+              );
+            }
+          }
+        }
+      }
+    }
+    event.sold = sold;
+  }
+
+  return events;
 }
 
 export async function listEventInfoRepo(eventId) {
