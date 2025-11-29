@@ -11,6 +11,7 @@ import {
   listEventstoApprove,
   getSalesSummaryCtrl,
   getAttendeesByEventCtrl,
+  updateEventDetails,
 } from "../controllers/event.controller.js";
 import { verifyToken } from "../middlewares/ensureAuth.js";
 import { attachUserContext } from "../middlewares/ensureAuth.js";
@@ -46,6 +47,14 @@ router.put(
   requireAdmin,
   setEventStatus
 );
+router.put(
+  "/:id/update-details",
+  verifyToken,
+  attachUserContext,
+  requireAdmin,
+  updateEventDetails
+);
+
 router.get("/:id/details", getEventDetails);
 
 router.get("/sales-summary/:organizerId", getSalesSummaryCtrl);

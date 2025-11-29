@@ -799,6 +799,63 @@ export async function setEventStatusRepo(
   });
 }
 
+export async function updateEventDetailsRepo(userId, eventId, details) {
+  return withAudit(userId, async (tx) => {
+    const eventIdNormalized = BigInt(eventId);
+
+    const dataToUpdate = {
+      title: details.title,
+      description: details.description,
+      refundPolicyText: details.refundPolicyText,
+    };
+
+    // Actualizamos el event
+    const updatedEvent = await tx.event.update({
+      where: { eventId: eventIdNormalized },
+      data: dataToUpdate,
+      select: {
+        eventId: true,
+        title: true,
+        description: true,
+        refundPolicyText: true,
+        dates: {
+          select: {
+            eventDateId: true,
+            startAt: true,
+            endAt: true,
+            zoneDates: {
+              select: {
+                eventDateZoneId: true,
+                name: true,
+                capacity: true,
+                basePrice: true,
+              },
+            },
+          },
+        },
+        venue: { select: { capacity: true } },
+      },
+    });
+
+    // Si viene actualización de precios por zona
+    if (details.zones?.length) {
+      for (let i = 0; i < details.zones.length; i++) {
+        const dateItem = details.zones[i];
+        for (let j = 0; j < (dateItem.zones || []).length; j++) {
+          const zoneItem = dateItem.zones[j];
+          await tx.eventDateZone.update({
+            where: { eventDateZoneId: BigInt(zoneItem.zoneId) },
+            data: { basePrice: Number(zoneItem.price) },
+          });
+        }
+      }
+    }
+
+    return updatedEvent;
+  });
+}
+
+
 export async function listEventstoApproveRepo({ page = 1, pageSize = 10 }) {
   const take = Math.max(1, Math.min(Number(pageSize) || 10, 50));
   const skip = Math.max(0, (Number(page) - 1) * take);
@@ -813,6 +870,7 @@ export async function listEventstoApproveRepo({ page = 1, pageSize = 10 }) {
         eventId: true,
         title: true,
         description: true,
+        refundPolicyText: true,
         imagePrincipalKey: true,
         createdAt: true,
         organizer: {
@@ -820,12 +878,23 @@ export async function listEventstoApproveRepo({ page = 1, pageSize = 10 }) {
             companyName: true,
           },
         },
+        inPerson: true,
+        venue: { select: { capacity: true } }, // Capacidad máxima del recinto
         dates: {
           orderBy: { startAt: "asc" },
           select: {
             eventDateId: true,
             startAt: true,
             endAt: true,
+            zoneDates: {
+              select: {
+                eventDateZoneId: true,
+                name: true,
+                basePrice: true, // Precio base de la zona
+                capacity: true,  // Puedes mostrar si quieres, pero no afecta aforo total
+                currency: true,
+              },
+            },
           },
         },
       },
@@ -833,43 +902,12 @@ export async function listEventstoApproveRepo({ page = 1, pageSize = 10 }) {
     prisma.event.count({ where: { status: "P" } }),
   ]);
 
-  const allDateIds = items.flatMap((ev) => ev.dates.map((d) => d.eventDateId));
-  let sumsByDateId = new Map();
-
-  if (allDateIds.length > 0) {
-    const grouped = await prisma.eventDateZone.groupBy({
-      by: ["eventDateId"],
-      where: { eventDateId: { in: allDateIds } },
-      _sum: { capacity: true },
-    });
-
-    sumsByDateId = new Map(
-      grouped.map((g) => [
-        String(g.eventDateId),
-        {
-          totalTickets: g._sum.capacity ?? 0,
-        },
-      ])
-    );
-  }
-
-  const enriched = items.map((ev) => ({
-    ...ev,
-    dates: ev.dates.map((d) => {
-      const sums = sumsByDateId.get(String(d.eventDateId)) ?? {
-        totalTickets: 0,
-        totalRemaining: 0,
-      };
-      return { ...d, ...sums };
-    }),
-  }));
-
   return {
     page: Number(page),
     pageSize: take,
     total,
     totalPages: Math.ceil(total / take),
-    items: enriched,
+    items,
   };
 }
 

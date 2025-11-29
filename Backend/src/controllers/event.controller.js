@@ -9,6 +9,7 @@ import { _listEventsByOrganizer } from "../services/event.service.js";
 import { listEventstoApproveSvc } from "../services/event.service.js";
 import { getSalesSummarySvc } from "../services/event.service.js";
 import { getAttendeesSvc } from "../services/event.service.js";
+import { updateEventDetailsSvc } from "../services/event.service.js";
 import { toJSONSafe } from "../utils/serialize.js";
 
 import {
@@ -158,6 +159,27 @@ export async function setEventStatus(req, res, next) {
     return next(err);
   }
 }
+
+export async function updateEventDetails(req, res, next) {
+  try {
+    const { id } = req.params;
+    const details = req.body ?? {};
+    const userId = req.auth?.user?.userId ?? null;
+
+    if (!id) {
+      return res.status(400).json({ message: "eventId es requerido" });
+    }
+
+    const data = await updateEventDetailsSvc(userId, id, details);
+    return res.status(200).json(toJSONSafe(data));
+  } catch (err) {
+    if (err?.code === "P2025") {
+      return res.status(404).json({ message: "El evento no existe." });
+    }
+    return next(err);
+  }
+}
+
 
 export async function getEventDetails(req, res) {
   try {
