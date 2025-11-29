@@ -64,7 +64,7 @@ export default function MyEvents() {
         zones: d.zoneDates?.map((z) => ({
           name: z.name,
           capacity: z.capacity,
-          sold: z.allocations?.reduce((sum, a) => sum + (a.allocatedQuantity || 0), 0),
+          sold: z.capacity - z.capacityRemaining, // <-- usa capacityRemaining
         })) || [],
       })) || [],
     }));

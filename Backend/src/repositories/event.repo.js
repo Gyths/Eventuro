@@ -493,7 +493,7 @@ export async function listEventsByOrganizerRepo(idOrganizer) {
             select: {
               name:true,
               capacity: true,
-              allocations: true, // si quieres mostrar tickets vendidos, se puede procesar
+              capacityRemaining: true, // <-- nuevo
             },
           },
         },
@@ -523,23 +523,16 @@ export async function listEventsByOrganizerRepo(idOrganizer) {
       }
     }
 
-    // calcular vendidas a partir de allocations
-    let sold = 0;
-    if (Array.isArray(event.dates)) {
-      for (const d of event.dates) {
-        if (Array.isArray(d.zoneDates)) {
-          for (const z of d.zoneDates) {
-            if (Array.isArray(z.allocations)) {
-              sold += z.allocations.reduce(
-                (sum, a) => sum + (a.allocatedQuantity || 0),
-                0
-              );
-            }
-          }
+
+    for (const d of event.dates) {
+      if (Array.isArray(d.zoneDates)) {
+        for (const z of d.zoneDates) {
+          z.sold = z.capacity - z.capacityRemaining; // <-- nuevo cálculo
         }
       }
     }
-    event.sold = sold;
+
+
   }
 
   return events;
