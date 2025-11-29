@@ -252,12 +252,10 @@ export async function createTicketRepo(input) {
         createdTickets.push(ticket);
 
         //Eliminar cualquier hold asociado al asiento (Falta discutirlo)
-        await tx.hold.deleteMany({
-          where: { seatId: item.seatId },
-          eventDateZoneAllocationId: item.eventDateZoneAllocationId
-            ? BigInt(item.eventDateZoneAllocationId)
-            : null,
+        await tx.hold.delete({
+          where: { holdId: hold.holdId },
         });
+
       } else {
         // 2) Si no tiene seatId → crear quantity tickets sin asiento (zonas generales)
 
@@ -313,15 +311,10 @@ export async function createTicketRepo(input) {
         }
 
         // Borrar hold
-        await tx.hold.deleteMany({
-          where: {
-            eventDateZoneId: item.eventDateZoneId,
-            eventDateZoneAllocationId: item.eventDateZoneAllocationId
-              ? BigInt(item.eventDateZoneAllocationId)
-              : null,
-            buyerUserId: order.buyerUserId,
-          },
+        await tx.hold.delete({
+          where: { holdId: hold.holdId },
         });
+
       }
       newOrderTotal += newFinal;
     }

@@ -15,6 +15,7 @@ import { useAuth } from "../../services/auth/AuthContext";
 import { EventuroApi } from "../../api";
 
 import SeatNumberSelectionModal from "./SeatNumberSelectionModal";
+import AttendantsNameModal from "./AttendantsNameModal";
 import AlertMessage from "../AlertMessage";
 
 import { AnimatePresence } from "framer-motion";
@@ -34,17 +35,11 @@ export default function SelectAllocationModal({
   modal,
   setModal,
   onClose,
+  onContinue,
   onReturn,
 }) {
-  const paymentPage = "/pago";
-  const orderEndpoint = "/orders";
-  const apiMethod = "POST";
-
-  const navigate = useNavigate();
-
   const { event, setEvent } = useEvent();
   const { user } = useAuth();
-  const { order, setOrder } = useOrder();
 
   const [showAlertMessage, setShowAlertMessage] = React.useState(false);
   const [zonesInfo, setZonesInfo] = React.useState([]);
@@ -86,6 +81,7 @@ export default function SelectAllocationModal({
           method: "GET",
         });
         setZonesInfo(response);
+        console.log(response);
 
         const ticketsErrorCode = verifyQuantityError(response);
         if (ticketsErrorCode !== 0) {
@@ -146,10 +142,6 @@ export default function SelectAllocationModal({
           parseInt(zonesInfo[0].user.ticketCount),
         zonesInfo[0]?.remainingSalePhaseQuantity
       );
-    console.log(zonesInfo[0]);
-    console.log(event?.ticketLimitPerUser);
-    console.log(zonesInfo[0].user.ticketCount);
-
     return cap;
   }
 
@@ -188,6 +180,50 @@ export default function SelectAllocationModal({
     setModal("seats");
   };
 
+  function getTotalSelectedTickets() {
+    let total = 0;
+
+    // Entradas sin allocation ni sitio
+    total += notAllocatedGeneralQuantities.reduce(
+      (sum, qty) => sum + Number(qty || 0),
+      0
+    );
+
+    // Entradas sin allocation pero con sitio
+    total += notAllocatedSeatedQuantities.reduce(
+      (sum, seats) => sum + seats.length,
+      0
+    );
+
+    // Entradas con allocation sin sitio
+    allocatedGeneralQuantities.forEach((zone) => {
+      if (zone !== "") {
+        total += zone.reduce((sum, qty) => sum + Number(qty || 0), 0);
+      }
+    });
+
+    // Entradas con allocation + asiento
+    allocatedSeatedQuantities.forEach((zoneSeats) => {
+      total += Object.keys(zoneSeats).length;
+    });
+
+    return total;
+  }
+
+  function verifyCap(subtraction = 0) {
+    const currentTotal = getTotalSelectedTickets() - subtraction;
+    const userRemainingLimit =
+      parseInt(event?.ticketLimitPerUser) -
+      parseInt(zonesInfo[0].user.ticketCount);
+    const phaseRemaining = zonesInfo[0]?.remainingSalePhaseQuantity;
+    const globalCap = Math.min(userRemainingLimit, phaseRemaining);
+    if (currentTotal >= globalCap) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
   // Manejo de suma y resta de entradas con allocation
   const handleAllocatedGeneralSubtraction = (zoneI, allocationI) => {
     const newValues = allocatedGeneralQuantities.map(
@@ -209,31 +245,19 @@ export default function SelectAllocationModal({
       zonesInfo[0]?.zoneDates[zoneI].allocations[allocationI]
         .remainingQuantity || 0
     );
+
+    if (!verifyCap()) return;
+
     const newValues = allocatedGeneralQuantities.map(
       (allocation, zoneIndex) => {
         if (zoneI !== zoneIndex) return allocation;
-        const zone = zonesInfo[0]?.zoneDates[zoneIndex];
-        const totalSelectedInZone = allocation.reduce(
-          (sum, q) => sum + parseInt(q || 0),
-          0
-        );
 
-        const cap = Math.min(
-          parseInt(event?.ticketLimitPerUser) -
-            parseInt(zonesInfo[0].user.ticketCount),
-          zonesInfo[0]?.remainingSalePhaseQuantity,
-          parseInt(zone.capacityRemaining)
-        );
-
-        if (totalSelectedInZone >= cap) {
-          setShowAlertMessage(false);
-          return allocation;
-        }
         return allocation.map((quantity, allocationIndex) => {
           return allocationIndex === allocationI ? quantity + 1 : quantity;
         });
       }
     );
+
     setAllocatedGeneralQuantities(newValues);
   };
 
@@ -308,150 +332,47 @@ export default function SelectAllocationModal({
     }
   }, [allocatedSeatedQuantities, zonesInfo[0]]);
 
-  // Función para manejar enviar la orden a la bd
-  const onContinue = async () => {
-    setShowAlertMessage(false);
+  function handleContinue() {
+    let shoppingCart = {
+      itemsByAttendant: [],
+      itemsByZone: {},
+      aditionalInfo: {},
+    };
 
-    let shoppingCart = {};
-    const orderData = {};
-    orderData.buyerUserId = user.userId;
-    orderData.currency = "PEN";
-    orderData.items = [];
-
-    //Se añaden las entradas sin allocation ni sitio
-    notAllocatedGeneralQuantities.map((quantity, index) => {
-      if (quantity > 0) {
-        orderData.items.push({
-          eventId: event.eventId,
-          eventDateId: eventDateId,
-          eventDateZoneId: zonesInfo[0]?.zoneDates[index].eventDateZoneId,
-          quantity: quantity,
-        });
-      }
-    });
-
-    //Se añaden las entradas sin allocation pero con sitio
-    notAllocatedSeatedQuantities.map((seats, index) => {
-      if (seats.length > 0) {
-        seats.map((seat) => {
-          orderData.items.push({
-            eventId: event.eventId,
-            eventDateId: eventDateId,
-            eventDateZoneId: zonesInfo[0]?.zoneDates[index].eventDateZoneId,
-            quantity: 1,
-            seatId: seat,
+    allocatedGeneralQuantities.map((zoneQuantities, zoneIndex) => {
+      zoneQuantities.map((allocationQuantity, allocationIndex) => {
+        for (let i = 0; i < allocationQuantity; i++) {
+          shoppingCart.itemsByAttendant.push({
+            zoneName: zonesInfo[0].zoneDates[zoneIndex].name,
+            allocationName:
+              zonesInfo[0].zoneDates[zoneIndex].allocations[allocationIndex]
+                .audienceName,
+            //Número utilizado para mostrarse en el ingreso de nombres de asistentes
+            number: i + 1,
+            zoneId: zonesInfo[0].zoneDates[zoneIndex].eventDateZoneId,
+            allocationId:
+              zonesInfo[0].zoneDates[zoneIndex].allocations[allocationIndex]
+                .eventDateZoneAllocationId,
           });
-        });
-      }
-    });
-
-    //Se añaden las entradas con allocation pero sin sitio
-    allocatedGeneralQuantities.map((quantitiesZone, zoneIndex) => {
-      if (quantitiesZone != "") {
-        const zone = zonesInfo[0]?.zoneDates[zoneIndex];
-
-        quantitiesZone.map((quantity, allocationIndex) => {
-          if (quantity > 0) {
-            orderData.items.push({
-              eventId: event.eventId,
-              eventDateId: eventDateId,
-              eventDateZoneId: zone.eventDateZoneId,
-              eventDateZoneAllocationId:
-                zone.allocations[allocationIndex].eventDateZoneAllocationId,
-              quantity: quantity,
-            });
-          }
-        });
-      }
-    });
-
-    //Se añaden las entradas con allocation y con sitio
-    allocatedSeatedQuantities.map((seats, zoneIndex) => {
-      const zone = zonesInfo[0]?.zoneDates[zoneIndex];
-
-      for (const seatId in seats) {
-        orderData.items.push({
-          eventId: event.eventId,
-          eventDateId: eventDateId,
-          eventDateZoneId: zone.eventDateZoneId,
-          eventDateZoneAllocationId:
-            zone.allocations[seats[seatId]].eventDateZoneAllocationId,
-          quantity: 1,
-          seatId: seatId,
-        });
-      }
-    });
-
-    try {
-      setIsButtonLoading(true);
-      const response = await EventuroApi({
-        endpoint: orderEndpoint,
-        method: apiMethod,
-        data: orderData,
-      });
-      setOrder({
-        ...response,
-      });
-
-      let shoppingCart = {};
-
-      response.items.forEach((item) => {
-        const { zoneName, allocationName, quantity, unitPrice, finalPrice } =
-          item;
-
-        if (!shoppingCart[zoneName]) {
-          shoppingCart[zoneName] = {
-            totalQuantity: 0,
-            totalZonePrice: 0,
-          };
         }
-
-        if (!shoppingCart[zoneName][allocationName]) {
-          shoppingCart[zoneName][allocationName] = [];
-        }
-
-        shoppingCart[zoneName][allocationName].push({
-          quantity,
-          unitPrice,
-        });
-
-        shoppingCart[zoneName].totalQuantity += Number(quantity);
-        shoppingCart[zoneName].totalZonePrice += Number(
-          finalPrice ?? unitPrice * quantity
-        );
       });
-
-      // Actualizar el evento con el carrito completo
-      setEvent({
-        ...event,
-        selectedDate: zonesInfo[0]?.date[0]?.startDate,
-        selectedSchedule:
-          zonesInfo[0]?.date[0]?.startHour +
-          " - " +
-          zonesInfo[0]?.date[0]?.endHour,
-        shoppingCart,
-      });
-
-      await new Promise((res) => setTimeout(res, 300));
-      navigate(paymentPage);
-    } catch (err) {
-      await new Promise((res) => setTimeout(res, 300));
-      if (err.code === 1) navigate("/login");
-      if (err.code === 0) {
-        //onClose();
-        Swal.fire({
-          icon: "error",
-          title: "¡Lo sentimos!",
-          text: "Ocurrió un error inesperado",
-        });
-      }
-
-      setErrorCode(err.code || 0);
-      setShowAlertMessage(true);
-    } finally {
-      setIsButtonLoading(false);
-    }
-  };
+    });
+    console.log(zonesInfo[0]?.date[0]?.startDate);
+    console.log(
+      zonesInfo[0]?.date[0]?.startHour + " - " + zonesInfo[0]?.date[0]?.endHour
+    );
+    console.log(shoppingCart);
+    setEvent({
+      ...event,
+      selectedDate: zonesInfo[0]?.date[0]?.startDate,
+      selectedSchedule:
+        zonesInfo[0]?.date[0]?.startHour +
+        " - " +
+        zonesInfo[0]?.date[0]?.endHour,
+      shoppingCart,
+    });
+    onContinue();
+  }
 
   return (
     <>
@@ -736,7 +657,7 @@ export default function SelectAllocationModal({
                 </div>
                 <div className="flex flex-col">
                   <button
-                    onClick={onContinue}
+                    onClick={handleContinue}
                     className={`inline-block border-0 w-auto rounded-lg text-white px-2.5 py-1 ${
                       !isButtonLoading
                         ? "bg-purple-600 hover:bg-yellow-500/70 hover:scale-104  cursor-pointer"
@@ -767,6 +688,15 @@ export default function SelectAllocationModal({
             setNotAllocatedSeatedQuantities={setNotAllocatedSeatedQuantities}
             allocatedSeatedQuantities={allocatedSeatedQuantities}
             setAllocatedSeatedQuantities={setAllocatedSeatedQuantities}
+          />
+        </AnimatePresence>
+      )}
+      {modal === "attendants" && (
+        <AnimatePresence>
+          <AttendantsNameModal
+            shoppingCart={event.shoppingCart}
+            selectedDateId={eventDateId}
+            onReturn={() => setModal("tickets")}
           />
         </AnimatePresence>
       )}

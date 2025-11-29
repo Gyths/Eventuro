@@ -84,6 +84,7 @@ export default function CardPaymentModal({ onClose, onSuccess, onFail }) {
       orderId: order.orderId,
       buyerUserId: user.userId,
       discountIds: discountIds,
+      attendees: order.attendees,
     };
 
     try {

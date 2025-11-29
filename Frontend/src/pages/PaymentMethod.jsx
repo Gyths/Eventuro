@@ -9,7 +9,7 @@ import { useAuth } from "../services/auth/AuthContext";
 import { EventuroApi } from "../api";
 
 import ArrowButton from "../components/ArrowButton";
-import EventInfoCard from "../components/payment/EvenInfoCard";
+import PaymentEventInfoCard from "../components/payment/PaymentEvenInfoCard";
 import ETicketDescription from "../components/payment/ETicketDescription";
 import TermsServicesCheckbox from "../components/payment/TermsServicesCheckbox";
 import PaymentOptions from "../components/payment/PaymentOptions";
@@ -35,15 +35,12 @@ import { BASE_URL } from "../config";
 export default function PaymentMethod() {
   const titleText = "Elige tu método de pago";
   const navigate = useNavigate();
-  const ticketSelectionDest = "/seleccionTickets";
   const homeDest = "/home";
   const viewTicketDest = "/misTickets";
   const location = useLocation();
   const prevPath = React.useRef(location.pathname);
 
-  const { event } = useEvent();
-  const { order, setOrder } = useOrder();
-  const { user } = useAuth();
+  const { order } = useOrder();
   const { modal, setModal } = useModal(null);
 
   const [termsAccepted, setTermsAccepted] = React.useState(false);
@@ -112,12 +109,12 @@ export default function PaymentMethod() {
         {/*Parte superior de la pantalla, titulo, botón para retroceder, card con la información del evento */}
         <div className="flex flex-wrap items-center gap-4 px-4 py-5 md:px-8">
           <ArrowButton onClick={() => setModal("return")} />
-          <h1 className="font-bold text-2xl sm:text-3xl md:text-4xl">
+          <h1 className="font-bold text-center text-2xl sm:text-3xl md:text-4xl">
             {titleText}
           </h1>
 
           <div className="flex-1 flex justify-end pr-10">
-            <EventInfoCard />
+            <PaymentEventInfoCard />
           </div>
         </div>
 

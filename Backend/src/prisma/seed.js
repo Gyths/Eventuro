@@ -104,6 +104,7 @@ async function main() {
       },
     ],
   });
+
   const adminHash = await bcrypt.hash("SuperAdmin!2025", 10);
   const org1Hash = await bcrypt.hash("123456", 10);
   const clientHash = await bcrypt.hash("123A5.", 12);
@@ -165,7 +166,7 @@ async function main() {
       },
       {
         userId: 4,
-        companyName: "Fiesta Eventos",
+        companyName: "Sociedad Peruana de Gastronomía APEGA-Fusión",
         idType: "RUC",
         idNumber: "20587654321",
         status: "APPROVED",
@@ -272,11 +273,14 @@ async function main() {
       //Event 2
       {
         organizerId: 2,
-        title: "Evento de Prueba 02",
-        imagePrincipalKey: "events/1761677737608_Evento_prueba.png",
-        imageBannerKey: "events/1761677738279_Evento_prueba_banner.png",
-        refundPolicyText:
-          "Política de devoluciones para el evento de prueba 02",
+        title:
+          "Feria Gastronómica Internacional MISTURA DE LIMA (Edición 2025)",
+        imagePrincipalKey: "events/1763156323547_images.png",
+        imageBannerKey:
+          "events/1763156324001_cartel-mistura-2009-feria-gastronomica-de-lima-1-1024x398.jpg",
+        refundPolicyFileKey:
+          "refund_policies/1763156324176_PolÃ­tica de DevoluciÃ³n de Entradas - Mistura.pdf",
+
         inPerson: true,
         status: "A",
         description:
@@ -291,7 +295,8 @@ async function main() {
         title: "Evento de Prueba 03",
         imagePrincipalKey: "events/1761677737608_Evento_prueba.png",
         imageBannerKey: "events/1761677738279_Evento_prueba_banner.png",
-        refundPolicyFileKey: "refund_policies/1763014632484_Informatica.pdf",
+        refundPolicyText:
+          "Política de devoluciones para el evento de prueba 02",
         inPerson: true,
         status: "P",
         description:
@@ -322,7 +327,9 @@ async function main() {
     where: { title: "Evento de Prueba 01" },
   });
   const event2 = await prisma.event.findFirst({
-    where: { title: "Evento de Prueba 02" },
+    where: {
+      title: "Feria Gastronómica Internacional MISTURA DE LIMA (Edición 2025)",
+    },
   });
   const event3 = await prisma.event.findFirst({
     where: { title: "Evento de Prueba 03" },
@@ -350,13 +357,13 @@ async function main() {
       {
         eventId: event2.eventId,
         city: "Lima",
-        address: "Av. Universitaria 1801, San Miguel 15088",
+        address: "Costa Verde, Magdalena del Mar, Lima, Perú",
         capacity: 500,
       },
       {
         eventId: event3.eventId,
         city: "Lima",
-        address: "Av. Universitaria 1801, San Miguel 15088",
+        address: "Campus PUCP, San Miguel 15088",
         capacity: 600,
       },
       {

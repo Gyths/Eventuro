@@ -79,7 +79,9 @@ export default function ReturnsPolicy({ form, value, onChange }) {
           className="mt-1 w-full min-h-[140px] rounded-2xl border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-200"
           placeholder="Ingrese la política..."
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => {
+            setText(e.target.value);
+          }}
         />
       </div>
 

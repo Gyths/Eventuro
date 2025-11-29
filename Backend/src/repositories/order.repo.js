@@ -22,7 +22,7 @@ export async function createOrderRepo(input) {
     const createdOrderItems = [];
     const createdTickets = [];
     const holdExpiration = new Date(Date.now() + 5 * 60 * 1000); // 5 minutos de tolerancia para realizar la compra
-    let quantityBoughtNow=0;
+    let quantityBoughtNow = 0;
 
     // Recorrido de items de la orden (cada item puede ser zona general o numerada, con/sin allocation)
     for (const item of input.items) {
@@ -228,7 +228,6 @@ export async function createOrderRepo(input) {
         }
       }
 
-      
       // CONTROL DE CONCURRENCIA OCC (optimistic concurrency control):
       // Todo dentro de la transacción tx: si alguno falla se hace rollback.
 
@@ -353,20 +352,14 @@ export async function createOrderRepo(input) {
           active: true,
           AND: [
             {
-              OR: [
-                { startAt: { lte: now } },
-                { startAt: null }
-              ]
+              OR: [{ startAt: { lte: now } }, { startAt: null }],
             },
             {
-              OR: [
-                { endAt: { gte: now } },
-                { endAt: null }
-              ]
-            }
-          ]
+              OR: [{ endAt: { gte: now } }, { endAt: null }],
+            },
+          ],
         },
-      })
+      });
       // Si tendrá allocation, calculamos el precio de la entrada para la allocation de dicha zona
       if (allocation) {
         const { discountType, discountValue } = allocation;
@@ -386,7 +379,7 @@ export async function createOrderRepo(input) {
 
           if (newTotal > phase.ticketLimit) {
             const remaining = phase.ticketLimit - phase.quantityTicketsSold;
-            let ticketUserCanBought=quantityBoughtNow + remaining;
+            let ticketUserCanBought = quantityBoughtNow + remaining;
             let err = new Error(
               `La fase de venta solo tiene ${ticketUserCanBought} entradas disponibles. Puedes esperar a una siguiente fase o comprar la entradas restantes.`
             );
@@ -439,7 +432,7 @@ export async function createOrderRepo(input) {
 
       //Total de la orden
       totalAmount += finalPrice;
-      quantityBoughtNow+=quantity;
+      quantityBoughtNow += quantity;
     }
 
     // Actualizar total y estado de la orden
@@ -586,16 +579,10 @@ export async function cancelOrderRepo(orderId) {
           active: true,
           AND: [
             {
-              OR: [
-                { startAt: { lte: orderCreatedAt } },
-                { startAt: null },
-              ],
+              OR: [{ startAt: { lte: orderCreatedAt } }, { startAt: null }],
             },
             {
-              OR: [
-                { endAt: { gte: orderCreatedAt } },
-                { endAt: null },
-              ],
+              OR: [{ endAt: { gte: orderCreatedAt } }, { endAt: null }],
             },
           ],
         },
@@ -609,7 +596,6 @@ export async function cancelOrderRepo(orderId) {
           },
         });
       }
-
     }
 
     // Borrar los orderItems de esta orden
@@ -781,7 +767,7 @@ export async function getPurchaseAnalyticsByOrganizer(organizerId) {
     };
   }
 
-  const eventIds = events.map(e => e.eventId);
+  const eventIds = events.map((e) => e.eventId);
 
   // 2. Obtener órdenes relacionadas a esos eventos
   const orders = await prisma.order.groupBy({
@@ -789,17 +775,17 @@ export async function getPurchaseAnalyticsByOrganizer(organizerId) {
     _count: { orderId: true },
     where: {
       items: { some: { eventId: { in: eventIds } } },
-      status: { in: ["PAID", "PENDING_PAYMENT", "CREATED"] }
+      status: { in: ["PAID", "PENDING_PAYMENT", "CREATED"] },
     },
   });
 
   // Estructuras para agrupar
-  const hours = Array.from({ length: 24 }, () => 0);      // 0–23
-  const months = Array.from({ length: 12 }, () => 0);     // 0=Enero, 11=Diciembre
-  const weekdays = Array.from({ length: 7 }, () => 0);    // 0=Domingo, 6=Sábado
+  const hours = Array.from({ length: 24 }, () => 0); // 0–23
+  const months = Array.from({ length: 12 }, () => 0); // 0=Enero, 11=Diciembre
+  const weekdays = Array.from({ length: 7 }, () => 0); // 0=Domingo, 6=Sábado
 
   // 3. Agrupación
-  orders.forEach(o => {
+  orders.forEach((o) => {
     const date = new Date(o.createdAt);
     const count = o._count.orderId;
 
@@ -818,18 +804,37 @@ export async function getPurchaseAnalyticsByOrganizer(organizerId) {
   const topWeekdayIndex = weekdays.indexOf(Math.max(...weekdays));
 
   const monthNames = [
-    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-    "Julio", "Agosto", "Setiembre", "Octubre", "Noviembre", "Diciembre"
+    "Enero",
+    "Febrero",
+    "Marzo",
+    "Abril",
+    "Mayo",
+    "Junio",
+    "Julio",
+    "Agosto",
+    "Setiembre",
+    "Octubre",
+    "Noviembre",
+    "Diciembre",
   ];
 
   const weekdayNames = [
-    "Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"
+    "Domingo",
+    "Lunes",
+    "Martes",
+    "Miércoles",
+    "Jueves",
+    "Viernes",
+    "Sábado",
   ];
 
   return {
     hours: hours.map((count, hour) => ({ hour, count })),
     months: months.map((count, month) => ({ month: monthNames[month], count })),
-    weekdays: weekdays.map((count, dow) => ({ weekday: weekdayNames[dow], count })),
+    weekdays: weekdays.map((count, dow) => ({
+      weekday: weekdayNames[dow],
+      count,
+    })),
 
     topHour: {
       hour: topHourIndex,

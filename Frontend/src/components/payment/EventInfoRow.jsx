@@ -3,7 +3,7 @@ import { CalendarDaysIcon } from "@heroicons/react/24/solid";
 import { ClockIcon } from "@heroicons/react/24/solid";
 import useEvent from "../../services/Event/EventContext";
 
-export default function EventInfoRow({ Event }) {
+export default function EventInfoRow() {
   const { event } = useEvent();
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-start gap-3 text-gray-600 text-sm">
@@ -15,7 +15,6 @@ export default function EventInfoRow({ Event }) {
           <span>Modalidad Virtual</span>
         )}
       </div>
-
       <div className="flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-1">
           <CalendarDaysIcon className="h-5 w-5 text-purple-800" />

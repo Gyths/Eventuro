@@ -30,7 +30,7 @@ export default function ShoppingCart({
       openModal(selectedOption);
     }
   };
-
+  console.log(event);
   return (
     <div className="flex justify-between h-auto flex-col w-auto min-w-[28vw] aspect-[4/5] bg-white rounded-xl shadow-lg px-11 py-7">
       <div>
@@ -39,7 +39,8 @@ export default function ShoppingCart({
         {/*Acá se muestran los tickets a comprar*/}
         <div className="flex flex-col h-auto gap-4">
           {event.shoppingCart != null &&
-            Object.entries(event.shoppingCart).map(
+            event.shoppingCart.itemsByZone &&
+            Object.entries(event.shoppingCart.itemsByZone).map(
               ([zoneName, zone], index) => {
                 if (zone.quantity && zone.price) {
                   return (
@@ -77,15 +78,12 @@ export default function ShoppingCart({
                               >
                                 <span className="truncate">{zoneInfoName}</span>
                                 <span className="text-center">
-                                  {"x" + zoneInfo[0]?.quantity}
+                                  {"x" + zoneInfo?.quantity}
                                 </span>
                                 <div className="flex flex-row items-center justify-end w-20">
                                   {currencies.PEN}
                                   <span>
-                                    {" "}
-                                    {parseFloat(zoneInfo[0]?.unitPrice).toFixed(
-                                      2
-                                    )}
+                                    {parseFloat(zoneInfo?.price).toFixed(2)}
                                   </span>
                                 </div>
                               </div>
