@@ -510,6 +510,7 @@ export function buildWhere(params) {
   const { userId, eventId, status, refundStatus, search } = params;
 
   const where = {
+    active: true,
     OR: [
       { ownerUserId: toBigIntIfPossible(userId) },
       {
@@ -568,6 +569,7 @@ const ticketSelect = {
   pricePaid: true,
   currency: true,
   issuedAt: true,
+  active: true,
 
   eventDate: {
     select: {
@@ -673,4 +675,82 @@ export async function getMyTicketsRepo(params) {
 export async function countMyTicketsRepo(params) {
   const where = buildWhere(params);
   return prisma.ticket.count({ where });
+}
+
+export async function deleteTicketRepo(ticketId) {
+  return prisma.$transaction(async (tx) => {
+    // 1. Buscar el ticket, su zona Y los datos requeridos (email, nombre, fecha)
+    const ticketWithDetails = await tx.ticket.findUnique({
+      where: { ticketId },
+      select: {
+        // Datos para la lógica de liberación
+        eventDateZoneId: true,
+        seatId: true,
+
+        // --- Datos requeridos para el retorno ---
+        // Correo del dueño
+        owner: {
+          select: {
+            email: true,
+          },
+        },
+        // Fecha y Nombre del Evento (anidando EventDate y Event)
+        eventDate: {
+          select: {
+            startAt: true, // <-- Fecha
+            event: {
+              select: {
+                title: true, // <-- Nombre del Evento
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!ticketWithDetails) {
+      throw new Error("Ticket no encontrado.");
+    }
+
+    const resultData = {
+      ticketid: ticketId,
+      ownerEmail: ticketWithDetails.owner?.email,
+      eventTitle: ticketWithDetails.eventDate?.event.title,
+      eventDateStart: ticketWithDetails.eventDate?.startAt,
+    };
+
+    // 2. Marcar el ticket como inactivo
+    await tx.ticket.update({
+      where: { ticketId },
+      data: {
+        active: false,
+        status: 'CANCELLED',
+        refundStatus: 'REQUESTED',
+        refundRequestedAt: new Date(),
+      },
+    });
+
+    // 3. Liberar capacidad o asiento
+    if (ticketWithDetails.seatId) {
+      // Si es un asiento numerado, liberar el asiento
+      await tx.seat.update({
+        where: { seatId: ticketWithDetails.seatId },
+        data: {
+          status: 'AVAILABLE',
+          holdUntil: null,
+        },
+      });
+    } else {
+      // Si es zona general, devolver la capacidad
+      await tx.eventDateZone.update({
+        where: { eventDateZoneId: ticketWithDetails.eventDateZoneId },
+        data: {
+          capacityRemaining: { increment: 1 },
+        },
+      });
+    }
+
+    // 4. Devolver los detalles necesarios
+    return resultData;
+  });
 }

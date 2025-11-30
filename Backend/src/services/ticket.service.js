@@ -5,9 +5,11 @@ import { getRefundList } from '../repositories/ticket.repo.js';
 import { approveTicketRefund } from '../repositories/ticket.repo.js';
 import { rejectTicketRefund } from '../repositories/ticket.repo.js';
 import { sendConfirmationEmailCtrl } from '../controllers/email.controller.js';
+import { deleteTicketRepo } from '../repositories/ticket.repo.js';
+import { sendDeleteTicketEmail } from '../controllers/email.controller.js';
 
 import { getMyTicketsRepo, countMyTicketsRepo } from "../repositories/ticket.repo.js";
-import {getSignedUrlForFile} from "../utils/s3.js"
+import { getSignedUrlForFile } from "../utils/s3.js"
 export async function createTicketSvc(input, ctx = {}) {
   if (!input?.orderId) throw new Error('orderId es requerido para confirmar los tickets.');
 
@@ -84,10 +86,10 @@ async function signEventImages(ev, cache) {
   const out = { imagePrincipalURLSigned: null, imageBannerURLSigned: null };
 
   if (k1) {
-    try { out.imagePrincipalURLSigned = await getSignedUrlForFile(k1); } catch {}
+    try { out.imagePrincipalURLSigned = await getSignedUrlForFile(k1); } catch { }
   }
   if (k2) {
-    try { out.imageBannerURLSigned = await getSignedUrlForFile(k2); } catch {}
+    try { out.imageBannerURLSigned = await getSignedUrlForFile(k2); } catch { }
   }
 
   cache.set(cacheKey, out);
@@ -114,11 +116,11 @@ export async function getMyTicketsService(params) {
         : t.item?.order?.totalAmount;
 
     // IDs reales según tu schema
-    const evRaw  = t?.eventDate?.event ?? null;
-    const evId   = evRaw?.eventId ?? null;
-    const edId   = t?.eventDate?.eventDateId ?? null;
+    const evRaw = t?.eventDate?.event ?? null;
+    const evId = evRaw?.eventId ?? null;
+    const edId = t?.eventDate?.eventDateId ?? null;
     const zoneId = t?.zone?.eventDateZoneId ?? null;
-    const allocId= t?.allocation?.eventDateZoneAllocationId ?? null;
+    const allocId = t?.allocation?.eventDateZoneAllocationId ?? null;
     const seatId = t?.seat?.seatId ?? null;
 
     // Firmar imágenes del evento (si están las keys)
@@ -135,69 +137,79 @@ export async function getMyTicketsService(params) {
 
       event: evRaw
         ? {
-            id: toStr(evId),
-            title: evRaw.title,
-            inPerson: evRaw.inPerson ?? false,
-            imagePrincipalURLSigned: signed.imagePrincipalURLSigned ?? null,
-            imageBannerURLSigned: signed.imageBannerURLSigned ?? null,
-            venue: evRaw.venue
-              ? {
-                  city: evRaw.venue.city ?? null,
-                  address: evRaw.venue.address ?? null,
-                  reference: evRaw.venue.reference ?? null,
-                }
-              : null,
-          }
+          id: toStr(evId),
+          title: evRaw.title,
+          inPerson: evRaw.inPerson ?? false,
+          imagePrincipalURLSigned: signed.imagePrincipalURLSigned ?? null,
+          imageBannerURLSigned: signed.imageBannerURLSigned ?? null,
+          venue: evRaw.venue
+            ? {
+              city: evRaw.venue.city ?? null,
+              address: evRaw.venue.address ?? null,
+              reference: evRaw.venue.reference ?? null,
+            }
+            : null,
+        }
         : null,
 
       eventDate: t.eventDate
         ? {
-            id: toStr(edId),
-            startAt: t.eventDate.startAt,
-          }
+          id: toStr(edId),
+          startAt: t.eventDate.startAt,
+        }
         : null,
 
       zone: t.zone
         ? {
-            id: toStr(zoneId),
-            name: t.zone.name,
-          }
+          id: toStr(zoneId),
+          name: t.zone.name,
+        }
         : null,
 
       allocation: t.allocation
         ? {
-            id: toStr(allocId),
-            audienceName: t.allocation.audienceName,
-          }
+          id: toStr(allocId),
+          audienceName: t.allocation.audienceName,
+        }
         : null,
 
       seat: t.seat
         ? {
-            id: toStr(seatId),
-            rowNumber: t.seat.rowNumber ?? null,
-            seatNumber: t.seat.colNumber ?? null, // en tu schema es colNumber
-          }
+          id: toStr(seatId),
+          rowNumber: t.seat.rowNumber ?? null,
+          seatNumber: t.seat.colNumber ?? null, // en tu schema es colNumber
+        }
         : null,
 
       order: t.item?.order
         ? {
-            orderId: toStr(t.item.order.orderId),
-            createdAt: t.item.order.createdAt,
-            totalAmount,
-            currency: t.item.order.currency,
-          }
+          orderId: toStr(t.item.order.orderId),
+          createdAt: t.item.order.createdAt,
+          totalAmount,
+          currency: t.item.order.currency,
+        }
         : null,
 
       owner: t.owner
         ? {
-            userId: toStr(t.owner.userId),
-            name: t.owner.name ?? null,
-            lastName: t.owner.lastName ?? null,
-            document: null, // si no existe en tu modelo de User
-          }
+          userId: toStr(t.owner.userId),
+          name: t.owner.name ?? null,
+          lastName: t.owner.lastName ?? null,
+          document: null, // si no existe en tu modelo de User
+        }
         : null,
     };
   }));
 
   return { page, pageSize, total, items };
+}
+
+export async function deleteTicketSvc(ticketid) {
+  const data = await deleteTicketRepo(ticketid);
+  try {
+    await sendDeleteTicketEmail(data);
+  } catch (err) {
+    console.error('Error enviando correo de eliminación de ticket:', err);
+  }
+  return data;
 }
