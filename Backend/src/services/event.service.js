@@ -10,6 +10,7 @@ import {
   listEventstoApproveRepo,
   listSalesSummaryByOrganizer,
   getAttendeesByEventAndOrganizer,
+  updateEventDetailsRepo,
 } from "../repositories/event.repo.js";
 
 export async function createEventSvc(userId, input) {
@@ -40,6 +41,11 @@ export async function listEventDateZonesByEventDateIdSvc(
 export async function setEventStatusSvc(userId, { id, status, percentage }) {
   return setEventStatusRepo(userId, { eventId: id, status, percentage });
 }
+
+export async function updateEventDetailsSvc(userId, eventId, details) {
+  return updateEventDetailsRepo(userId, eventId, details);
+}
+
 
 export async function _getEventDetails(id) {
   return eventDetails(id);
