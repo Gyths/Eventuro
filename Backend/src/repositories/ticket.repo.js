@@ -510,6 +510,7 @@ export function buildWhere(params) {
   const { userId, eventId, status, refundStatus, search } = params;
 
   const where = {
+    active: true,
     OR: [
       { ownerUserId: toBigIntIfPossible(userId) },
       {
@@ -568,6 +569,7 @@ const ticketSelect = {
   pricePaid: true,
   currency: true,
   issuedAt: true,
+  active: true,
 
   eventDate: {
     select: {
