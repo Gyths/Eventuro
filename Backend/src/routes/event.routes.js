@@ -11,6 +11,9 @@ import {
   listEventstoApprove,
   getSalesSummaryCtrl,
   getAttendeesByEventCtrl,
+  deleteEvent,
+  deleteEventDate,
+  deleteEventDateZone,
 } from "../controllers/event.controller.js";
 import { verifyToken } from "../middlewares/ensureAuth.js";
 import { attachUserContext } from "../middlewares/ensureAuth.js";
@@ -56,4 +59,8 @@ router.get(
   requireAdmin,
   listEventstoApprove
 );
+router.post("/:eventId/del", deleteEvent);
+router.post("/:eventDateId/del-date", deleteEventDate);
+router.post("/:eventDateZoneId/del-zone", deleteEventDateZone);
+
 export default router;

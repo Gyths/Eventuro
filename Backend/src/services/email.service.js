@@ -281,7 +281,7 @@ export async function confirmationEmail(to, orderInfo) {
 
 export async function sendReminderEmail(to, eventInfo) {
   const { title, eventDate, venue, clientName } = eventInfo;
-  
+
   const formattedDate = new Date(eventDate).toLocaleString('es-PE', {
     weekday: 'long',
     day: '2-digit',
@@ -398,13 +398,28 @@ export async function sendReminderEmail(to, eventInfo) {
             ">
               <strong style="color: #8b5cf6;">Eventuro</strong> - Tus eventos, siempre contigo
             </p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `,
+          </div> `,
   };
 
   await transporter.sendMail(mailOptions);
   console.log(`Correo de recordatorio enviado a ${to}`);
+}
+
+export async function sendDeleteTicketEmailSvc(to, ticketInfo) {
+  const { ticketId, eventTitle, eventDateStart } = ticketInfo;
+  const mailoptions = {
+    from: `"Eventuro" <${config.EMAIL_USER}>`,
+    to,
+    subject: `Notificación de eliminación de ticket - Ticket #${ticketId}`,
+    html: `
+      <p>Hola,</p>
+      <p>Te informamos que tu ticket con ID <strong>${ticketId}</strong> para el evento <strong>${eventTitle}</strong> programado para el <strong>${new Date(eventDateStart).toLocaleString('es-PE')}</strong> ha sido eliminado.</p>
+      <p>Si tienes alguna pregunta o necesitas asistencia adicional, no dudes en contactarnos.</p>
+      <p>Gracias por usar Eventuro.</p>
+      <p>Saludos,<br/>El equipo de Eventuro</p>
+    `,
+  };
+
+  await transporter.sendMail(mailoptions);
+  console.log(`Correo de eliminación de ticket enviado a ${to}`);
 }

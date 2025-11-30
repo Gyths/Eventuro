@@ -15,9 +15,8 @@ export async function createEventRepo(userId, input) {
     if (input.imagenPrincipal) {
       // 1. Si se sube un nuevo archivo (Multer)
       const buffer = input.imagenPrincipal.buffer;
-      const fileName = `events/${Date.now()}_${
-        input.imagenPrincipal.originalname
-      }`;
+      const fileName = `events/${Date.now()}_${input.imagenPrincipal.originalname
+        }`;
       imagePrincipalKey = await uploadFile(
         fileName,
         buffer,
@@ -33,9 +32,8 @@ export async function createEventRepo(userId, input) {
     if (input.imagenBanner) {
       // 1. Si se sube un nuevo archivo (Multer)
       const buffer = input.imagenBanner.buffer;
-      const fileName = `events/${Date.now()}_${
-        input.imagenBanner.originalname
-      }`;
+      const fileName = `events/${Date.now()}_${input.imagenBanner.originalname
+        }`;
       imageBannerKey = await uploadFile(
         fileName,
         buffer,
@@ -50,9 +48,8 @@ export async function createEventRepo(userId, input) {
     let refundPolicyFileKey = null;
     if (input.policyFile) {
       const buffer = input.policyFile.buffer;
-      const fileName = `refund_policies/${Date.now()}_${
-        input.policyFile.originalname
-      }`;
+      const fileName = `refund_policies/${Date.now()}_${input.policyFile.originalname
+        }`;
       refundPolicyFileKey = await uploadFile(
         fileName,
         buffer,
@@ -834,7 +831,7 @@ export async function listSalesSummaryByOrganizer(organizerId) {
               Ticket: {
                 select: {
                   ticketId: true,
-                  pricePaid: true, 
+                  pricePaid: true,
                   status: true,
                 },
               },
@@ -940,10 +937,174 @@ export async function getAttendeesByEventAndOrganizer(input) {
       zoneName: ticket.zone?.name ?? null,
       seat: ticket.seat
         ? {
-            row: ticket.seat.rowNumber,
-            col: ticket.seat.colNumber,
-          }
+          row: ticket.seat.rowNumber,
+          col: ticket.seat.colNumber,
+        }
         : null,
     })),
   }));
+}
+
+export async function deleteEventDateZoneAllocationRepo(eventDateZoneAllocationId) {
+  const allocationId = BigInt(eventDateZoneAllocationId);
+
+  return prisma.$transaction(async (tx) => {
+
+    const allocationWithTickets = await tx.eventDateZoneAllocation.findUnique({
+      where: { eventDateZoneAllocationId: allocationId },
+      select: {
+        Ticket: {
+          select: {
+            ticketId: true,
+          },
+        },
+      },
+    });
+
+    if (!allocationWithTickets) {
+      throw new Error(`EventDateZoneAllocation con ID ${eventDateZoneAllocationId} no encontrado.`);
+    }
+
+    const relatedTicketIds = allocationWithTickets.Ticket.map(t => t.ticketId);
+    // agregar console log para saber cuantas tickets esta devolviendo
+    console.log(`Tickets relacionadas encontradas para EventDateZoneAllocationId ${eventDateZoneAllocationId}:`, relatedTicketIds.length);
+
+    const updatedAllocation = await tx.eventDateZoneAllocation.update({
+      where: { eventDateZoneAllocationId: allocationId },
+      data: {
+        active: false
+      },
+      select: {
+        eventDateZoneAllocationId: true,
+      },
+    });
+
+    return {
+      updatedAllocationId: updatedAllocation.eventDateZoneAllocationId,
+      relatedTicketsIds: relatedTicketIds,
+    };
+  });
+}
+
+export async function deleteEventDateZoneRepo(eventDateZoneId) {
+  const zoneId = BigInt(eventDateZoneId);
+
+  return prisma.$transaction(async (tx) => {
+
+    const zoneWithAllocations = await tx.eventDateZone.findUnique({
+      where: { eventDateZoneId: zoneId },
+      select: {
+        allocations: {
+          select: {
+            eventDateZoneAllocationId: true,
+          },
+        },
+      },
+    });
+
+    if (!zoneWithAllocations) {
+      throw new Error(`EventDateZone con ID ${eventDateZoneId} no encontrado.`);
+    }
+
+    const relatedAllocationIds = zoneWithAllocations.allocations.map(a => a.eventDateZoneAllocationId);
+    // agregar console log para saber cuantas allocations esta devolviendo
+    console.log(`Allocations relacionadas encontradas para EventDateZoneId ${eventDateZoneId}:`, relatedAllocationIds.length);
+
+    const updatedZone = await tx.eventDateZone.update({
+      where: { eventDateZoneId: zoneId },
+      data: {
+        active: false,
+      },
+      select: {
+        eventDateZoneId: true,
+      },
+    });
+
+    return {
+      updatedEventDateZoneId: updatedZone.eventDateZoneId,
+      relatedAllocationIds: relatedAllocationIds,
+    };
+  });
+}
+
+export async function deleteEventDateRepo(eventDateId) {
+  const dateId = BigInt(eventDateId);
+
+  return prisma.$transaction(async (tx) => {
+
+    const eventDateWithZones = await tx.eventDate.findUnique({
+      where: { eventDateId: dateId },
+      select: {
+        zoneDates: {
+          select: {
+            eventDateZoneId: true,
+          },
+        },
+      },
+    });
+
+    if (!eventDateWithZones) {
+      throw new Error(`EventDate con ID ${eventDateId} no encontrado.`);
+    }
+
+    const relatedZoneIds = eventDateWithZones.zoneDates.map(z => z.eventDateZoneId);
+    //agregar console log para saber cuantas zonas esta devolviendo
+    console.log(`Zonas relacionadas encontradas para EventDateId ${eventDateId}:`, relatedZoneIds.length);
+
+    const updatedEventDate = await tx.eventDate.update({
+      where: { eventDateId: dateId },
+      data: {
+        active: false,
+      },
+      select: {
+        eventDateId: true,
+      },
+    });
+
+    return {
+      updatedEventDateId: updatedEventDate.eventDateId,
+      relatedEventDateZoneIds: relatedZoneIds,
+    };
+  });
+}
+
+export async function deleteEventRepo(eventId) {
+  const evId = BigInt(eventId);
+
+  return prisma.$transaction(async (tx) => {
+    const event = await tx.event.findUnique({
+      where: { eventId: evId },
+      select: {
+        eventId: true,
+        dates: {
+          select: {
+            eventDateId: true,
+          },
+        },
+      },
+    });
+
+    if (!event) {
+      throw new Error(`Evento con ID ${eventId} no encontrado.`);
+    }
+
+    const datesList = event.dates.map(d => d.eventDateId);
+    //agregar console log para saber cuantas fechas esta devolviendo
+    console.log(`Fechas relacionadas encontradas para EventId ${eventId}:`, datesList.length);
+
+    const updatedEvent = await tx.event.update({
+      where: { eventId: evId },
+      data: {
+        active: false,
+      },
+      select: {
+        eventId: true,
+      },
+    });
+
+    return {
+      updatedEventId: updatedEvent,
+      relatedEventDateIds: datesList,
+    };
+  });
 }
