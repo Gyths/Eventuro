@@ -423,3 +423,25 @@ export async function sendDeleteTicketEmailSvc(to, ticketInfo) {
   await transporter.sendMail(mailoptions);
   console.log(`Correo de eliminación de ticket enviado a ${to}`);
 }
+
+export async function sendDeleteEventEmailSvc(userEmail, eventTitle) {
+  if (!userEmail) {
+    throw new Error('El correo del usuario no está disponible.');
+  }
+
+  const mailOptions = {
+    from: `"Eventuro" <${config.EMAIL_USER}>`,
+    to: userEmail,
+    subject: `Notificación de eliminación de evento - ${eventTitle}`,
+    html: `
+      <p>Hola,</p>
+      <p>Te informamos que el evento <strong>${eventTitle}</strong> ha sido eliminado de nuestra plataforma.</p>
+      <p>Si tienes alguna pregunta o necesitas asistencia adicional, no dudes en contactarnos.</p>
+      <p>Gracias por usar Eventuro.</p>
+      <p>Saludos,<br/>El equipo de Eventuro</p>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+  console.log(`Correo de eliminación de evento enviado a ${userEmail}`);
+}

@@ -59,8 +59,8 @@ router.get(
   requireAdmin,
   listEventstoApprove
 );
-router.post("/:eventId/del", deleteEvent);
-router.post("/:eventDateId/del-date", deleteEventDate);
-router.post("/:eventDateZoneId/del-zone", deleteEventDateZone);
+router.post("/:eventId/del", verifyToken, deleteEvent);
+router.post("/:eventDateId/del-date", verifyToken, deleteEventDate);
+router.post("/:eventDateZoneId/del-zone", verifyToken, deleteEventDateZone);
 
 export default router;

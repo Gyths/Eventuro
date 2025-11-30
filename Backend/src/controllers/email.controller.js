@@ -1,6 +1,7 @@
 import { confirmationEmail } from '../services/email.service.js';
 import { findUserByIdFullSvc } from '../services/user.service.js';
 import { sendDeleteTicketEmailSvc } from '../services/email.service.js';
+import { sendDeleteEventEmailSvc } from '../services/email.service.js';
 
 export async function sendConfirmationEmailCtrl(idClient, orderInfo) {
   try {
@@ -95,4 +96,12 @@ export async function sendDeleteTicketEmail(data) {
   };
 
   await sendDeleteTicketEmailSvc(to, ticketInfo);
+}
+
+export async function sendDeleteEventEmailCtrl(userEmail, eventTitle) {
+  if (!userEmail) {
+    throw new Error('El correo del usuario no está disponible.');
+  }
+
+  await sendDeleteEventEmailSvc(userEmail, eventTitle);
 }

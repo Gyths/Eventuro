@@ -299,6 +299,7 @@ export async function createEventRepo(userId, input) {
 export async function listEventRepo() {
   const events = await prisma.event.findMany({
     where: {
+      active: true,
       dates: {
         some: {
           endAt: {
@@ -614,7 +615,7 @@ export async function listEventInfoRepo(eventId) {
 
 export async function listEventDateByEventIdRepo(eventId) {
   return prisma.eventDate.findMany({
-    where: { eventId: BigInt(eventId) },
+    where: { eventId: BigInt(eventId), active: true },
     select: {
       eventDateId: true,
       eventId: true,
@@ -635,11 +636,12 @@ export async function listEventDateZonesByEventDateIdRepo(
         eventId,
         ownerUserId: userId,
         status: { in: ["PAID", "USED", "EXPIRED"] },
+        active: true,
       },
     }),
 
     prisma.eventDate.findUnique({
-      where: { eventDateId: BigInt(eventDateId) },
+      where: { eventDateId: BigInt(eventDateId), active: true },
       select: {
         startAt: true,
         endAt: true,
@@ -647,7 +649,7 @@ export async function listEventDateZonesByEventDateIdRepo(
     }),
 
     prisma.eventDateZone.findMany({
-      where: { eventDateId: BigInt(eventDateId) },
+      where: { eventDateId: BigInt(eventDateId), active: true },
       select: {
         eventDateZoneId: true,
         eventDateId: true,
@@ -966,8 +968,6 @@ export async function deleteEventDateZoneAllocationRepo(eventDateZoneAllocationI
     }
 
     const relatedTicketIds = allocationWithTickets.Ticket.map(t => t.ticketId);
-    // agregar console log para saber cuantas tickets esta devolviendo
-    console.log(`Tickets relacionadas encontradas para EventDateZoneAllocationId ${eventDateZoneAllocationId}:`, relatedTicketIds.length);
 
     const updatedAllocation = await tx.eventDateZoneAllocation.update({
       where: { eventDateZoneAllocationId: allocationId },
@@ -1007,8 +1007,6 @@ export async function deleteEventDateZoneRepo(eventDateZoneId) {
     }
 
     const relatedAllocationIds = zoneWithAllocations.allocations.map(a => a.eventDateZoneAllocationId);
-    // agregar console log para saber cuantas allocations esta devolviendo
-    console.log(`Allocations relacionadas encontradas para EventDateZoneId ${eventDateZoneId}:`, relatedAllocationIds.length);
 
     const updatedZone = await tx.eventDateZone.update({
       where: { eventDateZoneId: zoneId },
@@ -1048,8 +1046,6 @@ export async function deleteEventDateRepo(eventDateId) {
     }
 
     const relatedZoneIds = eventDateWithZones.zoneDates.map(z => z.eventDateZoneId);
-    //agregar console log para saber cuantas zonas esta devolviendo
-    console.log(`Zonas relacionadas encontradas para EventDateId ${eventDateId}:`, relatedZoneIds.length);
 
     const updatedEventDate = await tx.eventDate.update({
       where: { eventDateId: dateId },
@@ -1089,8 +1085,6 @@ export async function deleteEventRepo(eventId) {
     }
 
     const datesList = event.dates.map(d => d.eventDateId);
-    //agregar console log para saber cuantas fechas esta devolviendo
-    console.log(`Fechas relacionadas encontradas para EventId ${eventId}:`, datesList.length);
 
     const updatedEvent = await tx.event.update({
       where: { eventId: evId },
