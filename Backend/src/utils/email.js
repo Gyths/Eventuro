@@ -9,4 +9,7 @@ export const transporter = nodemailer.createTransport({
     user: config.emailUser,
     pass: config.emailPass,
   },
+  tls: {
+    rejectUnauthorized: false,
+  },
 });

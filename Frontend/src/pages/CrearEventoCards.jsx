@@ -702,8 +702,8 @@ export default function CrearEventoCards() {
       const name = (form.name ?? "").trim(); // <-- usar form.name
       if (!name) {
         newErrors.name = "El nombre del evento es obligatorio.";
-      } else if (name.length > 30) {
-        newErrors.name = "El nombre no puede tener más de 30 caracteres.";
+      } else if (name.length > 100) {
+        newErrors.name = "El nombre no puede tener más de 100 caracteres.";
       } else if (name.length < 5) {
         newErrors.name = "El nombre es muy corto.";
       }
