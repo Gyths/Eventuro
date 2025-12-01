@@ -49,6 +49,7 @@ enum EVENT_STATUS {
   P // pending: pendiente
   A // acepted: aceptado
   D // denied: denegado
+  C // cancelled: cancelado
 
   @@schema("public")
 }
