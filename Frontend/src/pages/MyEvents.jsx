@@ -52,6 +52,26 @@ export default function MyEvents() {
   }, [user]);
 
   // Construye árbol evento → fechas → info
+  const reload = async () => {
+    if (!user?.organizer?.organizerId) return;
+    const organizerId = user.organizer.organizerId;
+
+    const session = localStorage.getItem("session");
+    const token = session ? JSON.parse(session)?.token : null;
+
+    const headers = { "Content-Type": "application/json" };
+    if (token) headers.Authorization = `Bearer ${token}`;
+
+    const res = await fetch(
+      `${BASE_URL}/eventuro/api/event/events-by-organizer/${organizerId}`,
+      { headers }
+    );
+
+    const json = await res.json();
+    const items = Array.isArray(json) ? json : json?.events ?? [];
+    setEventsRaw(items);
+  };
+
   useEffect(() => {
     const tree = eventsRaw.map((ev) => ({
       eventId: ev.eventId,
@@ -149,7 +169,7 @@ export default function MyEvents() {
                 Selecciona un evento para ver detalles.
               </p>
             ) : (
-              <EventDetail eventNode={selectedEvent} />
+              <EventDetail eventNode={selectedEvent} reload={reload} />
             )}
           </section>
         </div>
@@ -169,12 +189,14 @@ const getEventStatusLabel = (eventNode) => {
     return {
       text:
         eventNode.status === "A"
-          ? "Aprobado"
+          ? "Aprobado - Sin Fechas"
           : eventNode.status === "P"
-          ? "En revisión"
+          ? "En revisión - Sin Fechas"
           : eventNode.status === "C"
-          ? "Cancelado"
-          : "Desaprobado",
+          ? "Cancelado - Sin Fechas"
+          : eventNode.status === "D"
+          ? "Desaprobado - Sin Fechas"
+          : "Sin Estado - Sin Fechas",
       color: "bg-gray-100 text-gray-600",
     };
   }
@@ -203,9 +225,14 @@ const getEventStatusLabel = (eventNode) => {
           text: "Expirado - Desaprobado",
           color: "bg-red-100 text-red-700",
         };
+      case "C":
+        return {
+          text: "Expirado - Cancelado",
+          color: "bg-red-100 text-red-700",
+        };
       default:
         return {
-          text: "Expirado",
+          text: "Expirado - Sin Estado",
           color: "bg-gray-100 text-gray-600",
         };
     }
@@ -215,14 +242,18 @@ const getEventStatusLabel = (eventNode) => {
     return { text: "En revisión", color: "bg-yellow-100 text-yellow-700" };
   if (eventNode.status === "D")
     return { text: "Desaprobado", color: "bg-red-100 text-red-700" };
-
+  if (eventNode.status === "C")
+    return { text: "Cancelado", color: "bg-red-100 text-red-700" };
   return {
-    text: eventNode.status === "A" ? "Aprobado" : eventNode.status,
-    color: "bg-gray-100 text-gray-600",
+    text: eventNode.status === "A" ? "Aprobado" : "Sin Estado",
+    color:
+      eventNode.status === "A"
+        ? "bg-green-100 text-green-700"
+        : "bg-gray-100 text-gray-600",
   };
 };
 
-function EventDetail({ eventNode }) {
+function EventDetail({ eventNode, reload }) {
   const status = getEventStatusLabel(eventNode);
 
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
@@ -271,6 +302,7 @@ function EventDetail({ eventNode }) {
       );
 
       // TODO opcional: actualizar lista (por ejemplo, cambiar estado o quitar evento)
+      await reload();
     } catch (err) {
       console.error("Error al cancelar evento:", err);
       closeCancelModal();
@@ -364,12 +396,32 @@ function EventDetail({ eventNode }) {
             />
           </div>
         </>
-      ) : (
-        <p className="text-gray-500 text-center py-6 border border-gray-200 rounded-xl bg-gray-50">
-          Este evento aún no está aprobado, por lo que las compras no están
-          disponibles.
-        </p>
-      )}
+      ) :
+      (
+        eventNode.status === "C" ?
+        (
+          <p className="text-gray-500 text-center py-6 border border-gray-200 rounded-xl bg-gray-50">
+            Este evento ha sido cancelado, por lo que las compras ya no estarán
+            disponibles.
+          </p>
+        ) :
+        (
+          eventNode.status === "D" ?
+          (
+            <p className="text-gray-500 text-center py-6 border border-gray-200 rounded-xl bg-gray-50">
+              Este evento ha sido desaprobado, por lo que las compras no estarán
+              disponibles.
+            </p>
+          ) :
+          (
+            <p className="text-gray-500 text-center py-6 border border-gray-200 rounded-xl bg-gray-50">
+              Este evento aún no está aprobado, por lo que las compras todavía no estarán
+              disponibles.
+            </p>
+          )
+        )
+      )
+    }
 
       {/* Modal de confirmación para el EVENTO completo */}
       <ConfirmCancelModal
