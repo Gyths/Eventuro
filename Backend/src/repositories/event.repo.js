@@ -1187,7 +1187,7 @@ export async function deleteEventRepo(eventId) {
       where: { eventId: evId },
       data: {
         active: false,
-        status: "C"
+        status: "C",
       },
       select: {
         eventId: true,
