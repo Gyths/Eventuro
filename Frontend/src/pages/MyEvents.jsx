@@ -2,9 +2,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../services/auth/AuthContext";
 import { BASE_URL } from "../config";
 import placeholder from "../assets/image-placeholder.svg";
-
+import ResponseModal from "../components/ResponseModal";
 import CancelEventButton from "../components/CancelEventButton";
 import ConfirmCancelModal from "../components/ConfirmCancelButton";
+import { EventuroApi } from "../api.js";
 
 export default function MyEvents() {
   const { user } = useAuth();
@@ -171,6 +172,8 @@ const getEventStatusLabel = (eventNode) => {
           ? "Aprobado"
           : eventNode.status === "P"
           ? "En revisión"
+          : eventNode.status === "C"
+          ? "Cancelado"
           : "Desaprobado",
       color: "bg-gray-100 text-gray-600",
     };
@@ -219,16 +222,21 @@ const getEventStatusLabel = (eventNode) => {
   };
 };
 
-
 function EventDetail({ eventNode }) {
   const status = getEventStatusLabel(eventNode);
 
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
 
+  // Modal de respuesta (éxito / error)
+  const [responseModalOpen, setResponseModalOpen] = useState(false);
+  const [responseType, setResponseType] = useState("success"); // "success" | "error"
+  const [responseMessage, setResponseMessage] = useState("");
+
   // Desactivar si el evento está "en curso" o "expirado"
   const isExpiredOrRunning =
     status.text.toLowerCase().includes("expirado") ||
-    status.text.toLowerCase().includes("curso");
+    status.text.toLowerCase().includes("curso") ||
+    status.text.toLowerCase().includes("cancelado");
 
   const openCancelModal = () => {
     if (isExpiredOrRunning) return;
@@ -239,12 +247,39 @@ function EventDetail({ eventNode }) {
     setCancelModalOpen(false);
   };
 
-  const handleConfirmCancel = () => {
-    // Aquí luego metes la llamada real a tu API de cancelación de EVENTO
-    console.log("Cancelar evento completo", {
-      eventId: eventNode.eventId,
-    });
-    closeCancelModal();
+  const openResponseModal = (type, message) => {
+    setResponseType(type);
+    setResponseMessage(message);
+    setResponseModalOpen(true);
+  };
+
+  const closeResponseModal = () => {
+    setResponseModalOpen(false);
+  };
+
+  const handleConfirmCancel = async () => {
+    try {
+      await EventuroApi({
+        endpoint: `/event/${eventNode.eventId}/del`,
+        method: "POST",
+      });
+
+      closeCancelModal();
+      openResponseModal(
+        "success",
+        "El evento ha sido cancelado correctamente."
+      );
+
+      // TODO opcional: actualizar lista (por ejemplo, cambiar estado o quitar evento)
+    } catch (err) {
+      console.error("Error al cancelar evento:", err);
+      closeCancelModal();
+      openResponseModal(
+        "error",
+        err?.message ||
+          "Ocurrió un error al cancelar el evento. Inténtalo nuevamente."
+      );
+    }
   };
 
   return (
@@ -342,6 +377,19 @@ function EventDetail({ eventNode }) {
         onClose={closeCancelModal}
         onConfirm={handleConfirmCancel}
         eventTitle={eventNode.title}
+      />
+
+      {/* Modal de respuesta (éxito / error) */}
+      <ResponseModal
+        open={responseModalOpen}
+        onClose={closeResponseModal}
+        type={responseType}
+        title={
+          responseType === "success"
+            ? "Evento cancelado"
+            : "Error al cancelar evento"
+        }
+        message={responseMessage}
       />
     </div>
   );

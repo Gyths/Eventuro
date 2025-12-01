@@ -10,14 +10,11 @@ import {
   listEventstoApproveRepo,
   listSalesSummaryByOrganizer,
   getAttendeesByEventAndOrganizer,
-<<<<<<< HEAD
   updateEventDetailsRepo,
-=======
   deleteEventDateZoneAllocationRepo,
   deleteEventDateZoneRepo,
   deleteEventDateRepo,
   deleteEventRepo,
->>>>>>> 07910c2aba7bba5b4afbe9590f5156ce8d3575ed
 } from "../repositories/event.repo.js";
 import { deleteTicketSvc } from "./ticket.service.js";
 import { sendDeleteEventEmailCtrl } from "../controllers/email.controller.js";
