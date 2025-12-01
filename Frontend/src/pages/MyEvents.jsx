@@ -76,6 +76,7 @@ export default function MyEvents() {
     const tree = eventsRaw.map((ev) => ({
       eventId: ev.eventId,
       title: ev.title,
+      inPerson: ev.inPerson,
       image:
         ev.imagePrincipalURLSigned || ev.imageBannerURLSigned || placeholder,
       status: ev.status,
@@ -357,7 +358,13 @@ function EventDetail({ eventNode, reload }) {
         </p>
       )}
 
-      {eventNode.venue && (
+      {eventNode.inPerson === false && (
+        <p className="text-gray-700">
+          <strong>Modalidad:</strong> Evento Virtual
+        </p>
+      )}
+
+      {eventNode.inPerson === true && (
         <p className="text-gray-700">
           <strong>Ciudad:</strong> {eventNode.venue.city} •{" "}
           <strong>Dirección:</strong> {eventNode.venue.address} •{" "}

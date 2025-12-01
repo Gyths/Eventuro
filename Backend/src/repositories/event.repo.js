@@ -475,6 +475,7 @@ export async function listEventsByOrganizerRepo(idOrganizer) {
       imagePrincipalKey: true,
       imageBannerKey: true,
       refundPolicyText: true,
+      inPerson: true,
       description: true,
       venue: {
         select: {
