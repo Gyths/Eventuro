@@ -33,7 +33,7 @@ export default function AttendantsNameModal({
       const name = state["name" + index];
       const dni = state["document" + index];
 
-      if (!name || name.trim().length < 3) {
+      if (!name || name.trim().length < 2) {
         newErrors["name" + index] = "Ingrese un nombre válido.";
       }
 
