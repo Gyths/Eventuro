@@ -1,6 +1,11 @@
 //Textos relevantes a utilizar
 
 export const EVENT_INFORMATION_TEXTS = {
+  access_policy: {
+    E: "Apto para todo público",
+    T: "Mayores de 14 con compañía de un adulto",
+    AO: "+18 Solo apto para mayores de edad",
+  },
   alerts: {
     0: "Ha ocurrido un error inesperado, por favor vuelva a intentarlo.",
     1: "El evento seleccionado no existe.",

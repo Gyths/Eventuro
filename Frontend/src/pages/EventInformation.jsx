@@ -201,7 +201,11 @@ export default function TicketSelection() {
                       <div className="flex flex-1 flex-row justify-start items-center text-center gap-4">
                         <UserGroupIcon className="flex size-5"></UserGroupIcon>
                         <p className="inline-block text-start">
-                          {event?.accessPolicyDescription}
+                          {
+                            EVENT_INFORMATION_TEXTS.access_policy[
+                              event?.accessPolicy
+                            ]
+                          }
                         </p>
                       </div>
                       <div className="flex flex-1 flex-row justify-start items-center text-center gap-4">
