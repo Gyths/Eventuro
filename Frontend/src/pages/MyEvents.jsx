@@ -348,8 +348,7 @@ function EventDetail({ eventNode, reload }) {
 
       {eventNode.refundPolicyText && (
         <p className="text-gray-700">
-          <strong>Política de devolución:</strong>{" "}
-          {eventNode.refundPolicyText}
+          <strong>Política de devolución:</strong> {eventNode.refundPolicyText}
         </p>
       )}
       {!eventNode.refundPolicyText && (
@@ -396,39 +395,29 @@ function EventDetail({ eventNode, reload }) {
             ))}
           </div>
 
-          <div className="flex justify-center mt-4">
+          <div className="flex justify-between mt-4">
             <CancelEventButton
               onClick={openCancelModal}
               disabled={isExpiredOrRunning}
             />
           </div>
         </>
-      ) :
-      (
-        eventNode.status === "C" ?
-        (
-          <p className="text-gray-500 text-center py-6 border border-gray-200 rounded-xl bg-gray-50">
-            Este evento ha sido cancelado, por lo que las compras ya no estarán
-            disponibles.
-          </p>
-        ) :
-        (
-          eventNode.status === "D" ?
-          (
-            <p className="text-gray-500 text-center py-6 border border-gray-200 rounded-xl bg-gray-50">
-              Este evento ha sido desaprobado, por lo que las compras no estarán
-              disponibles.
-            </p>
-          ) :
-          (
-            <p className="text-gray-500 text-center py-6 border border-gray-200 rounded-xl bg-gray-50">
-              Este evento aún no está aprobado, por lo que las compras todavía no estarán
-              disponibles.
-            </p>
-          )
-        )
-      )
-    }
+      ) : eventNode.status === "C" ? (
+        <p className="text-gray-500 text-center py-6 border border-gray-200 rounded-xl bg-gray-50">
+          Este evento ha sido cancelado, por lo que las compras ya no estarán
+          disponibles.
+        </p>
+      ) : eventNode.status === "D" ? (
+        <p className="text-gray-500 text-center py-6 border border-gray-200 rounded-xl bg-gray-50">
+          Este evento ha sido desaprobado, por lo que las compras no estarán
+          disponibles.
+        </p>
+      ) : (
+        <p className="text-gray-500 text-center py-6 border border-gray-200 rounded-xl bg-gray-50">
+          Este evento aún no está aprobado, por lo que las compras todavía no
+          estarán disponibles.
+        </p>
+      )}
 
       {/* Modal de confirmación para el EVENTO completo */}
       <ConfirmCancelModal
