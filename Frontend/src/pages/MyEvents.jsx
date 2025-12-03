@@ -3,6 +3,7 @@ import { useAuth } from "../services/auth/AuthContext";
 import { BASE_URL } from "../config";
 import placeholder from "../assets/image-placeholder.svg";
 import ResponseModal from "../components/ResponseModal";
+import ViewAttendeesButton from "../components/ViewAttendeesButton.jsx";
 import CancelEventButton from "../components/CancelEventButton";
 import ConfirmCancelModal from "../components/ConfirmCancelButton";
 import { EventuroApi } from "../api.js";
@@ -257,6 +258,8 @@ const getEventStatusLabel = (eventNode) => {
 function EventDetail({ eventNode, reload }) {
   const status = getEventStatusLabel(eventNode);
 
+  const [user] = useAuth();
+  console.log(user);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
 
   // Modal de respuesta (éxito / error)
@@ -269,6 +272,8 @@ function EventDetail({ eventNode, reload }) {
     status.text.toLowerCase().includes("expirado") ||
     status.text.toLowerCase().includes("curso") ||
     status.text.toLowerCase().includes("cancelado");
+
+  async function handleViewAttendees(eventId, organizerId) {}
 
   const openCancelModal = () => {
     if (isExpiredOrRunning) return;
@@ -396,6 +401,11 @@ function EventDetail({ eventNode, reload }) {
           </div>
 
           <div className="flex justify-between mt-4">
+            <ViewAttendeesButton
+              onClick={() =>
+                handleViewAttendees(eventNode.eventId, user.organizerId)
+              }
+            />
             <CancelEventButton
               onClick={openCancelModal}
               disabled={isExpiredOrRunning}
