@@ -1,3 +1,4 @@
+// src/pages/MyEvents.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../services/auth/AuthContext";
 import { BASE_URL } from "../config";
@@ -51,7 +52,6 @@ export default function MyEvents() {
     load();
   }, [user]);
 
-  // Construye árbol evento → fechas → info
   const reload = async () => {
     if (!user?.organizer?.organizerId) return;
     const organizerId = user.organizer.organizerId;
@@ -72,30 +72,55 @@ export default function MyEvents() {
     setEventsRaw(items);
   };
 
+  // Construye árbol evento → fechas → zonas → tipos
   useEffect(() => {
-    const tree = eventsRaw.map((ev) => ({
-      eventId: ev.eventId,
-      title: ev.title,
-      inPerson: ev.inPerson,
-      image:
-        ev.imagePrincipalURLSigned || ev.imageBannerURLSigned || placeholder,
-      status: ev.status,
-      description: ev.description,
-      refundPolicyText: ev.refundPolicyText,
-      venue: ev.venue,
-      dates:
-        ev.dates?.map((d) => ({
-          dateId: d.eventDateId,
+    const tree = eventsRaw.map((ev) => {
+      // solo fechas activas (active !== false)
+      const datesRaw = Array.isArray(ev.dates)
+        ? ev.dates.filter((d) => d.active !== false)
+        : [];
+
+      const dates = datesRaw.map((d, idxDate) => {
+        // solo zonas activas
+        const zonesRaw = Array.isArray(d.zoneDates)
+          ? d.zoneDates.filter((z) => z.active !== false)
+          : [];
+
+        const zones = zonesRaw.map((z, idxZone) => ({
+          zoneKey: z.eventDateZoneId ?? `${idxDate}-${idxZone}`,
+          eventDateZoneId: z.eventDateZoneId,
+          name: z.name,
+          capacity: z.capacity,
+          sold: z.capacity - z.capacityRemaining,
+          // sólo allocations activas
+          allocations: (z.allocations ?? []).filter(
+            (t) => t.active !== false
+          ),
+        }));
+
+        return {
+          dateKey: d.eventDateId ?? idxDate,
+          eventDateId: d.eventDateId,
           startAt: d.startAt,
           endAt: d.endAt,
-          zones:
-            d.zoneDates?.map((z) => ({
-              name: z.name,
-              capacity: z.capacity,
-              sold: z.capacity - z.capacityRemaining, // <-- usa capacityRemaining
-            })) || [],
-        })) || [],
-    }));
+          zones,
+        };
+      });
+
+      return {
+        eventId: ev.eventId,
+        title: ev.title,
+        inPerson: ev.inPerson,
+        image:
+          ev.imagePrincipalURLSigned || ev.imageBannerURLSigned || placeholder,
+        status: ev.status,
+        description: ev.description,
+        refundPolicyText: ev.refundPolicyText,
+        venue: ev.venue,
+        dates,
+      };
+    });
+
     setEventsTree(tree);
     setSelectedEventId(tree[0]?.eventId ?? null);
   }, [eventsRaw]);
@@ -258,13 +283,14 @@ function EventDetail({ eventNode, reload }) {
   const status = getEventStatusLabel(eventNode);
 
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
-
-  // Modal de respuesta (éxito / error)
   const [responseModalOpen, setResponseModalOpen] = useState(false);
-  const [responseType, setResponseType] = useState("success"); // "success" | "error"
+  const [responseType, setResponseType] = useState("success");
   const [responseMessage, setResponseMessage] = useState("");
 
-  // Desactivar si el evento está "en curso" o "expirado"
+  // Modal de tipos de entrada
+  const [typesModalOpen, setTypesModalOpen] = useState(false);
+  const [zoneForTypes, setZoneForTypes] = useState(null);
+
   const isExpiredOrRunning =
     status.text.toLowerCase().includes("expirado") ||
     status.text.toLowerCase().includes("curso") ||
@@ -301,8 +327,6 @@ function EventDetail({ eventNode, reload }) {
         "success",
         "El evento ha sido cancelado correctamente."
       );
-
-      // TODO opcional: actualizar lista (por ejemplo, cambiar estado o quitar evento)
       await reload();
     } catch (err) {
       console.error("Error al cancelar evento:", err);
@@ -313,6 +337,92 @@ function EventDetail({ eventNode, reload }) {
           "Ocurrió un error al cancelar el evento. Inténtalo nuevamente."
       );
     }
+  };
+
+  // ---- Eliminar fecha, zona y tipo de entrada ----
+  const handleDeleteDate = async (eventDateId) => {
+    if (!eventDateId) {
+      openResponseModal(
+        "error",
+        "No se pudo identificar la fecha a eliminar. Asegúrate de que el backend envíe eventDateId."
+      );
+      return;
+    }
+
+    try {
+      await EventuroApi({
+        endpoint: `/event/${eventDateId}/del-date`,
+        method: "POST",
+      });
+      openResponseModal("success", "La fecha ha sido eliminada.");
+      await reload();
+    } catch (err) {
+      console.error("Error al eliminar fecha:", err);
+      openResponseModal(
+        "error",
+        err?.message || "No se pudo eliminar la fecha."
+      );
+    }
+  };
+
+  const handleDeleteZone = async (eventDateZoneId) => {
+    if (!eventDateZoneId) {
+      openResponseModal(
+        "error",
+        "No se pudo identificar la zona a eliminar. Asegúrate de que el backend envíe eventDateZoneId."
+      );
+      return;
+    }
+
+    try {
+      await EventuroApi({
+        endpoint: `/event/${eventDateZoneId}/del-zone`,
+        method: "POST",
+      });
+      openResponseModal("success", "La zona ha sido eliminada.");
+      await reload();
+    } catch (err) {
+      console.error("Error al eliminar zona:", err);
+      openResponseModal(
+        "error",
+        err?.message || "No se pudo eliminar la zona."
+      );
+    }
+  };
+
+  const handleDeleteType = async (allocationId) => {
+    if (!allocationId) {
+      openResponseModal(
+        "error",
+        "No se pudo identificar el tipo de entrada a eliminar."
+      );
+      return;
+    }
+
+    try {
+      await EventuroApi({
+        endpoint: `/event-date-zone-allocation/${allocationId}/del`,
+        method: "POST",
+      });
+      openResponseModal("success", "El tipo de entrada ha sido eliminado.");
+      await reload();
+    } catch (err) {
+      console.error("Error al eliminar tipo de entrada:", err);
+      openResponseModal(
+        "error",
+        err?.message || "No se pudo eliminar el tipo de entrada."
+      );
+    }
+  };
+
+  const openTypesModal = (zone) => {
+    setZoneForTypes(zone);
+    setTypesModalOpen(true);
+  };
+
+  const closeTypesModal = () => {
+    setTypesModalOpen(false);
+    setZoneForTypes(null);
   };
 
   return (
@@ -372,25 +482,58 @@ function EventDetail({ eventNode, reload }) {
         </p>
       )}
 
-      {/* Fechas y zonas solo si está aprobado */}
+      {/* Fechas, zonas y tipos de entrada (solo si está aprobado) */}
       {eventNode.status === "A" ? (
         <>
           <div className="space-y-4">
             {eventNode.dates.map((d) => (
-              <div key={d.dateId} className="rounded-xl border border-gray-200">
-                <div className="px-3 py-2 bg-gray-50 rounded-t-xl border-b border-gray-200">
+              <div
+                key={d.dateKey}
+                className="rounded-xl border border-gray-200"
+              >
+                <div className="px-3 py-2 bg-gray-50 rounded-t-xl border-b border-gray-200 flex justify-between items-center gap-2">
                   <h4 className="text-base sm:text-lg font-semibold text-gray-900">
                     {new Date(d.startAt).toLocaleString("es-PE")} -{" "}
                     {new Date(d.endAt).toLocaleString("es-PE")}
                   </h4>
+                  <button
+                    onClick={() => handleDeleteDate(d.eventDateId)}
+                    className="text-xs px-2 py-1 rounded-md bg-red-50 text-red-600 hover:bg-red-100"
+                  >
+                    Eliminar fecha
+                  </button>
                 </div>
                 <div className="p-3 space-y-2">
-                  {d.zones?.map((z, i) => (
-                    <div key={i} className="text-sm text-gray-700">
-                      <strong>{z.name}</strong>: Capacidad {z.capacity},
-                      Vendidas {z.sold}
+                  {d.zones?.map((z) => (
+                    <div
+                      key={z.zoneKey}
+                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm text-gray-700 border-b last:border-b-0 pb-2 last:pb-0"
+                    >
+                      <div>
+                        <strong>{z.name}</strong>: Capacidad {z.capacity},
+                        Vendidas {z.sold}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={() => openTypesModal(z)}
+                          className="px-3 py-1 text-xs rounded-md bg-purple-50 text-purple-700 hover:bg-purple-100"
+                        >
+                          Ver tipos de entrada
+                        </button>
+                        <button
+                          onClick={() => handleDeleteZone(z.eventDateZoneId)}
+                          className="px-3 py-1 text-xs rounded-md bg-red-50 text-red-600 hover:bg-red-100"
+                        >
+                          Eliminar zona
+                        </button>
+                      </div>
                     </div>
                   ))}
+                  {!d.zones?.length && (
+                    <p className="text-xs text-gray-400">
+                      No hay zonas configuradas para esta fecha.
+                    </p>
+                  )}
                 </div>
               </div>
             ))}
@@ -403,34 +546,24 @@ function EventDetail({ eventNode, reload }) {
             />
           </div>
         </>
-      ) :
-      (
-        eventNode.status === "C" ?
-        (
-          <p className="text-gray-500 text-center py-6 border border-gray-200 rounded-xl bg-gray-50">
-            Este evento ha sido cancelado, por lo que las compras ya no estarán
-            disponibles.
-          </p>
-        ) :
-        (
-          eventNode.status === "D" ?
-          (
-            <p className="text-gray-500 text-center py-6 border border-gray-200 rounded-xl bg-gray-50">
-              Este evento ha sido desaprobado, por lo que las compras no estarán
-              disponibles.
-            </p>
-          ) :
-          (
-            <p className="text-gray-500 text-center py-6 border border-gray-200 rounded-xl bg-gray-50">
-              Este evento aún no está aprobado, por lo que las compras todavía no estarán
-              disponibles.
-            </p>
-          )
-        )
-      )
-    }
+      ) : eventNode.status === "C" ? (
+        <p className="text-gray-500 text-center py-6 border border-gray-200 rounded-xl bg-gray-50">
+          Este evento ha sido cancelado, por lo que las compras ya no estarán
+          disponibles.
+        </p>
+      ) : eventNode.status === "D" ? (
+        <p className="text-gray-500 text-center py-6 border border-gray-200 rounded-xl bg-gray-50">
+          Este evento ha sido desaprobado, por lo que las compras no estarán
+          disponibles.
+        </p>
+      ) : (
+        <p className="text-gray-500 text-center py-6 border border-gray-200 rounded-xl bg-gray-50">
+          Este evento aún no está aprobado, por lo que las compras todavía no
+          estarán disponibles.
+        </p>
+      )}
 
-      {/* Modal de confirmación para el EVENTO completo */}
+      {/* Modal de confirmación para cancelar evento completo */}
       <ConfirmCancelModal
         open={cancelModalOpen}
         onClose={closeCancelModal}
@@ -445,11 +578,93 @@ function EventDetail({ eventNode, reload }) {
         type={responseType}
         title={
           responseType === "success"
-            ? "Evento cancelado"
-            : "Error al cancelar evento"
+            ? "Operación exitosa"
+            : "Ocurrió un problema"
         }
         message={responseMessage}
       />
+
+      {/* Modal de tipos de entrada por zona */}
+      <TypesModal
+        open={typesModalOpen}
+        onClose={closeTypesModal}
+        zone={zoneForTypes}
+        onDeleteType={handleDeleteType}
+      />
+    </div>
+  );
+}
+
+// Modal para mostrar tipos de entrada de una zona
+function TypesModal({ open, onClose, zone, onDeleteType }) {
+  if (!open || !zone) return null;
+
+  // por si acaso: sólo allocations activas
+  const allocations = (zone.allocations ?? []).filter(
+    (t) => t.active !== false
+  );
+
+  return (
+    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40">
+      <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full mx-4 p-5">
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-lg font-semibold text-gray-900">
+            Tipos de entrada – {zone.name}
+          </h3>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+          >
+            ×
+          </button>
+        </div>
+
+        {allocations.length > 0 ? (
+          <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+            {allocations.map((t) => (
+              <div
+                key={t.eventDateZoneAllocationId}
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border border-gray-200 rounded-lg px-3 py-2"
+              >
+                <div className="text-sm text-gray-800">
+                  <p>
+                    <strong>{t.audienceName}</strong>
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    Tipo de descuento: {t.discountType} • Valor:{" "}
+                    {t.discountValue}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Asignados: {t.allocatedQuantity ?? "—"} • Restantes:{" "}
+                    {t.remainingQuantity ?? "—"}
+                  </p>
+                </div>
+                <button
+                  onClick={() =>
+                    onDeleteType(t.eventDateZoneAllocationId)
+                  }
+                  className="self-start sm:self-auto px-3 py-1 text-xs rounded-md bg-red-50 text-red-600 hover:bg-red-100"
+                >
+                  Eliminar
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-500">
+            Esta zona aún no tiene tipos de entrada configurados.
+          </p>
+        )}
+
+        <div className="mt-4 flex justify-end">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
+          >
+            Cerrar
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

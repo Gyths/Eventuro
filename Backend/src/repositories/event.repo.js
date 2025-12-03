@@ -464,8 +464,7 @@ export async function eventDetails(id) {
 export async function listEventsByOrganizerRepo(idOrganizer) {
   const events = await prisma.event.findMany({
     where: {
-      organizerId: BigInt(idOrganizer)
-
+      organizerId: BigInt(idOrganizer),
     },
     select: {
       eventId: true,
@@ -486,13 +485,41 @@ export async function listEventsByOrganizerRepo(idOrganizer) {
       },
       dates: {
         select: {
+          eventDateId: true,
           startAt: true,
           endAt: true,
+          active: true,               
           zoneDates: {
             select: {
+              eventDateZoneId: true,
               name: true,
+              kind: true,
+              basePrice: true,
+              currency: true,
               capacity: true,
-              capacityRemaining: true, // <-- nuevo
+              capacityRemaining: true,
+              active: true,            
+
+              allocations: {
+                where: {
+                  active: true,         // solo allocations activas (lógica de borrado)
+                },
+                select: {
+                  eventDateZoneAllocationId: true,
+                  audienceName: true,
+                  discountType: true,
+                  discountValue: true,
+                  allocatedQuantity: true,
+                  remainingQuantity: true,
+                  active: true,       
+                },
+                orderBy: {
+                  audienceName: "asc",
+                },
+              },
+            },
+            orderBy: {
+              name: "asc",
             },
           },
         },
@@ -522,20 +549,32 @@ export async function listEventsByOrganizerRepo(idOrganizer) {
       }
     }
 
-
     for (const d of event.dates) {
       if (Array.isArray(d.zoneDates)) {
         for (const z of d.zoneDates) {
-          z.sold = z.capacity - z.capacityRemaining; // <-- nuevo cálculo
+          // vendidos por zona
+          z.sold = z.capacity - z.capacityRemaining;
+
+          if (Array.isArray(z.allocations)) {
+            for (const t of z.allocations) {
+              if (
+                typeof t.allocatedQuantity === "number" &&
+                typeof t.remainingQuantity === "number"
+              ) {
+                t.sold = t.allocatedQuantity - t.remainingQuantity;
+              }
+            }
+          }
         }
       }
     }
-
-
   }
 
   return events;
 }
+
+
+
 
 export async function listEventInfoRepo(eventId) {
   const event = await prisma.event.findUnique({
