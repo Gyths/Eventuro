@@ -465,7 +465,7 @@ export async function listEventsByOrganizerRepo(idOrganizer) {
   const events = await prisma.event.findMany({
     where: {
       organizerId: BigInt(idOrganizer)
-      
+
     },
     select: {
       eventId: true,
@@ -490,7 +490,7 @@ export async function listEventsByOrganizerRepo(idOrganizer) {
           endAt: true,
           zoneDates: {
             select: {
-              name:true,
+              name: true,
               capacity: true,
               capacityRemaining: true, // <-- nuevo
             },

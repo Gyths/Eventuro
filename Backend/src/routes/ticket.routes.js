@@ -7,7 +7,7 @@ import { approveRefundCtrl } from '../controllers/ticket.controller.js';
 import { rejectRefundCtrl } from '../controllers/ticket.controller.js';
 import { verifyToken, attachUserContext } from '../middlewares/ensureAuth.js';
 import { getMyTicketsController } from "../controllers/ticket.controller.js";
-import { resendConfirmationEmail} from "../controllers/email.controller.js";
+import { resendConfirmationEmail } from "../controllers/email.controller.js";
 
 const router = express.Router();
 
