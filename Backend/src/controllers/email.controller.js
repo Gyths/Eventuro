@@ -2,6 +2,7 @@ import { confirmationEmail } from '../services/email.service.js';
 import { findUserByIdFullSvc } from '../services/user.service.js';
 import { sendDeleteTicketEmailSvc } from '../services/email.service.js';
 import { sendDeleteEventEmailSvc } from '../services/email.service.js';
+import { getEventExtraInfoSvc } from '../services/event.service.js';
 
 export async function sendConfirmationEmailCtrl(idClient, orderInfo) {
   try {
@@ -28,6 +29,9 @@ export async function resendConfirmationEmailCtrl(idClient, orderInfo) {
     if (!to || !orderInfo) {
       throw new Error('Destinatario y detalles del pedido son requeridos.');
     }
+    const firstTicket = orderInfo.items?.[0]?.Ticket?.[0];
+
+    const { imageKey, location } = await getEventExtraInfoSvc(firstTicket.eventDate.event.title);
 
     const transformedOrderInfo = {
       orderId: orderInfo.orderId,
@@ -41,6 +45,8 @@ export async function resendConfirmationEmailCtrl(idClient, orderInfo) {
         zoneName: ticket.zone?.name || ticket.allocation?.audienceName || 'General',
         setCol: ticket.seat?.seatNumber || null,
         setRow: ticket.seat?.rowNumber || null,
+        eventImagePrincipalKey: imageKey,
+        eventLocation: location,
       }))
     };
 

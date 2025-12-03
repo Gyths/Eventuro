@@ -15,6 +15,7 @@ import {
   deleteEventDateZoneRepo,
   deleteEventDateRepo,
   deleteEventRepo,
+  getEventExtraInfoRepo,
 } from "../repositories/event.repo.js";
 import { deleteTicketSvc } from "./ticket.service.js";
 import { sendDeleteEventEmailCtrl } from "../controllers/email.controller.js";
@@ -149,4 +150,8 @@ export async function deleteEventSvc(eventId) {
     await sendDeleteEventEmailCtrl(user.ownerEmail, user.eventTitle);
   }
   return final_result;
+}
+
+export async function getEventExtraInfoSvc(eventName) {
+  return getEventExtraInfoRepo(eventName);
 }

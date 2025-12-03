@@ -334,7 +334,11 @@ export async function createTicketRepo(input) {
       },
       include: {
         eventDate: {
-          include: { event: true },
+          include: {
+            event: {
+              include: { venue: true }
+            },
+          },
         },
         zone: true,
         seat: true,
@@ -349,6 +353,8 @@ export async function createTicketRepo(input) {
         eventName: t.eventDate.event.title,
         eventDate: t.eventDate.startAt,
         zoneName: t.zone?.name || "No definida",
+        eventImagePrincipalKey: t.eventDate.event.imagePrincipalKey,
+        eventLocation: t.eventDate.event.venue.address,
         setRow: t.seat?.row,
         setCol: t.seat?.col,
         seatId: t.seatId ? Number(t.seatId) : null,

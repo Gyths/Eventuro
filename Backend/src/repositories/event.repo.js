@@ -465,7 +465,7 @@ export async function listEventsByOrganizerRepo(idOrganizer) {
   const events = await prisma.event.findMany({
     where: {
       organizerId: BigInt(idOrganizer)
-      
+
     },
     select: {
       eventId: true,
@@ -490,7 +490,7 @@ export async function listEventsByOrganizerRepo(idOrganizer) {
           endAt: true,
           zoneDates: {
             select: {
-              name:true,
+              name: true,
               capacity: true,
               capacityRemaining: true, // <-- nuevo
             },
@@ -1201,3 +1201,21 @@ export async function deleteEventRepo(eventId) {
     };
   });
 }
+
+export async function getEventExtraInfoRepo(eventName) {
+  const event = await prisma.event.findFirst({
+    where: { title: eventName },
+    select: {
+      imagePrincipalKey: true,
+      venue: {
+        select: { address: true },
+      },
+    },
+  });
+
+  if (!event) {
+    throw new Error(`Evento con nombre "${eventName}" no encontrado.`);
+  }
+
+  return { imageKey: event.imagePrincipalKey, location: event.venue.address };
+} 

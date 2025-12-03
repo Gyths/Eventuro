@@ -18,6 +18,7 @@ export async function createTicketSvc(input, ctx = {}) {
   }
 
   const tickets = await createTicketRepo(input, ctx);
+  console.log(tickets.length + ' tickets creados para la orden ' + input.orderId);
   try {
     await sendConfirmationEmailCtrl(input.buyerUserId, tickets);
   } catch (err) {
