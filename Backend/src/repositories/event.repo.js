@@ -608,6 +608,7 @@ export async function listEventInfoRepo(eventId) {
 
           //Relación EventZoneDate
           zoneDates: {
+            where: { active: true },
             select: {
               eventDateZoneId: true,
               eventDateId: true,
