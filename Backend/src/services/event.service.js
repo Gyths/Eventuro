@@ -164,3 +164,4 @@ export async function deleteTicketyTypeSvc(eventId, ticketTypeId) {
     await Promise.all(zoneList.map((id) => deleteEventDateZoneSvc(id)));
   }
 }
+
