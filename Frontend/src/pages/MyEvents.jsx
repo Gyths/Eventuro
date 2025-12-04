@@ -401,7 +401,7 @@ function EventDetail({ eventNode, reload }) {
 
     try {
       await EventuroApi({
-        endpoint: `/event-date-zone-allocation/${allocationId}/del`,
+        endpoint: `/event/${allocationId}/del-allocation`,
         method: "POST",
       });
       openResponseModal("success", "El tipo de entrada ha sido eliminado.");
