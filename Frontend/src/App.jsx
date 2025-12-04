@@ -29,6 +29,7 @@ import MyCalendar from "./pages/MyCalendar.jsx";
 import TicketSelection from "./pages/EventInformation.jsx";
 import SolicitudesReembolso from "./pages/SolicitudesReembolso.jsx";
 import VentasPorZona from "./pages/VentasPorZona";
+import ViewAttendeesPage from "./pages/ViewAttendeesPage.jsx";
 
 import AdminRoute from "./routes/AdminRoute";
 
@@ -58,11 +59,9 @@ function App() {
         <Route path="registro" element={<Register />} />
         <Route element={<OrganizerRoute requireApproved={true} />}>
           <Route path="my-events" element={<MisEventosCreados />} />
-          <Route path="crearEvento" element={< CrearEventoCards/>} />
-          <Route
-            path="solicitudes-reembolso"
-            element={<SolicitudesReembolso />}
-          />
+          <Route path="crearEvento" element={<CrearEventoCards />} />
+          <Route path="solicitudes-reembolso" element={<SolicitudesReembolso />} />
+          <Route path="attendeesList" element={<ViewAttendeesPage />} />
           <Route path="ventas-zona" element={<VentasPorZona />} />
           {/*<Route> se comenta para evitar que la pagina dentro de ella esté restringida a una sesión autenticada*/}
           {/*<Route element={<ProtectedRoute />}></Route>*/}
@@ -89,10 +88,7 @@ function App() {
           <Route path="admin/logs" element={<AdminLogs />} />
           <Route path="admin/categories" element={<ManageCategories />} />
           {/* Redirección de /admin a /admin/dashboard */}
-          <Route
-            path="admin"
-            element={<Navigate to="/admin/dashboard" replace />}
-          />
+          <Route path="admin" element={<Navigate to="/admin/dashboard" replace />} />
         </Route>
 
         <Route path="app/*" element={<Navigate to="/" replace />} />
