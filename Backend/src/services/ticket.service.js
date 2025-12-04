@@ -7,6 +7,7 @@ import { rejectTicketRefund } from '../repositories/ticket.repo.js';
 import { sendConfirmationEmailCtrl } from '../controllers/email.controller.js';
 import { deleteTicketRepo } from '../repositories/ticket.repo.js';
 import { sendDeleteTicketEmail } from '../controllers/email.controller.js';
+import { listticketsByType } from '../repositories/ticket.repo.js';
 
 import { getMyTicketsRepo, countMyTicketsRepo } from "../repositories/ticket.repo.js";
 import { getSignedUrlForFile } from "../utils/s3.js"
@@ -213,4 +214,8 @@ export async function deleteTicketSvc(ticketid) {
     console.error('Error enviando correo de eliminación de ticket:', err);
   }
   return data;
+}
+
+export async function listTicketByTypeSvc(eventId, ticketTypeId) {
+  return await listticketsByType(eventId, ticketTypeId);
 }

@@ -17,7 +17,7 @@ import {
   deleteEventRepo,
   getEventExtraInfoRepo,
 } from "../repositories/event.repo.js";
-import { deleteTicketSvc } from "./ticket.service.js";
+import { deleteTicketSvc, listTicketByTypeSvc } from "./ticket.service.js";
 import { sendDeleteEventEmailCtrl } from "../controllers/email.controller.js";
 
 export async function createEventSvc(userId, input) {
@@ -154,4 +154,13 @@ export async function deleteEventSvc(eventId) {
 
 export async function getEventExtraInfoSvc(eventName) {
   return getEventExtraInfoRepo(eventName);
+}
+export async function deleteTicketyTypeSvc(eventId, ticketTypeId) {
+  //antes de eliminar el tipo de ticket, buscar todos los tickets asociados a ese tipo de ticket y eliminarlos
+  const ticketsToDelete = await listTicketByTypeSvc(eventId, ticketTypeId);
+  const zoneList = ticketsToDelete.map((t) => BigInt(t.eventDateZoneId));
+  console.log("Zones to delete:", zoneList);
+  if (zoneList.length > 0) {
+    await Promise.all(zoneList.map((id) => deleteEventDateZoneSvc(id)));
+  }
 }
