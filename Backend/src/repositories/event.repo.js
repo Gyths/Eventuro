@@ -450,13 +450,41 @@ export async function listEventsByOrganizerRepo(idOrganizer) {
       },
       dates: {
         select: {
+          eventDateId: true,
           startAt: true,
           endAt: true,
+          active: true,
           zoneDates: {
             select: {
+              eventDateZoneId: true,
               name: true,
+              kind: true,
+              basePrice: true,
+              currency: true,
               capacity: true,
-              capacityRemaining: true, // <-- nuevo
+              capacityRemaining: true,
+              active: true,
+
+              allocations: {
+                where: {
+                  active: true, // solo allocations activas (lógica de borrado)
+                },
+                select: {
+                  eventDateZoneAllocationId: true,
+                  audienceName: true,
+                  discountType: true,
+                  discountValue: true,
+                  allocatedQuantity: true,
+                  remainingQuantity: true,
+                  active: true,
+                },
+                orderBy: {
+                  audienceName: "asc",
+                },
+              },
+            },
+            orderBy: {
+              name: "asc",
             },
           },
         },
@@ -485,7 +513,16 @@ export async function listEventsByOrganizerRepo(idOrganizer) {
     for (const d of event.dates) {
       if (Array.isArray(d.zoneDates)) {
         for (const z of d.zoneDates) {
-          z.sold = z.capacity - z.capacityRemaining; // <-- nuevo cálculo
+          // vendidos por zona
+          z.sold = z.capacity - z.capacityRemaining;
+
+          if (Array.isArray(z.allocations)) {
+            for (const t of z.allocations) {
+              if (typeof t.allocatedQuantity === "number" && typeof t.remainingQuantity === "number") {
+                t.sold = t.allocatedQuantity - t.remainingQuantity;
+              }
+            }
+          }
         }
       }
     }
@@ -565,6 +602,7 @@ export async function listEventInfoRepo(eventId) {
 
           //Relación EventZoneDate
           zoneDates: {
+            where: { active: true },
             select: {
               eventDateZoneId: true,
               eventDateId: true,
@@ -1155,4 +1193,22 @@ export async function deleteEventRepo(eventId) {
       relatedEventDateIds: datesList,
     };
   });
+}
+
+export async function getEventExtraInfoRepo(eventName) {
+  const event = await prisma.event.findFirst({
+    where: { title: eventName },
+    select: {
+      imagePrincipalKey: true,
+      venue: {
+        select: { address: true },
+      },
+    },
+  });
+
+  if (!event) {
+    throw new Error(`Evento con nombre "${eventName}" no encontrado.`);
+  }
+
+  return { imageKey: event.imagePrincipalKey, location: event.venue.address };
 }

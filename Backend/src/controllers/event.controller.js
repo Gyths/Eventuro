@@ -14,6 +14,8 @@ import { toJSONSafe } from "../utils/serialize.js";
 import { deleteEventDateZoneSvc } from "../services/event.service.js";
 import { deleteEventDateSvc } from "../services/event.service.js";
 import { deleteEventSvc } from "../services/event.service.js";
+import { deleteTicketyTypeSvc } from "../services/event.service.js";
+import { deleteEventDateZoneAllocationSvc } from "../services/event.service.js";
 
 import {
   setFinalPrices,
@@ -271,5 +273,26 @@ export async function deleteEvent(req, res) {
     return res.status(200).json(toJSONSafe(data));
   } catch (err) {
     return res.status(400).json({ error: "delEvent " + err.message });
+  }
+}
+
+export async function deleteTicketyTypeCtrl(req, res) {
+  try {
+    const { eventId } = req.params;
+    const { ticketType } = req.body;
+    const data = await deleteTicketyTypeSvc(eventId, ticketType);
+    return res.status(200).json(toJSONSafe(data));
+  } catch (err) {
+    return res.status(400).json({ error: "deleteTicketType " + err.message });
+  }
+}
+
+export async function deleteEventZoneAllocation(req, res) {
+  try {
+    const { eventDateZoneAllocationId } = req.params;
+    const data = await deleteEventDateZoneAllocationSvc(eventDateZoneAllocationId);
+    return res.status(200).json(toJSONSafe(data));
+  } catch (err) {
+    return res.status(400).json({ error: "deleteEventZoneAllocation " + err.message });
   }
 }
