@@ -1,0 +1,60 @@
+export default async function insertDiscount(prisma) {
+  const events = await prisma.event.findMany();
+  const addDays = (d) => new Date(Date.now() + d * 1000 * 60 * 60 * 24);
+  await prisma.discount.createMany({
+    data: [
+      {
+        eventId: events[0].eventId,
+        scope: "EVENT",
+        code: "ABCDEF",
+        percentage: 15,
+        stackable: true,
+        startAt: new Date(),
+        endAt: addDays(30),
+        status: "A",
+        initialQty: 10,
+        availableQty: 10,
+        appliesTo: "Experiencia VIP",
+      },
+      {
+        eventId: events[0].eventId,
+        scope: "EVENT",
+        code: "ABCDEFG",
+        percentage: 25,
+        stackable: true,
+        startAt: new Date(),
+        endAt: addDays(30),
+        status: "A",
+        initialQty: 10,
+        availableQty: 10,
+        appliesTo: "Experiencia General",
+      },
+      {
+        eventId: events[1].eventId,
+        scope: "EVENT",
+        code: "12345",
+        percentage: 45,
+        stackable: true,
+        startAt: new Date(),
+        endAt: addDays(30),
+        status: "A",
+        initialQty: 5,
+        availableQty: 5,
+        appliesTo: "Zona VIP",
+      },
+      {
+        eventId: events[1].eventId,
+        scope: "EVENT",
+        code: "123456",
+        percentage: 10,
+        stackable: true,
+        startAt: new Date(),
+        endAt: addDays(30),
+        status: "A",
+        initialQty: 20,
+        availableQty: 20,
+        appliesTo: "Zona VIP",
+      },
+    ],
+  });
+}

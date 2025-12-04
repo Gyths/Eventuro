@@ -11,6 +11,12 @@ import {
   listEventstoApprove,
   getSalesSummaryCtrl,
   getAttendeesByEventCtrl,
+  updateEventDetails,
+  deleteEvent,
+  deleteEventDate,
+  deleteEventDateZone,
+  deleteTicketyTypeCtrl,
+  deleteEventZoneAllocation,
 } from "../controllers/event.controller.js";
 import { verifyToken } from "../middlewares/ensureAuth.js";
 import { attachUserContext } from "../middlewares/ensureAuth.js";
@@ -32,6 +38,7 @@ router.post(
   createEvent
 );
 router.get("/list", listEvent);
+router.get("/events-by-organizer/:idOrganizer", listEventsByOrganizer);
 router.get("/:eventId/info", listEventInfo);
 router.get("/:eventId/dates", listEventDateByEventId);
 router.get(
@@ -45,8 +52,16 @@ router.put(
   requireAdmin,
   setEventStatus
 );
+router.put(
+  "/:id/update-details",
+  verifyToken,
+  attachUserContext,
+  requireAdmin,
+  updateEventDetails
+);
+
 router.get("/:id/details", getEventDetails);
-router.get("/events-by-organizer/:idOrganizer", listEventsByOrganizer);
+
 router.get("/sales-summary/:organizerId", getSalesSummaryCtrl);
 router.get("/:eventId/attendanceEvent/organizer/:organizerId", getAttendeesByEventCtrl);
 router.get(
@@ -56,4 +71,9 @@ router.get(
   requireAdmin,
   listEventstoApprove
 );
+router.post("/:eventId/del", verifyToken, deleteEvent);
+router.post("/:eventDateId/del-date", verifyToken, deleteEventDate);
+router.post("/:eventDateZoneId/del-zone", verifyToken, deleteEventDateZone);
+router.post("/:eventDateZoneAllocationId/del-allocation", verifyToken, deleteEventZoneAllocation);
+router.post("/:eventId/deleteType", deleteTicketyTypeCtrl); //mandar el ticketType por body
 export default router;

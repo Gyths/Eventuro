@@ -2,9 +2,12 @@ import { transporter } from '../utils/email.js';
 import { config } from '../config/env.js';
 import { generateTicketPDF } from '../utils/pdf.util.js';
 import QRCode from 'qrcode';
+import { getSignedUrlForFile } from '../utils/s3.js';
 
 export async function confirmationEmail(to, orderInfo) {
-  const { orderId, totalAmount, tickets } = orderInfo;
+  const { orderId, totalAmount, tickets, } = orderInfo;
+  const { eventImagePrincipalKey, eventLocation } = tickets[0];
+  const eventImage = await getSignedUrlForFile(eventImagePrincipalKey);
 
   // Generar los QR codes y PDFs para cada ticket
   const attachments = await Promise.all(
@@ -55,7 +58,17 @@ export async function confirmationEmail(to, orderInfo) {
           font-weight: 600;
           color: #6b7280;
         ">
-          ${t.eventID || 'Logo evento'}
+          <img 
+            src="${eventImage}" 
+            alt="Imagen del evento"
+            style="
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 12px;
+            display: block;
+            "
+          />
         </div>
 
         <!-- Zona/Tipo -->
@@ -98,7 +111,7 @@ export async function confirmationEmail(to, orderInfo) {
     minute: '2-digit'
   }) : 'Por confirmar';
 
-  const eventLocation = firstTicket?.eventLocation ? new String(firstTicket.eventLocation) : 'Por confirmar';
+  //const eventLocation = firstTicket?.eventLocation ? new String(firstTicket.eventLocation) : 'Por confirmar';
   const mailOptions = {
     from: `"Eventuro" <${config.EMAIL_USER}>`,
     to,
@@ -281,7 +294,8 @@ export async function confirmationEmail(to, orderInfo) {
 
 export async function sendReminderEmail(to, eventInfo) {
   const { title, eventDate, venue, clientName } = eventInfo;
-  
+  const { eventImagePrincipalKey, eventLocation } = eventInfo.tickets[0];
+
   const formattedDate = new Date(eventDate).toLocaleString('es-PE', {
     weekday: 'long',
     day: '2-digit',
@@ -372,7 +386,7 @@ export async function sendReminderEmail(to, eventInfo) {
                 color: #6b7280;
                 margin: 0;
               ">
-                📍 ${venue}
+                📍 ${eventLocation}
               </p>
             </div>
 
@@ -398,13 +412,50 @@ export async function sendReminderEmail(to, eventInfo) {
             ">
               <strong style="color: #8b5cf6;">Eventuro</strong> - Tus eventos, siempre contigo
             </p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `,
+          </div> `,
   };
 
   await transporter.sendMail(mailOptions);
   console.log(`Correo de recordatorio enviado a ${to}`);
+}
+
+export async function sendDeleteTicketEmailSvc(to, ticketInfo) {
+  const { ticketId, eventTitle, eventDateStart } = ticketInfo;
+  const mailoptions = {
+    from: `"Eventuro" <${config.EMAIL_USER}>`,
+    to,
+    subject: `Notificación de eliminación de ticket - Ticket #${ticketId}`,
+    html: `
+      <p>Hola,</p>
+      <p>Te informamos que tu ticket con ID <strong>${ticketId}</strong> para el evento <strong>${eventTitle}</strong> programado para el <strong>${new Date(eventDateStart).toLocaleString('es-PE')}</strong> ha sido eliminado.</p>
+      <p>Si tienes alguna pregunta o necesitas asistencia adicional, no dudes en contactarnos.</p>
+      <p>Gracias por usar Eventuro.</p>
+      <p>Saludos,<br/>El equipo de Eventuro</p>
+    `,
+  };
+
+  await transporter.sendMail(mailoptions);
+  console.log(`Correo de eliminación de ticket enviado a ${to}`);
+}
+
+export async function sendDeleteEventEmailSvc(userEmail, eventTitle) {
+  if (!userEmail) {
+    throw new Error('El correo del usuario no está disponible.');
+  }
+
+  const mailOptions = {
+    from: `"Eventuro" <${config.EMAIL_USER}>`,
+    to: userEmail,
+    subject: `Notificación de eliminación de evento - ${eventTitle}`,
+    html: `
+      <p>Hola,</p>
+      <p>Te informamos que el evento <strong>${eventTitle}</strong> ha sido eliminado de nuestra plataforma.</p>
+      <p>Si tienes alguna pregunta o necesitas asistencia adicional, no dudes en contactarnos.</p>
+      <p>Gracias por usar Eventuro.</p>
+      <p>Saludos,<br/>El equipo de Eventuro</p>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+  console.log(`Correo de eliminación de evento enviado a ${userEmail}`);
 }

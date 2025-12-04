@@ -22,12 +22,14 @@ import Home from "./pages/Home.jsx";
 import { Navigate } from "react-router-dom";
 import AuthCallback from "./pages/AuthCallback";
 import CrearEventoCards from "./pages/CrearEventoCards.jsx";
+import MisEventosCreados from "./pages/MyEvents.jsx";
 import MisTickets from "./pages/MisTickets";
 import OrganizerRoute from "./routes/OrganizerRoute";
 import MyCalendar from "./pages/MyCalendar.jsx";
 import TicketSelection from "./pages/EventInformation.jsx";
 import SolicitudesReembolso from "./pages/SolicitudesReembolso.jsx";
 import VentasPorZona from "./pages/VentasPorZona";
+import ViewAttendeesPage from "./pages/ViewAttendeesPage.jsx";
 
 import AdminRoute from "./routes/AdminRoute";
 
@@ -56,41 +58,37 @@ function App() {
         <Route path="login" element={<Login />} />
         <Route path="registro" element={<Register />} />
         <Route element={<OrganizerRoute requireApproved={true} />}>
-          <Route path="/crearEvento" element={<CrearEventoCards />} />
-          <Route
-            path="/solicitudes-reembolso"
-            element={<SolicitudesReembolso />}
-          />
-          <Route path="/ventas-zona" element={<VentasPorZona />} />
+          <Route path="my-events" element={<MisEventosCreados />} />
+          <Route path="crearEvento" element={<CrearEventoCards />} />
+          <Route path="solicitudes-reembolso" element={<SolicitudesReembolso />} />
+          <Route path="attendeesList" element={<ViewAttendeesPage />} />
+          <Route path="ventas-zona" element={<VentasPorZona />} />
           {/*<Route> se comenta para evitar que la pagina dentro de ella esté restringida a una sesión autenticada*/}
-          <Route element={<ProtectedRoute />}></Route>
-          <Route path="/reporteEventos" element={<ReporteEventos />} />
-          <Route path="app/*" element={<Navigate to="/" replace />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          {/*<Route element={<ProtectedRoute />}></Route>*/}
+          <Route path="reporteEventos" element={<ReporteEventos />} />
+          {/*<Route path="app/*" element={<Navigate to="/" replace />} />*/}
+          {/*<Route path="*" element={<Navigate to="/" replace />} />*/}
         </Route>
         <Route element={<ProtectedRoute />}>
           <Route path="pago" element={<PaymentMethod />} />
         </Route>
         <Route path="seleccionTickets" element={<TicketSelection />} />
-        <Route path="pago" element={<PaymentMethod />} />
+        {/*<Route path="pago" element={<PaymentMethod />} />*/}
         <Route path="miCalendario" element={<MyCalendar />} />
         <Route path="misTickets" element={<MisTickets />} />
         <Route path="miPerfil" element={<MiPerfil />} />
         <Route path="reclamos/nuevo" element={<LibroReclamos />} />
         <Route path="misReclamos" element={<MisReclamos />} />
         <Route element={<AdminRoute />}>
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/settings" element={<AdminSettings />} />
-          <Route path="/admin/events" element={<AdminEvents />} />
-          <Route path="/admin/complaints" element={<AdminComplaints />} />
-          <Route path="/admin/users" element={<AdminUsers />} />
-          <Route path="/admin/logs" element={<AdminLogs />} />
-          <Route path="/admin/categories" element={<ManageCategories />} />
+          <Route path="admin/dashboard" element={<AdminDashboard />} />
+          <Route path="admin/settings" element={<AdminSettings />} />
+          <Route path="admin/events" element={<AdminEvents />} />
+          <Route path="admin/complaints" element={<AdminComplaints />} />
+          <Route path="admin/users" element={<AdminUsers />} />
+          <Route path="admin/logs" element={<AdminLogs />} />
+          <Route path="admin/categories" element={<ManageCategories />} />
           {/* Redirección de /admin a /admin/dashboard */}
-          <Route
-            path="/admin"
-            element={<Navigate to="/admin/dashboard" replace />}
-          />
+          <Route path="admin" element={<Navigate to="/admin/dashboard" replace />} />
         </Route>
 
         <Route path="app/*" element={<Navigate to="/" replace />} />

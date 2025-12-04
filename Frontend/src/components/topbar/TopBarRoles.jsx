@@ -231,7 +231,7 @@ export default function TopBarRoles({ filters, setFilters }) {
 
 
         {/* Notificaciones */}
-        {isAuthenticated && (
+        {isAuthenticated && !isAdmin &&(
           <div className="relative" ref={notifRef}>
             <button
               type="button"
@@ -310,7 +310,7 @@ export default function TopBarRoles({ filters, setFilters }) {
 
 
         {/* Botón Crear Evento */}
-        {isAuthenticated && (
+        {isAuthenticated && !isAdmin &&(
           <button
             type="button"
             onClick={handleCrearEvento}

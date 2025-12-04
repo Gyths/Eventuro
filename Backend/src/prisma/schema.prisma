@@ -49,6 +49,7 @@ enum EVENT_STATUS {
   P // pending: pendiente
   A // acepted: aceptado
   D // denied: denegado
+  C // cancelled: cancelado
 
   @@schema("public")
 }
@@ -336,6 +337,7 @@ model Event {
   accessPolicy            ACCESS_POLICY
   accessPolicyDescription String?
   ticketLimitPerUser      Int?                @default(10)
+  active                  Boolean             @default(true)
   // NUEVOS CAMPOS para Venta Escalonada
   stagedSale              Boolean             @default(false)
   quantityStagedSale      BigInt?             @db.BigInt
@@ -364,6 +366,7 @@ model EventDate {
   eventId     BigInt   @db.BigInt
   startAt     DateTime
   endAt       DateTime
+  active      Boolean  @default(true)
 
   // relaciones
   event     Event           @relation(fields: [eventId], references: [eventId], onDelete: Cascade)
@@ -387,6 +390,7 @@ model EventDateZone {
   seatMapId               BigInt?   @unique @db.BigInt
   currency                CURRENCY
   quantityTicketsReleased BigInt    @db.BigInt
+  active                  Boolean   @default(true)
 
   // relaciones
   eventDate   EventDate                 @relation(fields: [eventDateId], references: [eventDateId], onDelete: Cascade)
@@ -447,6 +451,7 @@ model EventDateZoneAllocation {
   discountValue             Decimal       @db.Decimal(5, 2)
   allocatedQuantity         Int?
   remainingQuantity         Int?
+  active                    Boolean       @default(true)
 
   // relaciones
   zone      EventDateZone @relation(fields: [eventDateZoneId], references: [eventDateZoneId], onDelete: Cascade)
@@ -542,6 +547,7 @@ model Ticket {
   currency                  CURRENCY      @default(PEN)
   issuedAt                  DateTime      @default(now())
   status                    TICKET_STATUS @default(PAID)
+  active                    Boolean       @default(true)
 
   refundStatus      REFUND_STATUS @default(NONE)
   refundRequestedAt DateTime?
