@@ -4,8 +4,6 @@ import { AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
 
 import useOrder from "../services/Order/OrderContext";
-import useEvent from "../services/Event/EventContext";
-import { useAuth } from "../services/auth/AuthContext";
 import { EventuroApi } from "../api";
 
 import ArrowButton from "../components/ArrowButton";
@@ -46,8 +44,7 @@ export default function PaymentMethod() {
   const [termsAccepted, setTermsAccepted] = React.useState(false);
   const [showTermsAlert, setShowTermsAlert] = React.useState(false);
   const [selectedOption, setOption] = React.useState("nada seleccionado");
-  const [showSelectedOptionAlert, setSelectedOptionTermsAlert] =
-    React.useState(false);
+  const [showSelectedOptionAlert, setSelectedOptionTermsAlert] = React.useState(false);
 
   const handleTermsChange = (checked) => {
     setTermsAccepted(checked);
@@ -109,9 +106,7 @@ export default function PaymentMethod() {
         {/*Parte superior de la pantalla, titulo, botón para retroceder, card con la información del evento */}
         <div className="flex flex-wrap items-center gap-4 px-4 py-5 md:px-8">
           <ArrowButton onClick={() => setModal("return")} />
-          <h1 className="font-bold text-center text-2xl sm:text-3xl md:text-4xl">
-            {titleText}
-          </h1>
+          <h1 className="font-bold text-center text-2xl sm:text-3xl md:text-4xl">{titleText}</h1>
 
           <div className="flex-1 flex justify-end pr-10">
             <PaymentEventInfoCard />
@@ -126,31 +121,13 @@ export default function PaymentMethod() {
             <ETicketDescription />
             {/* Términos y condiciones */}
             <TermsServicesCheckbox handleTermsChange={handleTermsChange} />
-            {showTermsAlert && (
-              <AlertMessage id="terms-services-alert">
-                {TERMS_AND_CONDITIONS_TEXTS.alert}
-              </AlertMessage>
-            )}
+            {showTermsAlert && <AlertMessage id="terms-services-alert">{TERMS_AND_CONDITIONS_TEXTS.alert}</AlertMessage>}
             {/* Cards de las opciones de pago */}
             <div className="flex flex-col gap-4">
-              <PaymentOptions
-                id="credit-debit-card"
-                image={banksLogos}
-                selectedOption={selectedOption}
-                handleOptionChange={handleOptionChange}
-              />
-              <PaymentOptions
-                id="yape-plin"
-                image={yapePlinLogo}
-                selectedOption={selectedOption}
-                handleOptionChange={handleOptionChange}
-              />
+              <PaymentOptions id="credit-debit-card" image={banksLogos} selectedOption={selectedOption} handleOptionChange={handleOptionChange} />
+              <PaymentOptions id="yape-plin" image={yapePlinLogo} selectedOption={selectedOption} handleOptionChange={handleOptionChange} />
             </div>
-            {showSelectedOptionAlert && (
-              <AlertMessage id="payment-options-selected-alert">
-                {PAYMENT_OPTION_TEXTS.alert}
-              </AlertMessage>
-            )}
+            {showSelectedOptionAlert && <AlertMessage id="payment-options-selected-alert">{PAYMENT_OPTION_TEXTS.alert}</AlertMessage>}
             {/* Ingreso de código de descuento*/}
             <DiscountCode />
           </div>
@@ -172,21 +149,13 @@ export default function PaymentMethod() {
       {/* Modal para pago con tarjeta */}
       <AnimatePresence initial={false}>
         {modal === "credit-debit-card" && (
-          <CardPaymentModal
-            onClose={() => setModal(null)}
-            onSuccess={() => setModal("success")}
-            onFail={() => setModal("fail")}
-          ></CardPaymentModal>
+          <CardPaymentModal onClose={() => setModal(null)} onSuccess={() => setModal("success")} onFail={() => setModal("fail")}></CardPaymentModal>
         )}
       </AnimatePresence>
       {/* Modal para pago con yape / plin */}
       <AnimatePresence initial={false}>
         {modal === "yape-plin" && (
-          <YapePlinPaymentModal
-            onClose={() => setModal(null)}
-            onSuccess={() => setModal("success")}
-            onFail={() => setModal("fail")}
-          />
+          <YapePlinPaymentModal onClose={() => setModal(null)} onSuccess={() => setModal("success")} onFail={() => setModal("fail")} />
         )}
       </AnimatePresence>
       {/* Modal para compra exitosa */}
@@ -203,15 +172,9 @@ export default function PaymentMethod() {
         )}
       </AnimatePresence>
       {/* Modal para compra fallida */}
-      <AnimatePresence initial={false}>
-        {modal === "fail" && <FailedTransactionModal />}
-      </AnimatePresence>
+      <AnimatePresence initial={false}>{modal === "fail" && <FailedTransactionModal />}</AnimatePresence>
       {/* Modal de aviso al retroceder */}
-      <AnimatePresence initial={false}>
-        {modal === "return" && (
-          <ReturnConfirmationModal onCancel={() => setModal(null)} />
-        )}
-      </AnimatePresence>
+      <AnimatePresence initial={false}>{modal === "return" && <ReturnConfirmationModal onCancel={() => setModal(null)} />}</AnimatePresence>
     </>
   );
 }

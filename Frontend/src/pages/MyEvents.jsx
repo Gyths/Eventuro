@@ -6,6 +6,8 @@ import ResponseModal from "../components/ResponseModal";
 import ViewAttendeesButton from "../components/ViewAttendeesButton.jsx";
 import CancelEventButton from "../components/CancelEventButton";
 import ConfirmCancelModal from "../components/ConfirmCancelButton";
+import { useNavigate } from "react-router-dom";
+import useEvent from "../services/Event/EventContext.jsx";
 import { EventuroApi } from "../api.js";
 
 export default function MyEvents() {
@@ -214,15 +216,16 @@ const getEventStatusLabel = (eventNode) => {
 
 function EventDetail({ eventNode, reload }) {
   const status = getEventStatusLabel(eventNode);
-
+  const navigate = useNavigate();
   const { user } = useAuth();
-  console.log(user);
+  const { event, setEvent } = useEvent();
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
 
   // Modal de respuesta (éxito / error)
   const [responseModalOpen, setResponseModalOpen] = useState(false);
   const [responseType, setResponseType] = useState("success"); // "success" | "error"
   const [responseMessage, setResponseMessage] = useState("");
+  const [isViewAttendeesLoading, setisViewAttendeesLoading] = useState(false);
 
   // Desactivar si el evento está "en curso" o "expirado"
   const isExpiredOrRunning =
@@ -230,13 +233,18 @@ function EventDetail({ eventNode, reload }) {
 
   async function handleViewAttendees() {
     try {
+      setisViewAttendeesLoading(true);
       const response = await EventuroApi({
         endpoint: `/event/${eventNode?.eventId}/attendanceEvent/organizer/${user?.organizer?.organizerId}`,
         method: "GET",
       });
-      console.log(response);
+      setEvent(eventNode);
+      setEvent({ ...eventNode, attendeesList: response });
+      navigate("/attendeesList");
     } catch (err) {
       console.error(err);
+    } finally {
+      setisViewAttendeesLoading(false);
     }
   }
 
@@ -344,7 +352,7 @@ function EventDetail({ eventNode, reload }) {
           </div>
 
           <div className="flex justify-between mt-4">
-            <ViewAttendeesButton onClick={handleViewAttendees} />
+            <ViewAttendeesButton onClick={handleViewAttendees} isLoading={isViewAttendeesLoading} />
             <CancelEventButton onClick={openCancelModal} disabled={isExpiredOrRunning} />
           </div>
         </>
