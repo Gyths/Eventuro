@@ -16,7 +16,7 @@ import {
   deleteEventDate,
   deleteEventDateZone,
   deleteTicketyTypeCtrl,
-  deleteEventDateZoneAllocation,
+  deleteEventZoneAllocation,
 } from "../controllers/event.controller.js";
 import { verifyToken } from "../middlewares/ensureAuth.js";
 import { attachUserContext } from "../middlewares/ensureAuth.js";
@@ -74,6 +74,6 @@ router.get(
 router.post("/:eventId/del", verifyToken, deleteEvent);
 router.post("/:eventDateId/del-date", verifyToken, deleteEventDate);
 router.post("/:eventDateZoneId/del-zone", verifyToken, deleteEventDateZone);
-router.post("/:eventDateZoneAllocationId/del-allocation", verifyToken, deleteEventDateZoneAllocation);
+router.post("/:eventDateZoneAllocationId/del-allocation", verifyToken, deleteEventZoneAllocation);
 router.post("/:eventId/deleteType", deleteTicketyTypeCtrl); //mandar el ticketType por body
 export default router;
