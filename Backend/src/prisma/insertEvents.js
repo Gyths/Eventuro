@@ -24,6 +24,7 @@ export default async function insertEvents(prisma) {
       refundPolicyFileKey: COMMON_ASSETS.refundFile,
       refundPolicyText: "Política de devoluciones para el evento de prueba 02",
       inPerson: false,
+      feeId: 1,
       status: "A",
       description: "Evento virtual con 12 tickets por usario,fase de preventa activa con solo 3 tickets disponibles y dos códigos de descuento",
       accessPolicy: "E",
@@ -39,6 +40,7 @@ export default async function insertEvents(prisma) {
       refundPolicyFileKey: "refund_policies/1763156324176_PolÃ­tica de DevoluciÃ³n de Entradas - Mistura.pdf",
 
       inPerson: true,
+      feeId: 2,
       status: "A",
       description: "Evento presencial con 500 de capacidad, segunda de venta general activa y 2 dos códigos de descuento.",
       accessPolicy: "E",
@@ -67,6 +69,7 @@ export default async function insertEvents(prisma) {
       imageBannerKey: COMMON_ASSETS.banner,
       refundPolicyText: "Política de devoluciones para el evento de prueba 01",
       inPerson: true,
+      feeId: 3,
       status: "A",
       description: "Evento ya finalizado, no debería aparecer en listado.",
       accessPolicy: "E",
@@ -77,34 +80,63 @@ export default async function insertEvents(prisma) {
 
   function weightedStatus() {
     const r = Math.random();
-    if (r < 0.8) return "A";
-    if (r < 0.1) return "P";
-    if (r < 0.05) return "D";
-    return "C";
+    if (r < 0.1) return "C";
+    if (r < 0.15) return "D";
+    if (r < 0.3) return "P";
+    return "A";
   }
 
-  const extraEvents = Array.from({ length: 20 }).map(() => {
+  const generatedPercentages = new Set();
+  const extraFees = [];
+
+  while (extraFees.length < 20) {
+    const feePercentage = faker.number
+      .float({
+        min: 5,
+        max: 20,
+        precision: 0.01,
+      })
+      .toFixed(2);
+
+    if (!generatedPercentages.has(feePercentage)) {
+      generatedPercentages.add(feePercentage);
+      extraFees.push({ percentage: feePercentage });
+    }
+  }
+
+  // Insertar tarifas
+  await prisma.fee.createMany({
+    data: extraFees,
+  });
+
+  // Obtener las tarifas ya insertadas para asociarlas a los eventos
+  const fees = await prisma.fee.findMany();
+
+  const extraEvents = Array.from({ length: 50 }).map((_, index) => {
     const inPerson = faker.datatype.boolean();
     const title = faker.company.catchPhrase();
+    const status = weightedStatus();
+    const randomFeeIndex = faker.number.bigInt({ min: 0, max: 19 });
     eventTitles.push(title);
 
     return {
       organizerId: faker.number.int({ min: 1, max: 5 }),
-      title: title,
+      title,
       imagePrincipalKey: COMMON_ASSETS.principal,
       imageBannerKey: COMMON_ASSETS.banner,
       refundPolicyFileKey: COMMON_ASSETS.refundFile,
-
+      status: status,
       refundPolicyText: faker.lorem.sentence(),
 
       inPerson,
-      status: weightedStatus(),
       description: faker.lorem.paragraph(),
 
       accessPolicy: "E",
       accessPolicyDescription: faker.lorem.sentence(),
 
       ticketLimitPerUser: faker.number.int({ min: 5, max: 20 }),
+
+      feeId: status === "A" ? fees[randomFeeIndex].feeId : null,
     };
   });
 

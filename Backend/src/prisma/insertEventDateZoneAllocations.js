@@ -1,7 +1,10 @@
 export default async function insertEventDateZoneAllocations(eventDateZoneAllocation, eventDateZone) {
-  const zones = await eventDateZone.findMany();
+  const zones = await eventDateZone.findMany({
+    include: {
+      eventDate: true,
+    },
+  });
 
-  // Conjunto de audiencias disponibles
   const AUDIENCES = [
     { name: "Niños", discount: 20 },
     { name: "Estudiantes", discount: 15 },
@@ -9,23 +12,34 @@ export default async function insertEventDateZoneAllocations(eventDateZoneAlloca
     { name: "Personas con Discapacidad", discount: 30 },
   ];
 
-  const data = zones.flatMap((z) => {
-    // Generar entre 2 y 3 audiencias distintas
-    const numberOfAllocations = Math.floor(Math.random() * 2) + 2; // 2 o 3
+  const eventZonesMap = {};
+  for (const z of zones) {
+    const eventId = z.eventDate.eventId;
+    if (!eventZonesMap[eventId]) eventZonesMap[eventId] = [];
+    eventZonesMap[eventId].push(z);
+  }
 
-    // Mezclamos y elegimos las audiencias
-    const selectedAudiences = AUDIENCES.sort(() => 0.5 - Math.random()).slice(0, numberOfAllocations);
+  const data = [];
 
-    // Transformamos en registros compatibles con createMany
-    return selectedAudiences.map((aud) => ({
-      eventDateZoneId: z.eventDateZoneId,
-      audienceName: aud.name,
-      discountType: "PERCENTAGE",
-      discountValue: aud.discount,
-    }));
-  });
+  for (const [eventId, eventZones] of Object.entries(eventZonesMap)) {
+    const numberOfAllocations = Math.floor(Math.random() * 2) + 2;
+    const selectedAudiences = [...AUDIENCES].sort(() => 0.5 - Math.random()).slice(0, numberOfAllocations);
+
+    for (const zone of eventZones) {
+      for (const aud of selectedAudiences) {
+        data.push({
+          eventDateZoneId: zone.eventDateZoneId,
+          audienceName: aud.name,
+          discountType: "PERCENTAGE",
+          discountValue: aud.discount,
+        });
+      }
+    }
+  }
 
   await eventDateZoneAllocation.createMany({
     data,
   });
+
+  console.log("Allocations generados: iguales para todas las zonas de un mismo evento.");
 }

@@ -4,17 +4,14 @@ export default async function insertEventDateZone(prisma) {
   const eventDates = await prisma.eventDate.findMany();
   const venues = await prisma.venue.findMany();
 
-  // Mapa eventId -> capacidad del venue
   const venueMap = Object.fromEntries(venues.map((v) => [v.eventId, v.capacity]));
 
-  // Mapa eventId -> eventDates[]
   const eventDateMap = {};
   for (const d of eventDates) {
     if (!eventDateMap[d.eventId]) eventDateMap[d.eventId] = [];
     eventDateMap[d.eventId].push(d);
   }
 
-  // ZONAS FIJAS (mantener nombres y precios)
   const zoneTemplates = {
     1: [
       { name: "Experiencia VIP", basePrice: 100, percent: 0.33 },
@@ -43,30 +40,25 @@ export default async function insertEventDateZone(prisma) {
       continue;
     }
 
+    let eventZones = [];
+
     if (zoneTemplates[eventId]) {
       const template = zoneTemplates[eventId];
 
-      dates.forEach((date) => {
-        template.forEach((zone) => {
-          const capacity = Math.floor(zone.percent * venueCapacity);
+      eventZones = template.map((zone) => {
+        const capacity = Math.floor(zone.percent * venueCapacity);
 
-          zonesToInsert.push({
-            eventDateId: date.eventDateId,
-            name: zone.name,
-            kind: "GENERAL",
-            basePrice: zone.basePrice,
-            capacity,
-            capacityRemaining: capacity,
-            quantityTicketsReleased: capacity,
-            currency: "PEN",
-          });
-        });
+        return {
+          name: zone.name,
+          kind: "GENERAL",
+          basePrice: zone.basePrice,
+          capacity,
+          capacityRemaining: capacity,
+          quantityTicketsReleased: capacity,
+          currency: "PEN",
+        };
       });
-
-      continue;
-    }
-
-    dates.forEach((date) => {
+    } else {
       const numberOfZones = faker.number.int({ min: 1, max: 4 });
 
       let remaining = venueCapacity;
@@ -75,29 +67,27 @@ export default async function insertEventDateZone(prisma) {
         const isLast = i === numberOfZones - 1;
 
         let capacity;
-
         if (isLast) {
           capacity = remaining;
         } else {
           const fraction = faker.number.float({ min: 0.1, max: 0.4 });
           capacity = Math.floor(venueCapacity * fraction);
 
-          if (capacity > remaining) {
-            capacity = remaining;
-          }
+          if (capacity > remaining) capacity = remaining;
 
           remaining -= capacity;
         }
 
-        const zoneName = faker.helpers.arrayElement(["Zona General", "Zona Preferencial", "Zona VIP", "Butaca", "Mesa", "Sector A", "Sector B"]);
+        const zoneNamePool = ["Zona General", "Zona Preferencial", "Zona VIP", "Butaca", "Mesa", "Sector A", "Sector B"];
+        let zoneName;
 
-        const basePrice = faker.number.int({
-          min: 30,
-          max: 300,
-        });
+        do {
+          zoneName = faker.helpers.arrayElement(zoneNamePool);
+        } while (eventZones.some((z) => z.name === zoneName));
 
-        zonesToInsert.push({
-          eventDateId: date.eventDateId,
+        const basePrice = faker.number.int({ min: 30, max: 300 });
+
+        eventZones.push({
           name: zoneName,
           kind: "GENERAL",
           basePrice,
@@ -107,10 +97,20 @@ export default async function insertEventDateZone(prisma) {
           currency: "PEN",
         });
       }
-    });
+    }
+
+    for (const date of dates) {
+      for (const zone of eventZones) {
+        zonesToInsert.push({
+          ...zone,
+          eventDateId: date.eventDateId,
+        });
+      }
+    }
   }
 
+  // Insertar zonas final
   await prisma.eventDateZone.createMany({ data: zonesToInsert });
 
-  console.log("Zonas generadas coherentes con el venue, respetando tu estructura.");
+  console.log("Zonas generadas: iguales para todas las fechas del mismo evento.");
 }

@@ -15,13 +15,8 @@ export async function createEventRepo(userId, input) {
     if (input.imagenPrincipal) {
       // 1. Si se sube un nuevo archivo (Multer)
       const buffer = input.imagenPrincipal.buffer;
-      const fileName = `events/${Date.now()}_${input.imagenPrincipal.originalname
-        }`;
-      imagePrincipalKey = await uploadFile(
-        fileName,
-        buffer,
-        input.imagenPrincipal.mimetype
-      );
+      const fileName = `events/${Date.now()}_${input.imagenPrincipal.originalname}`;
+      imagePrincipalKey = await uploadFile(fileName, buffer, input.imagenPrincipal.mimetype);
     } else if (input.imagePrincipalKey) {
       // 2. Si se está reutilizando una clave (Evento copiado)
       imagePrincipalKey = input.imagePrincipalKey;
@@ -32,13 +27,8 @@ export async function createEventRepo(userId, input) {
     if (input.imagenBanner) {
       // 1. Si se sube un nuevo archivo (Multer)
       const buffer = input.imagenBanner.buffer;
-      const fileName = `events/${Date.now()}_${input.imagenBanner.originalname
-        }`;
-      imageBannerKey = await uploadFile(
-        fileName,
-        buffer,
-        input.imagenBanner.mimetype
-      );
+      const fileName = `events/${Date.now()}_${input.imagenBanner.originalname}`;
+      imageBannerKey = await uploadFile(fileName, buffer, input.imagenBanner.mimetype);
     } else if (input.imageBannerKey) {
       // 2. Si se está reutilizando una clave (Evento copiado)
       imageBannerKey = input.imageBannerKey;
@@ -48,22 +38,15 @@ export async function createEventRepo(userId, input) {
     let refundPolicyFileKey = null;
     if (input.policyFile) {
       const buffer = input.policyFile.buffer;
-      const fileName = `refund_policies/${Date.now()}_${input.policyFile.originalname
-        }`;
-      refundPolicyFileKey = await uploadFile(
-        fileName,
-        buffer,
-        input.policyFile.mimetype
-      );
+      const fileName = `refund_policies/${Date.now()}_${input.policyFile.originalname}`;
+      refundPolicyFileKey = await uploadFile(fileName, buffer, input.policyFile.mimetype);
     }
 
     // --- Parsear y convertir tipos ---
     const organizerId = BigInt(input.organizerId);
     const inPerson = input.inPerson === "true" || input.inPerson === true;
     const venue = input.venue ? JSON.parse(input.venue) : null;
-    const eventCategories = input.eventCategories
-      ? JSON.parse(input.eventCategories)
-      : [];
+    const eventCategories = input.eventCategories ? JSON.parse(input.eventCategories) : [];
     const discounts = input.discounts ? JSON.parse(input.discounts) : [];
     const dates = input.dates ? JSON.parse(input.dates) : [];
     const zones = input.zones ? JSON.parse(input.zones) : [];
@@ -72,9 +55,7 @@ export async function createEventRepo(userId, input) {
     const refundPolicyText = input.refundPolicyText ?? null;
 
     const stagedSale = input.stagedSale === "true" || input.stagedSale === true;
-    const quantityStagedSale = input.quantityStagedSale
-      ? BigInt(input.quantityStagedSale)
-      : null;
+    const quantityStagedSale = input.quantityStagedSale ? BigInt(input.quantityStagedSale) : null;
     const stagedSalePeriod = input.stagedSalePeriod ?? null;
     // --- Crear evento ---
     const event = await tx.event.create({
@@ -89,9 +70,7 @@ export async function createEventRepo(userId, input) {
         accessPolicy: input.accessPolicy,
         accessPolicyDescription: input.accessPolicyDescription ?? null,
         refundPolicyText: refundPolicyText,
-        ticketLimitPerUser: input.ticketLimitPerUser
-          ? Number(input.ticketLimitPerUser)
-          : 10, // por defecto
+        ticketLimitPerUser: input.ticketLimitPerUser ? Number(input.ticketLimitPerUser) : 10, // por defecto
         stagedSale: stagedSale,
         quantityStagedSale: quantityStagedSale,
         stagedSalePeriod: stagedSalePeriod,
@@ -250,9 +229,7 @@ export async function createEventRepo(userId, input) {
               select: { eventDateZoneAllocationId: true },
             });
             allocationsCreated.push({
-              eventDateZoneAllocationId: Number(
-                alloc.eventDateZoneAllocationId
-              ),
+              eventDateZoneAllocationId: Number(alloc.eventDateZoneAllocationId),
             });
           }
         }
@@ -361,9 +338,7 @@ export async function listEventRepo() {
       if (event.imagePrincipalKey) {
         //crear url firmada imagen principal
         try {
-          event.imagePrincipalURLSigned = await getSignedUrlForFile(
-            event.imagePrincipalKey
-          );
+          event.imagePrincipalURLSigned = await getSignedUrlForFile(event.imagePrincipalKey);
         } catch (err) {
           console.error("Error generando signed URL:", err);
           event.imagePrincipalURLSigned = null;
@@ -373,9 +348,7 @@ export async function listEventRepo() {
       if (event.imageBannerKey) {
         //crear url firmada imagen banner
         try {
-          event.imageBannerURLSigned = await getSignedUrlForFile(
-            event.imageBannerKey
-          );
+          event.imageBannerURLSigned = await getSignedUrlForFile(event.imageBannerKey);
         } catch (err) {
           console.error("Error generando signed URL:", err);
           event.imageBannerURLSigned = null;
@@ -385,9 +358,7 @@ export async function listEventRepo() {
       if (event.refundPolicyFileKey) {
         //crear url firmada refund policy
         try {
-          event.refundPolicyFileURLSigned = await getSignedUrlForFile(
-            event.refundPolicyFileKey
-          );
+          event.refundPolicyFileURLSigned = await getSignedUrlForFile(event.refundPolicyFileKey);
         } catch (err) {
           console.error("Error generando signed URL refund policy:", err);
           event.refundPolicyFileURLSigned = null;
@@ -426,9 +397,7 @@ export async function eventDetails(id) {
   if (event) {
     if (event.imagePrincipalKey) {
       try {
-        event.imagePrincipalURLSigned = await getSignedUrlForFile(
-          event.imagePrincipalKey
-        );
+        event.imagePrincipalURLSigned = await getSignedUrlForFile(event.imagePrincipalKey);
       } catch (err) {
         console.error("Error generando signed URL imagen principal:", err);
         event.imagePrincipalURLSigned = null;
@@ -437,9 +406,7 @@ export async function eventDetails(id) {
 
     if (event.imageBannerKey) {
       try {
-        event.imageBannerURLSigned = await getSignedUrlForFile(
-          event.imageBannerKey
-        );
+        event.imageBannerURLSigned = await getSignedUrlForFile(event.imageBannerKey);
       } catch (err) {
         console.error("Error generando signed URL banner:", err);
         event.imageBannerURLSigned = null;
@@ -448,9 +415,7 @@ export async function eventDetails(id) {
 
     if (event.refundPolicyFileKey) {
       try {
-        event.refundPolicyFileURLSigned = await getSignedUrlForFile(
-          event.refundPolicyFileKey
-        );
+        event.refundPolicyFileURLSigned = await getSignedUrlForFile(event.refundPolicyFileKey);
       } catch (err) {
         console.error("Error generando signed URL refund policy:", err);
         event.refundPolicyFileURLSigned = null;
@@ -464,8 +429,7 @@ export async function eventDetails(id) {
 export async function listEventsByOrganizerRepo(idOrganizer) {
   const events = await prisma.event.findMany({
     where: {
-      organizerId: BigInt(idOrganizer)
-      
+      organizerId: BigInt(idOrganizer),
     },
     select: {
       eventId: true,
@@ -490,7 +454,7 @@ export async function listEventsByOrganizerRepo(idOrganizer) {
           endAt: true,
           zoneDates: {
             select: {
-              name:true,
+              name: true,
               capacity: true,
               capacityRemaining: true, // <-- nuevo
             },
@@ -504,9 +468,7 @@ export async function listEventsByOrganizerRepo(idOrganizer) {
   for (const event of events) {
     if (event.imagePrincipalKey) {
       try {
-        event.imagePrincipalURLSigned = await getSignedUrlForFile(
-          event.imagePrincipalKey
-        );
+        event.imagePrincipalURLSigned = await getSignedUrlForFile(event.imagePrincipalKey);
       } catch {
         event.imagePrincipalURLSigned = null;
       }
@@ -514,14 +476,11 @@ export async function listEventsByOrganizerRepo(idOrganizer) {
 
     if (event.imageBannerKey) {
       try {
-        event.imageBannerURLSigned = await getSignedUrlForFile(
-          event.imageBannerKey
-        );
+        event.imageBannerURLSigned = await getSignedUrlForFile(event.imageBannerKey);
       } catch {
         event.imageBannerURLSigned = null;
       }
     }
-
 
     for (const d of event.dates) {
       if (Array.isArray(d.zoneDates)) {
@@ -530,8 +489,6 @@ export async function listEventsByOrganizerRepo(idOrganizer) {
         }
       }
     }
-
-
   }
 
   return events;
@@ -639,9 +596,7 @@ export async function listEventInfoRepo(eventId) {
   // === Generar URLs firmadas ===
   if (event?.imagePrincipalKey) {
     try {
-      event.imagePrincipalURLSigned = await getSignedUrlForFile(
-        event.imagePrincipalKey
-      );
+      event.imagePrincipalURLSigned = await getSignedUrlForFile(event.imagePrincipalKey);
     } catch (err) {
       console.error("Error generando signed URL principal:", err);
       event.imagePrincipalURLSigned = null;
@@ -650,9 +605,7 @@ export async function listEventInfoRepo(eventId) {
 
   if (event?.imageBannerKey) {
     try {
-      event.imageBannerURLSigned = await getSignedUrlForFile(
-        event.imageBannerKey
-      );
+      event.imageBannerURLSigned = await getSignedUrlForFile(event.imageBannerKey);
     } catch (err) {
       console.error("Error generando signed URL banner:", err);
       event.imageBannerURLSigned = null;
@@ -661,9 +614,7 @@ export async function listEventInfoRepo(eventId) {
 
   if (event?.refundPolicyFileKey) {
     try {
-      event.refundPolicyFileURLSigned = await getSignedUrlForFile(
-        event.refundPolicyFileKey
-      );
+      event.refundPolicyFileURLSigned = await getSignedUrlForFile(event.refundPolicyFileKey);
     } catch (err) {
       console.error("Error generando signed URL refund policy:", err);
       event.refundPolicyFileURLSigned = null;
@@ -685,11 +636,7 @@ export async function listEventDateByEventIdRepo(eventId) {
   });
 }
 
-export async function listEventDateZonesByEventDateIdRepo(
-  userId,
-  eventId,
-  eventDateId
-) {
+export async function listEventDateZonesByEventDateIdRepo(userId, eventId, eventDateId) {
   const [ticketCount, date, zones, activePhase] = await Promise.all([
     prisma.ticket.count({
       where: {
@@ -753,10 +700,7 @@ export async function listEventDateZonesByEventDateIdRepo(
   return { ticketCount, date, zones, activePhase };
 }
 
-export async function setEventStatusRepo(
-  userId,
-  { eventId, status, percentage }
-) {
+export async function setEventStatusRepo(userId, { eventId, status, percentage }) {
   return withAudit(userId, async (tx) => {
     const eventIdNormalized = BigInt(eventId);
 
@@ -848,7 +792,6 @@ export async function updateEventDetailsRepo(userId, eventId, details) {
   });
 }
 
-
 export async function listEventstoApproveRepo({ page = 1, pageSize = 10 }) {
   const take = Math.max(1, Math.min(Number(pageSize) || 10, 50));
   const skip = Math.max(0, (Number(page) - 1) * take);
@@ -884,7 +827,7 @@ export async function listEventstoApproveRepo({ page = 1, pageSize = 10 }) {
                 eventDateZoneId: true,
                 name: true,
                 basePrice: true, // Precio base de la zona
-                capacity: true,  // Puedes mostrar si quieres, pero no afecta aforo total
+                capacity: true, // Puedes mostrar si quieres, pero no afecta aforo total
                 currency: true,
               },
             },
@@ -955,10 +898,7 @@ export async function listSalesSummaryByOrganizer(organizerId) {
 
         const ticketsVendidos = tickets.length;
 
-        const totalRecaudado = tickets.reduce(
-          (acc, t) => acc + Number(t.pricePaid || 0),
-          0
-        );
+        const totalRecaudado = tickets.reduce((acc, t) => acc + Number(t.pricePaid || 0), 0);
 
         return {
           zoneId: zone.eventDateZoneId,
@@ -980,7 +920,6 @@ export async function listSalesSummaryByOrganizer(organizerId) {
 export async function getAttendeesByEventAndOrganizer(input) {
   const { eventId, organizerId } = input;
 
-  // 1️ Validar que el evento exista y sea del organizador
   const event = await prisma.event.findFirst({
     where: {
       eventId: BigInt(eventId),
@@ -993,7 +932,6 @@ export async function getAttendeesByEventAndOrganizer(input) {
     throw new Error("El evento no existe o no pertenece a este organizador.");
   }
 
-  // 2️ Obtener fechas del evento, incluyendo los tickets
   const eventDates = await prisma.eventDate.findMany({
     where: {
       eventId: BigInt(eventId),
@@ -1015,8 +953,15 @@ export async function getAttendeesByEventAndOrganizer(input) {
             },
           },
           zone: {
+            select: { name: true },
+          },
+          allocation: {
+            select: { audienceName: true },
+          },
+          eventDate: {
             select: {
-              name: true,
+              startAt: true,
+              endAt: true,
             },
           },
         },
@@ -1025,31 +970,43 @@ export async function getAttendeesByEventAndOrganizer(input) {
     orderBy: { startAt: "asc" },
   });
 
-  // 3️ Transformar el formato a algo más limpio y directo
-  return eventDates.map((date) => ({
-    eventDateId: date.eventDateId,
-    startAt: date.startAt,
-    endAt: date.endAt,
-    attendees: date.Ticket.map((ticket) => ({
+  return eventDates.map((date) => {
+    const attendees = date.Ticket.map((ticket) => ({
       ticketId: ticket.ticketId,
       attendeeName: ticket.attendeeName,
       attendeeDni: ticket.attendeeDni,
       zoneName: ticket.zone?.name ?? null,
+      allocationName: ticket.allocation?.audienceName ?? null,
+      eventStartAt: ticket.eventDate.startAt,
+      eventEndAt: ticket.eventDate.endAt,
       seat: ticket.seat
         ? {
-          row: ticket.seat.rowNumber,
-          col: ticket.seat.colNumber,
-        }
+            row: ticket.seat.rowNumber,
+            col: ticket.seat.colNumber,
+          }
         : null,
-    })),
-  }));
+    }));
+
+    // Ordenar por fecha y luego por nombre
+    attendees.sort((a, b) => {
+      const diff = new Date(a.eventStartAt) - new Date(b.eventStartAt);
+      if (diff !== 0) return diff;
+      return a.attendeeName.localeCompare(b.attendeeName);
+    });
+
+    return {
+      eventDateId: date.eventDateId,
+      startAt: date.startAt,
+      endAt: date.endAt,
+      attendees,
+    };
+  });
 }
 
 export async function deleteEventDateZoneAllocationRepo(eventDateZoneAllocationId) {
   const allocationId = BigInt(eventDateZoneAllocationId);
 
   return prisma.$transaction(async (tx) => {
-
     const allocationWithTickets = await tx.eventDateZoneAllocation.findUnique({
       where: { eventDateZoneAllocationId: allocationId },
       select: {
@@ -1065,12 +1022,12 @@ export async function deleteEventDateZoneAllocationRepo(eventDateZoneAllocationI
       throw new Error(`EventDateZoneAllocation con ID ${eventDateZoneAllocationId} no encontrado.`);
     }
 
-    const relatedTicketIds = allocationWithTickets.Ticket.map(t => t.ticketId);
+    const relatedTicketIds = allocationWithTickets.Ticket.map((t) => t.ticketId);
 
     const updatedAllocation = await tx.eventDateZoneAllocation.update({
       where: { eventDateZoneAllocationId: allocationId },
       data: {
-        active: false
+        active: false,
       },
       select: {
         eventDateZoneAllocationId: true,
@@ -1088,7 +1045,6 @@ export async function deleteEventDateZoneRepo(eventDateZoneId) {
   const zoneId = BigInt(eventDateZoneId);
 
   return prisma.$transaction(async (tx) => {
-
     const zoneWithAllocations = await tx.eventDateZone.findUnique({
       where: { eventDateZoneId: zoneId },
       select: {
@@ -1104,7 +1060,7 @@ export async function deleteEventDateZoneRepo(eventDateZoneId) {
       throw new Error(`EventDateZone con ID ${eventDateZoneId} no encontrado.`);
     }
 
-    const relatedAllocationIds = zoneWithAllocations.allocations.map(a => a.eventDateZoneAllocationId);
+    const relatedAllocationIds = zoneWithAllocations.allocations.map((a) => a.eventDateZoneAllocationId);
 
     const updatedZone = await tx.eventDateZone.update({
       where: { eventDateZoneId: zoneId },
@@ -1127,7 +1083,6 @@ export async function deleteEventDateRepo(eventDateId) {
   const dateId = BigInt(eventDateId);
 
   return prisma.$transaction(async (tx) => {
-
     const eventDateWithZones = await tx.eventDate.findUnique({
       where: { eventDateId: dateId },
       select: {
@@ -1143,7 +1098,7 @@ export async function deleteEventDateRepo(eventDateId) {
       throw new Error(`EventDate con ID ${eventDateId} no encontrado.`);
     }
 
-    const relatedZoneIds = eventDateWithZones.zoneDates.map(z => z.eventDateZoneId);
+    const relatedZoneIds = eventDateWithZones.zoneDates.map((z) => z.eventDateZoneId);
 
     const updatedEventDate = await tx.eventDate.update({
       where: { eventDateId: dateId },
@@ -1182,7 +1137,7 @@ export async function deleteEventRepo(eventId) {
       throw new Error(`Evento con ID ${eventId} no encontrado.`);
     }
 
-    const datesList = event.dates.map(d => d.eventDateId);
+    const datesList = event.dates.map((d) => d.eventDateId);
 
     const updatedEvent = await tx.event.update({
       where: { eventId: evId },

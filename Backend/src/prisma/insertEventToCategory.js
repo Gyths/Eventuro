@@ -5,18 +5,16 @@ export default async function insertEventToCategory(prisma) {
 
   const MAX_CATEGORY_ID = 13;
   const MIN_CATEGORIES_PER_EVENT = 2;
-  const MAX_CATEGORIES_PER_EVENT = 5;
+  const MAX_CATEGORIES_PER_EVENT = 4;
 
   const data = [];
 
-  // Recorrer TODOS los eventos
   events.forEach((event) => {
     const numCategories = faker.number.int({
       min: MIN_CATEGORIES_PER_EVENT,
       max: MAX_CATEGORIES_PER_EVENT,
     });
 
-    // Crear un Set para evitar categorías duplicadas
     const chosenCategories = new Set();
 
     while (chosenCategories.size < numCategories) {
@@ -27,7 +25,6 @@ export default async function insertEventToCategory(prisma) {
       chosenCategories.add(randomCategoryId);
     }
 
-    // Generar los registros de inserción
     chosenCategories.forEach((categoryId) => {
       data.push({
         eventId: event.eventId,

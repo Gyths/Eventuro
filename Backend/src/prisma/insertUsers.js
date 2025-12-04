@@ -2,9 +2,9 @@ import { generateUser } from "../utils/seedUtils.js";
 import insertPasswords from "./insertPasswords.js";
 import insertOrganizers from "./insertOrganizers.js";
 
-const organizerUsers = Array.from({ length: 10 }).map(() => generateUser({ isOrganizer: true }));
+const organizerUsers = Array.from({ length: 5 }).map(() => generateUser({ isOrganizer: true }));
 
-const clientUsers = Array.from({ length: 20 }).map(() => generateUser({ isOrganizer: false }));
+const clientUsers = Array.from({ length: 40 }).map(() => generateUser({ isOrganizer: false }));
 
 const baseUsers = [
   {

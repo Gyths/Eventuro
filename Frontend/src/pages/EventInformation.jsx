@@ -51,6 +51,7 @@ export default function TicketSelection() {
         response.image = response.imagePrincipalURLSigned ?? placeholder;
         response.bannerEv = response.imageBannerURLSigned ?? placeholder;
         setEvent(response);
+        console.log(response);
 
         await new Promise((res) => setTimeout(res, 300));
       } catch (err) {
@@ -106,9 +107,7 @@ export default function TicketSelection() {
         <div className="flex flex-col justify-center items-center h-screen">
           <FaceFrownIcon className="text-gray-500 size-14" />
           <span className="text-gray-500 text-2xl">¡Lo sentimos!</span>
-          <span className="text-gray-500 text-2xl">
-            {EVENT_INFORMATION_TEXTS.alerts[errorCode]}
-          </span>
+          <span className="text-gray-500 text-2xl">{EVENT_INFORMATION_TEXTS.alerts[errorCode]}</span>
         </div>
       ) : (
         <>
@@ -119,9 +118,7 @@ export default function TicketSelection() {
                 src={event?.bannerEv}
                 alt="Fondo del evento"
                 className={`w-full h-full object-cover transition-all duration-700 ease-in-out ${
-                  bluredBackgrund
-                    ? "blur-2xl brightness-75 scale-105"
-                    : "blur-0 brightness-100 scale-100"
+                  bluredBackgrund ? "blur-2xl brightness-75 scale-105" : "blur-0 brightness-100 scale-100"
                 }`}
               />
             </div>
@@ -130,19 +127,13 @@ export default function TicketSelection() {
             <motion.div
               className="flex flex-col z-10 justify-center min-h-screen text-center gap-20"
               initial={{ opacity: 0, y: 100 }}
-              animate={
-                showContent ? { opacity: 1, y: 0 } : { opacity: 0, y: 100 }
-              }
+              animate={showContent ? { opacity: 1, y: 0 } : { opacity: 0, y: 100 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
             >
               <div className="flex px-5 relative flex-wrap xl:flex-row justify-center gap-10 md:gap-20 xl:gap-0 items-stretch">
                 {/* Imagen */}
                 <div className="flex w-full scale-y-110 xl:max-w-[30vw] rounded-4xl">
-                  <img
-                    src={event?.image}
-                    className="w-full h-full object-cover rounded-3xl"
-                    alt="Imagen del evento"
-                  />
+                  <img src={event?.image} className="w-full h-full object-cover rounded-3xl" alt="Imagen del evento" />
                 </div>
 
                 {/* Card de Información y entradas*/}
@@ -155,17 +146,11 @@ export default function TicketSelection() {
           </div>
           {modal === "dates" && (
             <AnimatePresence>
-              <SelectDateModal
-                eventId={event.eventId}
-                onClose={() => setModal(null)}
-                onContinue={handleContinue}
-              />
+              <SelectDateModal eventId={event.eventId} onClose={() => setModal(null)} onContinue={handleContinue} />
             </AnimatePresence>
           )}
 
-          {(modal === "tickets" ||
-            modal === "seats" ||
-            modal === "attendants") && (
+          {(modal === "tickets" || modal === "seats" || modal === "attendants") && (
             <AnimatePresence>
               <SelectTicketModal
                 eventDateId={selectedDate}
@@ -188,4 +173,3 @@ export default function TicketSelection() {
     </>
   );
 }
-  

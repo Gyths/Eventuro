@@ -1,30 +1,68 @@
 import { faker } from "@faker-js/faker";
+
 export default async function insertOrders(prisma) {
   const events = await prisma.event.findMany();
   const users = await prisma.user.findMany();
 
-  const targetEvents = events.slice(3, 24); // eventos 4 al 24
+  const targetEvents = events.slice(4, events.length);
   const maxTicketsPerOrder = 4;
 
+  const minSales = 200;
+  const maxSales = 800;
+
   for (const event of targetEvents) {
+    const targetSales = faker.number.int({ min: minSales, max: maxSales });
+
     const eventDates = await prisma.eventDate.findMany({
       where: { eventId: event.eventId },
       include: { zoneDates: true },
     });
 
-    // 20 órdenes por evento
-    for (let i = 0; i < 70; i++) {
+    let sold = 0;
+    let attempts = 0;
+
+    while (sold < targetSales && attempts < targetSales * 4) {
+      attempts++;
+
       const user = pickRandomUser(users);
-      const zone = pickRandomEventDateZone(eventDates);
+      const { zone, eventDate } = pickRandomEventDateZone(eventDates);
+
       const requestedQty = Math.ceil(Math.random() * maxTicketsPerOrder);
 
       const allowed = await computeAllowedPurchase(prisma, user.userId, event, zone, requestedQty);
 
-      if (allowed <= 0) continue;
-
-      await createOrderWithTickets(prisma, user.userId, event, zone, allowed);
+      if (allowed > 0) {
+        await createOrderWithTickets(prisma, user.userId, event, zone, eventDate, allowed);
+        sold += allowed;
+      }
     }
+
+    console.log(`Evento ${event.eventId}: vendidos ${sold}/${targetSales}`);
   }
+}
+
+/* ----------------------- SELECCIONAR ALLOCATION ALEATORIO ----------------------- */
+
+async function pickRandomAllocation(prisma, eventDateZoneId) {
+  const allocations = await prisma.eventDateZoneAllocation.findMany({
+    where: { eventDateZoneId },
+  });
+
+  if (allocations.length === 0) return null;
+
+  return allocations[Math.floor(Math.random() * allocations.length)];
+}
+
+/* ----------------------- GENERADOR DE FECHAS ISSUEDAT ----------------------- */
+
+function randomIssuedAt(eventDate) {
+  const eventStart = new Date(eventDate.startAt);
+  const earliest = new Date(eventStart.getTime() - 60 * 24 * 60 * 60 * 1000);
+  const latest = new Date(eventStart.getTime() - 1 * 60 * 60 * 1000);
+
+  const randomTime = earliest.getTime() + Math.random() * (latest.getTime() - earliest.getTime());
+
+  return new Date(randomTime);
 }
 
 /* ----------------------- HELPERS RANDOM ----------------------- */
@@ -36,7 +74,8 @@ function pickRandomUser(users) {
 function pickRandomEventDateZone(eventDates) {
   const date = eventDates[Math.floor(Math.random() * eventDates.length)];
   const zone = date.zoneDates[Math.floor(Math.random() * date.zoneDates.length)];
-  return zone;
+
+  return { zone, eventDate: date };
 }
 
 /* ----------------------- LIMITES: USUARIO ----------------------- */
@@ -106,11 +145,29 @@ async function computeAllowedPurchase(prisma, userId, event, zone, qty) {
 
 /* ----------------------- CREAR ORDEN + ITEMS + TICKETS ------------------------ */
 
-async function createOrderWithTickets(prisma, userId, event, zone, quantity) {
+async function createOrderWithTickets(prisma, userId, event, zone, eventDate, quantity) {
   const unitPrice = Number(zone.basePrice);
   const totalAmount = unitPrice * quantity;
 
-  // Crear ORDEN
+  // 1. Intentar actualizar capacidad de zona de forma segura
+  const safeUpdate = await prisma.eventDateZone.updateMany({
+    where: {
+      eventDateZoneId: zone.eventDateZoneId,
+      capacityRemaining: { gte: quantity },
+      quantityTicketsReleased: { gte: quantity },
+    },
+    data: {
+      capacityRemaining: { decrement: quantity },
+      quantityTicketsReleased: { decrement: quantity },
+    },
+  });
+
+  if (safeUpdate.count === 0) return null;
+
+  // 2. Seleccionar allocation aleatorio
+  const allocation = await pickRandomAllocation(prisma, zone.eventDateZoneId);
+
+  // 3. Crear orden
   const order = await prisma.order.create({
     data: {
       buyerUserId: userId,
@@ -120,7 +177,7 @@ async function createOrderWithTickets(prisma, userId, event, zone, quantity) {
     },
   });
 
-  // Crear ORDER ITEM
+  // 4. Crear order item (si tu modelo soporta allocationId, agrégalo aquí)
   const orderItem = await prisma.orderItem.create({
     data: {
       orderId: order.orderId,
@@ -130,10 +187,11 @@ async function createOrderWithTickets(prisma, userId, event, zone, quantity) {
       quantity,
       unitPrice,
       finalPrice: unitPrice * quantity,
+      eventDateZoneAllocationId: allocation?.eventDateZOneAllocationId ?? null,
     },
   });
 
-  // Crear TICKETS uno por uno
+  // 5. Tickets
   const ticketsData = [];
 
   for (let i = 0; i < quantity; i++) {
@@ -147,21 +205,14 @@ async function createOrderWithTickets(prisma, userId, event, zone, quantity) {
       eventDateZoneId: zone.eventDateZoneId,
       pricePaid: unitPrice,
       currency: "PEN",
+      issuedAt: randomIssuedAt(eventDate),
+      eventDateZoneAllocationId: allocation?.eventDateZoneAllocationId ?? null,
     });
   }
 
   await prisma.ticket.createMany({ data: ticketsData });
 
-  // Actualizar capacidad de zona
-  await prisma.eventDateZone.update({
-    where: { eventDateZoneId: zone.eventDateZoneId },
-    data: {
-      capacityRemaining: { decrement: quantity },
-      quantityTicketsReleased: { decrement: quantity },
-    },
-  });
-
-  // Actualizar fase de venta activa
+  // 6. Actualizar fase
   await prisma.eventSalesPhase.updateMany({
     where: { eventId: event.eventId, active: true },
     data: {

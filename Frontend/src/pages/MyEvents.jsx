@@ -32,10 +32,7 @@ export default function MyEvents() {
         const headers = { "Content-Type": "application/json" };
         if (token) headers.Authorization = `Bearer ${token}`;
 
-        const res = await fetch(
-          `${BASE_URL}/eventuro/api/event/events-by-organizer/${organizerId}`,
-          { headers }
-        );
+        const res = await fetch(`${BASE_URL}/eventuro/api/event/events-by-organizer/${organizerId}`, { headers });
 
         if (!res.ok) throw new Error("No se pudo cargar tus eventos");
 
@@ -63,10 +60,7 @@ export default function MyEvents() {
     const headers = { "Content-Type": "application/json" };
     if (token) headers.Authorization = `Bearer ${token}`;
 
-    const res = await fetch(
-      `${BASE_URL}/eventuro/api/event/events-by-organizer/${organizerId}`,
-      { headers }
-    );
+    const res = await fetch(`${BASE_URL}/eventuro/api/event/events-by-organizer/${organizerId}`, { headers });
 
     const json = await res.json();
     const items = Array.isArray(json) ? json : json?.events ?? [];
@@ -78,8 +72,7 @@ export default function MyEvents() {
       eventId: ev.eventId,
       title: ev.title,
       inPerson: ev.inPerson,
-      image:
-        ev.imagePrincipalURLSigned || ev.imageBannerURLSigned || placeholder,
+      image: ev.imagePrincipalURLSigned || ev.imageBannerURLSigned || placeholder,
       status: ev.status,
       description: ev.description,
       refundPolicyText: ev.refundPolicyText,
@@ -101,23 +94,10 @@ export default function MyEvents() {
     setSelectedEventId(tree[0]?.eventId ?? null);
   }, [eventsRaw]);
 
-  const selectedEvent = useMemo(
-    () => eventsTree.find((e) => e.eventId === selectedEventId) || null,
-    [eventsTree, selectedEventId]
-  );
+  const selectedEvent = useMemo(() => eventsTree.find((e) => e.eventId === selectedEventId) || null, [eventsTree, selectedEventId]);
 
-  if (loading)
-    return (
-      <div className="min-h-screen grid place-items-center text-gray-500">
-        Cargando tus eventos…
-      </div>
-    );
-  if (!eventsTree.length)
-    return (
-      <div className="min-h-screen flex items-center justify-center text-gray-500">
-        Aún no has creado eventos.
-      </div>
-    );
+  if (loading) return <div className="min-h-screen grid place-items-center text-gray-500">Cargando tus eventos…</div>;
+  if (!eventsTree.length) return <div className="min-h-screen flex items-center justify-center text-gray-500">Aún no has creado eventos.</div>;
 
   return (
     <div className="min-h-screen bg-gray-50 pb-10">
@@ -135,29 +115,16 @@ export default function MyEvents() {
                   onClick={() => setSelectedEventId(ev.eventId)}
                   className={[
                     "text-left rounded-xl bg-white p-3 shadow-md transition hover:shadow-lg flex items-center gap-3",
-                    selectedEventId === ev.eventId
-                      ? "ring-2 ring-purple-400 scale-[1.02]"
-                      : "",
+                    selectedEventId === ev.eventId ? "ring-2 ring-purple-400 scale-[1.02]" : "",
                   ].join(" ")}
                 >
-                  <img
-                    src={ev.image}
-                    alt={ev.title}
-                    className="h-20 w-20 rounded-lg object-cover"
-                  />
+                  <img src={ev.image} alt={ev.title} className="h-20 w-20 rounded-lg object-cover" />
                   <div className="flex flex-col">
-                    <h2 className="text-sm font-semibold text-gray-900">
-                      {ev.title}
-                    </h2>
+                    <h2 className="text-sm font-semibold text-gray-900">{ev.title}</h2>
                     <p className="text-[11px] text-gray-500">
-                      {ev.dates.length}{" "}
-                      {ev.dates.length === 1 ? "fecha" : "fechas"}
+                      {ev.dates.length} {ev.dates.length === 1 ? "fecha" : "fechas"}
                     </p>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium mt-1 ${status.color}`}
-                    >
-                      {status.text}
-                    </span>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium mt-1 ${status.color}`}>{status.text}</span>
                   </div>
                 </button>
               );
@@ -167,9 +134,7 @@ export default function MyEvents() {
           {/* Panel de detalle */}
           <section className="rounded-2xl bg-white shadow-lg border border-gray-100 p-4 sm:p-6">
             {!selectedEvent ? (
-              <p className="text-gray-400 text-center mt-20">
-                Selecciona un evento para ver detalles.
-              </p>
+              <p className="text-gray-400 text-center mt-20">Selecciona un evento para ver detalles.</p>
             ) : (
               <EventDetail eventNode={selectedEvent} reload={reload} />
             )}
@@ -183,9 +148,7 @@ export default function MyEvents() {
 // Helper para estado dinámico según fechas y aprobación
 const getEventStatusLabel = (eventNode) => {
   const now = new Date();
-  const dates = eventNode.dates
-    .map((d) => ({ start: new Date(d.startAt), end: new Date(d.endAt) }))
-    .sort((a, b) => a.start - b.start);
+  const dates = eventNode.dates.map((d) => ({ start: new Date(d.startAt), end: new Date(d.endAt) })).sort((a, b) => a.start - b.start);
 
   if (!dates.length) {
     return {
@@ -240,25 +203,19 @@ const getEventStatusLabel = (eventNode) => {
     }
   }
 
-  if (eventNode.status === "P")
-    return { text: "En revisión", color: "bg-yellow-100 text-yellow-700" };
-  if (eventNode.status === "D")
-    return { text: "Desaprobado", color: "bg-red-100 text-red-700" };
-  if (eventNode.status === "C")
-    return { text: "Cancelado", color: "bg-red-100 text-red-700" };
+  if (eventNode.status === "P") return { text: "En revisión", color: "bg-yellow-100 text-yellow-700" };
+  if (eventNode.status === "D") return { text: "Desaprobado", color: "bg-red-100 text-red-700" };
+  if (eventNode.status === "C") return { text: "Cancelado", color: "bg-red-100 text-red-700" };
   return {
     text: eventNode.status === "A" ? "Aprobado" : "Sin Estado",
-    color:
-      eventNode.status === "A"
-        ? "bg-green-100 text-green-700"
-        : "bg-gray-100 text-gray-600",
+    color: eventNode.status === "A" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600",
   };
 };
 
 function EventDetail({ eventNode, reload }) {
   const status = getEventStatusLabel(eventNode);
 
-  const [user] = useAuth();
+  const { user } = useAuth();
   console.log(user);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
 
@@ -269,11 +226,19 @@ function EventDetail({ eventNode, reload }) {
 
   // Desactivar si el evento está "en curso" o "expirado"
   const isExpiredOrRunning =
-    status.text.toLowerCase().includes("expirado") ||
-    status.text.toLowerCase().includes("curso") ||
-    status.text.toLowerCase().includes("cancelado");
+    status.text.toLowerCase().includes("expirado") || status.text.toLowerCase().includes("curso") || status.text.toLowerCase().includes("cancelado");
 
-  async function handleViewAttendees(eventId, organizerId) {}
+  async function handleViewAttendees() {
+    try {
+      const response = await EventuroApi({
+        endpoint: `/event/${eventNode?.eventId}/attendanceEvent/organizer/${user?.organizer?.organizerId}`,
+        method: "GET",
+      });
+      console.log(response);
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
   const openCancelModal = () => {
     if (isExpiredOrRunning) return;
@@ -302,45 +267,26 @@ function EventDetail({ eventNode, reload }) {
       });
 
       closeCancelModal();
-      openResponseModal(
-        "success",
-        "El evento ha sido cancelado correctamente."
-      );
+      openResponseModal("success", "El evento ha sido cancelado correctamente.");
 
       // TODO opcional: actualizar lista (por ejemplo, cambiar estado o quitar evento)
       await reload();
     } catch (err) {
       console.error("Error al cancelar evento:", err);
       closeCancelModal();
-      openResponseModal(
-        "error",
-        err?.message ||
-          "Ocurrió un error al cancelar el evento. Inténtalo nuevamente."
-      );
+      openResponseModal("error", err?.message || "Ocurrió un error al cancelar el evento. Inténtalo nuevamente.");
     }
   };
 
   return (
     <div className="space-y-4 sm:space-y-6">
       <header className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-        <img
-          src={eventNode.image}
-          className="w-24 h-24 rounded-xl object-cover border border-gray-200"
-        />
+        <img src={eventNode.image} className="w-24 h-24 rounded-xl object-cover border border-gray-200" />
         <div>
-          <h3 className="text-xl sm:text-2xl font-extrabold text-purple-900 ">
-            {eventNode.title}
-          </h3>
-          <span
-            className={` px-2 py-1 rounded-full text-xs font-medium ${status.color} `}
-          >
-            {status.text}
-          </span>
+          <h3 className="text-xl sm:text-2xl font-extrabold text-purple-900 ">{eventNode.title}</h3>
+          <span className={` px-2 py-1 rounded-full text-xs font-medium ${status.color} `}>{status.text}</span>
           <p className=" text-sm text-gray-500 mt-2">
-            {eventNode.dates.length}{" "}
-            {eventNode.dates.length === 1
-              ? "fecha programada"
-              : "fechas programadas"}
+            {eventNode.dates.length} {eventNode.dates.length === 1 ? "fecha programada" : "fechas programadas"}
           </p>
         </div>
       </header>
@@ -370,9 +316,8 @@ function EventDetail({ eventNode, reload }) {
 
       {eventNode.inPerson === true && (
         <p className="text-gray-700">
-          <strong>Ciudad:</strong> {eventNode.venue.city} •{" "}
-          <strong>Dirección:</strong> {eventNode.venue.address} •{" "}
-          <strong>Aforo:</strong> {eventNode.venue.capacity}
+          <strong>Ciudad:</strong> {eventNode.venue.city} • <strong>Dirección:</strong> {eventNode.venue.address} • <strong>Aforo:</strong>{" "}
+          {eventNode.venue.capacity}
         </p>
       )}
 
@@ -384,15 +329,13 @@ function EventDetail({ eventNode, reload }) {
               <div key={d.dateId} className="rounded-xl border border-gray-200">
                 <div className="px-3 py-2 bg-gray-50 rounded-t-xl border-b border-gray-200">
                   <h4 className="text-base sm:text-lg font-semibold text-gray-900">
-                    {new Date(d.startAt).toLocaleString("es-PE")} -{" "}
-                    {new Date(d.endAt).toLocaleString("es-PE")}
+                    {new Date(d.startAt).toLocaleString("es-PE")} - {new Date(d.endAt).toLocaleString("es-PE")}
                   </h4>
                 </div>
                 <div className="p-3 space-y-2">
                   {d.zones?.map((z, i) => (
                     <div key={i} className="text-sm text-gray-700">
-                      <strong>{z.name}</strong>: Capacidad {z.capacity},
-                      Vendidas {z.sold}
+                      <strong>{z.name}</strong>: Capacidad {z.capacity}, Vendidas {z.sold}
                     </div>
                   ))}
                 </div>
@@ -401,52 +344,33 @@ function EventDetail({ eventNode, reload }) {
           </div>
 
           <div className="flex justify-between mt-4">
-            <ViewAttendeesButton
-              onClick={() =>
-                handleViewAttendees(eventNode.eventId, user.organizerId)
-              }
-            />
-            <CancelEventButton
-              onClick={openCancelModal}
-              disabled={isExpiredOrRunning}
-            />
+            <ViewAttendeesButton onClick={handleViewAttendees} />
+            <CancelEventButton onClick={openCancelModal} disabled={isExpiredOrRunning} />
           </div>
         </>
       ) : eventNode.status === "C" ? (
         <p className="text-gray-500 text-center py-6 border border-gray-200 rounded-xl bg-gray-50">
-          Este evento ha sido cancelado, por lo que las compras ya no estarán
-          disponibles.
+          Este evento ha sido cancelado, por lo que las compras ya no estarán disponibles.
         </p>
       ) : eventNode.status === "D" ? (
         <p className="text-gray-500 text-center py-6 border border-gray-200 rounded-xl bg-gray-50">
-          Este evento ha sido desaprobado, por lo que las compras no estarán
-          disponibles.
+          Este evento ha sido desaprobado, por lo que las compras no estarán disponibles.
         </p>
       ) : (
         <p className="text-gray-500 text-center py-6 border border-gray-200 rounded-xl bg-gray-50">
-          Este evento aún no está aprobado, por lo que las compras todavía no
-          estarán disponibles.
+          Este evento aún no está aprobado, por lo que las compras todavía no estarán disponibles.
         </p>
       )}
 
       {/* Modal de confirmación para el EVENTO completo */}
-      <ConfirmCancelModal
-        open={cancelModalOpen}
-        onClose={closeCancelModal}
-        onConfirm={handleConfirmCancel}
-        eventTitle={eventNode.title}
-      />
+      <ConfirmCancelModal open={cancelModalOpen} onClose={closeCancelModal} onConfirm={handleConfirmCancel} eventTitle={eventNode.title} />
 
       {/* Modal de respuesta (éxito / error) */}
       <ResponseModal
         open={responseModalOpen}
         onClose={closeResponseModal}
         type={responseType}
-        title={
-          responseType === "success"
-            ? "Evento cancelado"
-            : "Error al cancelar evento"
-        }
+        title={responseType === "success" ? "Evento cancelado" : "Error al cancelar evento"}
         message={responseMessage}
       />
     </div>
