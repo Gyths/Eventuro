@@ -18,6 +18,7 @@ export default function MyEvents() {
   const [selectedEventId, setSelectedEventId] = useState(null);
   const [loading, setLoading] = useState(true);
   const hasLoaded = useRef(false);
+  const [eventoBase, setEventoBase] = useState(null);
 
   useEffect(() => {
     if (hasLoaded.current) return;
@@ -74,20 +75,28 @@ export default function MyEvents() {
     const tree = eventsRaw.map((ev) => {
       // solo fechas activas (active !== false)
       const datesRaw = Array.isArray(ev.dates) ? ev.dates.filter((d) => d.active !== false) : [];
-
+      let totalEmitidos = 0;
+      let totalVendidos = 0;
       const dates = datesRaw.map((d, idxDate) => {
         // solo zonas activas
         const zonesRaw = Array.isArray(d.zoneDates) ? d.zoneDates.filter((z) => z.active !== false) : [];
 
-        const zones = zonesRaw.map((z, idxZone) => ({
-          zoneKey: z.eventDateZoneId ?? `${idxDate}-${idxZone}`,
-          eventDateZoneId: z.eventDateZoneId,
-          name: z.name,
-          capacity: z.capacity,
-          sold: z.capacity - z.capacityRemaining,
-          // sólo allocations activas
-          allocations: (z.allocations ?? []).filter((t) => t.active !== false),
-        }));
+        const zones = zonesRaw.map((z, idxZone) => {
+          const sold = z.capacity - z.capacityRemaining;
+
+            // acumulación por evento
+            totalEmitidos += z.capacity;
+            totalVendidos += sold;
+          return {
+            zoneKey: z.eventDateZoneId ?? `${idxDate}-${idxZone}`,
+            eventDateZoneId: z.eventDateZoneId,
+            name: z.name,
+            capacity: z.capacity,
+            sold: z.capacity - z.capacityRemaining,
+            // sólo allocations activas
+            allocations: (z.allocations ?? []).filter((t) => t.active !== false),
+          };
+        });
 
         return {
           dateKey: d.eventDateId ?? idxDate,
@@ -97,6 +106,9 @@ export default function MyEvents() {
           zones,
         };
       });
+
+      const porcentajeAprobacion =
+      totalEmitidos === 0 ? 0 : Math.round((totalVendidos / totalEmitidos) * 100);
 
       return {
         eventId: ev.eventId,
@@ -108,6 +120,11 @@ export default function MyEvents() {
         refundPolicyText: ev.refundPolicyText,
         venue: ev.venue,
         dates,
+
+        // NUEVOS CAMPOS
+        totalTicketsEmitidos: totalEmitidos,
+        totalTicketsVendidos: totalVendidos,
+        porcentajeAprobacion,
       };
     });
 
@@ -157,7 +174,12 @@ export default function MyEvents() {
             {!selectedEvent ? (
               <p className="text-gray-400 text-center mt-20">Selecciona un evento para ver detalles.</p>
             ) : (
-              <EventDetail eventNode={selectedEvent} reload={reload} />
+              <EventDetail 
+                eventNode={selectedEvent}
+                reload={reload}
+                eventoBase={eventoBase}
+                setEventoBase={setEventoBase}
+              />
             )}
           </section>
         </div>
@@ -233,9 +255,22 @@ const getEventStatusLabel = (eventNode) => {
   };
 };
 
-function EventDetail({ eventNode, reload }) {
+function EventDetail({ eventNode, reload, eventoBase, setEventoBase }) {
   const status = getEventStatusLabel(eventNode);
   const navigate = useNavigate();
+
+  const compararPorcentaje = (eventoActual) => {
+    if (!eventoBase) return null;
+
+    if (eventoActual.porcentajeAprobacion > eventoBase.porcentajeAprobacion) {
+      return "up";
+    } else if (eventoActual.porcentajeAprobacion < eventoBase.porcentajeAprobacion) {
+      return "down";
+    } else {
+      return "equal";
+    }
+  };
+
   const { user } = useAuth();
   const { event, setEvent } = useEvent();
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
@@ -415,9 +450,100 @@ function EventDetail({ eventNode, reload }) {
         </p>
       )}
 
+
       {/* Fechas, zonas y tipos de entrada (solo si está aprobado) */}
       {eventNode.status === "A" ? (
         <>
+        <p className="text-gray-700">
+          <strong>Total tickets emitidos:</strong> {eventNode.totalTicketsEmitidos}
+        </p>
+        <p className="text-gray-700">
+          <strong>Total tickets vendidos:</strong> {eventNode.totalTicketsVendidos}
+        </p>
+        <div className="text-gray-700">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <p>
+                <strong>Porcentaje Aprobación:</strong> {eventNode.porcentajeAprobacion}%
+              </p>
+
+              {/* Ícono de comparación */}
+              {eventoBase && eventNode.status === "A" && (() => {
+                const r = compararPorcentaje(eventNode);
+
+                const styleBase = {
+                  width: "28px",
+                  height: "28px",
+                  borderRadius: "50%",
+                  fontSize: "16px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: "bold",
+                  border: "2px solid",
+                };
+
+                if (r === "up")
+                  return (
+                    <span
+                      style={{
+                        ...styleBase,
+                        borderColor: "green",
+                        color: "green",
+                        backgroundColor: "#e6ffe6",
+                      }}
+                    >
+                      ▲
+                    </span>
+                  );
+
+                if (r === "down")
+                  return (
+                    <span
+                      style={{
+                        ...styleBase,
+                        borderColor: "red",
+                        color: "red",
+                        backgroundColor: "#ffe6e6",
+                      }}
+                    >
+                      ▼
+                    </span>
+                  );
+
+                if (r === "equal")
+                  return (
+                    <span
+                      style={{
+                        ...styleBase,
+                        borderColor: "gray",
+                        color: "gray",
+                        backgroundColor: "#f0f0f0",
+                      }}
+                    >
+                      =
+                    </span>
+                  );
+              })()}
+            </div>
+
+            {/* Checkbox */}
+            <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
+              <input
+                type="checkbox"
+                checked={eventoBase?.eventId === eventNode.eventId}
+                onChange={() => {
+                  if (eventoBase?.eventId === eventNode.eventId) {
+                    setEventoBase(null);
+                  } else {
+                    setEventoBase(eventNode);
+                  }
+                }}
+              />
+              Comparar
+            </label>
+          </div>
+        </div>
           <div className="space-y-4">
             {eventNode.dates.map((d) => (
               <div key={d.dateKey} className="rounded-xl border border-gray-200">
