@@ -760,3 +760,19 @@ export async function deleteTicketRepo(ticketId) {
     return resultData;
   });
 }
+
+export async function listticketsByType(eventId, type) {
+  console.log("eventId en repo:", eventId);
+  console.log("type en repo:", type);
+  return prisma.eventDateZone.findMany({
+    where: {
+      name: type,
+      eventDate: {
+        eventId: BigInt(eventId),
+      },
+    },
+    select: {
+      eventDateZoneId: true,
+    },
+  });
+}
