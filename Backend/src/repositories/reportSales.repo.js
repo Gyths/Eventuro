@@ -183,6 +183,11 @@ export const showSalesReportRepo = async (organizerId) => {
     let ticketsSold = 0;
     let totalCapacity = 0;
 
+    // Obtener fee del evento (puede ser null)
+    const feePercentage = event.fee?.percentage
+      ? Number(event.fee.percentage)
+      : 0;
+
     // SUMAR CAPACIDAD DE TODAS LAS ZONAS DE TODAS LAS FECHAS
     for (const date of event.dates) {
       for (const zone of date.zoneDates) {
@@ -207,7 +212,8 @@ export const showSalesReportRepo = async (organizerId) => {
       }
     }
 
-    const eventNet = eventGross - eventRefunds;
+    const eventCommission = ((eventGross - eventRefunds) * feePercentage) / 100;
+    const eventNet = eventGross - eventRefunds - eventCommission;
     const refundRate = eventGross ? (eventRefunds / eventGross) * 100 : 0;
 
     const occupancy =

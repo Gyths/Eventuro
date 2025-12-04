@@ -168,7 +168,7 @@ export async function createTicketRepo(input) {
 
       // Crear tickets usando el nuevo unit price (pricePaid)
       const pricePerTicket = newUnitPrice;
-
+      
       // 1) Si tiene seatId → ticket numerado (1 ticket)
       if (seatId) {
         //Validamos que exista el asiento y esté en estado HELD
