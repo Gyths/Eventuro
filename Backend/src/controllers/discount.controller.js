@@ -2,6 +2,7 @@
 import { validateDiscountSvc } from "../services/discount.service.js";
 import { listDiscountByOrganizerIdSvc } from "../services/discount.service.js";
 import { toJSONSafe } from "../utils/serialize.js";
+import { prisma } from "../utils/prisma.js";
 
 export async function validateDiscount(req, res) {
   try {
@@ -38,7 +39,11 @@ export async function validateDiscount(req, res) {
 
 export async function listDiscountByOrganizerId(req, res) {
   try {
-    const organizerId = req.auth?.user?.organizer?.organizerId;
+    const userId = req.auth?.user?.userId;
+    const organizerId = await prisma.organizer.findUnique({
+      where: { userId },
+      select: { organizerId: true },
+    });
     if (!organizerId) {
       return res.status(400).json({ message: "El usuario no tiene organizador asociado" });
     }

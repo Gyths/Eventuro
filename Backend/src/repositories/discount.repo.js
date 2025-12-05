@@ -54,7 +54,7 @@ export async function listDiscountByOrganizerIdRepo({ organizerId, eventId }) {
       scope: true,
       percentage: true,
       initialQty: true,
-      avaibleQty: true,
+      availableQty: true,
       appliesTo: true,
     },
     orderBy: { discountId: "asc" },
