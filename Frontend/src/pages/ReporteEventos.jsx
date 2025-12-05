@@ -67,6 +67,7 @@ export default function ReportesOrganizador() {
           headers["Authorization"] = `Bearer ${token}`;
         }
 
+        // ------------ REPORTE PRINCIPAL ------------
         console.log(
           "Fetching report from:",
           `${BASE_URL}/eventuro/api/report/sales/${numericOrganizerId}`
@@ -86,8 +87,33 @@ export default function ReportesOrganizador() {
         }
 
         const json = await res.json();
-
         setReport(json);
+
+        // ------------ DESCUENTOS (/discount) ------------
+        try {
+          setLoadingDiscount(true);
+
+          const discountResponse = await EventuroApi({
+            endpoint: "/discount",
+            method: "GET",
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          });
+
+          console.log("Respuesta /discount:", discountResponse);
+          setDiscountJson(discountResponse);
+          setDiscountMsg({
+            type: "success",
+            text: "Descuentos obtenidos correctamente.",
+          });
+        } catch (err) {
+          console.error("Error al llamar /discount:", err);
+          setDiscountMsg({
+            type: "error",
+            text: "No se pudo obtener la información de descuentos.",
+          });
+        } finally {
+          setLoadingDiscount(false);
+        }
       } catch (err) {
         console.error("Error generating report:", err);
       } finally {
@@ -98,10 +124,11 @@ export default function ReportesOrganizador() {
     init();
   }, [user]);
 
-  // --------- Mapeo de eventos para la tabla y el gráfico de ocupación ---------
+
+
   const eventos =
     report?.events?.map((e) => ({
-      id: e.eventId, // ⭐ importante para saber qué evento es
+      id: e.eventId,
       nombre: e.title,
       fechas: e.dates.map((d) => {
         const start = new Date(d.startAt);
@@ -209,38 +236,6 @@ export default function ReportesOrganizador() {
     selectedEventId == null
       ? null
       : eventos.find((e) => e.id === selectedEventId)?.nombre ?? null;
-
-  const handleTestDiscount = async () => {
-    try {
-      setLoadingDiscount(true);
-      setDiscountMsg(null);
-      setDiscountJson(null);
-
-      const session = localStorage.getItem("session");
-      const token = session ? JSON.parse(session)?.token : null;
-
-      const json = await EventuroApi({
-        endpoint: "/discount",
-        method: "GET",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-
-      console.log("Respuesta /discount:", json);
-      setDiscountJson(json);
-      setDiscountMsg({
-        type: "success",
-        text: "Descuentos obtenidos. Revisa también la consola.",
-      });
-    } catch (err) {
-      console.error("Error al llamar /discount:", err);
-      setDiscountMsg({
-        type: "error",
-        text: "No se pudo obtener la información de descuentos.",
-      });
-    } finally {
-      setLoadingDiscount(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-[#f5f5ff] text-gray-900">
@@ -440,43 +435,22 @@ export default function ReportesOrganizador() {
             {/* ⭐ NUEVO: SECCIÓN DESCUENTOS (OCUPA TODA LA FILA) */}
             <section className="grid grid-cols-1 gap-4 mt-4">
               <div className="rounded-2xl bg-gray-50 px-4 py-3 flex flex-col shadow-md">
-                <h2 className="font-semibold text-gray-800 mb-2">
-                  Descuentos
-                </h2>
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="font-semibold text-gray-800">Descuentos</h2>
+
+                  {loadingDiscount && (
+                    <span className="text-xs text-gray-500">
+                      Cargando descuentos...
+                    </span>
+                  )}
+                </div>
                 <div className="flex-1 h-64">
                   <DescuentosChart
-                    data={report?.charts?.discounts ?? []}
+                    data={discountJson ?? []}
                     selectedEventId={selectedEventId}
+                    eventList={eventos}
                   />
                 </div>
-              </div>
-              <div className="mt-6 space-y-3">
-                <button
-                  type="button"
-                  onClick={handleTestDiscount}
-                  className="px-4 py-2 rounded-xl bg-[#2d0247] text-white text-sm font-semibold hover:opacity-90 disabled:opacity-60"
-                  disabled={loadingDiscount}
-                >
-                  {loadingDiscount ? "Cargando descuentos..." : "Probar /discount"}
-                </button>
-
-                {discountMsg && (
-                  <div
-                    className={`text-sm px-3 py-2 rounded-xl ${
-                      discountMsg.type === "success"
-                        ? "bg-green-50 text-green-700 border border-green-200"
-                        : "bg-red-50 text-red-700 border border-red-200"
-                    }`}
-                  >
-                    {discountMsg.text}
-                  </div>
-                )}
-
-                {discountJson && (
-                  <div className="bg-gray-900 text-green-200 text-xs rounded-xl p-3 overflow-auto max-h-80">
-                    <pre>{JSON.stringify(discountJson, null, 2)}</pre>
-                  </div>
-                )}
               </div>
             </section>
           </div>
