@@ -40,13 +40,16 @@ export async function validateDiscount(req, res) {
 export async function listDiscountByOrganizerId(req, res) {
   try {
     const userId = req.auth?.user?.userId;
-    const organizerId = await prisma.organizer.findUnique({
+    const organizer = await prisma.organizer.findUnique({
       where: { userId },
       select: { organizerId: true },
     });
-    if (!organizerId) {
+
+    if (!organizer) {
       return res.status(400).json({ message: "El usuario no tiene organizador asociado" });
     }
+
+    const organizerId = organizer.organizerId;
 
     const rawEventId = req.params?.eventId;
     const eventId = rawEventId ? BigInt(rawEventId) : null;
