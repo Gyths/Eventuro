@@ -27,7 +27,7 @@ export async function listDiscountByOrganizerIdRepo({ organizerId, eventId }) {
         scope: true,
         percentage: true,
         initialQty: true,
-        avaibleQty: true,
+        availableQty: true,
         appliesTo: true,
       },
       orderBy: { discountId: "asc" },
@@ -36,7 +36,7 @@ export async function listDiscountByOrganizerIdRepo({ organizerId, eventId }) {
 
   // Si NO viene eventId, buscamos todos los eventos del organizador
   const events = await prisma.event.findMany({
-    where: { organizerId },
+    where: { organizerId: { equals: BigInt(organizerId) } },
     select: { eventId: true },
     orderBy: { eventId: "asc" },
   });
@@ -54,7 +54,7 @@ export async function listDiscountByOrganizerIdRepo({ organizerId, eventId }) {
       scope: true,
       percentage: true,
       initialQty: true,
-      avaibleQty: true,
+      availableQty: true,
       appliesTo: true,
     },
     orderBy: { discountId: "asc" },
