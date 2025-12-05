@@ -113,6 +113,7 @@ export const showSalesReportRepo = async (organizerId) => {
     where: { organizerId, status: "A" },
     include: {
       venue: true,
+      fee:true,
       dates: {
         include: {
           zoneDates: true,
@@ -184,7 +185,7 @@ export const showSalesReportRepo = async (organizerId) => {
     let totalCapacity = 0;
 
     // Obtener fee del evento (puede ser null)
-    const feePercentage = event.fee?.percentage
+    let feePercentage = event.fee?.percentage
       ? Number(event.fee.percentage)
       : 0;
 
