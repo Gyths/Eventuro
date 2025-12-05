@@ -24,15 +24,21 @@ ChartJS.register(
 );
 import VentasPorMesChart from "../components/reporte_evento/Grafico_1";
 import PorcentajeOcupacionChart from "../components/reporte_evento/Grafico_2";
+import DescuentosChart from "../components/reporte_evento/DescuentosChart.jsx";
 import { useAuth } from "../services/auth/AuthContext";
 import { useRef, useState, useEffect } from "react";
 import { BASE_URL } from "../config.js";
+import { EventuroApi } from "../api";
 
 export default function ReportesOrganizador() {
   const { user } = useAuth();
   const [posting, setPosting] = useState(false);
   const hasLoaded = useRef(false);
   const [report, setReport] = useState(null);
+  const [loadingDiscount, setLoadingDiscount] = useState(false);
+  const [discountJson, setDiscountJson] = useState(null);
+  const [discountMsg, setDiscountMsg] = useState(null);
+
   const navigate = useNavigate();
 
   // ⭐ NUEVO: evento seleccionado
@@ -61,6 +67,7 @@ export default function ReportesOrganizador() {
           headers["Authorization"] = `Bearer ${token}`;
         }
 
+        // ------------ REPORTE PRINCIPAL ------------
         console.log(
           "Fetching report from:",
           `${BASE_URL}/eventuro/api/report/sales/${numericOrganizerId}`
@@ -80,8 +87,33 @@ export default function ReportesOrganizador() {
         }
 
         const json = await res.json();
-
         setReport(json);
+
+        // ------------ DESCUENTOS (/discount) ------------
+        try {
+          setLoadingDiscount(true);
+
+          const discountResponse = await EventuroApi({
+            endpoint: "/discount",
+            method: "GET",
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          });
+
+          console.log("Respuesta /discount:", discountResponse);
+          setDiscountJson(discountResponse);
+          setDiscountMsg({
+            type: "success",
+            text: "Descuentos obtenidos correctamente.",
+          });
+        } catch (err) {
+          console.error("Error al llamar /discount:", err);
+          setDiscountMsg({
+            type: "error",
+            text: "No se pudo obtener la información de descuentos.",
+          });
+        } finally {
+          setLoadingDiscount(false);
+        }
       } catch (err) {
         console.error("Error generating report:", err);
       } finally {
@@ -92,10 +124,11 @@ export default function ReportesOrganizador() {
     init();
   }, [user]);
 
-  // --------- Mapeo de eventos para la tabla y el gráfico de ocupación ---------
+
+
   const eventos =
     report?.events?.map((e) => ({
-      id: e.eventId, // ⭐ importante para saber qué evento es
+      id: e.eventId,
       nombre: e.title,
       fechas: e.dates.map((d) => {
         const start = new Date(d.startAt);
@@ -386,7 +419,6 @@ export default function ReportesOrganizador() {
                   Ventas por mes
                 </h2>
                 <div className="flex-1 h-64">
-                  {/* ⭐ pasamos la data filtrada */}
                   <VentasPorMesChart monthlyTotals={salesByMonthTotals} />
                 </div>
               </div>
@@ -396,8 +428,28 @@ export default function ReportesOrganizador() {
                   Porcentaje de ocupación
                 </h2>
                 <div className="flex-1 h-64">
-                  {/* ⭐ usamos solo los eventos filtrados */}
                   <PorcentajeOcupacionChart eventos={eventosFiltrados} />
+                </div>
+              </div>
+            </section>
+            {/* ⭐ NUEVO: SECCIÓN DESCUENTOS (OCUPA TODA LA FILA) */}
+            <section className="grid grid-cols-1 gap-4 mt-4">
+              <div className="rounded-2xl bg-gray-50 px-4 py-3 flex flex-col shadow-md">
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="font-semibold text-gray-800">Descuentos</h2>
+
+                  {loadingDiscount && (
+                    <span className="text-xs text-gray-500">
+                      Cargando descuentos...
+                    </span>
+                  )}
+                </div>
+                <div className="flex-1 h-64">
+                  <DescuentosChart
+                    data={discountJson ?? []}
+                    selectedEventId={selectedEventId}
+                    eventList={eventos}
+                  />
                 </div>
               </div>
             </section>
