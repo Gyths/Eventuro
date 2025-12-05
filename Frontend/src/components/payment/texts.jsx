@@ -1,11 +1,21 @@
 //Textos relevantes a utilizar
 
+export const ERROR_MODAL_TEXTS = {
+  title: "¡Lo sentimos!",
+  text: {
+    1: "Las entradas para esta fecha se han agotado.",
+    2: "Ya no quedan más entradas para la fase de ventas actual.",
+    3: "Usted no puede comprar más entradas para este evento.",
+  },
+};
+
 export const EVENT_INFORMATION_TEXTS = {
   access_policy: {
-    E: "Apto para todo público",
-    T: "Mayores de 14 con compañía de un adulto",
-    AO: "+18 Solo apto para mayores de edad",
+    E: "Evento apto para todo público",
+    T: "Mayores de 14 años, menores acompañados de un adulto",
+    AO: "Evento solo apto para mayores de edad",
   },
+
   alerts: {
     0: "Ha ocurrido un error inesperado, por favor vuelva a intentarlo.",
     1: "El evento seleccionado no existe.",

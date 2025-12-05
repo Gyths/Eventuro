@@ -168,9 +168,9 @@ export default function EventBasicsForm({ form, onChange }) {
         />
       </FormField>
 
-      <FormField label="Información adicional">
+      <FormField label="Descripción de la política de acceso">
         <TextArea
-          placeholder="Información complementaria para los asistentes (opcional)."
+          placeholder="Información detallada sobre los permisos que tendrán los asistentes. (ej. objetos prohibidos, hora máxima de llegada) (opcional)."
           value={form.extraInfo || ""}
           onChange={(v) => onChange({ extraInfo: v })}
         />

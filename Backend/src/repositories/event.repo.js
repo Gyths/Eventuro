@@ -45,6 +45,20 @@ export async function createEventRepo(userId, input) {
       imageBannerKey = input.imageBannerKey;
     }
 
+    // --- Manejo del refundPolicyFile ---
+    let refundPolicyFileKey = null;
+    if (input.policyFile) {
+      const buffer = input.policyFile.buffer;
+      const fileName = `refund_policies/${Date.now()}_${
+        input.policyFile.originalname
+      }`;
+      refundPolicyFileKey = await uploadFile(
+        fileName,
+        buffer,
+        input.policyFile.mimetype
+      );
+    }
+
     // --- Parsear y convertir tipos ---
     const organizerId = BigInt(input.organizerId);
     const inPerson = input.inPerson === "true" || input.inPerson === true;
@@ -57,7 +71,13 @@ export async function createEventRepo(userId, input) {
     const zones = input.zones ? JSON.parse(input.zones) : [];
     const accessPolicyDescription = input.accessPolicyDescription ?? null;
     const salePhases = input.salePhases ? JSON.parse(input.salePhases) : [];
+    const refundPolicyText = input.refundPolicyText ?? null;
 
+    const stagedSale = input.stagedSale === "true" || input.stagedSale === true;
+    const quantityStagedSale = input.quantityStagedSale
+      ? BigInt(input.quantityStagedSale)
+      : null;
+    const stagedSalePeriod = input.stagedSalePeriod ?? null;
     // --- Crear evento ---
     const event = await tx.event.create({
       data: {
@@ -66,9 +86,17 @@ export async function createEventRepo(userId, input) {
         inPerson: inPerson,
         imagePrincipalKey: imagePrincipalKey ?? "",
         imageBannerKey: imageBannerKey ?? "",
+        refundPolicyFileKey: refundPolicyFileKey ?? null,
         description: input.description,
         accessPolicy: input.accessPolicy,
         accessPolicyDescription: input.accessPolicyDescription ?? null,
+        refundPolicyText: refundPolicyText,
+        ticketLimitPerUser: input.ticketLimitPerUser
+          ? Number(input.ticketLimitPerUser)
+          : 10, // por defecto
+        stagedSale: stagedSale,
+        quantityStagedSale: quantityStagedSale,
+        stagedSalePeriod: stagedSalePeriod,
       },
       select: { eventId: true },
     });
@@ -179,6 +207,19 @@ export async function createEventRepo(userId, input) {
           await tx.seat.createMany({ data: seats, skipDuplicates: true });
         }
 
+        // Determinar cuántas entradas se liberan inicialmente
+        let initialCapacityRemaining;
+        if (stagedSale) {
+          // Si hay venta escalonada, libera la cantidad inicial configurada
+          initialCapacityRemaining = Number(quantityStagedSale);
+          // Seguridad: no puede ser mayor que la capacidad total
+          if (initialCapacityRemaining > Number(zone.capacity)) {
+            initialCapacityRemaining = Number(zone.capacity);
+          }
+        } else {
+          // Si no hay venta escalonada, libera todo
+          initialCapacityRemaining = Number(zone.capacity);
+        }
         const eventDateZone = await tx.eventDateZone.create({
           data: {
             eventDateId,
@@ -186,7 +227,8 @@ export async function createEventRepo(userId, input) {
             kind: zone.kind,
             basePrice: Number(zone.basePrice),
             capacity: Number(zone.capacity),
-            capacityRemaining: Number(zone.capacity),
+            capacityRemaining: initialCapacityRemaining,
+            quantityTicketsReleased: initialCapacityRemaining,
             seatMapId,
             currency: zone.currency,
           },
@@ -257,6 +299,16 @@ export async function createEventRepo(userId, input) {
 
 export async function listEventRepo() {
   const events = await prisma.event.findMany({
+    where: {
+      dates: {
+        some: {
+          endAt: {
+            gt: new Date(),
+          },
+        },
+      },
+    },
+
     select: {
       eventId: true,
       organizerId: true,
@@ -268,6 +320,7 @@ export async function listEventRepo() {
       description: true,
       accessPolicy: true,
       accessPolicyDescription: true,
+      refundPolicyText: true,
 
       // relación con categorías
       categories: {
@@ -329,6 +382,18 @@ export async function listEventRepo() {
         }
       }
 
+      if (event.refundPolicyFileKey) {
+        //crear url firmada refund policy
+        try {
+          event.refundPolicyFileURLSigned = await getSignedUrlForFile(
+            event.refundPolicyFileKey
+          );
+        } catch (err) {
+          console.error("Error generando signed URL refund policy:", err);
+          event.refundPolicyFileURLSigned = null;
+        }
+      }
+
       return event;
     })
   );
@@ -380,6 +445,17 @@ export async function eventDetails(id) {
         event.imageBannerURLSigned = null;
       }
     }
+
+    if (event.refundPolicyFileKey) {
+      try {
+        event.refundPolicyFileURLSigned = await getSignedUrlForFile(
+          event.refundPolicyFileKey
+        );
+      } catch (err) {
+        console.error("Error generando signed URL refund policy:", err);
+        event.refundPolicyFileURLSigned = null;
+      }
+    }
   }
 
   return event; // ✅ Devolver el objeto, no un array
@@ -409,6 +485,7 @@ export async function listEventInfoRepo(eventId) {
       eventId: true,
       organizerId: true,
       title: true,
+      refundPolicyText: true,
       status: true,
       inPerson: true,
       description: true,
@@ -416,6 +493,7 @@ export async function listEventInfoRepo(eventId) {
       accessPolicyDescription: true,
       ticketLimitPerUser: true,
 
+      refundPolicyFileKey: true,
       imagePrincipalKey: true,
       imageBannerKey: true,
 
@@ -521,6 +599,17 @@ export async function listEventInfoRepo(eventId) {
     }
   }
 
+  if (event?.refundPolicyFileKey) {
+    try {
+      event.refundPolicyFileURLSigned = await getSignedUrlForFile(
+        event.refundPolicyFileKey
+      );
+    } catch (err) {
+      console.error("Error generando signed URL refund policy:", err);
+      event.refundPolicyFileURLSigned = null;
+    }
+  }
+
   return event;
 }
 
@@ -590,10 +679,12 @@ export async function listEventDateZonesByEventDateIdRepo(
       },
       select: {
         eventSalesPhaseId: true,
+        ticketLimit: true,
         name: true,
         startAt: true,
         endAt: true,
         percentage: true,
+        quantityTicketsSold: true,
       },
     }),
   ]);

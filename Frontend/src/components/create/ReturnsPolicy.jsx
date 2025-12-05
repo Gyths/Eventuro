@@ -10,6 +10,7 @@ export default function ReturnsPolicy({ form, value, onChange }) {
   // Estado solo si NO es controlado
   const [textLocal, setTextLocal] = useState(value?.text ?? "");
   const [fileLocal, setFileLocal] = useState(value?.file ?? null);
+  const [allowedExtension, setAllowedExtension] = useState(true);
 
   // Getters/Setters unificados según modo
   const text = controlled ? value?.text ?? "" : textLocal;
@@ -33,9 +34,20 @@ export default function ReturnsPolicy({ form, value, onChange }) {
   };
 
   const tooBig = file && file.size > maxMB * 1024 * 1024;
-
+  const allowedExtensions = [".pdf"];
   const handleFileChange = (e) => {
+    setAllowedExtension(true);
     const f = e.target.files?.[0] ?? null;
+    if (f) {
+      const allowedTypes = ["application/pdf"];
+      const isAllowed = allowedTypes.includes(f.type);
+      if (!isAllowed) {
+        setAllowedExtension(false);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        return;
+      }
+    }
+
     setFile(f);
     form.refundPolicyFile = fileLocal;
   };
@@ -67,7 +79,9 @@ export default function ReturnsPolicy({ form, value, onChange }) {
           className="mt-1 w-full min-h-[140px] rounded-2xl border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-200"
           placeholder="Ingrese la política..."
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => {
+            setText(e.target.value);
+          }}
         />
       </div>
 
@@ -98,19 +112,34 @@ export default function ReturnsPolicy({ form, value, onChange }) {
           <div className="flex items-center gap-2">
             <span
               className={`inline-block h-3 w-3 rounded ${
-                tooBig ? "bg-red-500" : "bg-green-500"
+                tooBig || !allowedExtension ? "bg-red-500" : "bg-green-500"
               }`}
             />
             {file && (
               <span
                 className={`text-xs font-medium ${
-                  tooBig ? "text-red-600" : "text-green-600"
+                  tooBig || !allowedExtension
+                    ? "text-red-600"
+                    : "text-green-600"
                 }`}
               >
                 {tooBig ? "Archivo muy pesado" : "Archivo válido"}
               </span>
             )}
           </div>
+        </div>
+        {!allowedExtension && (
+          <span className="inline-block font-semibold text-xs text-red-500">
+            Por favor, ingrese un tipo de archivo válido
+          </span>
+        )}
+        <div className="my-2 text-xs text-gray-500">
+          Tipos de archivos permitidos:{" "}
+          {allowedExtensions.map((extension, index) => {
+            return (
+              extension + (index != allowedExtensions.length - 1 ? ", " : "")
+            );
+          })}
         </div>
         <div className="mt-1 text-xs text-gray-500">
           Tamaño máximo: {maxMB} MB

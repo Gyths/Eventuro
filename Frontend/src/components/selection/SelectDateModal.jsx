@@ -32,31 +32,6 @@ export default function SelectDateModal({ eventId, onClose, onContinue }) {
   ];
   // console.log(dates);
 
-  useEffect(() => {
-    async function fetchDates() {
-      try {
-        const response = await EventuroApi({
-          endpoint: `/event/${eventId}/dates`,
-          method: "GET",
-        });
-
-        await new Promise((resolve) => setTimeout(resolve, 300));
-        setDates(response);
-      } catch (err) {
-        await new Promise((resolve) => setTimeout(resolve, 300));
-        Swal.fire({
-          icon: "error",
-          title: "¡Lo sentimos!",
-          text: "Ocurrió un error inseperado",
-        });
-        onClose();
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchDates();
-  }, []);
-
   /*useEffect(() => {
     console.log("Datos originales:", dates);
     console.log("Fechas seleccionables:", selectableDays);
@@ -79,7 +54,7 @@ export default function SelectDateModal({ eventId, onClose, onContinue }) {
 
     dates.forEach((date) => {
       const dateObj = new Date(date.startAt);
-      const monthNum = dateObj.getMonth();
+      const monthNum = dateObj.getMonth() + 1;
       const dayNum = dateObj.getDate();
       const yearNum = dateObj.getFullYear();
 
@@ -94,12 +69,10 @@ export default function SelectDateModal({ eventId, onClose, onContinue }) {
     return { selectableDays, months, days };
   }, [dates]);
 
-  const [currentDate, setCurrentDate] = useState(
-    dates && dates.length ? new Date(dates[0].startAt) : new Date()
-  );
+  const [currentDate, setCurrentDate] = useState(null);
 
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
+  const year = currentDate?.getFullYear();
+  const month = currentDate?.getMonth();
 
   const handlePrevMonth = () => {
     const prevMonth = month;
@@ -122,6 +95,37 @@ export default function SelectDateModal({ eventId, onClose, onContinue }) {
     if (!selectedSchedule) return;
     onContinue(selectedSchedule);
   };
+
+  useEffect(() => {
+    async function fetchDates() {
+      try {
+        const response = await EventuroApi({
+          endpoint: `/event/${eventId}/dates`,
+          method: "GET",
+        });
+
+        await new Promise((resolve) => setTimeout(resolve, 300));
+
+        setDates(response);
+
+        if (response.length > 0) {
+          setCurrentDate(new Date(response[0].startAt));
+        }
+      } catch (err) {
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        Swal.fire({
+          icon: "error",
+          title: "¡Lo sentimos!",
+          text: "Ocurrió un error inseperado",
+        });
+        onClose();
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchDates();
+  }, []);
 
   return (
     <BaseModal>
@@ -146,7 +150,7 @@ export default function SelectDateModal({ eventId, onClose, onContinue }) {
               </button>
             </div>
 
-            {dates && (
+            {currentDate && (
               <Calendar
                 month={month}
                 year={year}
@@ -182,7 +186,7 @@ export default function SelectDateModal({ eventId, onClose, onContinue }) {
                     .filter(
                       (d) =>
                         d.dateObj.getDate() === selectedDate.getDate() &&
-                        d.dateObj.getMonth() === selectedDate.getMonth() + 1
+                        d.dateObj.getMonth() === selectedDate.getMonth()
                     )
                     .map((dateObj) => {
                       const horario = `${dateObj.startHour} - ${dateObj.endHour}`;
@@ -192,11 +196,10 @@ export default function SelectDateModal({ eventId, onClose, onContinue }) {
                           onClick={() =>
                             setSelectedSchedule(dateObj.eventDateId)
                           }
-                          className={`cursor-pointer border-y py-3.5 px-4 hover:bg-purple-50 transition-all ${
-                            selectedSchedule?.eventDateId ===
-                            dateObj.eventDateId
-                              ? "bg-purple-100 border-purple-400"
-                              : "border-gray-200 hover:border-purple-400/60 mx-1 hover:scale-101"
+                          className={`cursor-pointer  py-3.5 px-4 hover:bg-purple-50 transition-all ${
+                            selectedSchedule === dateObj.eventDateId
+                              ? "border-y bg-purple-100 border-purple-400"
+                              : "border rounded-lg border-gray-200 hover:border-purple-400/60 mx-1 hover:scale-101"
                           }`}
                         >
                           {horario}

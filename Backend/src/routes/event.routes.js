@@ -20,7 +20,11 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 router.post(
   "/",
-  upload.fields([{ name: "imagenPrincipal" }, { name: "imagenBanner" }]),
+  upload.fields([
+    { name: "imagenPrincipal" },
+    { name: "imagenBanner" },
+    { name: "refundPolicyFile" },
+  ]),
   verifyToken,
   attachUserContext,
   createEvent

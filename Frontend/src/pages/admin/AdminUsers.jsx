@@ -60,34 +60,32 @@ const formatDateTime = (isoString) => {
 
 function StatusBadge({ status }) {
   let text, icon, classes;
-
   switch (status) {
-    case "A": // Activo
+    case "A":
       text = "Activo";
       icon = <CheckCircleIcon className="h-4 w-4" />;
       classes = "bg-green-100 text-green-800";
       break;
-    case "S": // Suspendido
+    case "S":
       text = "Suspendido";
       icon = <ExclamationTriangleIcon className="h-4 w-4" />;
       classes = "bg-yellow-100 text-yellow-800";
       break;
-    case "B": // Baneado
+    case "B":
       text = "Baneado";
       icon = <XCircleIcon className="h-4 w-4" />;
       classes = "bg-red-100 text-red-800";
       break;
-    case "D": // Eliminado
+    case "D":
       text = "Eliminado";
-      icon = <UserCircleIcon className="h-4 w-4" />; // Icono neutral
-      classes = "bg-gray-100 text-gray-700"; // Color gris
+      icon = <XCircleIcon className="h-4 w-4" />;
+      classes = "bg-red-100 text-red-800";
       break;
     default:
       text = "Desconocido";
       icon = <UserCircleIcon className="h-4 w-4" />;
       classes = "bg-gray-100 text-gray-800";
   }
-
   return (
     <span
       className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${classes}`}
@@ -146,17 +144,10 @@ export default function AdminUsers() {
     setIsLoading(true);
     setError(null);
     let endpoint = "/user";
-    let isSearchById = false;
 
     try {
       if (query) {
-        const isNumericId = !isNaN(Number(query)) && !query.includes(" ");
-        if (isNumericId) {
-          endpoint = `/user/${query}`;
-          isSearchById = true;
-        } else {
-          endpoint = `/user?search=${encodeURIComponent(query)}`;
-        }
+        endpoint = `/user?search=${encodeURIComponent(query)}`;
       }
 
       const data = await EventuroApi({
@@ -164,30 +155,18 @@ export default function AdminUsers() {
         method: "GET",
       });
 
-      if (isSearchById) {
-        if (data && data.userId) {
-          setUsers([data]);
-        } else {
-          setUsers([]);
-        }
-      } else {
-        setUsers(data && Array.isArray(data.items) ? data.items : []);
-      }
+      setUsers(data && Array.isArray(data.items) ? data.items : []);
     } catch (err) {
-      if (isSearchById && err.message.includes("404")) {
-        setUsers([]);
-      } else {
-        setError(err.message);
-        if (
-          err.message.includes("401") ||
-          err.message.toLowerCase().includes("token")
-        ) {
-          Swal.fire(
-            "Error",
-            "No tienes permiso para ver esta información.",
-            "error"
-          );
-        }
+      setError(err.message);
+      if (
+        err.message.includes("401") ||
+        err.message.toLowerCase().includes("token")
+      ) {
+        Swal.fire(
+          "Error",
+          "No tienes permiso para ver esta información.",
+          "error"
+        );
       }
     } finally {
       setIsLoading(false);
@@ -233,7 +212,7 @@ export default function AdminUsers() {
 
       <div className="p-4 sm:p-6 lg:p-8 min-h-[calc(100vh-80px)] flex flex-col">
         <div className="max-w-7xl mx-auto w-full my-auto">
-          {/* Encabezado */}
+          {/* Encabezado  */}
           <div className="border-b border-gray-200 pb-5 mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 className="text-3xl font-semibold text-gray-800 flex items-center gap-3">
@@ -246,21 +225,20 @@ export default function AdminUsers() {
             </div>
           </div>
 
-          {/* Barra de Búsqueda */}
           <div className="mb-6 relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
             </div>
             <input
               type="text"
-              placeholder="Buscar por nombre, apellido o ID de usuario..."
+              placeholder="Buscar por nombre o apellido..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 focus:ring-purple-500 focus:border-purple-500 text-sm shadow-sm"
             />
           </div>
 
-          {/* Contenido*/}
+          {/* Contenido  */}
           {isLoading && (
             <div className="text-center text-gray-500 py-12">
               Cargando usuarios...
@@ -278,8 +256,6 @@ export default function AdminUsers() {
                 : "No hay usuarios registrados en el sistema."}
             </div>
           )}
-
-          {/* (Animación de 'map'  */}
           {!isLoading && !error && users.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {users.map((user, index) => (
@@ -309,6 +285,7 @@ export default function AdminUsers() {
   );
 }
 
+// --- (Componente DetailRow ) ---
 function DetailRow({ label, value, span = 1 }) {
   return (
     <div className={span === 2 ? "sm:col-span-2" : ""}>
@@ -318,6 +295,7 @@ function DetailRow({ label, value, span = 1 }) {
   );
 }
 
+// --- (Componente UserDetailModal ) ---
 function UserDetailModal({ isOpen, onClose, user, onStatusUpdated }) {
   if (!isOpen || !user) return null;
 

@@ -12,7 +12,6 @@ export default function ShoppingCart({
   const tickets = [];
   const { order } = useOrder();
   const { event } = useEvent();
-  console.log(event.shoppingCart);
 
   const currencies = { PEN: "S/." };
 
@@ -84,9 +83,10 @@ export default function ShoppingCart({
                                   {currencies.PEN}
                                   <span>
                                     {" "}
-                                    {parseFloat(zoneInfo[0]?.unitPrice).toFixed(
-                                      2
-                                    )}
+                                    {parseInt(zoneInfo[0]?.quantity) *
+                                      parseFloat(
+                                        zoneInfo[0]?.unitPrice
+                                      ).toFixed(2)}
                                   </span>
                                 </div>
                               </div>

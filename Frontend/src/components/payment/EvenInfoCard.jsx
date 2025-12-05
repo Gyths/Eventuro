@@ -7,8 +7,8 @@ export default function EventInfoCard() {
   const { event } = useEvent();
 
   return (
-    <div className="flex w-auto rounded-lg p-4 items-center gap-5 shadow-xl bg-white">
-      <div className="flex-shrink-0 size-20 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden">
+    <div className="flex w-auto rounded-3xl p-4 items-center gap-5 shadow-xl bg-white">
+      <div className="flex-shrink-0 size-20 rounded-2xl border border-gray-200 flex items-center justify-center overflow-hidden">
         <img
           src={event?.image}
           alt={event?.title}
