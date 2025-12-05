@@ -37,13 +37,13 @@ export async function createTicketRepo(input) {
     const discounts =
       discountIds && discountIds.length
         ? await tx.discount.findMany({
-          where: {
-            discountId: { in: discountIds },
-            status: "A",
-            startAt: { lte: now },
-            endAt: { gte: now },
-          },
-        })
+            where: {
+              discountId: { in: discountIds },
+              status: "A",
+              startAt: { lte: now },
+              endAt: { gte: now },
+            },
+          })
         : [];
 
     // Si el front aseguró validez puede que no haga falta, pero validamos que se encontraron todos
@@ -73,13 +73,14 @@ export async function createTicketRepo(input) {
     const createdTickets = [];
     let newOrderTotal = 0;
     // Clonar la lista de attendees para no mutar input
-    const attendeesPool = attendees.map(a => ({
+    const attendeesPool = attendees.map((a) => ({
       ...a,
       eventDateZoneId: BigInt(a.eventDateZoneId),
-      eventDateZoneAllocationId: a.eventDateZoneAllocationId != null
-        ? BigInt(a.eventDateZoneAllocationId)
-        : null,
-      _used: false
+      eventDateZoneAllocationId:
+        a.eventDateZoneAllocationId != null
+          ? BigInt(a.eventDateZoneAllocationId)
+          : null,
+      _used: false,
     }));
 
     function pickNextAttendee(eventDateZoneId, allocationId) {
@@ -89,10 +90,10 @@ export async function createTicketRepo(input) {
         // match estricto
         const match =
           att.eventDateZoneId === eventDateZoneId &&
-          ((att.eventDateZoneAllocationId || null) === (allocationId || null));
+          (att.eventDateZoneAllocationId || null) === (allocationId || null);
 
         if (match) {
-          att._used = true;   // lo marcamos para no volver a usarlo
+          att._used = true; // lo marcamos para no volver a usarlo
           return att;
         }
       }
@@ -168,7 +169,7 @@ export async function createTicketRepo(input) {
 
       // Crear tickets usando el nuevo unit price (pricePaid)
       const pricePerTicket = newUnitPrice;
-      
+
       // 1) Si tiene seatId → ticket numerado (1 ticket)
       if (seatId) {
         //Validamos que exista el asiento y esté en estado HELD
@@ -213,9 +214,7 @@ export async function createTicketRepo(input) {
 
         // Validar expiración del asiento (holdUntil)
         if (seat.holdUntil && seat.holdUntil < now) {
-          throw new Error(
-            `Su reserva del asiento ${seatId} ya expiró.`
-          );
+          throw new Error(`Su reserva del asiento ${seatId} ya expiró.`);
         }
         // Una vez validado todo lo anterior , podemos actualizar el asiento a SOLD
         await tx.seat.update({
@@ -226,10 +225,15 @@ export async function createTicketRepo(input) {
           },
         });
 
-        const attendee = pickNextAttendee(eventDateZoneId, eventDateZoneAllocationId);
+        const attendee = pickNextAttendee(
+          eventDateZoneId,
+          eventDateZoneAllocationId
+        );
 
         if (!attendee) {
-          throw new Error(`No hay asistentes disponibles para el asiento ${seatId}`);
+          throw new Error(
+            `No hay asistentes disponibles para el asiento ${seatId}`
+          );
         }
 
         // Crear ticket
@@ -255,7 +259,6 @@ export async function createTicketRepo(input) {
         await tx.hold.delete({
           where: { holdId: hold.holdId },
         });
-
       } else {
         // 2) Si no tiene seatId → crear quantity tickets sin asiento (zonas generales)
 
@@ -281,17 +284,20 @@ export async function createTicketRepo(input) {
 
         // VALIDAMOS EXPIRACIÓN DEL HOLD
         if (hold.expiresAt < now) {
-          throw new Error(
-            `Su reserva de entradas para esta zona ha expirado.`
-          );
+          throw new Error(`Su reserva de entradas para esta zona ha expirado.`);
         }
 
         //Una vez validado que hayan un hold, se crean los tickets
         for (let i = 0; i < Number(quantity); i++) {
-          const attendee = pickNextAttendee(eventDateZoneId, eventDateZoneAllocationId);
+          const attendee = pickNextAttendee(
+            eventDateZoneId,
+            eventDateZoneAllocationId
+          );
 
           if (!attendee) {
-            throw new Error(`No hay suficientes asistentes para asignar ${quantity} tickets en la zona ${eventDateZoneId}`);
+            throw new Error(
+              `No hay suficientes asistentes para asignar ${quantity} tickets en la zona ${eventDateZoneId}`
+            );
           }
           const ticket = await tx.ticket.create({
             data: {
@@ -314,7 +320,6 @@ export async function createTicketRepo(input) {
         await tx.hold.delete({
           where: { holdId: hold.holdId },
         });
-
       }
       newOrderTotal += newFinal;
     }
@@ -336,7 +341,7 @@ export async function createTicketRepo(input) {
         eventDate: {
           include: {
             event: {
-              include: { venue: true }
+              include: { venue: true },
             },
           },
         },
@@ -344,6 +349,8 @@ export async function createTicketRepo(input) {
         seat: true,
       },
     });
+
+    console.log("ticketsWithInfo:", ticketsWithInfo);
 
     return {
       orderId: Number(orderId),
@@ -730,8 +737,8 @@ export async function deleteTicketRepo(ticketId) {
       where: { ticketId },
       data: {
         active: false,
-        status: 'CANCELLED',
-        refundStatus: 'REQUESTED',
+        status: "CANCELLED",
+        refundStatus: "REQUESTED",
         refundRequestedAt: new Date(),
       },
     });
@@ -742,7 +749,7 @@ export async function deleteTicketRepo(ticketId) {
       await tx.seat.update({
         where: { seatId: ticketWithDetails.seatId },
         data: {
-          status: 'AVAILABLE',
+          status: "AVAILABLE",
           holdUntil: null,
         },
       });
