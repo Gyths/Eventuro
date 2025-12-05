@@ -22,15 +22,21 @@ ChartJS.register(
 );
 import VentasPorMesChart from "../components/reporte_evento/Grafico_1";
 import PorcentajeOcupacionChart from "../components/reporte_evento/Grafico_2";
+import DescuentosChart from "../components/reporte_evento/DescuentosChart.jsx";
 import { useAuth } from "../services/auth/AuthContext";
 import { useRef, useState, useEffect } from "react";
 import { BASE_URL } from "../config.js";
+import { EventuroApi } from "../api";
 
 export default function ReportesOrganizador() {
   const { user } = useAuth();
   const [posting, setPosting] = useState(false);
   const hasLoaded = useRef(false);
   const [report, setReport] = useState(null);
+  const [loadingDiscount, setLoadingDiscount] = useState(false);
+  const [discountJson, setDiscountJson] = useState(null);
+  const [discountMsg, setDiscountMsg] = useState(null);
+
 
   // ⭐ NUEVO: evento seleccionado
   const [selectedEventId, setSelectedEventId] = useState(null);
@@ -201,6 +207,38 @@ export default function ReportesOrganizador() {
       ? null
       : eventos.find((e) => e.id === selectedEventId)?.nombre ?? null;
 
+  const handleTestDiscount = async () => {
+    try {
+      setLoadingDiscount(true);
+      setDiscountMsg(null);
+      setDiscountJson(null);
+
+      const session = localStorage.getItem("session");
+      const token = session ? JSON.parse(session)?.token : null;
+
+      const json = await EventuroApi({
+        endpoint: "/discount",
+        method: "GET",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
+      console.log("Respuesta /discount:", json);
+      setDiscountJson(json);
+      setDiscountMsg({
+        type: "success",
+        text: "Descuentos obtenidos. Revisa también la consola.",
+      });
+    } catch (err) {
+      console.error("Error al llamar /discount:", err);
+      setDiscountMsg({
+        type: "error",
+        text: "No se pudo obtener la información de descuentos.",
+      });
+    } finally {
+      setLoadingDiscount(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#f5f5ff] text-gray-900">
       {/* CONTENIDO */}
@@ -361,7 +399,6 @@ export default function ReportesOrganizador() {
                   Ventas por mes
                 </h2>
                 <div className="flex-1 h-64">
-                  {/* ⭐ pasamos la data filtrada */}
                   <VentasPorMesChart monthlyTotals={salesByMonthTotals} />
                 </div>
               </div>
@@ -371,9 +408,50 @@ export default function ReportesOrganizador() {
                   Porcentaje de ocupación
                 </h2>
                 <div className="flex-1 h-64">
-                  {/* ⭐ usamos solo los eventos filtrados */}
                   <PorcentajeOcupacionChart eventos={eventosFiltrados} />
                 </div>
+              </div>
+            </section>
+            {/* ⭐ NUEVO: SECCIÓN DESCUENTOS (OCUPA TODA LA FILA) */}
+            <section className="grid grid-cols-1 gap-4 mt-4">
+              <div className="rounded-2xl bg-gray-50 px-4 py-3 flex flex-col shadow-md">
+                <h2 className="font-semibold text-gray-800 mb-2">
+                  Descuentos
+                </h2>
+                <div className="flex-1 h-64">
+                  <DescuentosChart
+                    data={report?.charts?.discounts ?? []}
+                    selectedEventId={selectedEventId}
+                  />
+                </div>
+              </div>
+              <div className="mt-6 space-y-3">
+                <button
+                  type="button"
+                  onClick={handleTestDiscount}
+                  className="px-4 py-2 rounded-xl bg-[#2d0247] text-white text-sm font-semibold hover:opacity-90 disabled:opacity-60"
+                  disabled={loadingDiscount}
+                >
+                  {loadingDiscount ? "Cargando descuentos..." : "Probar /discount"}
+                </button>
+
+                {discountMsg && (
+                  <div
+                    className={`text-sm px-3 py-2 rounded-xl ${
+                      discountMsg.type === "success"
+                        ? "bg-green-50 text-green-700 border border-green-200"
+                        : "bg-red-50 text-red-700 border border-red-200"
+                    }`}
+                  >
+                    {discountMsg.text}
+                  </div>
+                )}
+
+                {discountJson && (
+                  <div className="bg-gray-900 text-green-200 text-xs rounded-xl p-3 overflow-auto max-h-80">
+                    <pre>{JSON.stringify(discountJson, null, 2)}</pre>
+                  </div>
+                )}
               </div>
             </section>
           </div>
