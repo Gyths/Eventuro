@@ -2,9 +2,13 @@ import { generateUser } from "../utils/seedUtils.js";
 import insertPasswords from "./insertPasswords.js";
 import insertOrganizers from "./insertOrganizers.js";
 
-const organizerUsers = Array.from({ length: 5 }).map(() => generateUser({ isOrganizer: true }));
+const organizerUsers = Array.from({ length: 5 }).map(() =>
+  generateUser({ isOrganizer: true })
+);
 
-const clientUsers = Array.from({ length: 40 }).map(() => generateUser({ isOrganizer: false }));
+const clientUsers = Array.from({ length: 40 }).map(() =>
+  generateUser({ isOrganizer: false })
+);
 
 const baseUsers = [
   {
@@ -42,9 +46,11 @@ const allUsers = [...baseUsers, ...organizerUsers, ...clientUsers];
 
 export default async function insertUsers(prisma) {
   //Insert users
-  await prisma.user.createMany({ data: allUsers.map(({ isOrganizer, ...cleanData }) => cleanData) });
+  await prisma.user.createMany({
+    data: allUsers.map(({ isOrganizer, ...cleanData }) => cleanData),
+  });
 
-  await insertPasswords(prisma, allUsers.length);
+  await insertPasswords(prisma, allUsers);
   await insertOrganizers(prisma, allUsers);
   await prisma.administrator.create({ data: { userId: 1 } });
 }

@@ -1,8 +1,15 @@
 import { faker } from "@faker-js/faker";
 
 const COMMON_ASSETS = {
-  principal: "events/1761677737608_Evento_prueba.png",
-  banner: "events/1761677738279_Evento_prueba_banner.png",
+  imageKeys: [
+    "events/1761677737608_Evento_prueba.png",
+    "events/1763156324001_cartel-mistura-2009-feria-gastronomica-de-lima-1-1024x398.jpg",
+    "events/1763163521833_fondo-evento.jpg",
+    "events/1763163063396_Mansilla.jpg",
+    "events/1763163063170_Portada-Show-G59-scaled.jpg",
+    "events/1763162108255_banner-the-killers.jpg",
+    "events/1763160979638_FLYER-JORNADAS_FLYER-1_FLYER-PRINCIPAL-scaled.jpg",
+  ],
   refundFile: "refund_policies/1763014632484_Informatica.pdf",
 };
 
@@ -19,14 +26,15 @@ export default async function insertEvents(prisma) {
     {
       organizerId: 1,
       title: eventTitles[0],
-      imagePrincipalKey: COMMON_ASSETS.principal,
-      imageBannerKey: COMMON_ASSETS.banner,
+      imagePrincipalKey: COMMON_ASSETS.imageKeys[0],
+      imageBannerKey: COMMON_ASSETS.imageKeys[0],
       refundPolicyFileKey: COMMON_ASSETS.refundFile,
       refundPolicyText: "Política de devoluciones para el evento de prueba 02",
       inPerson: false,
       feeId: 1,
       status: "A",
-      description: "Evento virtual con 12 tickets por usario,fase de preventa activa con solo 3 tickets disponibles y dos códigos de descuento",
+      description:
+        "Evento virtual con 12 tickets por usario,fase de preventa activa con solo 3 tickets disponibles y dos códigos de descuento",
       accessPolicy: "E",
       accessPolicyDescription: "Permisos de entrada para el evento 01",
       ticketLimitPerUser: 12,
@@ -35,14 +43,16 @@ export default async function insertEvents(prisma) {
     {
       organizerId: 2,
       title: eventTitles[1],
-      imagePrincipalKey: "events/1763156323547_images.png",
-      imageBannerKey: "events/1763156324001_cartel-mistura-2009-feria-gastronomica-de-lima-1-1024x398.jpg",
-      refundPolicyFileKey: "refund_policies/1763156324176_PolÃ­tica de DevoluciÃ³n de Entradas - Mistura.pdf",
+      imagePrincipalKey: COMMON_ASSETS.imageKeys[1],
+      imageBannerKey: COMMON_ASSETS.imageKeys[1],
+      refundPolicyFileKey:
+        "refund_policies/1763156324176_PolÃ­tica de DevoluciÃ³n de Entradas - Mistura.pdf",
 
       inPerson: true,
       feeId: 2,
       status: "A",
-      description: "Evento presencial con 500 de capacidad, segunda de venta general activa y 2 dos códigos de descuento.",
+      description:
+        "Evento presencial con 500 de capacidad, segunda de venta general activa y 2 dos códigos de descuento.",
       accessPolicy: "E",
       accessPolicyDescription: "Permisos de entrada para el evento 02",
       ticketLimitPerUser: 10,
@@ -51,12 +61,13 @@ export default async function insertEvents(prisma) {
     {
       organizerId: 3,
       title: eventTitles[2],
-      imagePrincipalKey: COMMON_ASSETS.principal,
-      imageBannerKey: COMMON_ASSETS.banner,
+      imagePrincipalKey: COMMON_ASSETS.imageKeys[0],
+      imageBannerKey: COMMON_ASSETS.imageKeys[0],
       refundPolicyText: "Política de devoluciones para el evento de prueba 02",
       inPerson: true,
       status: "P",
-      description: "Evento presencial con poca capacidad restante en cada zona.",
+      description:
+        "Evento presencial con poca capacidad restante en cada zona.",
       accessPolicy: "E",
       accessPolicyDescription: "Permisos de entrada para el evento 03",
       ticketLimitPerUser: 9,
@@ -65,8 +76,8 @@ export default async function insertEvents(prisma) {
     {
       organizerId: 2,
       title: eventTitles[3],
-      imagePrincipalKey: COMMON_ASSETS.principal,
-      imageBannerKey: COMMON_ASSETS.banner,
+      imagePrincipalKey: COMMON_ASSETS.imageKeys[1],
+      imageBannerKey: COMMON_ASSETS.imageKeys[1],
       refundPolicyText: "Política de devoluciones para el evento de prueba 01",
       inPerson: true,
       feeId: 3,
@@ -116,14 +127,18 @@ export default async function insertEvents(prisma) {
     const inPerson = faker.datatype.boolean();
     const title = faker.company.catchPhrase();
     const status = weightedStatus();
+    const randomImageIndex = faker.number.bigInt({
+      min: 0,
+      max: COMMON_ASSETS.imageKeys.length - 1,
+    });
     const randomFeeIndex = faker.number.bigInt({ min: 0, max: 19 });
     eventTitles.push(title);
 
     return {
       organizerId: faker.number.int({ min: 1, max: 5 }),
       title,
-      imagePrincipalKey: COMMON_ASSETS.principal,
-      imageBannerKey: COMMON_ASSETS.banner,
+      imagePrincipalKey: COMMON_ASSETS.imageKeys[randomImageIndex],
+      imageBannerKey: COMMON_ASSETS.imageKeys[randomImageIndex],
       refundPolicyFileKey: COMMON_ASSETS.refundFile,
       status: status,
       refundPolicyText: faker.lorem.sentence(),
