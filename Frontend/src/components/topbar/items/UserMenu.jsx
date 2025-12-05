@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../services/auth/AuthContext";
 import { UserIcon } from "@heroicons/react/24/outline";
 
-export default function UserMenu({isOrganizerApproved}) {
+export default function UserMenu({ isOrganizerApproved }) {
   // Rutas
   const profileRoute = "/miPerfil";
   const myTicketsRoute = "/misTickets";
@@ -21,10 +21,8 @@ export default function UserMenu({isOrganizerApproved}) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
-
-
-    const roles = user?.roles || [];
-    const isAdmin = roles.includes("ADMIN");
+  const roles = user?.roles || [];
+  const isAdmin = roles.includes("ADMIN");
 
   useEffect(() => {
     const onDoc = (e) => {
@@ -62,20 +60,22 @@ export default function UserMenu({isOrganizerApproved}) {
       {open && (
         <div className="fixed right-2 top-[64px] w-44 rounded-2xl bg-white p-2 shadow-xl z-50">
           <MenuItem text="Mi perfil" onClick={() => go(profileRoute)} />
-          {isOrganizerApproved && (
+
+          {!isAdmin && (
+            <MenuItem text="Mis tickets" onClick={() => go(myTicketsRoute)} />
+          )}
+          {!isAdmin && (
+            <MenuItem text="Mi calendario" onClick={() => go(calendarRoute)} />
+          )}
+          {!isAdmin && (
+            <MenuItem text="Reclamos" onClick={() => go(claimsRoute)} />
+          )}
+          {isAdmin && (
             <MenuItem
-              text="Ventas por zona"
-              onClick={() => go(salesByZoneRoute)}
+              text="Administración"
+              onClick={() => go(administrationRoute)}
             />
           )}
-          { !isAdmin && (
-          <MenuItem text="Mis tickets" onClick={() => go(myTicketsRoute)} />)}
-          { !isAdmin && (
-          <MenuItem text="Mi calendario" onClick={() => go(calendarRoute)} />)}
-          { !isAdmin && (
-          <MenuItem text="Reclamos" onClick={() => go(claimsRoute)} />)}
-          { isAdmin && (
-          <MenuItem text="Administración" onClick={() => go(administrationRoute)} />)}
           <div className="my-1 h-px bg-gray-100" />
           <MenuItem
             text="Cerrar sesión"
