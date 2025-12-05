@@ -44,7 +44,7 @@ export default async function insertUsers(prisma) {
   //Insert users
   await prisma.user.createMany({ data: allUsers.map(({ isOrganizer, ...cleanData }) => cleanData) });
 
-  insertPasswords(prisma, allUsers.length);
-  insertOrganizers(prisma, allUsers);
+  await insertPasswords(prisma, allUsers.length);
+  await insertOrganizers(prisma, allUsers);
   await prisma.administrator.create({ data: { userId: 1 } });
 }
