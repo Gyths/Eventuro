@@ -2,7 +2,7 @@ import { prisma } from "../utils/prisma.js";
 import { Prisma } from "../generated/prisma/index.js";
 
 export async function createTicketRepo(input) {
-  const { orderId, discountIds = [] } = input;
+  const { orderId, discountIds = [], attendees = [] } = input;
 
   return prisma.$transaction(async (tx) => {
     const now = new Date();
@@ -37,13 +37,13 @@ export async function createTicketRepo(input) {
     const discounts =
       discountIds && discountIds.length
         ? await tx.discount.findMany({
-          where: {
-            discountId: { in: discountIds },
-            status: "A",
-            startAt: { lte: now },
-            endAt: { gte: now },
-          },
-        })
+            where: {
+              discountId: { in: discountIds },
+              status: "A",
+              startAt: { lte: now },
+              endAt: { gte: now },
+            },
+          })
         : [];
 
     // Si el front aseguró validez puede que no haga falta, pero validamos que se encontraron todos
@@ -72,6 +72,33 @@ export async function createTicketRepo(input) {
 
     const createdTickets = [];
     let newOrderTotal = 0;
+    // Clonar la lista de attendees para no mutar input
+    const attendeesPool = attendees.map((a) => ({
+      ...a,
+      eventDateZoneId: BigInt(a.eventDateZoneId),
+      eventDateZoneAllocationId:
+        a.eventDateZoneAllocationId != null
+          ? BigInt(a.eventDateZoneAllocationId)
+          : null,
+      _used: false,
+    }));
+
+    function pickNextAttendee(eventDateZoneId, allocationId) {
+      for (const att of attendeesPool) {
+        if (att._used) continue;
+
+        // match estricto
+        const match =
+          att.eventDateZoneId === eventDateZoneId &&
+          (att.eventDateZoneAllocationId || null) === (allocationId || null);
+
+        if (match) {
+          att._used = true; // lo marcamos para no volver a usarlo
+          return att;
+        }
+      }
+      return null; // si no hay más asistentes válidos
+    }
 
     // Recorrer los items de la orden y aplicamos descuentos por item
     for (const item of order.items) {
@@ -187,9 +214,7 @@ export async function createTicketRepo(input) {
 
         // Validar expiración del asiento (holdUntil)
         if (seat.holdUntil && seat.holdUntil < now) {
-          throw new Error(
-            `Su reserva del asiento ${seatId} ya expiró.`
-          );
+          throw new Error(`Su reserva del asiento ${seatId} ya expiró.`);
         }
         // Una vez validado todo lo anterior , podemos actualizar el asiento a SOLD
         await tx.seat.update({
@@ -199,6 +224,17 @@ export async function createTicketRepo(input) {
             holdUntil: null, //se libera la fecha del hold
           },
         });
+
+        const attendee = pickNextAttendee(
+          eventDateZoneId,
+          eventDateZoneAllocationId
+        );
+
+        if (!attendee) {
+          throw new Error(
+            `No hay asistentes disponibles para el asiento ${seatId}`
+          );
+        }
 
         // Crear ticket
         const ticket = await tx.ticket.create({
@@ -212,17 +248,16 @@ export async function createTicketRepo(input) {
             ownerUserId: order.buyerUserId,
             pricePaid: new Prisma.Decimal(pricePerTicket.toFixed(2)),
             currency: "PEN",
+            attendeeName: attendee.name,
+            attendeeDni: attendee.dni,
           },
         });
 
         createdTickets.push(ticket);
 
         //Eliminar cualquier hold asociado al asiento (Falta discutirlo)
-        await tx.hold.deleteMany({
-          where: { seatId: item.seatId },
-          eventDateZoneAllocationId: item.eventDateZoneAllocationId
-            ? BigInt(item.eventDateZoneAllocationId)
-            : null,
+        await tx.hold.delete({
+          where: { holdId: hold.holdId },
         });
       } else {
         // 2) Si no tiene seatId → crear quantity tickets sin asiento (zonas generales)
@@ -249,13 +284,21 @@ export async function createTicketRepo(input) {
 
         // VALIDAMOS EXPIRACIÓN DEL HOLD
         if (hold.expiresAt < now) {
-          throw new Error(
-            `Su reserva de entradas para esta zona ha expirado.`
-          );
+          throw new Error(`Su reserva de entradas para esta zona ha expirado.`);
         }
 
         //Una vez validado que hayan un hold, se crean los tickets
         for (let i = 0; i < Number(quantity); i++) {
+          const attendee = pickNextAttendee(
+            eventDateZoneId,
+            eventDateZoneAllocationId
+          );
+
+          if (!attendee) {
+            throw new Error(
+              `No hay suficientes asistentes para asignar ${quantity} tickets en la zona ${eventDateZoneId}`
+            );
+          }
           const ticket = await tx.ticket.create({
             data: {
               orderItemId,
@@ -266,20 +309,16 @@ export async function createTicketRepo(input) {
               ownerUserId: order.buyerUserId,
               pricePaid: new Prisma.Decimal(pricePerTicket.toFixed(2)),
               currency: "PEN",
+              attendeeName: attendee.name,
+              attendeeDni: attendee.dni,
             },
           });
           createdTickets.push(ticket);
         }
 
         // Borrar hold
-        await tx.hold.deleteMany({
-          where: {
-            eventDateZoneId: item.eventDateZoneId,
-            eventDateZoneAllocationId: item.eventDateZoneAllocationId
-              ? BigInt(item.eventDateZoneAllocationId)
-              : null,
-            buyerUserId: order.buyerUserId,
-          },
+        await tx.hold.delete({
+          where: { holdId: hold.holdId },
         });
       }
       newOrderTotal += newFinal;
@@ -300,12 +339,18 @@ export async function createTicketRepo(input) {
       },
       include: {
         eventDate: {
-          include: { event: true },
+          include: {
+            event: {
+              include: { venue: true },
+            },
+          },
         },
         zone: true,
         seat: true,
       },
     });
+
+    console.log("ticketsWithInfo:", ticketsWithInfo);
 
     return {
       orderId: Number(orderId),
@@ -315,10 +360,14 @@ export async function createTicketRepo(input) {
         eventName: t.eventDate.event.title,
         eventDate: t.eventDate.startAt,
         zoneName: t.zone?.name || "No definida",
+        eventImagePrincipalKey: t.eventDate.event.imagePrincipalKey,
+        eventLocation: t.eventDate.event.venue.address,
         setRow: t.seat?.row,
         setCol: t.seat?.col,
         seatId: t.seatId ? Number(t.seatId) : null,
         status: t.status,
+        attendeeName: t.attendeeName,
+        attendeeDni: t.attendeeDni,
       })),
     };
   });
@@ -474,6 +523,7 @@ export function buildWhere(params) {
   const { userId, eventId, status, refundStatus, search } = params;
 
   const where = {
+    active: true,
     OR: [
       { ownerUserId: toBigIntIfPossible(userId) },
       {
@@ -532,6 +582,7 @@ const ticketSelect = {
   pricePaid: true,
   currency: true,
   issuedAt: true,
+  active: true,
 
   eventDate: {
     select: {
@@ -637,4 +688,98 @@ export async function getMyTicketsRepo(params) {
 export async function countMyTicketsRepo(params) {
   const where = buildWhere(params);
   return prisma.ticket.count({ where });
+}
+
+export async function deleteTicketRepo(ticketId) {
+  return prisma.$transaction(async (tx) => {
+    // 1. Buscar el ticket, su zona Y los datos requeridos (email, nombre, fecha)
+    const ticketWithDetails = await tx.ticket.findUnique({
+      where: { ticketId },
+      select: {
+        // Datos para la lógica de liberación
+        eventDateZoneId: true,
+        seatId: true,
+
+        // --- Datos requeridos para el retorno ---
+        // Correo del dueño
+        owner: {
+          select: {
+            email: true,
+          },
+        },
+        // Fecha y Nombre del Evento (anidando EventDate y Event)
+        eventDate: {
+          select: {
+            startAt: true, // <-- Fecha
+            event: {
+              select: {
+                title: true, // <-- Nombre del Evento
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!ticketWithDetails) {
+      throw new Error("Ticket no encontrado.");
+    }
+
+    const resultData = {
+      ticketid: ticketId,
+      ownerEmail: ticketWithDetails.owner?.email,
+      eventTitle: ticketWithDetails.eventDate?.event.title,
+      eventDateStart: ticketWithDetails.eventDate?.startAt,
+    };
+
+    // 2. Marcar el ticket como inactivo
+    await tx.ticket.update({
+      where: { ticketId },
+      data: {
+        active: false,
+        status: "CANCELLED",
+        refundStatus: "REQUESTED",
+        refundRequestedAt: new Date(),
+      },
+    });
+
+    // 3. Liberar capacidad o asiento
+    if (ticketWithDetails.seatId) {
+      // Si es un asiento numerado, liberar el asiento
+      await tx.seat.update({
+        where: { seatId: ticketWithDetails.seatId },
+        data: {
+          status: "AVAILABLE",
+          holdUntil: null,
+        },
+      });
+    } else {
+      // Si es zona general, devolver la capacidad
+      await tx.eventDateZone.update({
+        where: { eventDateZoneId: ticketWithDetails.eventDateZoneId },
+        data: {
+          capacityRemaining: { increment: 1 },
+        },
+      });
+    }
+
+    // 4. Devolver los detalles necesarios
+    return resultData;
+  });
+}
+
+export async function listticketsByType(eventId, type) {
+  console.log("eventId en repo:", eventId);
+  console.log("type en repo:", type);
+  return prisma.eventDateZone.findMany({
+    where: {
+      name: type,
+      eventDate: {
+        eventId: BigInt(eventId),
+      },
+    },
+    select: {
+      eventDateZoneId: true,
+    },
+  });
 }

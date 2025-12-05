@@ -1,3 +1,4 @@
+//ReporteEventos.jsx
 import React from "react";
 import {
   Chart as ChartJS,
@@ -9,6 +10,8 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+
+import { useNavigate } from "react-router-dom";
 
 ChartJS.register(
   CategoryScale,
@@ -30,6 +33,7 @@ export default function ReportesOrganizador() {
   const [posting, setPosting] = useState(false);
   const hasLoaded = useRef(false);
   const [report, setReport] = useState(null);
+  const navigate = useNavigate();
 
   // ⭐ NUEVO: evento seleccionado
   const [selectedEventId, setSelectedEventId] = useState(null);
@@ -118,7 +122,7 @@ export default function ReportesOrganizador() {
       bruto: `S/. ${e.gross}`,
       neto: `S/. ${e.net}`,
       reembolso: `S/. ${e.refundAmount}`,
-      ocupacion: (Number(e.occupancy)),
+      ocupacion: Number(e.occupancy),
       // datos crudos para métricas cuando se filtra
       _raw: e,
     })) ?? [];
@@ -206,10 +210,32 @@ export default function ReportesOrganizador() {
       <main className="px-6 lg:px-10 py-6 pt-12 space-y-6">
         <div className="w-full px-4 lg:px-8">
           <div className="bg-white border border-gray-200 rounded-3xl shadow-sm w-full p-6 lg:p-8 space-y-6">
-            {/* Título */}
-            <h3 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
-              Reporte de Eventos
-            </h3>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <h3 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
+                Reporte de Eventos
+              </h3>
+
+              <button
+                onClick={() => navigate("/ventas-zona")}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-xl transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-5 h-5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0 1 18 16.5h-2.25m-7.5 0h7.5m-7.5 0-1 3m8.5-3 1 3m0 0 .5 1.5m-.5-1.5h-9.5m0 0-.5 1.5m.75-9 3-3 2.148 2.148A12.061 12.061 0 0 1 16.5 7.605"
+                  />
+                </svg>
+                <span>Ver detalle por zonas</span>
+              </button>
+            </div>
 
             {/* ⭐ NUEVO: indicador de filtro */}
             {selectedEventName && (

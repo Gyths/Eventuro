@@ -2,6 +2,7 @@ import { createOrderSvc } from "../services/order.service.js";
 import { toJSONSafe } from "../utils/serialize.js";
 import { cancelOrderSvc } from "../services/order.service.js";
 import { getOrdersByUser } from "../services/order.service.js";
+import { getPurchaseAnalyticsSvc } from "../services/order.service.js";
 
 export async function createOrderCtrl(req, res) {
   try {
@@ -57,3 +58,17 @@ export const getOrdersByUserCtrl = async (req, res) => {
     });
   }
 };
+
+export async function getPurchaseAnalyticsCtrl(req, res) {
+  try {
+    const organizerId = BigInt(req.params.organizerId);
+
+    const data = await getPurchaseAnalyticsSvc(organizerId);
+
+    return res.status(200).json(data);
+  } catch (err) {
+    console.error("Error en getPurchaseAnalytics:", err);
+    return res.status(400).json({ error: err.message });
+  }
+}
+

@@ -7,7 +7,15 @@ import { setEventStatusSvc } from "../services/event.service.js";
 import { _getEventDetails } from "../services/event.service.js";
 import { _listEventsByOrganizer } from "../services/event.service.js";
 import { listEventstoApproveSvc } from "../services/event.service.js";
+import { getSalesSummarySvc } from "../services/event.service.js";
+import { getAttendeesSvc } from "../services/event.service.js";
+import { updateEventDetailsSvc } from "../services/event.service.js";
 import { toJSONSafe } from "../utils/serialize.js";
+import { deleteEventDateZoneSvc } from "../services/event.service.js";
+import { deleteEventDateSvc } from "../services/event.service.js";
+import { deleteEventSvc } from "../services/event.service.js";
+import { deleteTicketyTypeSvc } from "../services/event.service.js";
+import { deleteEventDateZoneAllocationSvc } from "../services/event.service.js";
 
 import {
   setFinalPrices,
@@ -157,6 +165,27 @@ export async function setEventStatus(req, res, next) {
   }
 }
 
+export async function updateEventDetails(req, res, next) {
+  try {
+    const { id } = req.params;
+    const details = req.body ?? {};
+    const userId = req.auth?.user?.userId ?? null;
+
+    if (!id) {
+      return res.status(400).json({ message: "eventId es requerido" });
+    }
+
+    const data = await updateEventDetailsSvc(userId, id, details);
+    return res.status(200).json(toJSONSafe(data));
+  } catch (err) {
+    if (err?.code === "P2025") {
+      return res.status(404).json({ message: "El evento no existe." });
+    }
+    return next(err);
+  }
+}
+
+
 export async function getEventDetails(req, res) {
   try {
     const { id } = req.params;
@@ -185,5 +214,85 @@ export async function listEventstoApprove(req, res, next) {
     return res.status(200).json(toJSONSafe(data));
   } catch (err) {
     return next(err);
+  }
+}
+
+export async function getSalesSummaryCtrl(req, res) {
+  try {
+    const organizerId = BigInt(req.params.organizerId);
+
+    const data = await getSalesSummarySvc(organizerId);
+
+    return res.status(200).json(toJSONSafe(data));
+  } catch (err) {
+    console.error("Error en getSalesSummary:", err);
+    return res.status(400).json({ error: err.message });
+  }
+}
+
+
+export async function getAttendeesByEventCtrl(req, res) {
+  try {
+    const { eventId, organizerId } = req.params;
+
+    const data = await getAttendeesSvc(eventId, organizerId);
+
+    return res.status(200).json(toJSONSafe(data));
+  } catch (err) {
+    console.error("Error en getAttendeesByEventCtrl:", err);
+    return res.status(400).json({
+      error: err.message,
+    });
+  }
+}
+
+export async function deleteEventDateZone(req, res) {
+  try {
+    const { eventDateZoneId } = req.params;
+    const data = await deleteEventDateZoneSvc(eventDateZoneId);
+    return res.status(200).json(toJSONSafe(data));
+  } catch (err) {
+    return res.status(400).json({ error: "deleteEventDateZone " + err.message });
+  }
+}
+
+export async function deleteEventDate(req, res) {
+  try {
+    const { eventDateId } = req.params;
+    const data = await deleteEventDateSvc(eventDateId);
+    return res.status(200).json(toJSONSafe(data));
+  } catch (err) {
+    return res.status(400).json({ error: "deleteEventDate " + err.message });
+  }
+}
+
+export async function deleteEvent(req, res) {
+  try {
+    const { eventId } = req.params;
+    const data = await deleteEventSvc(eventId);
+    return res.status(200).json(toJSONSafe(data));
+  } catch (err) {
+    return res.status(400).json({ error: "delEvent " + err.message });
+  }
+}
+
+export async function deleteTicketyTypeCtrl(req, res) {
+  try {
+    const { eventId } = req.params;
+    const { ticketType } = req.body;
+    const data = await deleteTicketyTypeSvc(eventId, ticketType);
+    return res.status(200).json(toJSONSafe(data));
+  } catch (err) {
+    return res.status(400).json({ error: "deleteTicketType " + err.message });
+  }
+}
+
+export async function deleteEventZoneAllocation(req, res) {
+  try {
+    const { eventDateZoneAllocationId } = req.params;
+    const data = await deleteEventDateZoneAllocationSvc(eventDateZoneAllocationId);
+    return res.status(200).json(toJSONSafe(data));
+  } catch (err) {
+    return res.status(400).json({ error: "deleteEventZoneAllocation " + err.message });
   }
 }

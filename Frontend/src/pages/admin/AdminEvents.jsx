@@ -13,34 +13,22 @@ import Swal from "sweetalert2";
 
 const animationStyles = `
   @keyframes fade-in-up {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
-  .animate-fade-in-up {
-    animation: fade-in-up 0.4s ease-out forwards;
-  }
-  
-  /* --- NUEVO: Animaciones para el modal --- */
+  .animate-fade-in-up { animation: fade-in-up 0.4s ease-out forwards; }
+
   @keyframes fade-in-backdrop {
     from { opacity: 0; }
     to { opacity: 1; }
   }
-  .animate-fade-in-backdrop {
-    animation: fade-in-backdrop 0.2s ease-out forwards;
-  }
+  .animate-fade-in-backdrop { animation: fade-in-backdrop 0.2s ease-out forwards; }
+
   @keyframes modal-scale-in {
     from { opacity: 0; transform: scale(0.95); }
     to { opacity: 1; transform: scale(1); }
   }
-  .animate-modal-scale-in {
-    animation: modal-scale-in 0.3s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
-  }
+  .animate-modal-scale-in { animation: modal-scale-in 0.3s cubic-bezier(0.1, 0.9, 0.2, 1) forwards; }
 `;
 
 const formatDate = (isoString) => {
@@ -59,7 +47,6 @@ export default function AdminEvents() {
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
 
@@ -71,7 +58,6 @@ export default function AdminEvents() {
         endpoint: "/event/to-approve",
         method: "GET",
       });
-
       setEvents(data && Array.isArray(data.items) ? data.items : []);
     } catch (err) {
       setError(err.message);
@@ -95,42 +81,30 @@ export default function AdminEvents() {
   }, []);
 
   const handleApprove = async (eventId) => {
-    const { value: percentage } = await Swal.fire({
-      title: "Aprobar Evento",
-      text: "Ingresa el porcentaje de comisión (ej: 5.25) para este evento:",
-      input: "text",
-      inputPlaceholder: "5.25",
-      icon: "info",
+    const result = await Swal.fire({
+      title: "¿Aprobar este evento?",
+      text: "El evento será publicado visiblemente. Se aplicará una comisión por defecto.",
+      icon: "question",
       showCancelButton: true,
-      confirmButtonText: "Aprobar Evento",
-      cancelButtonText: "Cancelar",
       confirmButtonColor: "#10B981",
-      inputValidator: (value) => {
-        if (!value) {
-          return "¡Necesitas ingresar un valor!";
-        }
-        const num = parseFloat(value);
-        if (isNaN(num) || num < 0) {
-          return "Por favor, ingresa un número válido (ej: 5.25)";
-        }
-      },
+      confirmButtonText: "Sí, aprobar",
+      cancelButtonText: "Cancelar",
     });
 
-    if (percentage) {
-      const numPercentage = parseFloat(percentage);
+    if (result.isConfirmed) {
       try {
         await EventuroApi({
           endpoint: `/event/${eventId}/approve`,
           method: "PUT",
           data: {
             status: "A",
-            percentage: numPercentage,
+            percentage: 5,
           },
         });
 
         Swal.fire(
           "¡Aprobado!",
-          "El evento ha sido aprobado y la comisión ha sido establecida.",
+          "El evento ha sido aprobado exitosamente.",
           "success"
         );
 
@@ -221,7 +195,6 @@ export default function AdminEvents() {
               animationDelay: `${index * 100}ms`,
             }}
           >
-            {/* Detalles del Evento */}
             <div className="flex-1 mb-4 sm:mb-0 pr-4">
               <h4 className="text-base font-semibold text-purple-800">
                 {event.title || "Evento sin título"}
@@ -273,10 +246,8 @@ export default function AdminEvents() {
     <>
       <style>{animationStyles}</style>
 
-      {/* Contenedor principal */}
       <div className="p-4 sm:p-6 lg:p-8 flex items-center justify-center min-h-[calc(100vh-80px)]">
         <div className="bg-white border border-gray-200 rounded-2xl shadow-sm max-w-5xl mx-auto overflow-hidden transition-shadow duration-300 hover:shadow-md w-full">
-          {/* Encabezado */}
           <div className="border-b border-gray-200 p-6 sm:p-8 bg-gray-50/70">
             <h3 className="text-3xl font-semibold text-gray-800 flex items-center gap-3">
               <ClockIcon className="h-9 w-9 text-purple-600" />
@@ -288,7 +259,6 @@ export default function AdminEvents() {
             </p>
           </div>
 
-          {/* Contenido (Lista) */}
           <div className="p-0">{renderContent()}</div>
         </div>
       </div>
@@ -322,16 +292,18 @@ function EventDetailModal({ isOpen, event, onClose }) {
     0
   );
 
+  const placeholderImg =
+    "https://placehold.co/600x400/f3e8ff/a855f7?text=Sin+Imagen";
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm animate-fade-in-backdrop"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col animate-modal-scale-in"
+        className="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[85vh] flex flex-col animate-modal-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Encabezado del Modal */}
         <div className="flex justify-between items-center p-4 border-b">
           <h3 className="text-lg font-semibold text-gray-800">
             Detalle del Evento
@@ -344,9 +316,32 @@ function EventDetailModal({ isOpen, event, onClose }) {
           </button>
         </div>
 
-        {/* Cuerpo del Modal (con scroll) */}
         <div className="p-6 overflow-y-auto space-y-6">
-          {/* Sección Principal */}
+          <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">
+                Imagen Principal
+              </label>
+              <img
+                src={event.imagePrincipalURLSigned || placeholderImg}
+                alt="Imagen Principal"
+                className="w-full h-48 object-cover rounded-lg border bg-gray-50"
+                onError={(e) => (e.currentTarget.src = placeholderImg)}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">
+                Imagen Banner
+              </label>
+              <img
+                src={event.imageBannerURLSigned || placeholderImg}
+                alt="Imagen Banner"
+                className="w-full h-48 object-cover rounded-lg border bg-gray-50"
+                onError={(e) => (e.currentTarget.src = placeholderImg)}
+              />
+            </div>
+          </section>
+
           <section>
             <h4 className="text-2xl font-bold text-purple-800 mb-2">
               {event.title}
@@ -354,7 +349,6 @@ function EventDetailModal({ isOpen, event, onClose }) {
             <p className="text-base text-gray-700">{event.description}</p>
           </section>
 
-          {/* Sección de Detalles */}
           <section>
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
               <DetailRow
@@ -366,7 +360,6 @@ function EventDetailModal({ isOpen, event, onClose }) {
                 label="Aforo Total (sumado de fechas)"
                 value={aforoTotal.toLocaleString("es-PE")}
                 icon={UsersIcon}
-                Dey
               />
               <DetailRow
                 label="Solicitado (Fecha)"
@@ -382,7 +375,6 @@ function EventDetailModal({ isOpen, event, onClose }) {
             </dl>
           </section>
 
-          {/* Sección de Fechas */}
           <section>
             <h4 className="text-base font-semibold text-purple-700 mb-3">
               Fechas y Aforos

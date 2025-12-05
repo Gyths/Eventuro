@@ -31,7 +31,7 @@ export const EventuroApi = async ({
       method,
       headers: baseHeaders,
       //ASI FUNCIONA RECLAMOS XD
-     /* headers: {
+      /* headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -44,7 +44,6 @@ export const EventuroApi = async ({
     if (method !== "GET" && data) {
       options.body = isFormData ? data : JSON.stringify(data);
     }
-
     const response = await fetch(BASE_URL1 + endpoint, options);
 
     const text = await response.text();
