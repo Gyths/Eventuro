@@ -846,14 +846,15 @@ export async function listEventstoApproveRepo({ page = 1, pageSize = 10 }) {
         description: true,
         refundPolicyText: true,
         imagePrincipalKey: true,
+        imageBannerKey: true,
         createdAt: true,
         organizer: {
-          select: {
-            companyName: true,
-          },
+          select: { companyName: true },
         },
         inPerson: true,
-        venue: { select: { capacity: true } }, // Capacidad máxima del recinto
+        venue: {
+          select: { capacity: true },
+        },
         dates: {
           orderBy: { startAt: "asc" },
           select: {
@@ -864,8 +865,8 @@ export async function listEventstoApproveRepo({ page = 1, pageSize = 10 }) {
               select: {
                 eventDateZoneId: true,
                 name: true,
-                basePrice: true, // Precio base de la zona
-                capacity: true, // Puedes mostrar si quieres, pero no afecta aforo total
+                basePrice: true,
+                capacity: true,
                 currency: true,
               },
             },
@@ -873,17 +874,48 @@ export async function listEventstoApproveRepo({ page = 1, pageSize = 10 }) {
         },
       },
     }),
+
     prisma.event.count({ where: { status: "P" } }),
   ]);
+
+  // Crear nuevas propiedades sin mutar los originales
+  const enrichedItems = await Promise.all(
+    items.map(async (event) => {
+      const principalURL = event.imagePrincipalKey
+        ? await safeSigned(event.imagePrincipalKey)
+        : null;
+
+      const bannerURL = event.imageBannerKey
+        ? await safeSigned(event.imageBannerKey)
+        : null;
+
+      return {
+        ...event,
+        imagePrincipalURLSigned: principalURL,
+        imageBannerURLSigned: bannerURL,
+      };
+    })
+  );
 
   return {
     page: Number(page),
     pageSize: take,
     total,
     totalPages: Math.ceil(total / take),
-    items,
+    items: enrichedItems,
   };
 }
+
+// Helper seguro para URLs firmadas
+async function safeSigned(key) {
+  try {
+    return await getSignedUrlForFile(key);
+  } catch (err) {
+    console.error("Error generando signed URL:", err);
+    return null;
+  }
+}
+
 
 export async function listSalesSummaryByOrganizer(organizerId) {
   if (!organizerId) {
