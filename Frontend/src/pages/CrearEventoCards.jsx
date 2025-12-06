@@ -156,9 +156,9 @@ export default function CrearEventoCards() {
   let capacity = location.inPerson
     ? location?.capacity || 0
     : (tickets?.zones ?? []).reduce(
-        (sum, zone) => sum + Number(zone.quantity || 0),
-        0
-      );
+      (sum, zone) => sum + Number(zone.quantity || 0),
+      0
+    );
 
   const resetWizard = () => {
     // Ir al paso 1
@@ -512,7 +512,7 @@ export default function CrearEventoCards() {
 
       await Swal.fire({
         icon: "success",
-        title: "¡Evento publicado!",
+        title: "Evento esperando aprobación",
         text: "Tu evento se creó correctamente.",
         confirmButtonText: "Aceptar",
       });
@@ -961,13 +961,12 @@ export default function CrearEventoCards() {
           if (limitStr) {
             const limit = Number(limitStr);
             if (!isNaN(limit) && limit > 0 && limit > totalTicketsInZones) {
-              newErrors.salesSeasons = `El límite para la temporada "${
-                season.name || "sin nombre"
-              }" (${limit.toLocaleString(
-                "es-PE"
-              )}) no puede ser mayor que el total de entradas (${totalTicketsInZones.toLocaleString(
-                "es-PE"
-              )}).`;
+              newErrors.salesSeasons = `El límite para la temporada "${season.name || "sin nombre"
+                }" (${limit.toLocaleString(
+                  "es-PE"
+                )}) no puede ser mayor que el total de entradas (${totalTicketsInZones.toLocaleString(
+                  "es-PE"
+                )}).`;
               // Detenemos la validación en el primer error encontrado
               break;
             }
@@ -1011,7 +1010,7 @@ export default function CrearEventoCards() {
 
 
       // Validar que las temporadas NO se crucen entre sí
-      if (!newErrors.salesSeasons) {  
+      if (!newErrors.salesSeasons) {
         // Solo validar cruces si no hay otros errores previos en seasons
         for (let i = 0; i < salesSeasons.seasons.length; i++) {
           const a = salesSeasons.seasons[i];
