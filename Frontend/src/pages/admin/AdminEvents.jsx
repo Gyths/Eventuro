@@ -287,9 +287,28 @@ function EventDetailModal({ isOpen, event, onClose, refreshList }){
                 value={event.inPerson === false ? "Evento Virtual" : aforoTotal.toLocaleString("es-PE")}
                 icon={UsersIcon}
               />
-              <DetailRow label="Solicitado (Fecha)" value={formatDate(event.createdAt)} icon={CalendarDaysIcon} />
-              <DetailRow label="Imagen Key" value={event.imagePrincipalKey} icon={InformationCircleIcon} span={2} />
+              <DetailRow
+                label="Solicitado (Fecha)"
+                value={formatDate(event.createdAt)}
+                icon={CalendarDaysIcon}
+              />
+              <div className="sm:col-span-2 mt-1 flex items-center gap-4">
+                <div className="flex flex-col items-center">
+                  <span className="text-xs text-gray-500 mb-1">Imagen Principal</span>
+                  <img
+                    src={event.imagePrincipalURLSigned}
+                    className="w-28 h-28 rounded-xl object-cover border border-gray-300 shadow-sm bg-white"
+                  />
+                </div>
 
+                <div className="flex flex-col items-center">
+                  <span className="text-xs text-gray-500 mb-1">Banner</span>
+                  <img
+                    src={event.imageBannerURLSigned}
+                    className="w-28 h-28 rounded-xl object-cover border border-gray-300 shadow-sm bg-white"
+                  />
+                </div>
+              </div>
               <div className="sm:col-span-2">
                 <dt className="text-sm font-medium text-gray-500">Política de Devolución</dt>
                 <dd className="mt-1 text-sm text-gray-900">{isEditing ? <textarea className="w-full border border-gray-300 rounded-md p-2 text-gray-800" rows={2} value={formState.refundPolicyText} onChange={(e) => handleInputChange("refundPolicyText", e.target.value)} /> : event.refundPolicyText || "—"}</dd>
