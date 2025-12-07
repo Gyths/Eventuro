@@ -1,20 +1,11 @@
-import {
-  CheckCircleIcon,
-  StarIcon,
-  CalendarDaysIcon,
-} from "@heroicons/react/24/outline";
+import { CheckCircleIcon, StarIcon, CalendarDaysIcon } from "@heroicons/react/24/outline";
 
 import useOrder from "../../../services/Order/OrderContext";
 import useEvent from "../../../services/Event/EventContext";
 import { useAuth } from "../../../services/auth/AuthContext";
 import BaseModal from "../../BaseModal";
 
-export default function CompraExitosaModal({
-  total,
-  correo = "ejemplo@correo.com",
-  onReturnHome,
-  onViewTickets,
-}) {
+export default function CompraExitosaModal({ total, correo = "ejemplo@correo.com", onReturnHome, onViewTickets }) {
   const { order } = useOrder();
   const { event } = useEvent();
   const { user } = useAuth();
@@ -34,7 +25,7 @@ export default function CompraExitosaModal({
           <div className="bg-gray-100 rounded-lg text-left p-4">
             <div className="flex justify-between mb-1 gap-6">
               <span className="font-medium text-gray-700">Monto</span>
-              <span className="font-semibold">S/ {order?.totalAmount}</span>
+              <span className="font-semibold">S/ {order?.totalAmount.toFixed(2)}</span>
             </div>
 
             <div className="flex justify-between mb-3 border-b border-gray-400 pb-2 gap-6">
@@ -44,22 +35,17 @@ export default function CompraExitosaModal({
 
             <div className="flex flex-row items-start gap-2">
               <StarIcon className="flex size-9"></StarIcon>
-              <span className="inline-block justify-end text-end font-medium">
-                {event?.title}
-              </span>
+              <span className="inline-block justify-end text-end font-medium">{event?.title}</span>
             </div>
 
             <div className="flex flex-row items-center gap-2">
               <CalendarDaysIcon className="flex size-8"></CalendarDaysIcon>
-              <span className="flex flex-1 justify-end font-medium">
-                {event?.selectedDate}
-              </span>
+              <span className="flex flex-1 justify-end font-medium">{event?.selectedDate}</span>
             </div>
           </div>
 
           <p className="text-gray-600 text-sm mb-6">
-            Te enviamos un correo a{" "}
-            <span className="font-semibold">{user?.email}</span>
+            Te enviamos un correo a <span className="font-semibold">{user?.email}</span>
           </p>
 
           {/* Botones de regreso y TODO: ver tickets */}
