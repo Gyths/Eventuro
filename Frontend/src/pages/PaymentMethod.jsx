@@ -86,6 +86,12 @@ export default function PaymentMethod() {
   // Cancelación de orden de pago en cierre de página
   React.useEffect(() => {
     const handleBeforeUnload = (e) => {
+      const nav = performance.getEntriesByType("navigation")[0];
+
+      if (nav && nav.type === "reload") {
+        return;
+      }
+
       const url = `${BASE_URL}/eventuro/api/orders/${order.orderId}/cancel`;
       const payload = JSON.stringify({ reason: "user_left_page" });
       const blob = new Blob([payload], { type: "application/json" });
