@@ -12,6 +12,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Replace BASE_URL for production
+        run: |
+          cd Frontend/src
+          sed -i 's|http://localhost:4000|https://api-eventuro.duckdns.org|g' config.js
+
       - name: Build frontend
         run: |
           cd Frontend
@@ -24,7 +29,7 @@ jobs:
           host: ${{ secrets.FRONT_HOST }}
           username: ubuntu
           key: ${{ secrets.FRONT_SSH_KEY }}
-          source: "eventuro_front/dist/*"
+          source: "Frontend/dist/*"
           target: "/home/ubuntu/eventuro_front/dist"
 
       - name: Restart PM2
