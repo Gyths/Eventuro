@@ -1,14 +1,23 @@
-name: Build and Release Latest
+name: Build and Update Latest Release
 
 on:
-  workflow_dispatch:
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: write
 
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
+      - name: Replace BASE_URL for production
+        run: |
+          cd Frontend/src
+          sed -i 's|http://localhost:4000|https://api-eventuro.duckdns.org|g' config.js
+
       - name: Build frontend
         run: |
           cd Frontend
@@ -20,15 +29,22 @@ jobs:
           cd Frontend
           zip -r dist-latest.zip dist
 
+      - name: Move 'latest' tag
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+          # Borra el tag local y remoto si existen, luego crea uno nuevo
+          git tag -d latest || true
+          git push origin :refs/tags/latest || true
+          git tag latest
+          git push origin latest
 
       - name: Update Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: latest      # Usamos una etiqueta fija "latest"
-          name: Latest Build    # Nombre del release
+          tag_name: latest
           files: Frontend/dist-latest.zip
-          draft: false
           prerelease: false
-          overwrite: true       # Importante: sobrescribe el anterior
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
