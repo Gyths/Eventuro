@@ -1,23 +1,37 @@
-name: Build frontend
-run: |
-  cd eventuro_front
-  npm install
-  npm run build
-  
-name: Upload dist to EC2
-uses: appleboy/scp-action@v0.1.4
-with:
-  host: ${{ secrets.FRONT_HOST }}
-  username: ubuntu
-  key: ${{ secrets.FRONT_SSH_KEY }}
-  source: "eventuro_front/dist/*"
-  target: "/home/ubuntu/dist"
+name: Deploy Frontend
 
-name: Restart PM2
-uses: appleboy/ssh-action@v1.0.0
-with:
-  host: ${{ secrets.FRONT_HOST }}
-  username: ubuntu
-  key: ${{ secrets.FRONT_SSH_KEY }}
-  script: |
-    pm2 restart front
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build frontend
+        run: |
+          cd eventuro_front
+          npm install
+          npm run build
+
+      - name: Upload dist to EC2
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.FRONT_HOST }}
+          username: ubuntu
+          key: ${{ secrets.FRONT_SSH_KEY }}
+          source: "eventuro_front/dist/*"
+          target: "/home/ubuntu/eventuro_front/dist"
+
+      - name: Restart PM2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.FRONT_HOST }}
+          username: ubuntu
+          key: ${{ secrets.FRONT_SSH_KEY }}
+          script: |
+            pm2 restart front || pm2 start "serve -s /home/ubuntu/eventuro_front/dist -l 5173" --name front
