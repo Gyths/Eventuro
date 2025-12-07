@@ -361,7 +361,7 @@ export async function createTicketRepo(input) {
         eventDate: t.eventDate.startAt,
         zoneName: t.zone?.name || "No definida",
         eventImagePrincipalKey: t.eventDate.event.imagePrincipalKey,
-        eventLocation: t.eventDate.event.venue.address,
+        eventLocation: t.eventDate.event.venue?.address || "Evento virtual",
         setRow: t.seat?.row,
         setCol: t.seat?.col,
         seatId: t.seatId ? Number(t.seatId) : null,

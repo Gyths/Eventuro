@@ -34,7 +34,8 @@
   },
   "type": "module",
   "prisma": {
-    "schema": "src/prisma/schema.prisma"
+    "schema": "src/prisma/schema.prisma",
+    "seed": "node src/prisma/seed.js"
   },
   "devDependencies": {
     "prisma": "^6.18.0"
