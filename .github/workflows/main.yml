@@ -14,7 +14,7 @@ jobs:
 
       - name: Build frontend
         run: |
-          cd eventuro_front
+          cd Frontend
           npm install
           npm run build
 
