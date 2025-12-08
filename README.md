@@ -11,14 +11,17 @@
 [![npm](https://img.shields.io/badge/npm-~-CB3837?logo=npm&logoColor=white)](https://www.npmjs.com/)
 Eventuro es una plataforma para la gestión de eventos (backend en Node.js + frontend con Vite/React). Este repositorio contiene el servidor, la aplicación cliente y scripts de inicialización de base de datos.
 **Estado:** Código fuente presente. Ver carpetas `Backend/` y `Frontend/`.
+
 **Contenido rápido**
 - **Backend:** `Backend/` (API REST, Prisma, jobs, servicios)
 - **Frontend:** `Frontend/` (app con Vite + React)
 - **Scripts DB:** `script/` (archivos SQL de inicialización)
+  
 **Requisitos**
 - Node.js >= 16
 - npm o yarn
 - PostgreSQL (u otra BD soportada por Prisma según `prisma/schema.prisma`)
+
 **Instalación y ejecución (desarrollo)**
 1. Instalar dependencias en la raíz y en ambos subproyectos:
 ```powershell
@@ -50,6 +53,7 @@ npm run dev
 **Comandos útiles**
 - `npm run start` — iniciar aplicación según lo defina cada package.json.
 - `npx prisma studio` — abrir Prisma Studio para inspeccionar la BD (ejecutar desde `Backend/`).
+
 **Estructura principal**
 - `Backend/` — servidor Express/Node
   - `src/controllers/` — controladores de rutas
@@ -59,11 +63,43 @@ npm run dev
   - `jobs/` — tareas programadas (ej. `incrementCapacityJob.js`)
 - `Frontend/` — cliente con Vite + React
 - `script/` — SQL de inicialización
+
 **Pruebas y logs**
 - Revisar `Backend/log/` para logs del servidor.
+
+## 🚀 Configuración de Despliegue
+
+Para ejecutar el script de despliegue exitosamente, asegúrate de cumplir con los siguientes requisitos previos y variables de entorno.
+
+### Requisitos Previos
+* **AWS Key Pairs:** Se recomienda tener un par de claves creado en tu cuenta de AWS para el acceso a las instancias.
+* **DuckDNS:** Se requiere un token de DuckDNS con los siguientes dominios ya configurados:
+    * `eventuro`
+    * `api-eventuro`
+
+### Variables de Entorno
+El script requiere las siguientes credenciales para funcionar las cuales pueden ser especificadas con un .env o como input en cloudformation al usar el .yaml. 
+
+> **Nota:** El script está diseñado para utilizar un bucket S3 **externo** a la arquitectura principal en AWS.
+
+# Configuración de Correo
+EmailHost
+EmailUser
+EmailPass
+
+# Autenticación con Google
+GoogleClientId
+GoogleClientSecret
+
+# Almacenamiento (S3 Externo)
+S3Endpoint
+S3BucketName
+S3SecretKey
+
 **Contribuir**
 - Abre un issue para discutir cambios grandes.
 - Crea ramas con un prefijo claro: `feature/`, `fix/`, `chore/`.
 - Agrega migraciones de Prisma y actualiza `prisma/seed.js` si cambias el modelo.
+
 **Licencia**
 - Revisa el archivo `LICENSE` en la raíz para los términos de licencia.
