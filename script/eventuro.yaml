@@ -1,0 +1,427 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Crea 2 instancias EC2 con Elastic IP, instala Node.js y clona el repositorio.
+
+Parameters:
+  KeyName:
+    Description: Nombre del key pair para conectarte por SSH
+    Type: AWS::EC2::KeyPair::KeyName
+  RepoURL:
+    Description: URL del repositorio Git a clonar
+    Type: String
+    Default: https://github.com/Gyths/Eventuro
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: ID de la VPC donde se crearán los grupos de seguridad
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet::Id
+    Description: Primera subred pública para el RDS o EC2 (diferente zona y privada)
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet::Id
+    Description: Segunda subred pública para el RDS o EC2 (diferente zona y privada)
+  PublicSubnetInstances:
+    Type: AWS::EC2::Subnet::Id
+    Description: Subred pública para el EC2
+  DBUsername:
+    Type: String
+    Default: postgres
+    Description: Usuario maestro del RDS
+  DBPassword:
+    Type: String
+    NoEcho: true
+    MinLength: 8
+    Description: Contraseña del RDS
+  S3Endpoint:
+    Type: String
+    Description: Endpoint del S3 compatible
+  S3BucketName:
+    Type: String
+  S3AccessKey:
+    Type: String
+    NoEcho: true
+    Description: Clave de acceso del S3 compatible
+  S3SecretKey:
+    Type: String
+    NoEcho: true
+    Description: Clave secreta del S3 compatible
+  GoogleClientId:
+    Type: String
+    Description: ID de cliente de Google OAuth
+  GoogleClientSecret:
+    Type: String
+    NoEcho: true
+    Description: Secreto de cliente de Google OAuth
+  EmailUser:
+    Type: String
+    Description: Usuario de correo electrónico para envíos
+  EmailPass:
+    Type: String
+    NoEcho: true
+    Description: Contraseña del correo electrónico para envíos
+  EmailHost:
+    Type: String
+    Description: Host SMTP del correo electrónico para envíos
+  DuckDnsToken:
+    Type: String
+    NoEcho: true
+    Description: Token de DuckDNS para actualizar la IP dinámica
+
+Mappings:
+  RegionMap:
+    us-east-1:
+      AMI: ami-0fc5d935ebf8bc3bc
+    us-east-2:
+      AMI: ami-0e83be366243f524a
+    us-west-1:
+      AMI: ami-03f65b8614a860c29
+
+Resources:
+  # --- Security Group ---
+  AppSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Permitir SSH y HTTP
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 4000
+          ToPort: 4000
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 5173
+          ToPort: 5173
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+
+  # --- Security Group para el RDS ---
+  RdsSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Permitir acceso al RDS solo desde las EC2
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId: !Ref AppSecurityGroup
+
+  # --- Subredes publicas (necesarias para RDS) ---
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subredes para el RDS
+      SubnetIds:
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+      DBSubnetGroupName: eventuro-db-subnet-group
+
+  # --- Instancia RDS PostgreSQL ---
+  EventuroRDS:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: eventuro-db
+      AllocatedStorage: 5 # GB
+      DBInstanceClass: db.t3.micro
+      Engine: postgres
+      EngineVersion: "15"
+      MasterUsername: !Ref DBUsername
+      MasterUserPassword: !Ref DBPassword
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      VPCSecurityGroups:
+        - !Ref RdsSecurityGroup
+      PubliclyAccessible: true
+      BackupRetentionPeriod: 1
+      DeletionProtection: false
+      Tags:
+        - Key: Name
+          Value: eventuro-rds
+
+  # --- Primera instancia ---
+  ServerBackend:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t3.micro
+      ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", AMI]
+      SubnetId: !Ref PublicSubnetInstances
+      KeyName: !Ref KeyName
+      SecurityGroupIds:
+        - !Ref AppSecurityGroup
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          set -e
+          exec > /var/log/userdata.log 2>&1
+          export DEBIAN_FRONTEND=noninteractive
+
+          echo "=== userdata backend: start === $(date)"
+
+          apt-get update -y
+          apt-get install -y git curl netcat-openbsd ca-certificates gnupg lsb-release build-essential
+
+          echo "Actualizando DuckDNS Backend..."
+          TOKEN="${DuckDnsToken}"
+          DOMAIN="api-eventuro"
+          curl -s "https://www.duckdns.org/update?domains=$DOMAIN&token=$TOKEN&ip="
+
+          if curl -fsSL https://deb.nodesource.com/setup_20.x | bash -; then
+            apt-get install -y nodejs
+          else
+            echo "NodeSource setup failed, installing nodejs from distro repos" >&2
+            apt-get install -y nodejs npm
+          fi
+
+          if ! command -v node >/dev/null 2>&1; then
+            echo "node not found after install" >&2
+          else
+            echo "node $(node -v)"
+            echo "npm $(npm -v)"
+          fi
+
+          npm install -g pm2@latest
+
+
+          # Instalar Caddy
+          sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https curl
+          curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+          curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
+          chmod o+r /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+          chmod o+r /etc/apt/sources.list.d/caddy-stable.list
+          apt update
+          apt install -y caddy
+
+          if [ ! -d /home/ubuntu/Eventuro ]; then
+            sudo -u ubuntu mkdir -p /home/ubuntu
+            sudo -u ubuntu git clone ${RepoURL} /home/ubuntu/Eventuro || { echo "git clone failed" >&2; }
+            chown -R ubuntu:ubuntu /home/ubuntu/Eventuro
+          else
+            echo "Repo already exists, pulling latest (as ubuntu)"
+            sudo -i -u ubuntu bash -c "cd /home/ubuntu/Eventuro && git pull || true"
+          fi
+
+          # Create working dir and clone repo if needed (do as ubuntu)
+          if [ ! -d /home/ubuntu/Eventuro ]; then
+            sudo -u ubuntu mkdir -p /home/ubuntu
+            sudo -u ubuntu git clone ${RepoURL} /home/ubuntu/Eventuro || { echo "git clone failed" >&2; }
+            chown -R ubuntu:ubuntu /home/ubuntu/Eventuro
+          else
+            echo "Repo already exists, pulling latest (as ubuntu)"
+            sudo -i -u ubuntu bash -c "cd /home/ubuntu/Eventuro && git pull || true"
+          fi
+
+          # Crear archivo .env
+          cat <<EOF > /home/ubuntu/Eventuro/Backend/.env
+          DATABASE_URL="postgresql://${DBUsername}:${DBPassword}@${EventuroRDS.Endpoint.Address}:5432/postgres"
+          PORT=4000
+          JWT_SECRET="supersecreto123"
+          AWS_S3_ENDPOINT="${S3Endpoint}"
+          AWS_BUCKET_NAME="${S3BucketName}"
+          AWS_ACCESS_KEY_ID="${S3AccessKey}"
+          AWS_SECRET_ACCESS_KEY="${S3SecretKey}"
+          AWS_REGION="auto"
+          GOOGLE_CLIENT_ID="${GoogleClientId}"
+          GOOGLE_CLIENT_SECRET="${GoogleClientSecret}"
+          GOOGLE_CALLBACK_URL="https://api-eventuro.duckdns.org/google/callback"
+          EMAIL_HOST="${EmailHost}"
+          EMAIL_USER="${EmailUser}"
+          EMAIL_PASS="${EmailPass}"
+          FRONT_IP="https://eventuro.duckdns.org"
+          EOF
+
+          # Crear Caddyfile
+          cat <<EOF > /etc/caddy/Caddyfile
+          {
+            email eventurotickets@gmail.com
+          }
+
+          http://api-eventuro.duckdns.org {
+            redir https://api-eventuro.duckdns.org{uri}
+          }
+
+          api-eventuro.duckdns.org {
+              reverse_proxy localhost:4000
+              tls {
+                issuer acme https://acme.zerossl.com/v2/DV90
+              }
+          }
+          EOF
+          systemctl restart caddy || systemctl start caddy
+
+          # Wait for RDS port to be reachable (retry loop)
+          echo "Waiting for RDS ${EventuroRDS.Endpoint.Address}:5432..."
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            if nc -z ${EventuroRDS.Endpoint.Address} 5432; then
+              echo "RDS reachable"
+              break
+            else
+              echo "RDS not reachable yet (attempt $i). Sleeping 6s..."
+              sleep 6
+            fi
+          done
+
+          # Run backend setup as ubuntu with proper environment (uses user's PATH)
+          sudo -i -u ubuntu bash <<'UBUNTU_SETUP'
+          set -e
+          cd /home/ubuntu/Eventuro/Backend
+
+          # Install dependencies and build (idempotent)
+          if [ -f package-lock.json ] || [ -f package.json ]; then
+            npm ci --prefer-offline --no-audit --progress=false
+          fi
+
+          # Prisma (generate + migrate) - tolerate if migrate fails temporarily
+          if command -v npx >/dev/null 2>&1; then
+            npx prisma generate || true
+            # try migrate, but don't break boot if initial DB not yet ready
+            npx prisma migrate deploy || true
+          fi
+
+          npx prisma db seed || true
+
+          # Start app with PM2
+          pm2 start src/server.js --name backend || pm2 restart backend || true
+          pm2 save
+          UBUNTU_SETUP
+
+          # Configure PM2 startup (as root, using pm2 output to get the required command)
+          echo "Configuring pm2 startup..."
+          STARTUP_CMD=$(pm2 startup systemd -u ubuntu --hp /home/ubuntu | grep 'sudo' | sed 's/^sudo //')
+          if [ -n "$STARTUP_CMD" ]; then
+            eval "$STARTUP_CMD"
+          fi
+          pm2 save
+
+          echo "=== userdata backend: end === $(date)"
+
+      Tags:
+        - Key: Name
+          Value: Backend-server
+
+  # --- Segunda instancia ---
+  ServerFrontend:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t3.micro
+      ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", AMI]
+      SubnetId: !Ref PublicSubnetInstances
+      KeyName: !Ref KeyName
+      SecurityGroupIds:
+        - !Ref AppSecurityGroup
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          set -e
+          exec > /var/log/userdata_frontend.log 2>&1
+
+          apt-get update -y
+          apt-get install -y git curl unzip
+
+          echo "Actualizando DuckDNS Frontend..."
+          TOKEN="${DuckDnsToken}"
+          DOMAIN="eventuro"
+          curl -s "https://www.duckdns.org/update?domains=$DOMAIN&token=$TOKEN&ip="
+
+          # Node
+          curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+          apt-get install -y nodejs
+          npm install -g pm2 serve
+
+          # Caddy
+          curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/caddy-stable-archive-keyring.gpg] https://dl.cloudsmith.io/public/caddy/stable/deb/ubuntu $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/caddy-stable.list
+          apt-get update -y
+          apt-get install -y caddy
+
+          mkdir -p /home/ubuntu/eventuro_front/dist
+          chown -R ubuntu:ubuntu /home/ubuntu/eventuro_front
+          wget https://github.com/Gyths/Eventuro/releases/download/latest/dist-latest.zip -O /tmp/dist.zip
+          unzip -o /tmp/dist.zip -d /home/ubuntu/eventuro_front/
+          chown -R ubuntu:ubuntu /home/ubuntu/eventuro_front
+
+          # PM2 ecosystem file
+          cat <<EOF > /home/ubuntu/eventuro_front/ecosystem.config.js
+          module.exports = {
+            apps: [{
+              name: "frontend",
+              script: "serve",
+              cwd: "/home/ubuntu/eventuro_front",
+              env: {
+                PM2_SERVE_PATH: './dist',
+                PM2_SERVE_PORT: 5173,
+                PM2_SERVE_SPA: 'true',
+                PM2_SERVE_HOMEPAGE: '/index.html'
+              }
+            }]
+          }
+          EOF
+
+          chown ubuntu:ubuntu /home/ubuntu/eventuro_front/ecosystem.config.js
+
+          # Start PM2
+          sudo -u ubuntu pm2 start /home/ubuntu/eventuro_front/ecosystem.config.js
+          sudo -u ubuntu pm2 save
+
+          # Enable PM2 at boot
+          pm2 startup systemd -u ubuntu --hp /home/ubuntu
+
+          # Caddyfile
+          cat <<EOF > /etc/caddy/Caddyfile
+          {
+            email eventurotickets@gmail.com
+          }
+
+          http://eventuro.duckdns.org {
+            redir https://eventuro.duckdns.org{uri}
+          }
+
+          eventuro.duckdns.org {
+            reverse_proxy localhost:5173
+            tls {
+              issuer acme https://acme.zerossl.com/v2/DV90
+            }
+          }
+          EOF
+
+          systemctl reload caddy
+
+          TOKEN="${DuckDnsToken}"
+          DOMAIN="eventuro"
+          curl -s "https://www.duckdns.org/update?domains=$DOMAIN&token=$TOKEN&ip="
+          EOF
+
+      Tags:
+        - Key: Name
+          Value: Frontend-server
+
+  # --- Elastic IPs ---
+  ElasticIP1:
+    Type: AWS::EC2::EIP
+    Properties:
+      InstanceId: !Ref ServerBackend
+
+  ElasticIP2:
+    Type: AWS::EC2::EIP
+    Properties:
+      InstanceId: !Ref ServerFrontend
+
+Outputs:
+  Instance1PublicIPBackend:
+    Description: IP pública de la primera instancia
+    Value: !Ref ElasticIP1
+
+  Instance2PublicIPFrontend:
+    Description: IP pública de la segunda instancia
+    Value: !Ref ElasticIP2
+
+  RdsEndpoint:
+    Description: Endpoint del RDS PostgreSQL
+    Value: !GetAtt EventuroRDS.Endpoint.Address
